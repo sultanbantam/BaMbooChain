@@ -13,7 +13,7 @@ const bambooCharacters = Array.from({ length: 36 }, (_, i) => {
   return {
     id: i + 1,
     name: `Guardian #${idStr}`,
-    img: `/gambar/kbambu/${idStr}.jpg`,
+    img: `${import.meta.env.BASE_URL}gambar/kbambu/${idStr}.jpg`,
     rarity: rarity
   };
 });
