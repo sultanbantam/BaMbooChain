@@ -8,7 +8,7 @@ import { Web3Provider } from './context/Web3Context.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename="/BaMbooChain">
       <LanguageProvider>
         <Web3Provider>
           <App />
