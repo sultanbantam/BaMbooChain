@@ -14,6 +14,6 @@ createRoot(document.getElementById('root')).render(
           <App />
         </Web3Provider>
       </LanguageProvider>
-    </BrowserRouter>
+    </HashRouter>
   </StrictMode>,
 )
