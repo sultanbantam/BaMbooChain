@@ -1,0 +1,109 @@
+import React, { useState } from 'react';
+import { Send, Phone, Mail } from 'lucide-react';
+import BackButton from '../components/BackButton';
+
+const ContactPage = () => {
+  const [status, setStatus] = useState('');
+
+  // Pastikan Anda mendaftar di Web3Forms: https://web3forms.com/
+  // Dapatkan Access Key gratis lalu masukkan di bawah
+  const ACCESS_KEY = "YOUR_ACCESS_KEY_HERE";
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setStatus('Sedang mengirim...');
+
+    const formData = new FormData(e.target);
+    formData.append("access_key", ACCESS_KEY);
+
+    try {
+      const response = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setStatus('Pesan berhasil terkirim!');
+        e.target.reset();
+      } else {
+        console.log("Error", data);
+        setStatus('Terjadi kesalahan saat mengirim.');
+      }
+    } catch (error) {
+      console.log("Submit error", error);
+      setStatus('Terjadi kesalahan koneksi.');
+    }
+  };
+
+  return (
+    <div style={{ paddingTop: '220px', minHeight: '100vh', background: '#f8f9fa' }}>
+      <div className="container" style={{ padding: '0 24px 40px' }}>
+        <div style={{ marginBottom: '40px' }}>
+          <BackButton to="/" />
+        </div>
+        <h1 style={{ textAlign: 'center', fontSize: '2.5rem', marginBottom: '40px', color: 'var(--text-main)' }}>Hubungi Kami</h1>
+        
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', background: 'white', padding: '40px', borderRadius: '16px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
+          {/* Info Kontak */}
+          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '30px' }}>
+            <div>
+              <h3 style={{ fontSize: '1.5rem', marginBottom: '16px' }}>Mari Berkolaborasi</h3>
+              <p style={{ color: 'var(--text-muted)' }}>Miliki keluhan, penawaran mitra, atau pertanyaan seputar industri bambu? Jangan ragu mengirimkan pesan kepada kami.</p>
+            </div>
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{ padding: '16px', background: 'rgba(0,100,0,0.1)', borderRadius: '50%' }}>
+                <Phone size={24} color="var(--primary)" />
+              </div>
+              <div>
+                <strong style={{ display: 'block' }}>WhatsApp</strong>
+                <a href="https://wa.me/628174139994" target="_blank" rel="noreferrer" style={{ color: 'var(--text-muted)' }}>08174139994</a>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{ padding: '16px', background: 'rgba(0,100,0,0.1)', borderRadius: '50%' }}>
+                <Mail size={24} color="var(--primary)" />
+              </div>
+              <div>
+                <strong style={{ display: 'block' }}>Email</strong>
+                <a href="mailto:sabuminusantarajaya@gmail.com" style={{ color: 'var(--text-muted)' }}>sabuminusantarajaya@gmail.com</a>
+              </div>
+            </div>
+          </div>
+
+          {/* Form Web3Forms */}
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>Nama</label>
+              <input type="text" name="name" required style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ccc', outline: 'none' }} placeholder="Masukkan nama Anda" />
+            </div>
+            
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>Email</label>
+              <input type="email" name="email" required style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ccc', outline: 'none' }} placeholder="Masukkan alamat email Anda" />
+            </div>
+            
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>Pesan</label>
+              <textarea name="message" required style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ccc', outline: 'none', height: '150px', resize: 'vertical' }} placeholder="Tuliskan pesan Anda..." />
+            </div>
+
+            {/* Custom Subject for Email Notification */}
+            <input type="hidden" name="subject" value="Pesan Baru dari Website YSNJ!" />
+
+            <button type="submit" className="btn btn-primary" style={{ padding: '16px', fontSize: '1.1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+              <Send size={20} /> KIRIM
+            </button>
+            {status && <p style={{ textAlign: 'center', fontWeight: 'bold', color: 'var(--primary)', marginTop: '10px' }}>{status}</p>}
+          </form>
+
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ContactPage;
