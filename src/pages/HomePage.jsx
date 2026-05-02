@@ -4,17 +4,17 @@ import { Link } from 'react-router-dom';
 
 const slides = [
   {
-    image: "pehc.JPG",
+    image: `${import.meta.env.BASE_URL}pehc.JPG`,
     title: "Potensi Industri Bambu Global: Peluang Ekonomi dan Dampak Lingkungan",
     desc: "Analisis berbasis data mengenai perkembangan industri bambu, produksi, pasar global, serta kontribusinya terhadap keberlanjutan lingkungan dan ekonomi masyarakat."
   },
   {
-    image: "pehc2.JPG",
+    image: `${import.meta.env.BASE_URL}pehc2.JPG`,
     title: "Masa Depan Konstruksi Hijau dan Inovasi Material",
     desc: "Bambu laminasi dan konstruksi modular hadir sebagai pengganti material konvensional. Kuat, tahan lama, dan menetralkan jejak karbon dunia."
   },
   {
-    image: "pehc3.JPG",
+    image: `${import.meta.env.BASE_URL}pehc3.JPG`,
     title: "Pemberdayaan Desa dan Restorasi Ekologi",
     desc: "Melalui budidaya dan pengembangan dari hulu ke hilir, kita tidak hanya menggerakkan roda ekonomi, tapi juga memulihkan mata air bumi."
   }
@@ -186,9 +186,8 @@ const HomePage = () => {
           <h2 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '50px', textAlign: 'center' }}>Contoh Proyek Pengembangan Bambu</h2>
           
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '40px', marginBottom: '40px' }}>
-            
-            <div style={{ background: 'white', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', border: '1px solid #eee' }}>
-              <div style={{ height: '200px', background: 'url("gambar/pehcibarani.png") center/cover' }}></div>
+                        <div style={{ background: 'white', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', border: '1px solid #eee' }}>
+              <div style={{ height: '200px', background: `url("${import.meta.env.BASE_URL}gambar/pehcibarani.png") center/cover` }}></div>
               <div style={{ padding: '30px' }}>
                 <div style={{ color: 'var(--primary)', display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '12px', fontSize: '0.9rem', fontWeight: 'bold' }}>
                   <MapPin size={16} /> Banten (490 Ha)
@@ -199,7 +198,7 @@ const HomePage = () => {
             </div>
 
             <div style={{ background: 'white', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', border: '1px solid #eee' }}>
-              <div style={{ height: '200px', background: 'url("gambar/ceap.png") center/cover' }}></div>
+              <div style={{ height: '200px', background: `url("${import.meta.env.BASE_URL}gambar/ceap.png") center/cover` }}></div>
               <div style={{ padding: '30px' }}>
                 <div style={{ color: 'var(--primary)', display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '12px', fontSize: '0.9rem', fontWeight: 'bold' }}>
                   <MapPin size={16} /> Tangerang Raya (120 Ha)
@@ -210,7 +209,7 @@ const HomePage = () => {
             </div>
 
             <div style={{ background: 'white', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', border: '1px solid #eee' }}>
-              <div style={{ height: '200px', background: 'url("gambar/mbh.jpeg") center/cover' }}></div>
+              <div style={{ height: '200px', background: `url("${import.meta.env.BASE_URL}gambar/mbh.jpeg") center/cover` }}></div>
               <div style={{ padding: '30px' }}>
                 <div style={{ color: 'var(--primary)', display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '12px', fontSize: '0.9rem', fontWeight: 'bold' }}>
                   <MapPin size={16} /> Sumatera (Nasional)
@@ -219,7 +218,6 @@ const HomePage = () => {
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>Hunian modular pasca bencana lingkungan di area Sumatera, menyumbang hingga 6.000 unit produksi hunian terstandarisasi berbasis bambu ramah lingkungan.</p>
               </div>
             </div>
-
           </div>
 
           <div style={{ textAlign: 'center' }}>

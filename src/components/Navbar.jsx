@@ -29,13 +29,13 @@ const Navbar = () => {
   const notifications = [t('nav_notif_1'), t('nav_notif_2'), t('nav_notif_3')];
 
   const secondaryLinks = [
-    { key: 'nav_bambupedia', href: '/bambupedia', external: false },
-    { key: 'nav_academy',    href: '/academy', external: false },
-    { key: 'nav_datatools',  href: '/data-tools', external: false },
-    { key: 'nav_marketplace',href: '/bamboochain/marketplace', external: false },
-    { key: 'nav_community',  href: '/community', external: false },
-    { key: 'nav_bamboochain',href: '/bamboochain', external: false },
-    { key: 'nav_careers',    href: '/careers', external: false },
+    { key: 'nav_bambupedia', href: 'bambupedia', external: false },
+    { key: 'nav_academy',    href: 'academy', external: false },
+    { key: 'nav_datatools',  href: 'data-tools', external: false },
+    { key: 'nav_marketplace',href: 'bamboochain/marketplace', external: false },
+    { key: 'nav_community',  href: 'community', external: false },
+    { key: 'nav_bamboochain',href: 'bamboochain', external: false },
+    { key: 'nav_careers',    href: 'careers', external: false },
   ];
 
   return (
@@ -302,19 +302,19 @@ const Navbar = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 32px', width: '100%', boxSizing: 'border-box' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '900', fontSize: '1.75rem', whiteSpace: 'nowrap' }}>
           <div style={{ position: 'relative', width: '60px', height: '40px' }}>
-            <img src="logo-ysnj2.png" alt="Logo YSNJ" style={{ height: '90px', width: 'auto', position: 'absolute', top: '50%', left: '0', transform: 'translateY(-50%)' }} />
+            <img src={`${import.meta.env.BASE_URL}logo-ysnj2.png`} alt="Logo YSNJ" style={{ height: '90px', width: 'auto', position: 'absolute', top: '50%', left: '0', transform: 'translateY(-50%)' }} />
           </div>
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginLeft: '6px' }}>
             {/* 9 Logo Mitra */}
-            <img src="logos/logo1.png" alt="Pi Bamboo" style={{ height: '28px', width: 'auto', objectFit: 'contain' }} />
-            <img src="logos/logo2.png" alt="Modular Blockbamboo" style={{ height: '28px', width: 'auto', objectFit: 'contain' }} />
-            <img src="logos/logo3.png" alt="UMANG" style={{ height: '28px', width: 'auto', objectFit: 'contain' }} />
-            <img src="logos/logo4.png" alt="Circle Logo" style={{ height: '28px', width: 'auto', objectFit: 'contain' }} />
-            <img src="logos/logo5.png" alt="bambuNUSA" style={{ height: '28px', width: 'auto', objectFit: 'contain' }} />
-            <img src="logos/logo6.png" alt="WEB Wisata Edukasi Bambu" style={{ height: '28px', width: 'auto', objectFit: 'contain' }} />
-            <img src="logos/logo7.png" alt="Kios Bambu" style={{ height: '28px', width: 'auto', objectFit: 'contain' }} />
-            <img src="logos/logo8.png" alt="Akademi Bambu Nusantara" style={{ height: '28px', width: 'auto', objectFit: 'contain' }} />
-            <img src="logos/logo9.png" alt="Banten Creative Community" style={{ height: '28px', width: 'auto', objectFit: 'contain' }} />
+            <img src={`${import.meta.env.BASE_URL}logos/logo1.png`} alt="Pi Bamboo" style={{ height: '28px', width: 'auto', objectFit: 'contain' }} />
+            <img src={`${import.meta.env.BASE_URL}logos/logo2.png`} alt="Modular Blockbamboo" style={{ height: '28px', width: 'auto', objectFit: 'contain' }} />
+            <img src={`${import.meta.env.BASE_URL}logos/logo3.png`} alt="UMANG" style={{ height: '28px', width: 'auto', objectFit: 'contain' }} />
+            <img src={`${import.meta.env.BASE_URL}logos/logo4.png`} alt="Circle Logo" style={{ height: '28px', width: 'auto', objectFit: 'contain' }} />
+            <img src={`${import.meta.env.BASE_URL}logos/logo5.png`} alt="bambuNUSA" style={{ height: '28px', width: 'auto', objectFit: 'contain' }} />
+            <img src={`${import.meta.env.BASE_URL}logos/logo6.png`} alt="WEB Wisata Edukasi Bambu" style={{ height: '28px', width: 'auto', objectFit: 'contain' }} />
+            <img src={`${import.meta.env.BASE_URL}logos/logo7.png`} alt="Kios Bambu" style={{ height: '28px', width: 'auto', objectFit: 'contain' }} />
+            <img src={`${import.meta.env.BASE_URL}logos/logo8.png`} alt="Akademi Bambu Nusantara" style={{ height: '28px', width: 'auto', objectFit: 'contain' }} />
+            <img src={`${import.meta.env.BASE_URL}logos/logo9.png`} alt="Banten Creative Community" style={{ height: '28px', width: 'auto', objectFit: 'contain' }} />
           </div>
         </div>
 
