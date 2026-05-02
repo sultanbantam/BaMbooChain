@@ -14,7 +14,7 @@ const WhitepaperPage = () => {
       <div className="container">
         <h1 style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--text-main)', marginBottom: '8px' }}>Whitepaper bambuNUSA (BMC)</h1>
         <iframe
-          src="/whitepaper-bmc.pdf"
+          src="whitepaper-bmc.pdf"
           title="Whitepaper BMC"
           style={{ width: '100%', height: '80vh', border: 'none', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
         />

@@ -21,7 +21,7 @@ const Hero = () => {
         display: 'flex', 
         alignItems: 'center', 
         justifyContent: 'center',
-        background: 'linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.8)), url("/agroforestry2.png") center/cover no-repeat',
+        background: 'linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.8)), url("agroforestry2.png") center/cover no-repeat',
         color: 'white',
         paddingTop: '160px',
         textAlign: 'center'
