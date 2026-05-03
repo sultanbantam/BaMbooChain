@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Users, Vote, HeartHandshake, MessageSquare, ThumbsUp, ThumbsDown, User, Heart, CalendarCheck, Gamepad2, Gift, Trophy, Star, Target, MapPin, Compass } from 'lucide-react';
+import { getAssetUrl } from '../../utils/assets';
 
 const bambooCharacters = Array.from({ length: 36 }, (_, i) => {
   const idStr = String(i + 1).padStart(2, '0');
@@ -13,7 +14,7 @@ const bambooCharacters = Array.from({ length: 36 }, (_, i) => {
   return {
     id: i + 1,
     name: `Guardian #${idStr}`,
-    img: `${import.meta.env.BASE_URL}gambar/kbambu/${idStr}.jpg`,
+    img: getAssetUrl(`gambar/kbambu/${idStr}.jpg`),
     rarity: rarity
   };
 });

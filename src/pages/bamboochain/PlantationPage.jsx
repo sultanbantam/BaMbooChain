@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { getAssetUrl } from '../../utils/assets';
 import { Sprout, BarChart, ShieldCheck, MapPin, CheckCircle, CreditCard, Wallet as WalletIcon, ExternalLink, ArrowRight, UserCheck, Zap, Info, Clock, Check } from 'lucide-react';
 import BackButton from '../../components/BackButton';
 import { useWeb3 } from '../../context/Web3Context';
@@ -87,8 +88,8 @@ const PlantationPage = () => {
   }, []);
 
   const locations = [
-    { id: 'cibarani', name: 'Kasepuhan Cibarani, Lebak', image: `${import.meta.env.BASE_URL}gambar/pehcibarani.png`, area: '490 Ha', farmers: 120, desc: 'Restorasi hutan adat dan sabuk ekologis.' },
-    { id: 'cisadane', name: 'Tepi Cisadane, Tangerang Raya', image: `${import.meta.env.BASE_URL}gambar/ceap.png`, area: '120 Ha', farmers: 45, desc: 'Pengembangan ekonomi masyarakat melalui ekowisata.' }
+    { id: 'cibarani', name: 'Kasepuhan Cibarani, Lebak', image: getAssetUrl('gambar/pehcibarani.png'), area: '490 Ha', farmers: 120, desc: 'Restorasi hutan adat dan sabuk ekologis.' },
+    { id: 'cisadane', name: 'Tepi Cisadane, Tangerang Raya', image: getAssetUrl('gambar/ceap.png'), area: '120 Ha', farmers: 45, desc: 'Pengembangan ekonomi masyarakat melalui ekowisata.' }
   ];
 
   const packages = [

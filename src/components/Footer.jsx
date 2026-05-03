@@ -1,5 +1,5 @@
-import React from 'react';
 import { Mail, Phone, MapPin, Link } from 'lucide-react';
+import { getAssetUrl } from '../utils/assets';
 import { useLanguage } from '../context/LanguageContext';
 
 const Footer = () => {
@@ -109,7 +109,7 @@ const Footer = () => {
           <p>{t('foot_copyright')}</p>
           <div style={{ marginTop: '12px', fontSize: '0.85rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
             <p>Smart Contract BMC jaringan BEP20 : <code>0x812d9709f0A53982606b823Ee61d5CA216F7F9c0</code></p>
-            <img src={`${import.meta.env.BASE_URL}bmc-bep20.jpeg`} alt="Smart Contract BMC BEP20" style={{ width: '150px', borderRadius: '8px' }} />
+            <img src={getAssetUrl('bmc-bep20.jpeg')} alt="Smart Contract BMC BEP20" style={{ width: '150px', borderRadius: '8px' }} />
             
             <p style={{ marginTop: '16px', borderTop: '1px dashed #495057', paddingTop: '16px', maxWidth: '600px', margin: '0 auto' }}>
               Informasi di website ini bersifat edukasi dan bukan merupakan ajakan atau rekomendasi investasi. <a href="/faq" style={{ color: 'var(--primary)', textDecoration: 'underline', marginRight: '10px' }}>Pusat Bantuan (FAQ)</a> | <a href="/disclaimer" style={{ color: 'var(--primary)', textDecoration: 'underline', marginRight: '10px' }}>Baca Disclaimer Selengkapnya</a> | <a href="/validator" style={{ color: '#f59f00', textDecoration: 'underline' }}>Portal Validator Lapangan</a>

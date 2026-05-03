@@ -1,3 +1,5 @@
+import { getAssetUrl } from '../utils/assets';
+
 export const DESIGNS = [
   {
     id: 1,
@@ -8,10 +10,10 @@ export const DESIGNS = [
     minArea: 21,
     price: 45000000,
     time: 3,
-    imageUrl: "/assets/designs/bambu_21_3d.png",
-    planUrl: "/assets/designs/bambu_21_plan.png",
-    elevationUrl: "/assets/designs/bambu_21_tampak.png",
-    droneUrl: "/assets/designs/bambu_21_drone.png",
+    imageUrl: getAssetUrl('assets/designs/bambu_21_3d.png'),
+    planUrl: getAssetUrl('assets/designs/bambu_21_plan.png'),
+    elevationUrl: getAssetUrl('assets/designs/bambu_21_tampak.png'),
+    droneUrl: getAssetUrl('assets/designs/bambu_21_drone.png'),
     description: "Hunian minimalis tipe 21 yang sangat terjangkau. Cocok untuk pasangan muda atau rumah tumbuh. Menggunakan sistem modular bambu Tali."
   },
   {
@@ -23,10 +25,10 @@ export const DESIGNS = [
     minArea: 36,
     price: 85000000,
     time: 5,
-    imageUrl: "/assets/designs/bambu_house_36_3d.png",
-    planUrl: "/assets/designs/bambu_house_36_plan.png",
-    elevationUrl: "/assets/designs/bambu_house_36_tampak.png",
-    droneUrl: "/assets/designs/bambu_house_36_drone.png",
+    imageUrl: getAssetUrl('assets/designs/bambu_house_36_3d.png'),
+    planUrl: getAssetUrl('assets/designs/bambu_house_36_plan.png'),
+    elevationUrl: getAssetUrl('assets/designs/bambu_house_36_tampak.png'),
+    droneUrl: getAssetUrl('assets/designs/bambu_house_36_drone.png'),
     description: "Hunian bambu modern tipe 36 dengan 2 kamar tidur. Menggunakan kombinasi bambu Petung dan Tali dengan finishing awet."
   },
   {
@@ -38,10 +40,10 @@ export const DESIGNS = [
     minArea: 45,
     price: 125000000,
     time: 7,
-    imageUrl: "/assets/designs/bambu_45_3d.png",
-    planUrl: "/assets/designs/bambu_45_plan.png",
-    elevationUrl: "/assets/designs/bambu_45_tampak.png",
-    droneUrl: "/assets/designs/bambu_45_drone.png",
+    imageUrl: getAssetUrl('assets/designs/bambu_45_3d.png'),
+    planUrl: getAssetUrl('assets/designs/bambu_45_plan.png'),
+    elevationUrl: getAssetUrl('assets/designs/bambu_45_tampak.png'),
+    droneUrl: getAssetUrl('assets/designs/bambu_45_drone.png'),
     description: "Rumah tinggal tipe 45 dengan ruang keluarga luas dan teras depan yang asri."
   },
   {
@@ -53,10 +55,10 @@ export const DESIGNS = [
     minArea: 50,
     price: 150000000,
     time: 8,
-    imageUrl: "/assets/designs/bambu_cafe_3d.png",
-    planUrl: "/assets/designs/bambu_cafe_plan.png",
-    elevationUrl: "/assets/designs/bambu_cafe_tampak.png",
-    droneUrl: "/assets/designs/bambu_cafe_drone.png",
+    imageUrl: getAssetUrl('assets/designs/bambu_cafe_3d.png'),
+    planUrl: getAssetUrl('assets/designs/bambu_cafe_plan.png'),
+    elevationUrl: getAssetUrl('assets/designs/bambu_cafe_tampak.png'),
+    droneUrl: getAssetUrl('assets/designs/bambu_cafe_drone.png'),
     description: "Desain cafe bambu terbuka yang estetik dan instagramable."
   },
   {
@@ -68,10 +70,10 @@ export const DESIGNS = [
     minArea: 100,
     price: 450000000,
     time: 12,
-    imageUrl: "/assets/designs/bambu_mosque_3d.png",
-    planUrl: "/assets/designs/bambu_mosque_plan.png",
-    elevationUrl: "/assets/designs/bambu_mosque_tampak.png",
-    droneUrl: "/assets/designs/bambu_mosque_drone.png",
+    imageUrl: getAssetUrl('assets/designs/bambu_mosque_3d.png'),
+    planUrl: getAssetUrl('assets/designs/bambu_mosque_plan.png'),
+    elevationUrl: getAssetUrl('assets/designs/bambu_mosque_tampak.png'),
+    droneUrl: getAssetUrl('assets/designs/bambu_mosque_drone.png'),
     description: "Tempat ibadah dengan struktur bambu melengkung yang ikonik dan sakral."
   },
   {
@@ -83,10 +85,10 @@ export const DESIGNS = [
     minArea: 80,
     price: 350000000,
     time: 10,
-    imageUrl: "/assets/designs/villa_mezzanine.png",
-    planUrl: "/assets/designs/villa_plan.png",
-    elevationUrl: "/assets/designs/villa_tampak.png",
-    droneUrl: "/assets/designs/villa_drone.png",
+    imageUrl: getAssetUrl('assets/designs/villa_mezzanine.png'),
+    planUrl: getAssetUrl('assets/designs/villa_plan.png'),
+    elevationUrl: getAssetUrl('assets/designs/villa_tampak.png'),
+    droneUrl: getAssetUrl('assets/designs/villa_drone.png'),
     description: "Villa mewah 2 lantai dengan konsep mezzanine dan sirkulasi udara maksimal."
   }
 ];

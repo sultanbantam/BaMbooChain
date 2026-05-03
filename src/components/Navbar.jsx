@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Globe, Bell, Copy, ExternalLink, LogOut, User, LayoutDashboard, Leaf, Link as LinkIcon, Home, Wallet, Recycle, ShoppingCart, Users, GraduationCap, LineChart, TrendingUp, ChevronDown, FileText } from 'lucide-react';
+import { getAssetUrl } from '../utils/assets';
 import { Link, useNavigate } from 'react-router-dom';
 import AdSpace from './AdSpace';
 import { useLanguage } from '../context/LanguageContext';
@@ -302,7 +303,7 @@ const Navbar = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 32px', width: '100%', boxSizing: 'border-box' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '900', fontSize: '1.75rem', whiteSpace: 'nowrap' }}>
           <div style={{ position: 'relative', width: '60px', height: '40px' }}>
-            <img src={`${import.meta.env.BASE_URL}logo-ysnj2.png`} alt="Logo YSNJ" style={{ height: '90px', width: 'auto', position: 'absolute', top: '50%', left: '0', transform: 'translateY(-50%)' }} />
+            <img src={getAssetUrl('logo-ysnj2.png')} alt="Logo YSNJ" style={{ height: '90px', width: 'auto', position: 'absolute', top: '50%', left: '0', transform: 'translateY(-50%)' }} />
           </div>
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginLeft: '6px' }}>
             {/* 9 Logo Mitra */}

@@ -1,5 +1,5 @@
-import React from 'react';
 import { Leaf, Box } from 'lucide-react';
+import { getAssetUrl } from '../utils/assets';
 import { donateCrypto } from '../utils/web3';
 import { useLanguage } from '../context/LanguageContext';
 import { useNavigate } from 'react-router-dom';
@@ -21,7 +21,7 @@ const Hero = () => {
         display: 'flex', 
         alignItems: 'center', 
         justifyContent: 'center',
-        background: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.8)), url("${import.meta.env.BASE_URL}agroforestry2.png") center/cover no-repeat`,
+        background: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.8)), url("${getAssetUrl('agroforestry2.png')}") center/cover no-repeat`,
         color: 'white',
         paddingTop: '160px',
         textAlign: 'center'
