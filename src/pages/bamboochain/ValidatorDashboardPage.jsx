@@ -130,11 +130,11 @@ const ValidatorDashboardPage = () => {
   };
 
   return (
-    <div style={{ paddingTop: '250px', paddingBottom: '80px', minHeight: '100vh', background: '#f8f9fa' }}>
+    <div style={{ paddingTop: 'var(--navbar-height)', paddingBottom: '80px', minHeight: '100vh', background: '#f8f9fa' }}>
       <div className="container">
         
         {/* HEADER */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px', flexWrap: 'wrap', gap: '20px' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
               <div style={{ background: 'rgba(245, 159, 0, 0.1)', padding: '12px', borderRadius: '12px', color: '#f59f00' }}>
@@ -145,16 +145,16 @@ const ValidatorDashboardPage = () => {
             <p style={{ color: 'var(--text-muted)', margin: 0 }}>Modul khusus verifikator lapangan untuk validasi tahapan penanaman.</p>
           </div>
           
-          <div>
+          <div style={{ width: '100%', maxWidth: '300px' }}>
             {!walletConnected ? (
               <button 
                 onClick={connectWallet}
-                style={{ background: '#f59f00', color: 'white', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+                style={{ width: '100%', background: '#f59f00', color: 'white', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}
               >
                 <AlertTriangle size={18} /> Hubungkan Wallet Validator
               </button>
             ) : (
-              <div style={{ background: 'rgba(245, 159, 0, 0.1)', color: '#f59f00', padding: '12px 24px', borderRadius: '12px', fontWeight: 'bold', border: '1px solid rgba(245, 159, 0, 0.2)' }}>
+              <div style={{ textAlign: 'center', background: 'rgba(245, 159, 0, 0.1)', color: '#f59f00', padding: '12px 24px', borderRadius: '12px', fontWeight: 'bold', border: '1px solid rgba(245, 159, 0, 0.2)' }}>
                 🟢 {validatorAddress.substring(0, 6)}...{validatorAddress.substring(38)}
               </div>
             )}
@@ -172,7 +172,8 @@ const ValidatorDashboardPage = () => {
           ) : projects.length === 0 ? (
             <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>Belum ada data proyek di Escrow.</div>
           ) : (
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '800px' }}>
               <thead>
                 <tr style={{ background: '#f8f9fa', borderBottom: '2px solid #dee2e6' }}>
                   <th style={{ padding: '16px 24px', textAlign: 'left', color: 'var(--text-muted)', fontSize: '0.85rem' }}>ID PROYEK</th>
@@ -214,6 +215,7 @@ const ValidatorDashboardPage = () => {
                 ))}
               </tbody>
             </table>
+          </div>
           )}
         </div>
 

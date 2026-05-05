@@ -23,15 +23,17 @@ const Hero = () => {
         justifyContent: 'center',
         background: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.8)), url("${getAssetUrl('agroforestry2.png')}") center/cover no-repeat`,
         color: 'white',
-        paddingTop: '160px',
-        textAlign: 'center'
+        paddingTop: 'calc(var(--navbar-height) + 40px)',
+        textAlign: 'center',
+        paddingLeft: '20px',
+        paddingRight: '20px'
       }}
     >
       <div className="container animate-slide-up" style={{ maxWidth: '900px' }}>
-        <h1 style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)', marginBottom: '24px', fontWeight: '800', whiteSpace: 'nowrap' }}>
+        <h1 style={{ fontSize: 'clamp(1.75rem, 8vw, 3.5rem)', marginBottom: '24px', fontWeight: '800', lineHeight: '1.2' }}>
           Yayasan Sabumi Nusantara Jaya
         </h1>
-        <p style={{ fontSize: '1.25rem', marginBottom: '40px', opacity: '0.9' }}>
+        <p style={{ fontSize: 'clamp(1rem, 4vw, 1.25rem)', marginBottom: '40px', opacity: '0.9', lineHeight: '1.6' }}>
           {t('hero_desc')}
         </p>
         

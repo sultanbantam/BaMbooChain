@@ -80,7 +80,7 @@ const DataAnalyticsPage = () => {
   }, []);
 
   return (
-    <div style={{ paddingTop: '250px', paddingBottom: '80px', minHeight: '100vh', background: '#f8f9fa' }}>
+    <div style={{ paddingTop: 'var(--navbar-height)', paddingBottom: '80px', minHeight: '100vh', background: '#f8f9fa' }}>
       
       {/* HEADER SECTION */}
       <div className="container" style={{ textAlign: 'center', marginBottom: '60px' }}>
@@ -186,7 +186,7 @@ const DataAnalyticsPage = () => {
         </div>
 
         {/* BOTTOM ROW: AI FORECAST & GIS MAPPING */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) minmax(300px, 1fr)', gap: '30px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px' }}>
           
           {/* AI FORECAST */}
           <div style={{ background: 'linear-gradient(135deg, rgba(132,94,247,0.05), rgba(51,154,240,0.05))', borderRadius: '24px', padding: '32px', border: '1px solid rgba(132,94,247,0.2)', position: 'relative', overflow: 'hidden' }}>

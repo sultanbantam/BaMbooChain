@@ -79,7 +79,7 @@ const BuildPage = () => {
   const houseTypes = ['Tipe 21', 'Tipe 36', 'Tipe 45'];
 
   return (
-    <div style={{ paddingTop: '250px', paddingBottom: '100px', minHeight: '100vh', background: 'var(--bg-color)' }}>
+    <div style={{ paddingTop: 'var(--navbar-height)', paddingBottom: '100px', minHeight: '100vh', background: 'var(--bg-color)' }}>
       
       {/* HERO SECTION */}
       <div style={{ background: 'linear-gradient(135deg, rgba(12,166,120,0.05), rgba(43,138,62,0.15))', padding: '60px 0', borderBottom: '1px solid rgba(12,166,120,0.1)', marginBottom: '60px' }}>
@@ -210,7 +210,7 @@ const BuildPage = () => {
                 </div>
 
                 {/* VIEW TABS */}
-                <div style={{ display: 'flex', background: '#f1f3f5', padding: '4px', borderRadius: '12px', gap: '4px' }}>
+                <div style={{ display: 'flex', background: '#f1f3f5', padding: '4px', borderRadius: '12px', gap: '4px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
                   {[
                     { id: '3d', label: '3D Render', icon: <ImageIcon size={14} /> },
                     { id: 'plan', label: 'Denah', icon: <Layout size={14} /> },
@@ -234,7 +234,9 @@ const BuildPage = () => {
                         cursor: 'pointer',
                         background: activeTab === tab.id ? 'white' : 'transparent',
                         color: activeTab === tab.id ? 'var(--primary)' : 'var(--text-muted)',
-                        boxShadow: activeTab === tab.id ? '0 2px 8px rgba(0,0,0,0.05)' : 'none'
+                        boxShadow: activeTab === tab.id ? '0 2px 8px rgba(0,0,0,0.05)' : 'none',
+                        whiteSpace: 'nowrap',
+                        minWidth: '100px'
                       }}
                     >
                       {tab.icon} {tab.label}

@@ -90,7 +90,7 @@ const FAQPage = () => {
   });
 
   return (
-    <div style={{ paddingTop: '180px', minHeight: '100vh', background: '#f8f9fa' }}>
+    <div style={{ paddingTop: 'var(--navbar-height)', minHeight: '100vh', background: '#f8f9fa' }}>
       <div className="container" style={{ padding: '40px 24px' }}>
         
         <div style={{ textAlign: 'center', marginBottom: '60px' }}>
@@ -112,7 +112,7 @@ const FAQPage = () => {
         </div>
 
         {/* Categories Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '12px', marginBottom: '40px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '8px', marginBottom: '40px' }}>
           {categories.map((cat) => (
             <button 
               key={cat.name}
@@ -180,9 +180,22 @@ const FAQPage = () => {
            <p style={{ opacity: 0.9, marginBottom: '32px', maxWidth: '500px', margin: '0 auto 32px' }}>
               Tim dukungan kami siap membantu Anda menjawab pertanyaan teknis maupun non-teknis setiap saat.
            </p>
-           <button style={{ background: 'white', color: 'var(--primary)', padding: '16px 40px', borderRadius: '30px', fontWeight: '900', border: 'none', cursor: 'pointer', boxShadow: '0 10px 20px rgba(0,0,0,0.1)' }}>
+           <a 
+             href="https://wa.me/628174139994?text=Halo%20Admin%20BaMbooChain,%20saya%20butuh%20bantuan%20terkait..." 
+             target="_blank"
+             rel="noreferrer"
+             style={{ 
+               display: 'inline-block',
+               textDecoration: 'none',
+               background: 'white', 
+               color: 'var(--primary)', 
+               padding: '16px 40px', 
+               borderRadius: '30px', 
+               fontWeight: '900', 
+               boxShadow: '0 10px 20px rgba(0,0,0,0.1)' 
+             }}>
               Chat Admin Sekarang
-           </button>
+           </a>
         </div>
 
       </div>

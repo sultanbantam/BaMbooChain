@@ -39,7 +39,8 @@ const HomePage = () => {
         position: 'relative',
         display: 'flex',
         alignItems: 'center',
-        paddingTop: '160px',
+        paddingTop: 'var(--navbar-height)',
+        paddingBottom: '80px',
         overflow: 'hidden'
       }}>
         {/* Latar Belakang Gambar Berjalan */}
@@ -111,7 +112,7 @@ const HomePage = () => {
       <section style={{ padding: '80px 0' }}>
         <div className="container">
           <h2 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '40px', textAlign: 'center' }}>Data Industri Bambu Berbasis Produksi</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '30px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
             <div className="glass" style={{ padding: '30px', textAlign: 'center', border: '1px solid #dee2e6' }}>
               <TrendingUp size={40} color="var(--primary)" style={{ margin: '0 auto 20px' }} />
               <h3 style={{ fontSize: '2.5rem', color: 'var(--primary)' }}>20-40%</h3>
@@ -232,7 +233,7 @@ const HomePage = () => {
       {/* SECTION 7 - EKOSISTEM */}
       <section style={{ padding: '80px 0', background: '#f8f9fa' }}>
         <div className="container">
-          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) minmax(300px, 1fr)', gap: '60px', alignItems: 'center' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '40px', alignItems: 'center' }}>
             <div>
               <h2 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '24px' }}>Ekosistem Industri Bambu</h2>
               <ul style={{ display: 'flex', flexDirection: 'column', gap: '20px', color: 'var(--text-main)', fontSize: '1.1rem' }}>
@@ -258,7 +259,7 @@ const HomePage = () => {
       <section style={{ padding: '80px 0', background: 'var(--primary)', color: 'white' }}>
         <div className="container text-center">
           <h2 style={{ fontSize: '2.5rem', marginBottom: '40px' }}>Dampak Lingkungan dan Sosial</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '40px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '30px' }}>
             <div>
               <h3 style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>±490 Ha</h3>
               <p style={{ opacity: '0.9', marginTop: '10px' }}>Kawasan Prioritas Dilindungi</p>
@@ -297,7 +298,7 @@ const HomePage = () => {
       {/* SECTION 10 - CTA */}
       <section style={{ padding: '100px 0', background: '#212529', color: 'white', textAlign: 'center' }}>
         <div className="container">
-          <h2 style={{ fontSize: '3rem', marginBottom: '24px' }}>Pelajari Lebih Lanjut</h2>
+          <h2 style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', marginBottom: '24px' }}>Pelajari Lebih Lanjut</h2>
           <p style={{ fontSize: '1.2rem', opacity: '0.8', marginBottom: '40px', maxWidth: '600px', margin: '0 auto 40px' }}>
             Jelajahi data, analisis, dan perkembangan masa depan terkait industri primer bambu yang dapat diperbarui secara berkelanjutan.
           </p>

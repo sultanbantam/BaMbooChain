@@ -11,7 +11,7 @@ const CarbonImpactPage = () => {
   };
 
   return (
-    <div style={{ paddingTop: '250px', paddingBottom: '80px', minHeight: '100vh', background: '#f8f9fa' }}>
+    <div style={{ paddingTop: 'var(--navbar-height)', paddingBottom: '80px', minHeight: '100vh', background: '#f8f9fa' }}>
       
       {/* Back Navigation */}
       <div className="container" style={{ marginBottom: '32px' }}>
@@ -68,7 +68,7 @@ const CarbonImpactPage = () => {
         </div>
 
         {/* BAWAH: REPORT & CARBON TRADING */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) minmax(300px, 1.2fr)', gap: '30px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px' }}>
           
           {/* IMPACT REPORT */}
           <div style={{ background: 'white', borderRadius: '24px', padding: '40px', boxShadow: '0 10px 40px rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>

@@ -1,14 +1,22 @@
-import { Mail, Phone, MapPin, Link } from 'lucide-react';
+import { Mail, Phone, MapPin, Link as LinkIcon } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { getAssetUrl } from '../utils/assets';
 import { useLanguage } from '../context/LanguageContext';
 
 const Footer = () => {
   const { t } = useLanguage();
+  const navigate = useNavigate();
+
+  const handleNav = (path) => {
+    navigate(path);
+    window.scrollTo(0, 0);
+  };
+
   return (
-    <footer style={{ background: '#212529', color: 'white', padding: '80px 0 40px', borderTop: '5px solid var(--primary)' }}>
+    <footer style={{ background: '#212529', color: 'white', padding: '60px 20px 40px', borderTop: '5px solid var(--primary)' }}>
       <div className="container">
         
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '40px', marginBottom: '60px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '40px', marginBottom: '60px' }}>
           
           <div>
             <h3 style={{ fontSize: '1.5rem', marginBottom: '24px', color: 'var(--primary)' }}>{t('foot_contact')}</h3>
@@ -81,23 +89,23 @@ const Footer = () => {
             <p style={{ color: '#adb5bd', marginBottom: '20px' }}>Gunakan link referral untuk menyelesaikan misi.</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', color: '#adb5bd' }}>
               <a href="https://www.bmwweb.biz/referral/earn-together/refer2earn-usdc/claim?hl=en&ref=GRO_28502_FFUQO&utm_source=referral_entrance" target="_blank" rel="noreferrer" style={{ display: 'flex', gap: '12px', alignItems: 'center', color: '#adb5bd', textDecoration: 'none' }}>
-                <Link size={20} color="var(--primary)" /> Binance
+                <LinkIcon size={20} color="var(--primary)" /> Binance
               </a>
               <a href="https://www.kucoin.com/r/rf/QBSA2YN1" target="_blank" rel="noreferrer" style={{ display: 'flex', gap: '12px', alignItems: 'center', color: '#adb5bd', textDecoration: 'none' }}>
-                <Link size={20} color="var(--primary)" /> KuCoin
+                <LinkIcon size={20} color="var(--primary)" /> KuCoin
               </a>
               <a href="https://www.tokocrypto.com/app?scope=register&ref=A9S2F9I6" target="_blank" rel="noreferrer" style={{ display: 'flex', gap: '12px', alignItems: 'center', color: '#adb5bd', textDecoration: 'none' }}>
-                <Link size={20} color="var(--primary)" /> Tokocrypto
+                <LinkIcon size={20} color="var(--primary)" /> Tokocrypto
               </a>
               <a href="https://app.bxjddjt.com/referral/earn-together/invite/UFEWVFpY?ref=UFEWVFpY&ref_type=103&utm_cmp=rXJBDjtJ&activity_id=1775815609617" target="_blank" rel="noreferrer" style={{ display: 'flex', gap: '12px', alignItems: 'center', color: '#adb5bd', textDecoration: 'none' }}>
-                <Link size={20} color="var(--primary)" /> Gate.io
+                <LinkIcon size={20} color="var(--primary)" /> Gate.io
               </a>
               <a href="https://interlinklabs.ai/referral?refCode=08174139994" target="_blank" rel="noreferrer" style={{ display: 'flex', gap: '12px', alignItems: 'center', color: '#adb5bd', textDecoration: 'none' }}>
-                <Link size={20} color="var(--primary)" /> Interlinklabs
+                <LinkIcon size={20} color="var(--primary)" /> Interlinklabs
               </a>
               <div style={{ borderTop: '1px solid #495057', marginTop: '8px', paddingTop: '16px' }}>
                 <a href="https://minepi.com/sultanbantam" target="_blank" rel="noreferrer" style={{ display: 'flex', gap: '12px', alignItems: 'center', color: '#adb5bd', textDecoration: 'none' }}>
-                  <Link size={20} color="#fcc419" /> Join Pi Network
+                  <LinkIcon size={20} color="#fcc419" /> Join Pi Network
                 </a>
               </div>
             </div>
@@ -112,7 +120,10 @@ const Footer = () => {
             <img src={getAssetUrl('bmc-bep20.jpeg')} alt="Smart Contract BMC BEP20" style={{ width: '150px', borderRadius: '8px' }} />
             
             <p style={{ marginTop: '16px', borderTop: '1px dashed #495057', paddingTop: '16px', maxWidth: '600px', margin: '0 auto' }}>
-              Informasi di website ini bersifat edukasi dan bukan merupakan ajakan atau rekomendasi investasi. <a href="/faq" style={{ color: 'var(--primary)', textDecoration: 'underline', marginRight: '10px' }}>Pusat Bantuan (FAQ)</a> | <a href="/disclaimer" style={{ color: 'var(--primary)', textDecoration: 'underline', marginRight: '10px' }}>Baca Disclaimer Selengkapnya</a> | <a href="/validator" style={{ color: '#f59f00', textDecoration: 'underline' }}>Portal Validator Lapangan</a>
+              Informasi di website ini bersifat edukasi dan bukan merupakan ajakan atau rekomendasi investasi. 
+              <span onClick={() => handleNav('/faq')} style={{ color: 'var(--primary)', textDecoration: 'underline', marginRight: '10px', cursor: 'pointer' }}>Pusat Bantuan (FAQ)</span> | 
+              <span onClick={() => handleNav('/disclaimer')} style={{ color: 'var(--primary)', textDecoration: 'underline', marginRight: '10px', cursor: 'pointer' }}>Baca Disclaimer Selengkapnya</span> | 
+              <span onClick={() => handleNav('/validator')} style={{ color: '#f59f00', textDecoration: 'underline', cursor: 'pointer' }}>Portal Validator Lapangan</span>
             </p>
           </div>
         </div>

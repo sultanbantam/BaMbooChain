@@ -35,7 +35,7 @@ const OverviewPage = () => {
   };
 
   return (
-    <div style={{ paddingTop: '150px', minHeight: '100vh', background: '#f8f9fa' }}>
+    <div style={{ paddingTop: 'var(--navbar-height)', minHeight: '100vh', background: '#f8f9fa' }}>
       
       {/* Dashboard Header */}
       <div style={{ background: 'white', borderBottom: '1px solid #e9ecef', padding: '40px 0' }}>
@@ -138,7 +138,7 @@ const OverviewPage = () => {
           </div>
         )}
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 2fr) minmax(300px, 1fr)', gap: '30px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px' }}>
           
           {/* MAP PLANTATION */}
           <div style={{ background: 'white', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>

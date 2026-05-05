@@ -1,342 +1,190 @@
-import React, { useState } from 'react';
-import { Globe, Bell, Copy, ExternalLink, LogOut, User, LayoutDashboard, Leaf, Link as LinkIcon, Home, Wallet, Recycle, ShoppingCart, Users, GraduationCap, LineChart, TrendingUp, ChevronDown, FileText } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Globe, Bell, ChevronDown, Menu, X, Shield, Layout, TreeDeciduous, Truck, Factory, Wallet, Leaf, ShoppingCart, Users, GraduationCap, BarChart3, TrendingUp } from 'lucide-react';
 import { getAssetUrl } from '../utils/assets';
 import { Link, useNavigate } from 'react-router-dom';
 import AdSpace from './AdSpace';
 import { useLanguage } from '../context/LanguageContext';
 import { useWeb3 } from '../context/Web3Context';
-import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
-  const [showNotif, setShowNotif] = useState(false);
-  const [showWalletMenu, setShowWalletMenu] = useState(false);
   const [showBambooMenu, setShowBambooMenu] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const { language, toggleLanguage, t } = useLanguage();
-  const { walletAddress, bmcBalance, bnbBalance, isConnecting, isConnected, connectWallet, disconnectWallet } = useWeb3();
-  const { user, isAuthenticated, logout, openLoginModal, openSignupModal } = useAuth();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+  const { language, toggleLanguage } = useLanguage();
+  const { walletAddress, isConnected, connectWallet } = useWeb3();
   const navigate = useNavigate();
 
-  const shortAddress = walletAddress
-    ? `${walletAddress.substring(0, 6)}...${walletAddress.substring(38)}`
-    : '';
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(walletAddress);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+  const isMobile = windowWidth <= 1100;
+  const shortAddress = walletAddress ? `${walletAddress.substring(0, 6)}...${walletAddress.substring(38)}` : '';
 
-  const notifications = [t('nav_notif_1'), t('nav_notif_2'), t('nav_notif_3')];
+  const bambooNusaFeatures = [
+    { label: 'Overview', path: '/bamboochain', icon: <Layout size={16} /> },
+    { label: 'Plantation', path: '/bamboochain/plantation', icon: <TreeDeciduous size={16} /> },
+    { label: 'Supply Chain', path: '/bamboochain/supply-chain', icon: <Truck size={16} /> },
+    { label: 'Build', path: '/bamboochain/build', icon: <Factory size={16} /> },
+    { label: 'Token & Wallet', path: '/bamboochain/token-wallet', icon: <Wallet size={16} /> },
+    { label: 'Carbon Impact', path: '/bamboochain/carbon-impact', icon: <Leaf size={16} /> },
+    { label: 'Marketplace', path: '/bamboochain/marketplace', icon: <ShoppingCart size={16} /> },
+    { label: 'DAO & Community', path: '/bamboochain/dao', icon: <Users size={16} /> },
+    { label: 'Academy', path: '/bamboochain/academy', icon: <GraduationCap size={16} /> },
+    { label: 'Data Analytics', path: '/bamboochain/data-analytics', icon: <BarChart3 size={16} /> },
+    { label: 'Invest Ecosystem', path: '/bamboochain/invest', icon: <TrendingUp size={16} /> },
+  ];
 
-  const secondaryLinks = [
-    { key: 'nav_bambupedia', href: 'bambupedia', external: false },
-    { key: 'nav_academy',    href: 'academy', external: false },
-    { key: 'nav_datatools',  href: 'data-tools', external: false },
-    { key: 'nav_marketplace',href: 'bamboochain/marketplace', external: false },
-    { key: 'nav_community',  href: 'community', external: false },
-    { key: 'nav_bamboochain',href: 'bamboochain', external: false },
-    { key: 'nav_careers',    href: 'careers', external: false },
+  const mobileMenuItems = [
+    { label: 'Beranda', path: '/' },
+    { label: 'Proyek', path: '/projects' },
+    { label: 'Wawasan', path: '/insight' },
+    { label: 'Dampak', path: '/impact' },
+    { label: 'Mitra', path: '/partners' },
+    { label: 'Tentang Kami', path: '/about' },
+    { label: 'Kontak', path: '/contact' },
+    { label: 'Bambupedia', path: '/bambupedia' },
+    { label: 'Akademi', path: '/academy' },
+    { label: 'Data & Alat', path: '/data-tools' },
+    { label: 'Pasar', path: '/bamboochain/marketplace' },
+    { label: 'Komunitas', path: '/community' },
+    ...bambooNusaFeatures,
+    { label: 'Karir', path: '/careers' },
+    { label: 'Keanggotaan', path: '/membership' },
+    { label: 'FAQ', path: '/faq' },
+    { label: 'On-Chain ⛓️', path: '/transparency' },
   ];
 
   return (
-    <nav className="glass-nav" style={{ display: 'flex', flexDirection: 'column' }}>
-      {/* ── GLOBAL TOP AD SLOT (Moved inside fixed header) ── */}
-      <div style={{ background: '#f8f9fa', borderBottom: '1px solid #e9ecef', width: '100%', zIndex: 1001 }}>
-        <div className="container" style={{ height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <AdSpace type="horizontal" size="compact" height="30px" />
-        </div>
-      </div>
-
-      {/* ── BARIS ATAS ── */}
-      <div style={{
-        background: 'rgba(12, 166, 120, 0.08)',
-        borderBottom: '1px solid rgba(12,166,120,0.15)',
-        padding: '6px 24px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        maxWidth: '1200px',
-        margin: '0 auto',
-        width: '100%',
-        boxSizing: 'border-box',
-      }}>
-        <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-          {secondaryLinks.map((link) => {
-            if (link.key === 'nav_bamboochain') {
-              return (
-                <div key={link.key} style={{ position: 'relative' }} 
-                     onMouseEnter={() => setShowBambooMenu(true)} 
-                     onMouseLeave={() => setShowBambooMenu(false)}>
-                  <Link to={link.href}
-                    style={{ fontSize: '0.8rem', fontWeight: '500', color: showBambooMenu ? 'var(--primary)' : 'var(--secondary)', transition: 'color 0.2s', padding: '6px 10px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '4px', background: showBambooMenu ? 'rgba(12,166,120,0.06)' : 'transparent' }}>
-                    {t(link.key)} <ChevronDown size={14} />
-                  </Link>
-                  
-                  {/* Mega Menu Dropdown */}
-                  {showBambooMenu && (
-                    <div style={{ position: 'absolute', top: '100%', left: '-100px', width: '500px', background: 'white', border: '1px solid #dee2e6', borderRadius: '12px', boxShadow: '0 12px 30px rgba(0,0,0,0.1)', zIndex: 9999, padding: '20px', display: 'flex', gap: '24px' }}>
-                      
-                      {/* Kolom 1 */}
-                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <h4 style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#adb5bd', marginBottom: '8px', letterSpacing: '1px' }}>Platform Inti</h4>
-                        {[
-                          { path: '/bamboochain', icon: LayoutDashboard, label: 'Overview', desc: 'Dashboard Ecosystem' },
-                          { path: '/bamboochain/plantation', icon: Leaf, label: 'Plantation', desc: 'Tanam & Lacak Bambu' },
-                          { path: '/bamboochain/supply-chain', icon: LinkIcon, label: 'Supply Chain', desc: 'Transparansi Industri' },
-                          { path: '/bamboochain/build', icon: Home, label: 'BamBu 5.0', desc: 'Konstruksi Modular' },
-                          { path: '/bamboochain/marketplace', icon: ShoppingCart, label: 'Marketplace', desc: 'Produk & NFT' },
-                          { path: '/bamboochain/token-wallet', icon: Wallet, label: 'Token & Wallet', desc: 'Aset Digital BMC' },
-                        ].map(item => (
-                          <Link key={item.path} to={item.path} style={{ display: 'flex', gap: '12px', padding: '8px', borderRadius: '8px', textDecoration: 'none' }}
-                                onMouseEnter={(e) => Object.assign(e.currentTarget.style, { background: '#f8f9fa' })}
-                                onMouseLeave={(e) => Object.assign(e.currentTarget.style, { background: 'transparent' })}>
-                            <div style={{ background: 'rgba(12,166,120,0.1)', padding: '8px', borderRadius: '8px', color: 'var(--primary)', height: 'fit-content' }}>
-                              <item.icon size={18} />
-                            </div>
-                            <div>
-                              <div style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--text-main)' }}>{item.label}</div>
-                              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{item.desc}</div>
-                            </div>
-                          </Link>
-                        ))}
-                      </div>
-
-                      {/* Batas Kolom */}
-                      <div style={{ width: '1px', background: '#e9ecef' }}></div>
-
-                      {/* Kolom 2 */}
-                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <h4 style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#adb5bd', marginBottom: '8px', letterSpacing: '1px' }}>Dampak & Komunitas</h4>
-                        {[
-                          { path: '/bamboochain/invest', icon: TrendingUp, label: 'Invest', desc: 'Kalkulator ROI & Portofolio' },
-                          { path: '/bamboochain/carbon-impact', icon: Recycle, label: 'Carbon & Impact', desc: 'Metrik Lingkungan' },
-                          { path: '/bamboochain/dao', icon: Users, label: 'DAO & Community', desc: 'Voting & Funding' },
-                          { path: '/bamboochain/academy', icon: GraduationCap, label: 'Akademi', desc: 'Sertifikasi Keahlian' },
-                          { path: '/bamboochain/data-analytics', icon: LineChart, label: 'Data & Analytics', desc: 'Pemetaan GIS' },
-                        ].map(item => (
-                          <Link key={item.path} to={item.path} style={{ display: 'flex', gap: '12px', padding: '8px', borderRadius: '8px', textDecoration: 'none' }}
-                                onMouseEnter={(e) => Object.assign(e.currentTarget.style, { background: '#f8f9fa' })}
-                                onMouseLeave={(e) => Object.assign(e.currentTarget.style, { background: 'transparent' })}>
-                            <div style={{ background: 'rgba(12,166,120,0.1)', padding: '8px', borderRadius: '8px', color: 'var(--primary)', height: 'fit-content' }}>
-                              <item.icon size={18} />
-                            </div>
-                            <div>
-                              <div style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--text-main)' }}>{item.label}</div>
-                              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{item.desc}</div>
-                            </div>
-                          </Link>
-                        ))}
-                      </div>
-
-                    </div>
-                  )}
-                </div>
-              );
-            }
-
-            return link.external ? (
-              <a key={link.key} href={link.href} target="_blank" rel="noreferrer"
-                style={{ fontSize: '0.8rem', fontWeight: '500', color: 'var(--secondary)', transition: 'color 0.2s', padding: '6px 10px', borderRadius: '6px', display: 'inline-block' }}
-                onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--primary)'; e.currentTarget.style.background = 'rgba(12,166,120,0.06)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--secondary)'; e.currentTarget.style.background = 'transparent'; }}>
-                {t(link.key)}
-              </a>
-            ) : (
-              <Link key={link.key} to={link.href}
-                style={{ fontSize: '0.8rem', fontWeight: '500', color: 'var(--secondary)', transition: 'color 0.2s', padding: '6px 10px', borderRadius: '6px', display: 'inline-block' }}
-                onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--primary)'; e.currentTarget.style.background = 'rgba(12,166,120,0.06)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--secondary)'; e.currentTarget.style.background = 'transparent'; }}>
-                {t(link.key)}
-              </Link>
-            );
-          })}
-          <Link to="/membership"
-            style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--primary)', background: 'rgba(12,166,120,0.08)', padding: '6px 12px', borderRadius: '20px', border: '1px solid rgba(12,166,120,0.3)', display: 'inline-block', marginLeft: '4px' }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(12,166,120,0.18)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(12,166,120,0.08)'; }}>
-            🏅 Keanggotaan
-          </Link>
-        </div>
-
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', position: 'relative' }}>
-
-          {/* Notifikasi */}
-          <div style={{ position: 'relative' }}>
-            <button onClick={() => { setShowNotif(!showNotif); setShowWalletMenu(false); }}
-              style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '4px', position: 'relative' }}>
-              <Bell size={18} color="var(--secondary)" />
-              <span style={{ position: 'absolute', top: '0px', right: '0px', width: '8px', height: '8px', borderRadius: '50%', background: '#e03131', border: '1px solid white' }} />
-            </button>
-            {showNotif && (
-              <div style={{ position: 'absolute', top: '130%', right: '0', background: 'white', border: '1px solid #dee2e6', borderRadius: '12px', boxShadow: '0 8px 24px rgba(0,0,0,0.12)', width: '280px', zIndex: 9999, overflow: 'hidden' }}>
-                <div style={{ padding: '12px 16px', borderBottom: '1px solid #f1f3f5', fontWeight: '700', fontSize: '0.85rem', color: 'var(--text-main)' }}>
-                  🔔 {t('nav_notif_title')}
-                </div>
-                {notifications.map((notif, i) => (
-                  <div key={i} style={{ padding: '12px 16px', fontSize: '0.82rem', color: 'var(--text-muted)', borderBottom: i < notifications.length - 1 ? '1px solid #f1f3f5' : 'none', lineHeight: '1.4', cursor: 'pointer' }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = '#f8f9fa'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = 'white'}>
-                    {notif}
-                  </div>
-                ))}
-              </div>
-            )}
+    <nav style={{ position: 'fixed', top: 0, width: '100%', zIndex: 10000, background: 'white', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
+      {isMobile ? (
+        /* ────────── MOBILE NAVBAR ────────── */
+        <div style={{ width: '100%' }}>
+          <div style={{ height: '70px', padding: '0 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Link to="/" onClick={() => setIsMobileMenuOpen(false)}>
+              <img src={getAssetUrl('logo-ysnj2.png')} alt="Logo" style={{ height: '35px' }} />
+            </Link>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+               <Globe size={22} color="var(--primary)" onClick={toggleLanguage} />
+               <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} style={{ background: 'var(--primary)', border: 'none', borderRadius: '8px', color: 'white', padding: '6px' }}>
+                 {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
+               </button>
+            </div>
           </div>
-
-          {/* Web2 Auth & Web3 Wallet Logic */}
-          {!isAuthenticated ? (
-            <>
-              <button onClick={openLoginModal}
-                style={{ fontSize: '0.8rem', fontWeight: '600', color: 'var(--secondary)', padding: '4px 14px', border: '1px solid var(--primary)', borderRadius: '20px', background: 'transparent', cursor: 'pointer', transition: 'all 0.2s' }}
-                onMouseEnter={(e) => { e.target.style.background = 'var(--primary)'; e.target.style.color = 'white'; }}
-                onMouseLeave={(e) => { e.target.style.background = 'transparent'; e.target.style.color = 'var(--secondary)'; }}>
-                Masuk
-              </button>
-              <button onClick={openSignupModal}
-                style={{ fontSize: '0.8rem', fontWeight: '600', color: 'white', padding: '4px 14px', background: 'var(--primary)', border: '1px solid var(--primary)', borderRadius: '20px', cursor: 'pointer', transition: 'all 0.2s' }}
-                onMouseEnter={(e) => { e.target.style.background = 'var(--primary-hover)'; }}
-                onMouseLeave={(e) => { e.target.style.background = 'var(--primary)'; }}>
-                Daftar
-              </button>
-            </>
-          ) : (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              {!isConnected && (
-                <button onClick={connectWallet} disabled={isConnecting}
-                  style={{ fontSize: '0.8rem', fontWeight: '600', color: 'white', padding: '4px 14px', background: '#f59f00', border: 'none', borderRadius: '20px', cursor: 'pointer', transition: 'all 0.2s', whiteSpace: 'nowrap' }}>
-                  {isConnecting ? 'Menghubungkan...' : 'Connect Wallet'}
-                </button>
-              )}
-
-              <div style={{ position: 'relative' }}>
-                <button onClick={() => { setShowWalletMenu(!showWalletMenu); setShowNotif(false); }}
-                  style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(12,166,120,0.1)', border: '1px solid var(--primary)', borderRadius: '20px', padding: '4px 12px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: '600', color: 'var(--secondary)' }}>
-                  <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '12px' }}>
-                     {user?.name?.charAt(0).toUpperCase() || 'U'}
-                  </div>
-                  <span style={{ color: 'var(--primary)' }}>{user?.name?.split(' ')[0] || 'User'}</span>
-                  {isConnected && shortAddress && <span style={{ color: 'var(--text-muted)', fontFamily: 'monospace', fontSize: '0.75rem', paddingLeft: '6px', borderLeft: '1px solid #dee2e6' }}>{shortAddress}</span>}
-                </button>
-
-                {showWalletMenu && (
-                  <div style={{ position: 'absolute', top: '130%', right: '0', background: 'white', border: '1px solid #dee2e6', borderRadius: '12px', boxShadow: '0 8px 24px rgba(0,0,0,0.12)', width: '260px', zIndex: 9999, overflow: 'hidden' }}>
-                    
-                    {/* User Web2 Info Header */}
-                    <div style={{ padding: '16px', borderBottom: '1px solid #f1f3f5', background: '#f8f9fa' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <User size={18} color="white" />
-                        </div>
-                        <div>
-                          <div style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--text-main)' }}>{user?.name || 'Member'}</div>
-                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{user?.email || user?.phone || 'Premium Account'}</div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Web3 Info if Connected */}
-                    {isConnected && (
-                      <div style={{ padding: '16px', borderBottom: '1px solid #f1f3f5', background: 'linear-gradient(135deg, rgba(12,166,120,0.05), rgba(43,138,62,0.08))' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-                           <Wallet size={16} color="var(--primary)" />
-                           <div style={{ fontFamily: 'monospace', fontSize: '0.82rem', fontWeight: 'bold' }}>{shortAddress}</div>
-                           <button onClick={handleCopy} style={{ marginLeft: 'auto', background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px' }}>
-                             <Copy size={14} color={copied ? 'var(--primary)' : '#aaa'} />
-                           </button>
-                        </div>
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                          <div style={{ flex: 1, background: 'white', borderRadius: '8px', padding: '8px', textAlign: 'center' }}>
-                            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>BMC</div>
-                            <div style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--primary)' }}>{bmcBalance ?? '...'}</div>
-                          </div>
-                          <div style={{ flex: 1, background: 'white', borderRadius: '8px', padding: '8px', textAlign: 'center' }}>
-                            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>BNB</div>
-                            <div style={{ fontSize: '0.9rem', fontWeight: 'bold', color: '#f59f00' }}>{bnbBalance ?? '...'}</div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Menu items */}
-                    <div>
-                      <button onClick={() => { navigate('/profile'); setShowWalletMenu(false); }}
-                        style={{ width: '100%', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '10px', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '0.85rem', textAlign: 'left', color: 'var(--text-main)' }}
-                        onMouseEnter={(e) => e.currentTarget.style.background = '#f8f9fa'}
-                        onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
-                        <User size={16} color="var(--primary)" /> Profil Saya
-                      </button>
-                      
-                      {isConnected && (
-                        <>
-                          <a href={`https://bscscan.com/address/${walletAddress}`} target="_blank" rel="noreferrer"
-                            style={{ width: '100%', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.85rem', color: 'var(--text-main)', borderTop: '1px solid #f1f3f5', textDecoration: 'none' }}
-                            onMouseEnter={(e) => e.currentTarget.style.background = '#f8f9fa'}
-                            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
-                            <ExternalLink size={16} color="var(--primary)" /> Lihat di BSCScan
-                          </a>
-                          <button onClick={() => { disconnectWallet(); }}
-                            style={{ width: '100%', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '10px', background: 'transparent', border: 'none', borderTop: '1px solid #f1f3f5', cursor: 'pointer', fontSize: '0.85rem', color: '#e03131', textAlign: 'left' }}
-                            onMouseEnter={(e) => e.currentTarget.style.background = '#fff5f5'}
-                            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
-                            <LogOut size={16} /> Putuskan Wallet
-                          </button>
-                        </>
-                      )}
-                      
-                      <button onClick={() => { logout(); disconnectWallet(); setShowWalletMenu(false); navigate('/'); }}
-                        style={{ width: '100%', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '10px', background: 'transparent', border: 'none', borderTop: '1px solid #f1f3f5', cursor: 'pointer', fontSize: '0.85rem', color: '#e03131', textAlign: 'left' }}
-                        onMouseEnter={(e) => e.currentTarget.style.background = '#fff5f5'}
-                        onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
-                        <LogOut size={16} /> Log Out Pengguna
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
+          {isMobileMenuOpen && (
+            <div style={{ position: 'fixed', top: '70px', left: 0, width: '100%', height: 'calc(100vh - 70px)', background: 'white', zIndex: 10001, overflowY: 'auto', padding: '20px' }}>
+               <button onClick={connectWallet} style={{ width: '100%', background: '#f59f00', color: 'white', border: 'none', padding: '16px', borderRadius: '12px', fontWeight: 'bold', marginBottom: '20px' }}>
+                 {isConnected ? shortAddress : 'Connect Wallet'}
+               </button>
+               {mobileMenuItems.map((item, idx) => (
+                 <Link key={idx} to={item.path} onClick={() => setIsMobileMenuOpen(false)} style={{ display: 'block', padding: '15px 0', borderBottom: '1px solid #eee', color: '#333', textDecoration: 'none', fontWeight: '600' }}>{item.label}</Link>
+               ))}
             </div>
           )}
         </div>
-      </div>
-
-      {/* ── BARIS BAWAH ── */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 32px', width: '100%', boxSizing: 'border-box' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '900', fontSize: '1.75rem', whiteSpace: 'nowrap' }}>
-          <div style={{ position: 'relative', width: '60px', height: '40px' }}>
-            <img src={getAssetUrl('logo-ysnj2.png')} alt="Logo YSNJ" style={{ height: '90px', width: 'auto', position: 'absolute', top: '50%', left: '0', transform: 'translateY(-50%)' }} />
+      ) : (
+        /* ────────── DESKTOP NAVBAR ────────── */
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          
+          {/* Row 1: Ad Space */}
+          <div style={{ background: '#f8f9fa', height: '35px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderBottom: '1px solid #eee' }}>
+            <AdSpace type="horizontal" size="compact" height="25px" />
           </div>
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginLeft: '6px' }}>
-            {/* 9 Logo Mitra */}
-            <img src={`${import.meta.env.BASE_URL}logos/logo1.png`} alt="Pi Bamboo" style={{ height: '28px', width: 'auto', objectFit: 'contain' }} />
-            <img src={`${import.meta.env.BASE_URL}logos/logo2.png`} alt="Modular Blockbamboo" style={{ height: '28px', width: 'auto', objectFit: 'contain' }} />
-            <img src={`${import.meta.env.BASE_URL}logos/logo3.png`} alt="UMANG" style={{ height: '28px', width: 'auto', objectFit: 'contain' }} />
-            <img src={`${import.meta.env.BASE_URL}logos/logo4.png`} alt="Circle Logo" style={{ height: '28px', width: 'auto', objectFit: 'contain' }} />
-            <img src={`${import.meta.env.BASE_URL}logos/logo5.png`} alt="bambuNUSA" style={{ height: '28px', width: 'auto', objectFit: 'contain' }} />
-            <img src={`${import.meta.env.BASE_URL}logos/logo6.png`} alt="WEB Wisata Edukasi Bambu" style={{ height: '28px', width: 'auto', objectFit: 'contain' }} />
-            <img src={`${import.meta.env.BASE_URL}logos/logo7.png`} alt="Kios Bambu" style={{ height: '28px', width: 'auto', objectFit: 'contain' }} />
-            <img src={`${import.meta.env.BASE_URL}logos/logo8.png`} alt="Akademi Bambu Nusantara" style={{ height: '28px', width: 'auto', objectFit: 'contain' }} />
-            <img src={`${import.meta.env.BASE_URL}logos/logo9.png`} alt="Banten Creative Community" style={{ height: '28px', width: 'auto', objectFit: 'contain' }} />
+
+          {/* Row 2: Top Menu Bar */}
+          <div style={{ background: 'white', height: '45px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '25px', padding: '0 32px', borderBottom: '1px solid #f1f3f5' }}>
+            <Link to="/bambupedia" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>Bambupedia</Link>
+            <Link to="/academy" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>Akademi</Link>
+            <Link to="/data-tools" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>Data & Alat</Link>
+            <Link to="/bamboochain/marketplace" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>Pasar</Link>
+            <Link to="/community" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>Komunitas</Link>
+            
+            {/* bambuNUSA DROPDOWN (11 Features) */}
+            <div 
+              onMouseEnter={() => setShowBambooMenu(true)} 
+              onMouseLeave={() => setShowBambooMenu(false)} 
+              style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem', color: 'var(--primary)', fontWeight: 'bold', cursor: 'pointer', height: '100%' }}
+            >
+              bambuNUSA <ChevronDown size={14} />
+              {showBambooMenu && (
+                <div style={{ position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)', width: '260px', background: 'white', boxShadow: '0 15px 40px rgba(0,0,0,0.15)', borderRadius: '0 0 16px 16px', padding: '10px', zIndex: 10005, border: '1px solid #eee' }}>
+                   {bambooNusaFeatures.map((feature, index) => (
+                     <Link 
+                       key={index} 
+                       to={feature.path} 
+                       style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 15px', color: '#333', textDecoration: 'none', borderRadius: '8px', transition: 'all 0.2s' }}
+                       onMouseEnter={e => { e.currentTarget.style.background = '#f0fdf4'; e.currentTarget.style.color = 'var(--primary)'; }}
+                       onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#333'; }}
+                     >
+                       <span style={{ color: 'var(--primary)' }}>{feature.icon}</span>
+                       <span style={{ fontSize: '0.9rem', fontWeight: '500' }}>{feature.label}</span>
+                     </Link>
+                   ))}
+                </div>
+              )}
+            </div>
+
+            <Link to="/careers" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none' }}>Karir</Link>
+            <Link to="/membership" style={{ background: 'rgba(245, 159, 0, 0.1)', padding: '4px 12px', borderRadius: '20px', fontSize: '0.85rem', color: '#f59f00', fontWeight: 'bold', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <Shield size={14} /> Keanggotaan
+            </Link>
+
+            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '15px' }}>
+              <Bell size={18} color="#888" style={{ cursor: 'pointer' }} />
+              <div 
+                onClick={connectWallet}
+                style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#e7f5ff', padding: '6px 14px', borderRadius: '20px', fontSize: '0.85rem', color: '#228be6', cursor: 'pointer', fontWeight: '600' }}
+              >
+                <Globe size={14} /> Google <span style={{ color: '#444' }}>{isConnected ? shortAddress : 'xe4d5...4b9e'}</span>
+              </div>
+            </div>
           </div>
+
+          {/* Row 3: Bottom Navigation Bar */}
+          <div style={{ padding: '12px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+              <Link to="/"><img src={getAssetUrl('logo-ysnj2.png')} style={{ height: '45px' }} alt="Logo" /></Link>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                {[1,2,3,4,5,6,7,8,9].map(i => (
+                  <img key={i} src={`${import.meta.env.BASE_URL}logos/logo${i}.png`} style={{ height: '22px' }} alt="mitra" />
+                ))}
+              </div>
+            </div>
+            
+            <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
+               {[
+                 { label: 'Beranda', path: '/' },
+                 { label: 'Proyek', path: '/projects' },
+                 { label: 'Wawasan', path: '/insight' },
+                 { label: 'Dampak', path: '/impact' },
+                 { label: 'Mitra', path: '/partners' },
+                 { label: 'Tentang Kami', path: '/about' },
+                 { label: 'Kontak', path: '/contact' },
+                 { label: 'FAQ', path: '/faq' }
+               ].map(item => (
+                 <Link key={item.label} to={item.path} style={{ fontWeight: '600', color: '#444', textDecoration: 'none', fontSize: '0.95rem', transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--primary)'} onMouseLeave={e => e.currentTarget.style.color = '#444'}>
+                   {item.label}
+                 </Link>
+               ))}
+               
+               <Link to="/transparency" style={{ color: 'white', background: 'var(--primary)', fontWeight: 'bold', padding: '8px 20px', borderRadius: '30px', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 10px rgba(12, 166, 120, 0.3)' }}>
+                 On-Chain ⛓️
+               </Link>
+               
+               <div style={{ borderLeft: '2px solid #f1f3f5', height: '24px', margin: '0 5px' }} />
+               
+               <div onClick={toggleLanguage} style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', color: 'var(--primary)', fontWeight: 'bold' }}>
+                 <Globe size={20} />
+                 <span style={{ fontSize: '0.9rem' }}>{language.toUpperCase()}</span>
+               </div>
+            </div>
+          </div>
+
         </div>
-
-        <div style={{ display: 'flex', gap: '20px', alignItems: 'center', flexWrap: 'nowrap' }}>
-          <Link to="/"          style={{ fontWeight: '500', color: 'var(--text-main)', fontSize: '0.85rem' }}>{t('nav_home')}</Link>
-          <Link to="/projects"  style={{ fontWeight: '500', color: 'var(--text-main)', fontSize: '0.85rem' }}>{t('nav_projects')}</Link>
-          <Link to="/insight"   style={{ fontWeight: '500', color: 'var(--text-main)', fontSize: '0.85rem' }}>{t('nav_insights')}</Link>
-          <Link to="/impact"    style={{ fontWeight: '500', color: 'var(--text-main)', fontSize: '0.85rem' }}>{t('nav_impact')}</Link>
-          <Link to="/partners"  style={{ fontWeight: '500', color: 'var(--text-main)', fontSize: '0.85rem' }}>{t('nav_partners')}</Link>
-          <Link to="/about"     style={{ fontWeight: '500', color: 'var(--text-main)', fontSize: '0.85rem' }}>{t('nav_about')}</Link>
-          <Link to="/contact"   style={{ fontWeight: '500', color: 'var(--text-main)', fontSize: '0.85rem' }}>{t('nav_contact')}</Link>
-          <Link to="/faq"       style={{ fontWeight: '500', color: 'var(--text-main)', fontSize: '0.85rem' }}>FAQ</Link>
-          <Link to="/transparency" style={{ fontWeight: '600', color: 'var(--primary)', fontSize: '0.85rem', border: '1px solid var(--primary)', padding: '4px 12px', borderRadius: '20px' }}>On-Chain ⛓️</Link>
-
-          <button onClick={toggleLanguage} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--text-main)', fontSize: '0.85rem', fontWeight: 'bold', padding: 0 }}>
-            <Globe size={18} color="var(--primary)" />
-            {language.toUpperCase()}
-          </button>
-        </div>
-      </div>
-
+      )}
     </nav>
   );
 };

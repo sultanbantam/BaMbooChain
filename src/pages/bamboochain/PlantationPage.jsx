@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { getAssetUrl } from '../../utils/assets';
-import { Sprout, BarChart, ShieldCheck, MapPin, CheckCircle, CreditCard, Wallet as WalletIcon, ExternalLink, ArrowRight, UserCheck, Zap, Info, Clock, Check } from 'lucide-react';
+import { Sprout, BarChart, ShieldCheck, MapPin, CheckCircle, CreditCard, Wallet as WalletIcon, ExternalLink, ArrowRight, UserCheck, Zap, Info, Clock, Check, X } from 'lucide-react';
 import BackButton from '../../components/BackButton';
 import { useWeb3 } from '../../context/Web3Context';
 import { ethers } from 'ethers';
@@ -13,13 +13,19 @@ const PlantationPage = () => {
   const { connectWallet, isConnected, walletAddress, bmcBalance } = useWeb3();
 
   const [customAmount, setCustomAmount] = useState('');
-  const [usdtToIdr, setUsdtToIdr] = useState(16250); // Default fallback
-
-  // Escrow Simulation States
+  const [usdtToIdr, setUsdtToIdr] = useState(16250);
   const [simulationActive, setSimulationActive] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [txStatusText, setTxStatusText] = useState('');
   const [currentProjectId, setCurrentProjectId] = useState(1);
+  const [showExampleModal, setShowExampleModal] = useState(false);
+  const [exampleImg, setExampleImg] = useState('');
+
+  const openExample = (imgNum) => {
+    setExampleImg(getAssetUrl(`gambar/${imgNum}.jpg`));
+    setShowExampleModal(true);
+  };
+
   const [milestones, setMilestones] = useState({
     bibit: { id: 'bibit', name: 'Pemilik Bibit', percent: 16, released: false },
     tanam: { id: 'tanam', name: 'Penanam', percent: 4, released: false },
@@ -31,38 +37,10 @@ const PlantationPage = () => {
   });
 
   const releaseMilestone = async (id) => {
-    if (!window.ethereum) return alert("MetaMask belum terhubung.");
-    try {
-      setIsProcessing(true);
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-      const escrowContract = new ethers.Contract(escrowConfig.addresses.BambooEscrow, escrowConfig.escrowAbi, signer);
-      
-      const txMap = {
-        bibit: 'releaseBibit',
-        tanam: 'releaseTanam',
-        rawat: 'releasePerawatan',
-        risiko: 'releaseRisiko',
-        lahan: 'releaseLahan',
-        royalti: 'releaseRoyalti',
-        pengelola: 'releasePengelola'
-      };
-      
-      const fnName = txMap[id];
-      console.log(`Calling ${fnName} on project ${currentProjectId}...`);
-      const tx = await escrowContract[fnName](currentProjectId);
-      await tx.wait();
-      
-      setMilestones(prev => ({
-        ...prev,
-        [id]: { ...prev[id], released: true }
-      }));
-    } catch (err) {
-      console.error(err);
-      alert("Gagal memverifikasi: " + (err.reason || err.message));
-    } finally {
-      setIsProcessing(false);
-    }
+    setMilestones(prev => ({
+      ...prev,
+      [id]: { ...prev[id], released: true }
+    }));
   };
 
   const getEscrowStatus = () => {
@@ -72,7 +50,7 @@ const PlantationPage = () => {
     return `Didistribusikan Sebagian (${totalReleased}/7)`;
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     const fetchRate = async () => {
       try {
         const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=idr');
@@ -88,8 +66,8 @@ const PlantationPage = () => {
   }, []);
 
   const locations = [
-    { id: 'cibarani', name: 'Kasepuhan Cibarani, Lebak', image: getAssetUrl('gambar/pehcibarani.png'), area: '490 Ha', farmers: 120, desc: 'Restorasi hutan adat dan sabuk ekologis.' },
-    { id: 'cisadane', name: 'Tepi Cisadane, Tangerang Raya', image: getAssetUrl('gambar/ceap.png'), area: '120 Ha', farmers: 45, desc: 'Pengembangan ekonomi masyarakat melalui ekowisata.' }
+    { id: 'cibarani', name: 'Kasepuhan Cibarani, Lebak', image: getAssetUrl('gambar/1.jpg'), area: '490 Ha', farmers: 120, desc: 'Restorasi hutan adat dan sabuk ekologis.' },
+    { id: 'cisadane', name: 'Tepi Cisadane, Tangerang Raya', image: getAssetUrl('gambar/2.jpg'), area: '120 Ha', farmers: 45, desc: 'Pengembangan ekonomi masyarakat melalui ekowisata.' }
   ];
 
   const packages = [
@@ -123,78 +101,18 @@ const PlantationPage = () => {
   const [selectedMethod, setSelectedMethod] = useState(null);
 
   const handlePayment = async (method) => {
-    if (method === 'USDT BEP-20' || method === 'BMC Token') {
-      if (!window.ethereum) return alert("Harap install MetaMask untuk transaksi Crypto.");
-      try {
-        // ---- MODE PRESENTASI (DEMO) ----
-        // Mem-bypass MetaMask untuk menghindari peringatan merah (Review Alert)
-        // karena kontrak MockUSDT belum diverifikasi di Mainnet. Ini agar presentasi aman.
-        setIsProcessing(true);
-        setTxStatusText('Meminta Akses Wallet...');
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        setTxStatusText('Langkah 1/2: Menyetujui USDT (Simulasi)');
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        setTxStatusText('Menunggu Konfirmasi Jaringan...');
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        setTxStatusText('Langkah 2/2: Deposit Dana (Simulasi)');
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        setTxStatusText('Menyelesaikan Transaksi...');
-        await new Promise(resolve => setTimeout(resolve, 1500));
-
-        // Reset milestone data untuk simulasi
-        setMilestones({
-          bibit: { id: 'bibit', name: 'Pemilik Bibit', percent: 16, released: false },
-          tanam: { id: 'tanam', name: 'Penanam', percent: 4, released: false },
-          rawat: { id: 'rawat', name: 'Perawatan', percent: 10.67, released: false },
-          risiko: { id: 'risiko', name: 'Cadangan Risiko', percent: 13.33, released: false },
-          lahan: { id: 'lahan', name: 'Pemilik Lahan', percent: 2.67, released: false },
-          royalti: { id: 'royalti', name: 'Royalti', percent: 6.67, released: false },
-          pengelola: { id: 'pengelola', name: 'Pengelola (YSNJ)', percent: 46.66, released: false },
-        });
-        
-        setSimulationActive(true);
-        setTimeout(() => {
-          document.getElementById('escrow-simulation').scrollIntoView({ behavior: 'smooth' });
-        }, 100);
-        
-        /* === KODE WEB3 ASLI (DISEMBUNYIKAN UNTUK DEMO) ===
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const signer = await provider.getSigner();
-        const escrowContract = new ethers.Contract(escrowConfig.addresses.BambooEscrow, escrowConfig.escrowAbi, signer);
-        const usdtContract = new ethers.Contract(escrowConfig.addresses.MockUSDT, escrowConfig.usdtAbi, signer);
-        const amountWei = ethers.parseUnits(selectedPackage.amount.toString(), 18);
-        const approveTx = await usdtContract.approve(escrowConfig.addresses.BambooEscrow, amountWei);
-        await approveTx.wait();
-        const depositTx = await escrowContract.deposit(amountWei);
-        const receipt = await depositTx.wait();
-        // (Logika Parse Project ID ditiadakan sementara)
-        */
-      } catch (err) {
-        console.error(err);
-        if (err.code === 'ACTION_REJECTED') {
-          alert("Transaksi dibatalkan oleh pengguna.");
-        } else {
-          alert("Transaksi gagal: " + (err.reason || err.message));
-        }
-      } finally {
-        setIsProcessing(false);
-        setTxStatusText('');
-      }
-    } else {
-      // Dummy activation for Non-Crypto
-      setSimulationActive(true);
-      setTimeout(() => {
-        document.getElementById('escrow-simulation').scrollIntoView({ behavior: 'smooth' });
-      }, 100);
-    }
+    setIsProcessing(true);
+    setTxStatusText('Memproses Pembayaran (Simulasi)...');
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    setSimulationActive(true);
+    setIsProcessing(false);
+    setTimeout(() => {
+      document.getElementById('escrow-simulation')?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
   };
 
   return (
-    <div style={{ paddingTop: '220px', paddingBottom: '100px', minHeight: '100vh', background: 'linear-gradient(to bottom, #fdfdfd, #f4f7f4)' }}>
+    <div style={{ paddingTop: 'var(--navbar-height)', paddingBottom: '100px', minHeight: '100vh', background: 'linear-gradient(to bottom, #fdfdfd, #f4f7f4)' }}>
       <div className="container">
         
         {/* Step Indicator */}
@@ -223,7 +141,7 @@ const PlantationPage = () => {
               <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>Pilih lokasi yang ingin Anda dukung untuk restorasi dan pengembangan ekonomi hijau.</p>
             </div>
             
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '30px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '30px' }}>
               {locations.map((loc) => (
                 <div 
                   key={loc.id} 
@@ -254,289 +172,83 @@ const PlantationPage = () => {
         {/* STEP 1: PILIH PAKET */}
         {step === 1 && (
           <div className="animate-fade-in">
-            <div style={{ marginBottom: '40px' }}>
-              <button onClick={prevStep} style={{ background: 'none', border: 'none', color: 'var(--primary)', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                 Kembali ke Lokasi
-              </button>
-            </div>
+            <div style={{ marginBottom: '40px' }}><button onClick={prevStep} className="btn-back">Kembali</button></div>
             <div style={{ textAlign: 'center', marginBottom: '50px' }}>
               <h1 style={{ fontSize: '2.5rem', fontWeight: '900', color: 'var(--text-main)', marginBottom: '16px' }}>Pilih Paket Penanaman</h1>
-              <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>Mendukung di: <strong>{selectedLocation.name}</strong></p>
+              <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>Mendukung di: <strong>{selectedLocation?.name}</strong></p>
             </div>
-
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
               {packages.map((pkg) => (
-                <div 
-                  key={pkg.id} 
-                  className="glass"
-                  onClick={() => handleSelectPackage(pkg)}
-                  style={{ 
-                    padding: '30px', borderRadius: '24px', cursor: 'pointer', transition: 'all 0.3s',
-                    background: 'white', border: '2px solid transparent', textAlign: 'center',
-                    display: 'flex', flexDirection: 'column', justifyContent: 'space-between'
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'var(--primary)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'transparent')}
-                >
-                  <div onClick={(e) => pkg.id === 'custom' && e.stopPropagation()}>
-                    <Sprout size={40} color="var(--primary)" style={{ marginBottom: '16px' }} />
-                    <h3 style={{ fontSize: '1.2rem', fontWeight: '800', marginBottom: '8px' }}>{pkg.name}</h3>
-                    
-                    {pkg.id === 'custom' ? (
-                      <div style={{ marginBottom: '16px' }}>
-                        <div style={{ position: 'relative', maxWidth: '150px', margin: '0 auto' }}>
-                          <input 
-                            type="number" 
-                            placeholder="0"
-                            value={customAmount}
-                            onChange={(e) => setCustomAmount(e.target.value)}
-                            style={{ 
-                              width: '100%', padding: '10px 10px 10px 10px', borderRadius: '12px', border: '2px solid #eee', 
-                              textAlign: 'center', fontSize: '1.2rem', fontWeight: 'bold', outline: 'none'
-                            }}
-                          />
-                          <span style={{ position: 'absolute', right: '-45px', top: '50%', transform: 'translateY(-50%)', fontWeight: 'bold', color: '#888' }}>USDT</span>
-                        </div>
-                      </div>
-                    ) : (
-                      <div style={{ fontSize: '1.8rem', fontWeight: '900', color: 'var(--text-main)', marginBottom: '16px' }}>
-                        {pkg.amount} <span style={{ fontSize: '0.9rem', color: '#adb5bd' }}>USDT</span>
-                      </div>
-                    )}
-                    
-                    <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '20px' }}>{pkg.desc}</p>
-                  </div>
-                  
-                  <div 
-                    className="btn btn-primary" 
-                    style={{ width: '100%', borderRadius: '12px', padding: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {pkg.id === 'custom' ? 'Dukung Sekarang' : 'Pilih Paket'}
-                  </div>
+                <div key={pkg.id} className="glass" onClick={() => handleSelectPackage(pkg)} style={{ padding: '30px', borderRadius: '24px', cursor: 'pointer', background: 'white', textAlign: 'center' }}>
+                  <Sprout size={40} color="var(--primary)" style={{ marginBottom: '16px' }} />
+                  <h3 style={{ fontSize: '1.2rem', fontWeight: '800' }}>{pkg.name}</h3>
+                  <div style={{ fontSize: '1.8rem', fontWeight: '900' }}>{pkg.amount} USDT</div>
+                  <p>{pkg.desc}</p>
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        {/* STEP 2: PEMBAYARAN */}
+        {/* STEP 2: KONTRIBUSI DATA & PEMBAYARAN */}
         {step === 2 && (
-          <div className="animate-fade-in" style={{ maxWidth: '600px', margin: '0 auto' }}>
-            <div style={{ marginBottom: '40px' }}>
-              <button onClick={prevStep} style={{ background: 'none', border: 'none', color: 'var(--primary)', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                 Kembali ke Paket
-              </button>
-            </div>
-            
-            <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-              <h1 style={{ fontSize: '2.5rem', fontWeight: '900', color: 'var(--text-main)', marginBottom: '16px' }}>Metode Pembayaran</h1>
-              <div style={{ background: 'white', padding: '20px', borderRadius: '16px', border: '1px solid #eee', marginBottom: '30px' }}>
-                <div style={{ fontSize: '0.9rem', color: '#888' }}>Total Dukungan</div>
-                <div style={{ fontSize: '1.8rem', fontWeight: '900' }}>{selectedPackage.amount} USDT / Rp. {Math.round(selectedPackage.amount * usdtToIdr).toLocaleString('id-ID')}</div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--primary)', marginTop: '8px' }}>Lokasi: {selectedLocation.name}</div>
-              </div>
+          <div className="animate-fade-in">
+            <div style={{ textAlign: 'center', marginBottom: '50px' }}>
+              <h1 style={{ fontSize: '2.5rem', fontWeight: '900' }}>Upload Foto Kontribusi Data</h1>
+              <p>Pastikan foto diunggah dengan jelas. Klik <strong>Lihat Contoh</strong> agar foto diterima oleh validator.</p>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {/* BRI */}
-              <div 
-                onClick={() => setSelectedMethod(selectedMethod === 'bri' ? null : 'bri')}
-                style={{ padding: '25px', background: 'white', border: selectedMethod === 'bri' ? '2px solid var(--primary)' : '1px solid #eee', borderRadius: '20px', cursor: 'pointer', transition: 'all 0.2s' }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                  <div style={{ background: '#0052a2', color: 'white', padding: '12px', borderRadius: '12px' }}><CreditCard size={24} /></div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>Transfer Bank BRI</div>
-                    <div style={{ fontSize: '0.85rem', color: '#888' }}>No. Rek: 141101000456562</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginBottom: '50px' }}>
+              {[
+                { label: 'Rumpun', count: 3, img: 8 },
+                { label: 'Ruas Batang', count: 1, img: 9 },
+                { label: 'Buku Batang', count: 1, img: 10 },
+                { label: 'Pelepah Daun', count: 1, img: 11 },
+                { label: 'Pelepah Batang', count: 3, img: 12 },
+                { label: 'Cabang', count: 1, img: 13 },
+                { label: 'Rebung', count: 3, img: 14 },
+                { label: 'Bunga', count: 1, img: 15 },
+                { label: 'Selfie dengan Rumpun', count: 1, img: 16 }
+              ].map((item, idx) => (
+                <div key={idx} className="glass" style={{ padding: '20px', borderRadius: '16px', background: 'white' }}>
+                  <div style={{ fontWeight: 'bold', marginBottom: '15px' }}>{item.label} ({item.count} Foto)</div>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button onClick={() => openExample(item.img)} style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid #eee', background: '#f8f9fa', cursor: 'pointer' }}>Lihat Contoh</button>
+                    <button style={{ flex: 1, padding: '10px', borderRadius: '8px', border: 'none', background: 'var(--primary)', color: 'white', cursor: 'pointer' }}>Upload</button>
                   </div>
-                  <ArrowRight size={20} color={selectedMethod === 'bri' ? 'var(--primary)' : '#adb5bd'} style={{ transform: selectedMethod === 'bri' ? 'rotate(90deg)' : 'none', transition: '0.3s' }} />
                 </div>
-                {selectedMethod === 'bri' && (
-                  <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #eee', animation: 'fadeIn 0.3s' }}>
-                    <div style={{ background: '#f8f9fa', padding: '15px', borderRadius: '12px', fontSize: '0.9rem', marginBottom: '15px' }}>
-                      <div style={{ marginBottom: '5px' }}><strong>Bank:</strong> BRI</div>
-                      <div style={{ marginBottom: '5px' }}><strong>No. Rekening:</strong> 141101000456562</div>
-                      <div><strong>Atas Nama:</strong> Yayasan Sabumi Nusantara Jaya</div>
-                    </div>
-                    <button onClick={(e) => { e.stopPropagation(); handlePayment('Transfer BRI'); }} className="btn btn-primary" style={{ width: '100%', borderRadius: '12px' }}>Konfirmasi & Kirim Bukti</button>
-                  </div>
-                )}
-              </div>
-
-              {/* BMC */}
-              <div 
-                onClick={() => setSelectedMethod(selectedMethod === 'bmc' ? null : 'bmc')}
-                style={{ padding: '25px', background: 'white', border: selectedMethod === 'bmc' ? '2px solid var(--primary)' : '1px solid #eee', borderRadius: '20px', cursor: 'pointer', transition: 'all 0.2s' }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                  <div style={{ background: 'var(--primary)', color: 'white', padding: '12px', borderRadius: '12px' }}><Zap size={24} /></div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>BMC Token (BEP-20)</div>
-                    <div style={{ fontSize: '0.85rem', color: '#888' }}>Address: 0x0d1Be...2e222</div>
-                  </div>
-                  <ArrowRight size={20} color={selectedMethod === 'bmc' ? 'var(--primary)' : '#adb5bd'} style={{ transform: selectedMethod === 'bmc' ? 'rotate(90deg)' : 'none', transition: '0.3s' }} />
-                </div>
-                {selectedMethod === 'bmc' && (
-                  <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #eee', animation: 'fadeIn 0.3s' }}>
-                    <div style={{ background: '#f8f9fa', padding: '15px', borderRadius: '12px', fontSize: '0.85rem', marginBottom: '15px', wordBreak: 'break-all' }}>
-                      <div style={{ marginBottom: '5px' }}><strong>Jaringan:</strong> Binance Smart Chain (BEP-20)</div>
-                      <div><strong>Address:</strong> 0x0d1Be34402B12D4c0c6aA850db568F7874F2e222</div>
-                    </div>
-                    <button onClick={(e) => { e.stopPropagation(); handlePayment('BMC Token'); }} className="btn btn-primary" style={{ width: '100%', borderRadius: '12px' }} disabled={isProcessing}>
-                      {isProcessing ? txStatusText : 'Konfirmasi & Kirim Bukti'}
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* USDT */}
-              <div 
-                onClick={() => setSelectedMethod(selectedMethod === 'usdt' ? null : 'usdt')}
-                style={{ padding: '25px', background: 'white', border: selectedMethod === 'usdt' ? '2px solid var(--primary)' : '1px solid #eee', borderRadius: '20px', cursor: 'pointer', transition: 'all 0.2s' }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                  <div style={{ background: '#26a17b', color: 'white', padding: '12px', borderRadius: '12px' }}><WalletIcon size={24} /></div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>USDT (BEP-20)</div>
-                    <div style={{ fontSize: '0.85rem', color: '#888' }}>Address: 0xcb661...20e10</div>
-                  </div>
-                  <ArrowRight size={20} color={selectedMethod === 'usdt' ? 'var(--primary)' : '#adb5bd'} style={{ transform: selectedMethod === 'usdt' ? 'rotate(90deg)' : 'none', transition: '0.3s' }} />
-                </div>
-                {selectedMethod === 'usdt' && (
-                  <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #eee', animation: 'fadeIn 0.3s' }}>
-                    <div style={{ background: '#f8f9fa', padding: '15px', borderRadius: '12px', fontSize: '0.85rem', marginBottom: '15px', wordBreak: 'break-all' }}>
-                      <div style={{ marginBottom: '5px' }}><strong>Jaringan:</strong> Binance Smart Chain (BEP-20)</div>
-                      <div><strong>Address:</strong> 0xcb66199ea24746a7917a8dc171b0583cd7420e10</div>
-                    </div>
-                    <button onClick={(e) => { e.stopPropagation(); handlePayment('USDT BEP-20'); }} className="btn btn-primary" style={{ width: '100%', borderRadius: '12px' }} disabled={isProcessing}>
-                      {isProcessing ? txStatusText : 'Konfirmasi & Bayar USDT (Web3)'}
-                    </button>
-                  </div>
-                )}
-              </div>
+              ))}
             </div>
 
-            <div style={{ marginTop: '50px', background: 'rgba(12,166,120,0.05)', borderRadius: '24px', padding: '30px', border: '1px dashed var(--primary)' }}>
-              <h4 style={{ color: 'var(--primary)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <ShieldCheck size={20} /> Mekanisme Transparansi
-              </h4>
-              <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '0.9rem', color: '#444' }}>
-                <li style={{ display: 'flex', gap: '10px' }}>
-                  <CheckCircle size={16} color="var(--primary)" style={{ flexShrink: 0, marginTop: '2px' }} />
-                  Dana otomatis teralokasi ke smart contract / wallet petani pembibit dan penanam.
-                </li>
-                <li style={{ display: 'flex', gap: '10px' }}>
-                  <CheckCircle size={16} color="var(--primary)" style={{ flexShrink: 0, marginTop: '2px' }} />
-                  Petani menerima dana secara bertahap setelah tugas (tanam/rawat) diverifikasi oleh validator.
-                </li>
-                <li style={{ display: 'flex', gap: '10px' }}>
-                  <CheckCircle size={16} color="var(--primary)" style={{ flexShrink: 0, marginTop: '2px' }} />
-                  Perkembangan bambu Anda akan tayang secara real-time di dashboard pemantauan digital.
-                </li>
-              </ul>
+            <div style={{ textAlign: 'center' }}>
+               <button onClick={handlePayment} className="btn btn-primary" style={{ padding: '15px 40px', fontSize: '1.2rem', borderRadius: '30px' }}>Kirim Data & Selesaikan Pembayaran</button>
             </div>
-
-            {/* Escrow Simulation UI */}
-            {simulationActive && (
-              <div id="escrow-simulation" className="animate-fade-in" style={{ marginTop: '50px', background: 'white', borderRadius: '24px', padding: '30px', border: '2px solid var(--primary)', boxShadow: '0 10px 30px rgba(12,166,120,0.1)' }}>
-                <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-                  <div style={{ display: 'inline-block', background: 'rgba(12,166,120,0.1)', color: 'var(--primary)', padding: '8px 16px', borderRadius: '20px', fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '10px' }}>
-                    Simulasi Smart Contract Escrow
-                  </div>
-                  <h3 style={{ fontSize: '1.8rem', fontWeight: '800' }}>Alokasi Dana Otomatis</h3>
-                  <div style={{ fontSize: '1.1rem', color: '#666', marginTop: '5px' }}>Total Deposit: <strong>{selectedPackage.amount} USDT</strong></div>
-                  
-                  <div style={{ marginTop: '20px', padding: '15px', borderRadius: '16px', background: '#f8f9fa', border: '1px solid #eee', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-                    <ShieldCheck size={24} color={Object.values(milestones).every(m => m.released) ? '#16a34a' : '#f59e0b'} />
-                    <span style={{ fontWeight: 'bold', fontSize: '1.1rem', color: Object.values(milestones).every(m => m.released) ? '#16a34a' : '#f59e0b' }}>
-                      Status: {getEscrowStatus()}
-                    </span>
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                  {Object.values(milestones).map((m) => {
-                    const amountUsdt = ((selectedPackage.amount * m.percent) / 100).toFixed(2);
-                    return (
-                      <div key={m.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px', background: m.released ? 'rgba(34, 197, 94, 0.05)' : '#f8f9fa', border: `1px solid ${m.released ? '#16a34a' : '#eee'}`, borderRadius: '16px', transition: 'all 0.3s' }}>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '5px' }}>
-                            <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>{m.name}</div>
-                            <div style={{ fontSize: '0.8rem', background: '#e9ecef', padding: '2px 8px', borderRadius: '10px', fontWeight: 'bold', color: '#666' }}>{m.percent}%</div>
-                          </div>
-                          <div style={{ fontSize: '1.2rem', fontWeight: '900', color: 'var(--text-main)' }}>{amountUsdt} USDT</div>
-                        </div>
-                        
-                        <div>
-                          {m.released ? (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#16a34a', fontWeight: 'bold', background: 'rgba(34, 197, 94, 0.1)', padding: '10px 15px', borderRadius: '12px' }}>
-                              <CheckCircle size={18} /> Tersalurkan
-                            </div>
-                          ) : (
-                            <button 
-                              onClick={() => releaseMilestone(m.id)}
-                              className="btn btn-primary" 
-                              disabled={isProcessing}
-                              style={{ padding: '10px 15px', borderRadius: '12px', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px', opacity: isProcessing ? 0.7 : 1 }}
-                            >
-                              <UserCheck size={16} /> {isProcessing ? 'Memproses...' : 'Verifikasi Validator (Web3)'}
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-                
-                <div style={{ marginTop: '30px', fontSize: '0.85rem', color: '#888', textAlign: 'center', padding: '15px', background: '#f8f9fa', borderRadius: '12px' }}>
-                  <Info size={16} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '5px' }} />
-                  Dalam implementasi nyata, tombol "Verifikasi" ini hanya dapat ditekan oleh Validator resmi (menggunakan wallet signature) setelah menerima bukti kerja (foto/GPS) dari lapangan.
-                </div>
-              </div>
-            )}
           </div>
         )}
 
-        {/* Dashboard Preview (Always visible at bottom) */}
-        <div style={{ marginTop: '100px', borderTop: '1px solid #eee', paddingTop: '60px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '30px' }}>
-            <div>
-              <h2 style={{ fontSize: '1.8rem', fontWeight: '800' }}>Dashboard Pemantauan</h2>
-              <p style={{ color: '#888' }}>Data real-time penanaman yang telah Anda dukung.</p>
-            </div>
-            <div style={{ background: '#f8f9fa', padding: '10px 20px', borderRadius: '12px', fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--primary)' }}>
-               LIVE UPDATES ACTIVE
-            </div>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
-            <div className="glass" style={{ padding: '25px', background: 'white' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '15px' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(12,166,120,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}><Clock size={20} /></div>
-                <div style={{ fontWeight: 'bold' }}>Status Terakhir</div>
+        {/* GALLERIES */}
+        <div style={{ marginTop: '100px' }}>
+          <h2 style={{ fontSize: '1.8rem', fontWeight: '800' }}>Galeri Pengetahuan Taksonomi Bambu</h2>
+          <div style={{ display: 'flex', gap: '20px', overflowX: 'auto', padding: '20px 0' }}>
+            {[1, 2, 3, 4, 5, 6, 17, 18, 19, 20].map((i) => (
+              <div key={i} style={{ minWidth: '250px', height: '350px', borderRadius: '20px', overflow: 'hidden', flexShrink: 0, boxShadow: '0 10px 20px rgba(0,0,0,0.1)' }}>
+                <img src={getAssetUrl(`gambar/${i}.jpg`)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </div>
-              <div style={{ fontSize: '1.2rem', fontWeight: '800' }}>Tunas Terdeteksi</div>
-              <div style={{ fontSize: '0.8rem', color: '#888', marginTop: '5px' }}>Diverifikasi oleh Validator: Budi Santoso</div>
-            </div>
-
-            <div className="glass" style={{ padding: '25px', background: 'white' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '15px' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(12,166,120,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}><Zap size={20} /></div>
-                <div style={{ fontWeight: 'bold' }}>Alokasi Dana Petani</div>
-              </div>
-              <div style={{ fontSize: '1.2rem', fontWeight: '800' }}>65% Terdistribusi</div>
-              <div style={{ fontSize: '0.8rem', color: '#888', marginTop: '5px' }}>Terkirim ke 12 Wallet Petani di Cibarani</div>
-            </div>
-
-            <div className="glass" style={{ padding: '25px', background: 'white' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '15px' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(12,166,120,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}><BarChart size={20} /></div>
-                <div style={{ fontWeight: 'bold' }}>Serapan Karbon</div>
-              </div>
-              <div style={{ fontSize: '1.2rem', fontWeight: '800' }}>1.2 Ton CO2e</div>
-              <div style={{ fontSize: '0.8rem', color: '#888', marginTop: '5px' }}>Berdasarkan biomassa bambu umur 6 bulan</div>
-            </div>
+            ))}
           </div>
         </div>
+
+        {/* EXAMPLE MODAL */}
+        {showExampleModal && (
+          <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.8)', zIndex: 20000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+            <div style={{ background: 'white', padding: '20px', borderRadius: '20px', maxWidth: '500px', width: '100%', position: 'relative' }}>
+              <button onClick={() => setShowExampleModal(false)} style={{ position: 'absolute', top: '-15px', right: '-15px', background: 'white', border: 'none', borderRadius: '50%', padding: '10px', cursor: 'pointer', boxShadow: '0 5px 15px rgba(0,0,0,0.2)' }}><X size={24} /></button>
+              <img src={exampleImg} style={{ width: '100%', borderRadius: '15px' }} />
+              <div style={{ textAlign: 'center', marginTop: '15px', fontWeight: 'bold' }}>Contoh Foto Taksonomi</div>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );

@@ -11,7 +11,14 @@
   --text-main: #212529;
   --text-muted: #6c757d;
 
-  --navbar-height: 210px; /* Ad Slot (~50px) + Navbar (~160px) */
+  --navbar-height: 210px; /* Desktop */
+  --navbar-height-mobile: 80px;
+}
+
+@media (max-width: 1100px) {
+  :root {
+    --navbar-height: 70px;
+  }
 }
 
 .page-top {
@@ -56,6 +63,12 @@ body {
 h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
   line-height: 1.2;
+}
+
+@media (max-width: 768px) {
+  h1 { font-size: 2rem !important; }
+  h2 { font-size: 1.75rem !important; }
+  h3 { font-size: 1.5rem !important; }
 }
 
 a {
@@ -180,4 +193,32 @@ ul {
 /* Sections */
 section {
   padding: 100px 0;
+}
+
+@media (max-width: 768px) {
+  section {
+    padding: 60px 0;
+  }
+  
+  .container {
+    padding: 0 20px;
+  }
+}
+
+/* Helper for mobile hiding */
+.hide-mobile {
+  display: flex !important;
+}
+
+@media (max-width: 1100px) {
+  .hide-mobile {
+    display: none !important;
+  }
+  .show-mobile {
+    display: block !important;
+  }
+}
+
+.show-mobile {
+  display: none;
 }

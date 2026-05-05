@@ -74,7 +74,7 @@ const MembershipPage = () => {
   const bmcNum = getBMCNumber(bmcBalance);
 
   return (
-    <div style={{ paddingTop: '160px', minHeight: '100vh', background: '#f8f9fa' }}>
+    <div style={{ paddingTop: 'var(--navbar-height)', minHeight: '100vh', background: '#f8f9fa' }}>
       <div className="container" style={{ padding: '40px 24px' }}>
 
         {/* Header */}
@@ -135,7 +135,6 @@ const MembershipPage = () => {
                 overflow: 'hidden',
                 border: isActive ? `3px solid ${tier.color}` : '1px solid #eee',
                 boxShadow: isActive ? `0 8px 30px ${tier.color}30` : '0 2px 8px rgba(0,0,0,0.06)',
-                transform: tier.featured ? 'scale(1.03)' : 'none',
                 transition: 'all 0.3s',
                 position: 'relative',
               }}>

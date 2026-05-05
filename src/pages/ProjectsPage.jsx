@@ -22,7 +22,7 @@ const ProjectsPage = () => {
 
   return (
     <div style={{ 
-      paddingTop: '220px', 
+      paddingTop: 'var(--navbar-height)', 
       paddingBottom: '100px',
       minHeight: '100vh',
       background: 'linear-gradient(to bottom, #fdfdfd, #f4f7f4)'
@@ -54,7 +54,7 @@ const ProjectsPage = () => {
         </div>
 
         {/* Project Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '30px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '30px' }}>
           {PROJECTS.map((project) => (
             <div 
               key={project.id}
@@ -168,7 +168,7 @@ const ProjectsPage = () => {
               </div>
               <h2 style={{ fontSize: '2rem', fontWeight: '800', marginBottom: '20px' }}>{selectedProject.title}</h2>
               
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '30px', padding: '20px', background: '#f8fbf8', borderRadius: '16px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '20px', marginBottom: '30px', padding: '20px', background: '#f8fbf8', borderRadius: '16px' }}>
                 <div>
                   <div style={{ fontSize: '0.8rem', color: '#888', fontWeight: 'bold', textTransform: 'uppercase' }}>Lokasi</div>
                   <div style={{ fontWeight: 'bold' }}>{selectedProject.location}</div>

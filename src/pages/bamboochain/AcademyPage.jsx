@@ -34,7 +34,7 @@ const AcademyPage = () => {
   ];
 
   return (
-    <div style={{ paddingTop: '130px', paddingBottom: '80px', minHeight: '100vh', background: '#f8f9fa' }}>
+    <div style={{ paddingTop: 'var(--navbar-height)', paddingBottom: '80px', minHeight: '100vh', background: '#f8f9fa' }}>
       
       {/* HEADER SECTION */}
       <div className="container" style={{ textAlign: 'center', marginBottom: '60px' }}>
@@ -108,7 +108,7 @@ const AcademyPage = () => {
         </div>
 
         {/* CERTIFICATION SECTION */}
-        <div style={{ background: 'linear-gradient(135deg, #1b5e20, var(--primary))', borderRadius: '24px', padding: '40px', color: 'white', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '40px', boxShadow: '0 15px 40px rgba(12,166,120,0.2)', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ background: 'linear-gradient(135deg, #1b5e20, var(--primary))', borderRadius: '24px', padding: '30px', color: 'white', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '30px', boxShadow: '0 15px 40px rgba(12,166,120,0.2)', position: 'relative', overflow: 'hidden' }}>
           
           {/* Abstract background shapes */}
           <div style={{ position: 'absolute', top: '-10px', right: '-10px', color: 'rgba(255,255,255,0.05)' }}>

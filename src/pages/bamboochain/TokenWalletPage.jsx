@@ -1417,14 +1417,14 @@ const TokenWalletPage = () => {
   ];
 
   return (
-    <div style={{ paddingTop: '220px', paddingBottom: '80px', minHeight: '100vh', background: '#f8f9fa' }}>
+    <div style={{ paddingTop: 'var(--navbar-height)', paddingBottom: '80px', minHeight: '100vh', background: '#f8f9fa' }}>
       <div className="container" style={{ marginBottom: '24px' }}>
         <BackButton to="/bamboochain" />
       </div>
-      <div className="container" style={{ display: 'flex', flexDirection: 'row', gap: '40px', flexWrap: 'wrap' }}>
+      <div className="container" style={{ display: 'flex', flexDirection: 'row', gap: '40px', flexWrap: 'wrap', justifyContent: 'center' }}>
         
         {/* SIDEBAR NAVIGATION */}
-        <div style={{ width: '280px', flexShrink: 0 }}>
+        <div style={{ width: '100%', maxWidth: '280px', flexShrink: 0 }}>
           <div style={{ 
             background: 'white', borderRadius: '24px', padding: '24px', 
             position: 'sticky', top: '120px', boxShadow: '0 10px 30px rgba(0,0,0,0.03)',

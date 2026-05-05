@@ -45,7 +45,7 @@ const InvestEcosystemPage = () => {
   ];
 
   return (
-    <div style={{ paddingTop: '250px', paddingBottom: '80px', minHeight: '100vh', background: '#f8f9fa' }}>
+    <div style={{ paddingTop: 'var(--navbar-height)', paddingBottom: '80px', minHeight: '100vh', background: '#f8f9fa' }}>
       
       {/* Back Navigation */}
       <div className="container" style={{ marginBottom: '32px' }}>
@@ -63,7 +63,7 @@ const InvestEcosystemPage = () => {
       <div className="container" style={{ display: 'flex', flexDirection: 'column', gap: '50px' }}>
         
         {/* ROW 1: ROI CALCULATOR & MY INVESTMENT */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) minmax(300px, 1fr)', gap: '30px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px' }}>
           
           {/* ROI CALCULATOR */}
           <div style={{ background: 'white', borderRadius: '24px', padding: '32px', boxShadow: '0 10px 40px rgba(0,0,0,0.06)', border: '1px solid #f1f3f5' }}>
@@ -282,7 +282,7 @@ const InvestEcosystemPage = () => {
 
             {/* PREMIUM INSIGHT BANNER */}
             <div style={{ 
-              display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) 350px', gap: '32px', alignItems: 'center', padding: '40px', 
+              display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '32px', alignItems: 'center', padding: '40px', 
               background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', borderRadius: '32px', color: 'white', border: '1px solid rgba(255,255,255,0.1)', position: 'relative', overflow: 'hidden'
             }}>
                <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '200px', height: '200px', background: 'var(--primary)', opacity: 0.1, filter: 'blur(60px)', borderRadius: '50%' }}></div>

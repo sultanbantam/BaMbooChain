@@ -17,7 +17,7 @@ const SupplyChainPage = () => {
   ];
 
   return (
-    <div style={{ paddingTop: '150px', paddingBottom: '80px', minHeight: '100vh', background: '#f8f9fa' }}>
+    <div style={{ paddingTop: 'var(--navbar-height)', paddingBottom: '80px', minHeight: '100vh', background: '#f8f9fa' }}>
       
       {/* Back Navigation */}
       <div className="container" style={{ marginBottom: '20px' }}>
@@ -65,7 +65,7 @@ const SupplyChainPage = () => {
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1.5fr) minmax(300px, 1fr)', gap: '30px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px' }}>
           
           {/* DATABASE BAMBU */}
           <div style={{ background: 'white', borderRadius: '20px', padding: '32px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>

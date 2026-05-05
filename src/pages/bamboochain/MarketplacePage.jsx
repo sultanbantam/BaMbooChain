@@ -43,7 +43,7 @@ const MarketplacePage = () => {
     : products.filter(p => p.category === activeCategory);
 
   return (
-    <div style={{ paddingTop: '250px', paddingBottom: '80px', minHeight: '100vh', background: '#f8f9fa' }}>
+    <div style={{ paddingTop: 'var(--navbar-height)', paddingBottom: '80px', minHeight: '100vh', background: '#f8f9fa' }}>
       
       {/* HEADER SECTION */}
       <div className="container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', marginBottom: '50px' }}>
@@ -143,7 +143,7 @@ const MarketplacePage = () => {
         </div>
 
         {/* Main Content Layout with Sidebar for Ads */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) 280px', gap: '40px', alignItems: 'start' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '40px', alignItems: 'start' }}>
           
           {/* LEFT: PRODUCTS */}
           <div>

@@ -52,7 +52,7 @@ const LifecyclePage = () => {
     <div style={{ background: '#f8f9fa', minHeight: '100vh' }}>
       <Navbar />
       
-      <div style={{ paddingTop: '250px', paddingBottom: '80px' }}>
+      <div style={{ paddingTop: 'var(--navbar-height)', paddingBottom: '80px' }}>
         <div className="container" style={{ marginBottom: '24px' }}>
           <BackButton to="/bamboochain" />
         </div>
@@ -68,7 +68,7 @@ const LifecyclePage = () => {
             </p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) minmax(300px, 2fr)', gap: '40px', alignItems: 'start' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '40px', alignItems: 'start' }}>
             
             {/* Sidebar Stage Selector */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -95,7 +95,7 @@ const LifecyclePage = () => {
             </div>
 
             {/* Stage Detail Display */}
-            <div style={{ background: 'white', borderRadius: '32px', padding: '50px', boxShadow: '0 20px 60px rgba(0,0,0,0.03)', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ background: 'white', borderRadius: '32px', padding: '30px', boxShadow: '0 20px 60px rgba(0,0,0,0.03)', position: 'relative', overflow: 'hidden' }}>
               <div style={{ position: 'absolute', top: '-100px', right: '-100px', width: '300px', height: '300px', background: `${currentStage.color}08`, borderRadius: '50%' }}></div>
               
               <div style={{ position: 'relative', zIndex: 1 }}>

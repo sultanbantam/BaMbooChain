@@ -35,7 +35,7 @@ const InsightPage = () => {
   }, []);
 
   return (
-    <div style={{ paddingTop: '220px', minHeight: '100vh', background: '#f8f9fa' }}>
+    <div style={{ paddingTop: 'var(--navbar-height)', minHeight: '100vh', background: '#f8f9fa' }}>
       
       {/* ── GLOBAL NEWS TICKER (TOP) ── */}
       <div style={{ background: '#212529', padding: '15px 0', borderBottom: '1px solid #343a40', overflow: 'hidden', position: 'relative' }}>

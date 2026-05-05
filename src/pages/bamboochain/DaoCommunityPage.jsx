@@ -48,7 +48,7 @@ const DaoCommunityPage = () => {
   ];
 
   return (
-    <div style={{ paddingTop: '130px', paddingBottom: '80px', minHeight: '100vh', background: '#f8f9fa' }}>
+    <div style={{ paddingTop: 'var(--navbar-height)', paddingBottom: '80px', minHeight: '100vh', background: '#f8f9fa' }}>
       
       {/* HEADER SECTION */}
       <div className="container" style={{ textAlign: 'center', marginBottom: '50px' }}>
@@ -68,7 +68,7 @@ const DaoCommunityPage = () => {
       <div className="container" style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
         
         {/* NEW ENHANCEMENT: GAMIFICATION HUB (Play & Earn) */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(250px, 1fr) minmax(300px, 1.5fr) minmax(280px, 1.2fr)', gap: '24px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
           
           {/* Kolom 1: Daily Check-in & Rewards */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -166,7 +166,7 @@ const DaoCommunityPage = () => {
         </div>
 
         {/* ROW 2: VOTING & FUNDING (Orisinal DAO) */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1.5fr) minmax(300px, 1fr)', gap: '30px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px' }}>
           
           {/* VOTING (PROPOSALS) */}
           <div style={{ background: 'white', borderRadius: '24px', padding: '32px', boxShadow: '0 10px 40px rgba(0,0,0,0.06)' }}>
@@ -271,7 +271,7 @@ const DaoCommunityPage = () => {
               </h3>
               <p style={{ color: 'var(--text-muted)', margin: '4px 0 0 0' }}>Koleksi 36 karakter unik pelindung rumpun bambu Nusantara.</p>
             </div>
-            <div style={{ display: 'flex', gap: '12px' }}>
+            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                <div style={{ background: 'white', padding: '8px 16px', borderRadius: '12px', border: '1px solid #dee2e6', fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-muted)' }}>
                  Unlocked: <span style={{ color: 'var(--primary)' }}>12/36</span>
                </div>
@@ -281,10 +281,10 @@ const DaoCommunityPage = () => {
 
           <div style={{ 
             display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', 
-            gap: '20px',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', 
+            gap: '12px',
             background: 'rgba(255,255,255,0.5)',
-            padding: '30px',
+            padding: '20px',
             borderRadius: '32px',
             border: '2px dashed #dee2e6'
           }}>
