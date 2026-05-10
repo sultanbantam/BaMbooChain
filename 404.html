@@ -5,10 +5,11 @@
     <title>BaMbooChain</title>
     <script>
       (function () {
-        var canonicalHost = 'bamboochain.id';
+        var primaryCustomHost = 'www.bamboochain.id';
+        var customHosts = ['bamboochain.id', primaryCustomHost];
         var githubPagesHost = 'sultanbantam.github.io';
         var isGitHubPages = window.location.hostname === githubPagesHost;
-        var isCanonicalHost = window.location.hostname === canonicalHost;
+        var isCustomHost = customHosts.indexOf(window.location.hostname) !== -1;
         var isLocalHost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '::1';
         var repoBase = isGitHubPages ? '/BaMbooChain/' : '/';
         var locationRef = window.location;
@@ -19,8 +20,8 @@
           return cleanPath ? '#/' + cleanPath : '#/';
         }
 
-        if (!isGitHubPages && !isCanonicalHost && !isLocalHost) {
-          locationRef.replace('https://' + canonicalHost + '/' + toHashRoute(path) + locationRef.search);
+        if (!isGitHubPages && !isCustomHost && !isLocalHost) {
+          locationRef.replace('https://' + primaryCustomHost + '/' + toHashRoute(path) + locationRef.search);
           return;
         }
 
