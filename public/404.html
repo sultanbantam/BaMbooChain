@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>BaMbooChain</title>
+    <script>
+      (function () {
+        var isGitHubPages = window.location.hostname.indexOf('github.io') !== -1;
+        var repoBase = isGitHubPages ? '/BaMbooChain/' : '/';
+        var locationRef = window.location;
+        var path = locationRef.pathname;
+
+        if (path.indexOf(repoBase) !== 0) {
+          locationRef.replace(locationRef.origin + repoBase);
+          return;
+        }
+
+        var routePath = path.slice(repoBase.length);
+        var hashRoute = routePath ? '#/' + routePath : '#/';
+        locationRef.replace(locationRef.origin + repoBase + hashRoute + locationRef.search + locationRef.hash);
+      })();
+    </script>
+  </head>
+  <body></body>
+</html>

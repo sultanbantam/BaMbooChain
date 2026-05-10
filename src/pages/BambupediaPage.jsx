@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Search, Send, BookOpen, Leaf, ChevronRight, Mic, Landmark, Wallet, ArrowRight, CheckCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 // ─── BASIS PENGETAHUAN BAMBU ─────────────────────────────────────────────────
 const BAMBOO_KB = [
@@ -210,6 +211,7 @@ const formatMessage = (text) => {
 
 // ─── KOMPONEN UTAMA ──────────────────────────────────────────────────────────
 const BambupediaPage = () => {
+  const navigate = useNavigate();
   const [freeQuota, setFreeQuota] = useState(() => {
     const saved = localStorage.getItem('bambubot_freeQuota');
     return saved !== null ? parseInt(saved, 10) : 3;
@@ -323,7 +325,7 @@ const BambupediaPage = () => {
         </div>
 
         {/* Tab Switcher */}
-        <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '32px' }}>
+        <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '32px', flexWrap: 'wrap' }}>
           {[{ id: 'chat', label: '💬 Tanya BambuBot' }, { id: 'library', label: '📚 Pustaka Bambu' }].map(tab => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
               style={{ padding: '10px 28px', borderRadius: '50px', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '0.9rem', transition: 'all 0.2s',
@@ -334,6 +336,10 @@ const BambupediaPage = () => {
               {tab.label}
             </button>
           ))}
+          <button onClick={() => navigate('/bambupedia/tracker')}
+            style={{ padding: '10px 28px', borderRadius: '50px', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '0.9rem', transition: 'all 0.2s', background: 'white', color: 'var(--text-muted)', boxShadow: '0 1px 4px rgba(0,0,0,0.08)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Leaf size={16} color="var(--primary)" /> Tracker Bambu
+          </button>
         </div>
 
         {/* ── TAB CHAT ── */}

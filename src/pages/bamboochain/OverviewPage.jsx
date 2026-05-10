@@ -205,7 +205,7 @@ const OverviewPage = () => {
               </div>
             </div>
             <div style={{ padding: '16px 24px', borderTop: '1px solid #f1f3f5', textAlign: 'center' }}>
-              <Link to="/bamboochain/overview" style={{ fontSize: '0.9rem', color: 'var(--primary)', fontWeight: '600', textDecoration: 'none' }}>Lihat Semua Aktivitas →</Link>
+              <Link to="/bamboochain/activities" style={{ fontSize: '0.9rem', color: 'var(--primary)', fontWeight: '600', textDecoration: 'none' }}>Lihat Semua Aktivitas -&gt;</Link>
             </div>
           </div>
 

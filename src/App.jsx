@@ -21,6 +21,9 @@ import DataToolsPage from './pages/DataToolsPage';
 import CommunityPage from './pages/CommunityPage';
 import BambupediaPage from './pages/BambupediaPage';
 import CareersPage from './pages/CareersPage';
+import BambupediaGuidePage from './pages/BambupediaGuidePage';
+import BambupediaTrackerPage from './pages/BambupediaTrackerPage';
+import AdminPortalPage from './pages/AdminPortalPage';
 
 // BambooChain Modules
 import BcOverviewPage from './pages/bamboochain/OverviewPage';
@@ -36,8 +39,9 @@ import BcDataAnalyticsPage from './pages/bamboochain/DataAnalyticsPage';
 import BcInvestEcosystemPage from './pages/bamboochain/InvestEcosystemPage';
 import BcValidatorDashboardPage from './pages/bamboochain/ValidatorDashboardPage';
 import WhitepaperPage from './pages/bamboochain/WhitepaperPage';
+import BcPreOrderPage from './pages/bamboochain/PreOrderPage';
+import BcActivitiesPage from './pages/bamboochain/ActivitiesPage';
 import FAQPage from './pages/FAQPage';
-import AdSpace from './components/AdSpace';
 import CareCenterWidget from './components/CareCenterWidget';
 
 // bambuNUSA Modules
@@ -65,6 +69,7 @@ function App() {
           <Route path="/disclaimer" element={<DisclaimerPage />} />
           <Route path="/transparency" element={<TransparencyPage />} />
           <Route path="/bamboochain/marketplace" element={<BcMarketplacePage />} />
+          <Route path="/bamboochain/pre-order" element={<BcPreOrderPage />} />
           <Route path="/careers" element={<CareersPage />} />
           
           {/* Protected Routes */}
@@ -74,6 +79,15 @@ function App() {
           <Route path="/data-tools" element={<ProtectedRoute><DataToolsPage /></ProtectedRoute>} />
           <Route path="/community" element={<ProtectedRoute><CommunityPage /></ProtectedRoute>} />
           <Route path="/bambupedia" element={<ProtectedRoute><BambupediaPage /></ProtectedRoute>} />
+          <Route path="/bambupedia/tracker" element={<ProtectedRoute><BambupediaTrackerPage /></ProtectedRoute>} />
+          <Route path="/bambupedia/plant" element={<ProtectedRoute><BambupediaGuidePage topic="plant" /></ProtectedRoute>} />
+          <Route path="/bambupedia/plant-past" element={<ProtectedRoute><BambupediaGuidePage topic="plant-past" /></ProtectedRoute>} />
+          <Route path="/bambupedia/maintain" element={<ProtectedRoute><BambupediaGuidePage topic="maintain" /></ProtectedRoute>} />
+          <Route path="/bambupedia/harvest" element={<ProtectedRoute><BambupediaGuidePage topic="harvest" /></ProtectedRoute>} />
+          <Route path="/bambupedia/utilize" element={<ProtectedRoute><BambupediaGuidePage topic="utilize" /></ProtectedRoute>} />
+          <Route path="/bambupedia/cultivate" element={<ProtectedRoute><BambupediaGuidePage topic="cultivate" /></ProtectedRoute>} />
+          <Route path="/bambupedia/taxonomy" element={<ProtectedRoute><BambupediaGuidePage topic="taxonomy" /></ProtectedRoute>} />
+          <Route path="/bambupedia/history" element={<ProtectedRoute><BambupediaGuidePage topic="history" /></ProtectedRoute>} />
           
           {/* BambooChain Protected Routes */}
           <Route path="/bamboochain" element={<ProtectedRoute><BcOverviewPage /></ProtectedRoute>} />
@@ -87,14 +101,17 @@ function App() {
           <Route path="/bamboochain/data-analytics" element={<ProtectedRoute><BcDataAnalyticsPage /></ProtectedRoute>} />
           <Route path="/bamboochain/invest" element={<ProtectedRoute><BcInvestEcosystemPage /></ProtectedRoute>} />
           <Route path="/validator" element={<ProtectedRoute><BcValidatorDashboardPage /></ProtectedRoute>} />
+          <Route path="/bamboochain/activities" element={<ProtectedRoute><BcActivitiesPage /></ProtectedRoute>} />
           <Route path="/bamboochain/whitepaper" element={<ProtectedRoute><WhitepaperPage /></ProtectedRoute>} />
           
           {/* bambuNUSA Protected Routes */}
           <Route path="/bambunusa" element={<ProtectedRoute><BcLifecyclePage /></ProtectedRoute>} />
           <Route path="/bambunusa/farmers" element={<ProtectedRoute><FarmerListPage /></ProtectedRoute>} />
+          <Route path="/bambunusa/join" element={<ProtectedRoute><JoinFarmerPage /></ProtectedRoute>} />
           <Route path="/bambunusa/join-farmer" element={<ProtectedRoute><JoinFarmerPage /></ProtectedRoute>} />
           <Route path="/bambunusa/join-validator" element={<ProtectedRoute><JoinValidatorPage /></ProtectedRoute>} />
           
+          <Route path="/admin-portal" element={<ProtectedRoute><AdminPortalPage /></ProtectedRoute>} />
           <Route path="/faq" element={<FAQPage />} />
         </Routes>
         <Footer />

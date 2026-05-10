@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Target, TrendingUp, Handshake, Leaf, MapPin, CheckCircle, ArrowRight } from 'lucide-react';
+import { Target, TrendingUp, Handshake, Leaf, MapPin, CheckCircle, ArrowRight, Briefcase, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getAssetUrl } from '../utils/assets';
 
@@ -21,6 +21,34 @@ const slides = [
   }
 ];
 
+const homeTickerItems = [
+  'Funding Ready: 10 Unit Villa Bambu Ekologis - Bali',
+  'Demand Market: Rumah Modular, Laminasi, Interior, dan Konstruksi',
+  'Bounty Board aktif untuk desain, riset, konten, dan Web3',
+  'Produk unggulan: Laminasi, Interior, dan Modular Bamboo Building',
+];
+
+const featuredProducts = [
+  {
+    title: 'Bambu Laminasi',
+    desc: 'Panel dan balok rekayasa untuk kebutuhan interior, struktur ringan, dan pengganti kayu solid.',
+    image: getAssetUrl('gambar/produk_unggulan/Laminasi.jpeg'),
+    tag: 'Material Konstruksi',
+  },
+  {
+    title: 'Interior Bambu',
+    desc: 'Aplikasi premium untuk dinding, plafon, furnitur, dan aksen ruang bernilai estetika tinggi.',
+    image: getAssetUrl('gambar/produk_unggulan/Interior.jpeg'),
+    tag: 'Interior',
+  },
+  {
+    title: 'Modular Bamboo Building',
+    desc: 'Komponen hunian modular berbasis bambu untuk proyek cepat bangun dan rendah jejak karbon.',
+    image: getAssetUrl('gambar/produk_unggulan/mbb.jpeg'),
+    tag: 'Rumah Modular',
+  },
+];
+
 const HomePage = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
 
@@ -33,13 +61,21 @@ const HomePage = () => {
 
   return (
     <div>
+      <div className="home-activity-ticker" aria-label="BaMbooChain live activity">
+        <div className="home-ticker-track">
+          {[...homeTickerItems, ...homeTickerItems].map((item, index) => (
+            <span key={`${item}-${index}`}>{item}</span>
+          ))}
+        </div>
+      </div>
+
       {/* SECTION 1 - HERO SLIDER */}
       <section style={{
         minHeight: '100vh',
         position: 'relative',
         display: 'flex',
         alignItems: 'center',
-        paddingTop: 'var(--navbar-height)',
+        paddingTop: '70px',
         paddingBottom: '80px',
         overflow: 'hidden'
       }}>
@@ -93,6 +129,36 @@ const HomePage = () => {
                   border: 'none', cursor: 'pointer', transition: 'all 0.3s' 
                 }}
               />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 1B - MARKET SIGNAL */}
+      <section style={{ padding: '60px 0', background: '#101418', color: 'white' }}>
+        <div className="container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '24px', alignItems: 'center' }}>
+          <div>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', color: '#69db7c', fontWeight: '800', fontSize: '0.85rem', marginBottom: '14px' }}>
+              <Briefcase size={18} /> LIVE OPPORTUNITY MARKET
+            </div>
+            <h2 style={{ fontSize: 'clamp(2rem, 4vw, 3rem)', marginBottom: '16px', lineHeight: 1.1 }}>
+              Proyek, produk, dan talenta bambu dalam satu ekosistem.
+            </h2>
+            <p style={{ color: '#ced4da', fontSize: '1.05rem', lineHeight: 1.7, maxWidth: '680px' }}>
+              Demand Market menghubungkan kebutuhan proyek yang sudah memiliki pendanaan dengan kontraktor, pemasok, arsitek, peneliti, dan komunitas bambu.
+            </p>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(120px, 1fr))', gap: '14px' }}>
+            {[
+              ['5+', 'Demand Aktif'],
+              ['150K', 'USDT Funding Ready'],
+              ['2K', 'BMC Top Bounty'],
+              ['24/7', 'Marketplace Signal'],
+            ].map(([value, label]) => (
+              <div key={label} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '22px' }}>
+                <div style={{ fontSize: '1.8rem', fontWeight: '900', color: '#69db7c' }}>{value}</div>
+                <div style={{ color: '#adb5bd', fontSize: '0.85rem', fontWeight: '700' }}>{label}</div>
+              </div>
             ))}
           </div>
         </div>
@@ -233,6 +299,43 @@ const HomePage = () => {
       {/* SECTION 7 - EKOSISTEM */}
       <section style={{ padding: '80px 0', background: '#f8f9fa' }}>
         <div className="container">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '20px', flexWrap: 'wrap', marginBottom: '36px' }}>
+            <div>
+              <h2 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '12px' }}>Produk Unggulan</h2>
+              <p style={{ color: 'var(--text-muted)', fontSize: '1.05rem', maxWidth: '720px' }}>
+                Katalog inti dari ekosistem industri bambu: material konstruksi, interior, dan sistem modular untuk kebutuhan B2B.
+              </p>
+            </div>
+            <Link to="/bamboochain/marketplace" className="btn btn-primary" style={{ padding: '12px 22px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+              Marketplace <ArrowRight size={18} />
+            </Link>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '28px' }}>
+            {featuredProducts.map((product) => (
+              <div key={product.title} style={{ background: 'white', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.06)', border: '1px solid #edf2f7' }}>
+                <div style={{ height: '230px', position: 'relative', overflow: 'hidden' }}>
+                  <img src={product.image} alt={product.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <div style={{ position: 'absolute', top: '16px', left: '16px', background: 'rgba(0,0,0,0.72)', color: 'white', padding: '6px 12px', borderRadius: '999px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', fontWeight: '800' }}>
+                    <Star size={14} fill="#ffd43b" color="#ffd43b" /> {product.tag}
+                  </div>
+                </div>
+                <div style={{ padding: '26px' }}>
+                  <h3 style={{ fontSize: '1.35rem', color: 'var(--text-main)', marginBottom: '10px' }}>{product.title}</h3>
+                  <p style={{ color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: '20px' }}>{product.desc}</p>
+                  <Link to="/careers" style={{ color: 'var(--primary)', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '6px', textDecoration: 'none' }}>
+                    Lihat Demand Market <ArrowRight size={16} />
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 8 - EKOSISTEM */}
+      <section style={{ padding: '80px 0', background: '#f8f9fa' }}>
+        <div className="container">
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '40px', alignItems: 'center' }}>
             <div>
               <h2 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '24px' }}>Ekosistem Industri Bambu</h2>
@@ -255,7 +358,7 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* SECTION 8 - IMPACT */}
+      {/* SECTION 9 - IMPACT */}
       <section style={{ padding: '80px 0', background: 'var(--primary)', color: 'white' }}>
         <div className="container text-center">
           <h2 style={{ fontSize: '2.5rem', marginBottom: '40px' }}>Dampak Lingkungan dan Sosial</h2>
@@ -280,7 +383,7 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* SECTION 9 - PARTNERS */}
+      {/* SECTION 10 - PARTNERS */}
       <section style={{ padding: '80px 0', textAlign: 'center' }}>
         <div className="container">
           <h2 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '20px' }}>Mitra & Kolaborasi</h2>
@@ -295,7 +398,7 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* SECTION 10 - CTA */}
+      {/* SECTION 11 - CTA */}
       <section style={{ padding: '100px 0', background: '#212529', color: 'white', textAlign: 'center' }}>
         <div className="container">
           <h2 style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', marginBottom: '24px' }}>Pelajari Lebih Lanjut</h2>
@@ -306,6 +409,39 @@ const HomePage = () => {
         </div>
       </section>
 
+      <style>{`
+        .home-activity-ticker {
+          margin-top: var(--navbar-height);
+          background: #111827;
+          border-bottom: 1px solid rgba(255,255,255,0.1);
+          overflow: hidden;
+          white-space: nowrap;
+          color: #69db7c;
+          font-size: 0.85rem;
+          font-weight: 800;
+          letter-spacing: 0;
+        }
+        .home-ticker-track {
+          display: inline-flex;
+          width: max-content;
+          animation: homeTicker 32s linear infinite;
+        }
+        .home-ticker-track span {
+          display: inline-flex;
+          align-items: center;
+          padding: 12px 28px;
+          border-right: 1px solid rgba(255,255,255,0.08);
+        }
+        @keyframes homeTicker {
+          from { transform: translateX(0); }
+          to { transform: translateX(-50%); }
+        }
+        @media (max-width: 768px) {
+          .home-ticker-track span {
+            padding: 10px 18px;
+          }
+        }
+      `}</style>
     </div>
   );
 };
