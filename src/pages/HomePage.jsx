@@ -1,75 +1,296 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Target, TrendingUp, Handshake, Leaf, MapPin, CheckCircle, ArrowRight, Briefcase, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useLanguage } from '../context/LanguageContext';
 import { getAssetUrl } from '../utils/assets';
 
-const slides = [
-  {
-    image: getAssetUrl('pehc.JPG'),
-    title: "Potensi Industri Bambu Global: Peluang Ekonomi dan Dampak Lingkungan",
-    desc: "Analisis berbasis data mengenai perkembangan industri bambu, produksi, pasar global, serta kontribusinya terhadap keberlanjutan lingkungan dan ekonomi masyarakat."
-  },
-  {
-    image: getAssetUrl('pehc2.JPG'),
-    title: "Masa Depan Konstruksi Hijau dan Inovasi Material",
-    desc: "Bambu laminasi dan konstruksi modular hadir sebagai pengganti material konvensional. Kuat, tahan lama, dan menetralkan jejak karbon dunia."
-  },
-  {
-    image: getAssetUrl('pehc3.JPG'),
-    title: "Pemberdayaan Desa dan Restorasi Ekologi",
-    desc: "Melalui budidaya dan pengembangan dari hulu ke hilir, kita tidak hanya menggerakkan roda ekonomi, tapi juga memulihkan mata air bumi."
-  }
+const slideAssets = [
+  { image: getAssetUrl('pehc.JPG') },
+  { image: getAssetUrl('pehc2.JPG') },
+  { image: getAssetUrl('pehc3.JPG') },
 ];
 
-const homeTickerItems = [
-  'Funding Ready: 10 Unit Villa Bambu Ekologis - Bali',
-  'Demand Market: Rumah Modular, Laminasi, Interior, dan Konstruksi',
-  'Bounty Board aktif untuk desain, riset, konten, dan Web3',
-  'Produk unggulan: Laminasi, Interior, dan Modular Bamboo Building',
+const productAssets = [
+  { image: getAssetUrl('gambar/produk_unggulan/Laminasi.jpeg') },
+  { image: getAssetUrl('gambar/produk_unggulan/Interior.jpeg') },
+  { image: getAssetUrl('gambar/produk_unggulan/mbb.jpeg') },
 ];
 
-const featuredProducts = [
-  {
-    title: 'Bambu Laminasi',
-    desc: 'Panel dan balok rekayasa untuk kebutuhan interior, struktur ringan, dan pengganti kayu solid.',
-    image: getAssetUrl('gambar/produk_unggulan/Laminasi.jpeg'),
-    tag: 'Material Konstruksi',
-  },
-  {
-    title: 'Interior Bambu',
-    desc: 'Aplikasi premium untuk dinding, plafon, furnitur, dan aksen ruang bernilai estetika tinggi.',
-    image: getAssetUrl('gambar/produk_unggulan/Interior.jpeg'),
-    tag: 'Interior',
-  },
-  {
-    title: 'Modular Bamboo Building',
-    desc: 'Komponen hunian modular berbasis bambu untuk proyek cepat bangun dan rendah jejak karbon.',
-    image: getAssetUrl('gambar/produk_unggulan/mbb.jpeg'),
-    tag: 'Rumah Modular',
-  },
+const projectAssets = [
+  { image: getAssetUrl('gambar/pehcibarani.png') },
+  { image: getAssetUrl('gambar/ceap.png') },
+  { image: getAssetUrl('gambar/mbh.jpeg') },
 ];
+
+const dataIcons = [TrendingUp, Target, Handshake];
+
+const homeText = {
+  id: {
+    tickerItems: [
+      'Funding Ready: 10 Unit Villa Bambu Ekologis - Bali',
+      'Demand Market: Rumah Modular, Laminasi, Interior, dan Konstruksi',
+      'Bounty Board aktif untuk desain, riset, konten, dan Web3',
+      'Produk unggulan: Laminasi, Interior, dan Modular Bamboo Building',
+    ],
+    slides: [
+      {
+        title: 'Potensi Industri Bambu Global: Peluang Ekonomi dan Dampak Lingkungan',
+        desc: 'Analisis berbasis data mengenai perkembangan industri bambu, produksi, pasar global, serta kontribusinya terhadap keberlanjutan lingkungan dan ekonomi masyarakat.',
+      },
+      {
+        title: 'Masa Depan Konstruksi Hijau dan Inovasi Material',
+        desc: 'Bambu laminasi dan konstruksi modular hadir sebagai pengganti material konvensional. Kuat, tahan lama, dan menetralkan jejak karbon dunia.',
+      },
+      {
+        title: 'Pemberdayaan Desa dan Restorasi Ekologi',
+        desc: 'Melalui budidaya dan pengembangan dari hulu ke hilir, kita tidak hanya menggerakkan roda ekonomi, tapi juga memulihkan mata air bumi.',
+      },
+    ],
+    heroInsight: 'LIHAT ANALISIS',
+    heroProjects: 'JELAJAHI PROYEK',
+    marketEyebrow: 'LIVE OPPORTUNITY MARKET',
+    marketTitle: 'Proyek, produk, dan talenta bambu dalam satu ekosistem.',
+    marketDesc: 'Demand Market menghubungkan kebutuhan proyek yang sudah memiliki pendanaan dengan kontraktor, pemasok, arsitek, peneliti, dan komunitas bambu.',
+    marketStats: [
+      ['5+', 'Demand Aktif'],
+      ['150K', 'USDT Funding Ready'],
+      ['2K', 'BMC Top Bounty'],
+      ['24/7', 'Marketplace Signal'],
+    ],
+    positioningTitle: 'Dari Indonesia untuk Industri Bambu Dunia',
+    positioningDesc: 'Indonesia memiliki potensi besar dalam pengembangan industri bambu berbasis produksi dan keberlanjutan, yang terhubung langsung dengan kebutuhan pasar global.',
+    dataTitle: 'Data Industri Bambu Berbasis Produksi',
+    dataCards: [
+      ['20-40%', 'Estimasi ROI Industri', '(Berbasis studi kasus)'],
+      ['1.000', 'Kapasitas Produksi', 'Lembar / Hari'],
+      ['Sekitar Rp 680k', 'Harga Produk', 'Per Lembar'],
+    ],
+    dataNote: '*Catatan: Data merupakan estimasi dan dapat bervariasi tergantung lokasi, skala, dan model bisnis.',
+    scaleTitle: 'Industri yang Berpotensi Tumbuh Global',
+    scaleDesc: 'Permintaan global terhadap material bambu meningkat sebagai alternatif kayu, logam, plastik, benang dan energi fosil yang lebih ramah lingkungan. Industri ini memiliki peluang berkembang pesat dalam sektor konstruksi, manufaktur, tekstil dan ekonomi karbon.',
+    businessTitle: 'Model Ekonomi Industri Bambu',
+    businessModels: [
+      ['Produk Industri', 'Bambu laminasi, konstruksi modular, dan serat tekstil bambu berkualitas ekspor.'],
+      ['Rantai Pasok', 'Membangun distribusi bahan baku dan produk dari daerah potensial ke hilir industri masif.'],
+      ['Nilai Lingkungan', 'Potensi ekonomi tambahan terukur dari jasa ekosistem lingkungan dan serapan kredit karbon.'],
+    ],
+    projectsTitle: 'Contoh Proyek Pengembangan Bambu',
+    projectDetails: 'LIHAT DETAIL PROYEK',
+    projects: [
+      {
+        location: 'Banten (490 Ha)',
+        title: 'Perkebunan Emas Hijau Cibarani - Lebak',
+        desc: 'Restorasi, produksi bambu terintegrasi dan sabuk ekologis untuk melindungi hutan adat dan hutan lindung dari illegal logging serta aktivitas penambangan emas liar.',
+      },
+      {
+        location: 'Tangerang Raya (120 Ha)',
+        title: 'Cisadane Adventure Eco Park',
+        desc: 'Mengintegrasikan konservasi lingkungan, inovasi bambu, pengembangan ekonomi komunitas, dan wisata alam berbasis ekologi.',
+      },
+      {
+        location: 'Sumatera (Nasional)',
+        title: 'Proyek Rumah Hunian Tetap Tipe 36',
+        desc: 'Hunian modular pasca bencana lingkungan di area Sumatera, menyumbang hingga 6.000 unit produksi hunian terstandarisasi berbasis bambu ramah lingkungan.',
+      },
+    ],
+    productsTitle: 'Produk Unggulan',
+    productsDesc: 'Katalog inti dari ekosistem industri bambu: material konstruksi, interior, dan sistem modular untuk kebutuhan B2B.',
+    marketplaceLink: 'Marketplace',
+    productDemandLink: 'Lihat Demand Market',
+    products: [
+      {
+        title: 'Bambu Laminasi',
+        desc: 'Panel dan balok rekayasa untuk kebutuhan interior, struktur ringan, dan pengganti kayu solid.',
+        tag: 'Material Konstruksi',
+      },
+      {
+        title: 'Interior Bambu',
+        desc: 'Aplikasi premium untuk dinding, plafon, furnitur, dan aksen ruang bernilai estetika tinggi.',
+        tag: 'Interior',
+      },
+      {
+        title: 'Modular Bamboo Building',
+        desc: 'Komponen hunian modular berbasis bambu untuk proyek cepat bangun dan rendah jejak karbon.',
+        tag: 'Rumah Modular',
+      },
+    ],
+    ecosystemTitle: 'Ekosistem Industri Bambu',
+    ecosystemItems: [
+      'Budidaya dan penanaman',
+      'Produksi dan pengolahan inovatif',
+      'Distribusi dan pasar yang meluas',
+      'Pemanfaatan teknologi untuk monitoring dan transparansi',
+    ],
+    integrationTitle: 'Dampak Integrasi Kami',
+    integrationItems: [
+      'Restorasi lahan kritis dan terdegradasi',
+      'Perlindungan sistem sumber mata air bawah tanah',
+      'Pemberdayaan ekonomi warga di daerah rural',
+    ],
+    impactTitle: 'Dampak Lingkungan dan Sosial',
+    impactStats: [
+      ['Sekitar 490 Ha', 'Kawasan Prioritas Dilindungi'],
+      ['Sekitar 50.000', 'Bibit Bambu Baru Ditanam'],
+      ['100%', 'Perlindungan Sumber Mata Air'],
+      ['Berkelanjutan', 'Peningkatan Ekonomi Lokal Rutin'],
+    ],
+    partnersTitle: 'Mitra & Kolaborasi',
+    partnersDesc: 'Kami bekerja sama dengan berbagai pihak dalam pengembangan ekosistem bambu berkelanjutan, termasuk komunitas dan masyarakat adat, akademisi dan peneliti, industri dan manufaktur, pemerintah dan lembaga, serta teknologi digital.',
+    partnerCardTitle: 'Menjadi Mitra',
+    partnerCardDesc: 'Terbuka untuk kolaborasi dalam pengembangan industri bambu berkelanjutan.',
+    contactButton: 'HUBUNGI KAMI',
+    ctaTitle: 'Pelajari Lebih Lanjut',
+    ctaDesc: 'Jelajahi data, analisis, dan perkembangan masa depan terkait industri primer bambu yang dapat diperbarui secara berkelanjutan.',
+    ctaButton: 'LIHAT INSIGHT',
+  },
+  en: {
+    tickerItems: [
+      'Funding Ready: 10 Ecological Bamboo Villas - Bali',
+      'Demand Market: Modular Homes, Lamination, Interior, and Construction',
+      'Bounty Board active for design, research, content, and Web3',
+      'Featured products: Lamination, Interior, and Modular Bamboo Building',
+    ],
+    slides: [
+      {
+        title: 'Global Bamboo Industry Potential: Economic Opportunity and Environmental Impact',
+        desc: 'A data-driven view of bamboo industry growth, production, global markets, and its contribution to environmental and community economic sustainability.',
+      },
+      {
+        title: 'The Future of Green Construction and Material Innovation',
+        desc: 'Laminated bamboo and modular construction offer a durable, high-strength alternative to conventional materials while helping reduce the global carbon footprint.',
+      },
+      {
+        title: 'Village Empowerment and Ecological Restoration',
+        desc: 'Through cultivation and end-to-end development, bamboo can drive local economies while helping restore the earths water systems.',
+      },
+    ],
+    heroInsight: 'VIEW ANALYSIS',
+    heroProjects: 'EXPLORE PROJECTS',
+    marketEyebrow: 'LIVE OPPORTUNITY MARKET',
+    marketTitle: 'Bamboo projects, products, and talent in one ecosystem.',
+    marketDesc: 'Demand Market connects funded project needs with contractors, suppliers, architects, researchers, and bamboo communities.',
+    marketStats: [
+      ['5+', 'Active Demands'],
+      ['150K', 'USDT Funding Ready'],
+      ['2K', 'BMC Top Bounty'],
+      ['24/7', 'Marketplace Signal'],
+    ],
+    positioningTitle: 'From Indonesia to the Global Bamboo Industry',
+    positioningDesc: 'Indonesia has major potential to develop a production-based and sustainable bamboo industry that is directly connected to global market demand.',
+    dataTitle: 'Production-Based Bamboo Industry Data',
+    dataCards: [
+      ['20-40%', 'Estimated Industry ROI', '(Based on case studies)'],
+      ['1,000', 'Production Capacity', 'Sheets / Day'],
+      ['Around Rp 680k', 'Product Price', 'Per Sheet'],
+    ],
+    dataNote: '*Note: Data is estimated and may vary by location, scale, and business model.',
+    scaleTitle: 'An Industry with Global Growth Potential',
+    scaleDesc: 'Global demand for bamboo materials is increasing as a more sustainable alternative to wood, metal, plastic, yarn, and fossil energy. The industry has strong growth potential across construction, manufacturing, textiles, and the carbon economy.',
+    businessTitle: 'Bamboo Industry Economic Model',
+    businessModels: [
+      ['Industrial Products', 'Export-grade laminated bamboo, modular construction, and bamboo textile fiber.'],
+      ['Supply Chain', 'Building raw material and product distribution from high-potential regions into large-scale downstream industry.'],
+      ['Environmental Value', 'Additional measurable economic value from ecosystem services and carbon credit absorption.'],
+    ],
+    projectsTitle: 'Bamboo Development Project Examples',
+    projectDetails: 'VIEW PROJECT DETAILS',
+    projects: [
+      {
+        location: 'Banten (490 Ha)',
+        title: 'Cibarani Green Gold Plantation - Lebak',
+        desc: 'Integrated bamboo restoration and production with an ecological buffer zone to protect customary and protected forests from illegal logging and unlicensed gold mining.',
+      },
+      {
+        location: 'Greater Tangerang (120 Ha)',
+        title: 'Cisadane Adventure Eco Park',
+        desc: 'Integrating environmental conservation, bamboo innovation, community economic development, and eco-based nature tourism.',
+      },
+      {
+        location: 'Sumatra (National)',
+        title: 'Permanent Type 36 Modular Housing Project',
+        desc: 'Post-disaster modular housing across Sumatra, contributing up to 6,000 standardized low-carbon bamboo housing units.',
+      },
+    ],
+    productsTitle: 'Featured Products',
+    productsDesc: 'The core catalog of the bamboo industry ecosystem: construction materials, interiors, and modular systems for B2B needs.',
+    marketplaceLink: 'Marketplace',
+    productDemandLink: 'View Demand Market',
+    products: [
+      {
+        title: 'Laminated Bamboo',
+        desc: 'Engineered panels and beams for interiors, light structures, and solid wood replacement.',
+        tag: 'Construction Material',
+      },
+      {
+        title: 'Bamboo Interior',
+        desc: 'Premium applications for walls, ceilings, furniture, and high-value spatial accents.',
+        tag: 'Interior',
+      },
+      {
+        title: 'Modular Bamboo Building',
+        desc: 'Bamboo-based modular housing components for fast-build and low-carbon projects.',
+        tag: 'Modular Homes',
+      },
+    ],
+    ecosystemTitle: 'Bamboo Industry Ecosystem',
+    ecosystemItems: [
+      'Cultivation and planting',
+      'Innovative production and processing',
+      'Expanding distribution and markets',
+      'Technology use for monitoring and transparency',
+    ],
+    integrationTitle: 'Our Integrated Impact',
+    integrationItems: [
+      'Restoration of critical and degraded land',
+      'Protection of underground water source systems',
+      'Economic empowerment for rural communities',
+    ],
+    impactTitle: 'Environmental and Social Impact',
+    impactStats: [
+      ['Around 490 Ha', 'Priority Area Protected'],
+      ['Around 50,000', 'New Bamboo Seedlings Planted'],
+      ['100%', 'Water Source Protection'],
+      ['Sustainable', 'Recurring Local Economic Growth'],
+    ],
+    partnersTitle: 'Partners & Collaboration',
+    partnersDesc: 'We collaborate with many stakeholders in developing a sustainable bamboo ecosystem, including communities and customary groups, academics and researchers, industry and manufacturing, government and institutions, and digital technology partners.',
+    partnerCardTitle: 'Become a Partner',
+    partnerCardDesc: 'Open for collaboration in sustainable bamboo industry development.',
+    contactButton: 'CONTACT US',
+    ctaTitle: 'Learn More',
+    ctaDesc: 'Explore data, analysis, and future developments related to renewable and sustainable primary bamboo industries.',
+    ctaButton: 'VIEW INSIGHT',
+  },
+};
 
 const HomePage = () => {
+  const { language } = useLanguage();
+  const copy = homeText[language] || homeText.id;
   const [currentSlide, setCurrentSlide] = useState(0);
+
+  const slides = slideAssets.map((slide, index) => ({ ...slide, ...copy.slides[index] }));
+  const featuredProducts = productAssets.map((product, index) => ({ ...product, ...copy.products[index] }));
+  const projects = projectAssets.map((project, index) => ({ ...project, ...copy.projects[index] }));
+  const slideCount = slides.length;
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 5000); // Ganti slide otomatis setiap 5 detik
+      setCurrentSlide((prev) => (prev + 1) % slideCount);
+    }, 5000);
+
     return () => clearInterval(timer);
-  }, []);
+  }, [slideCount]);
 
   return (
     <div>
       <div className="home-activity-ticker" aria-label="BaMbooChain live activity">
         <div className="home-ticker-track">
-          {[...homeTickerItems, ...homeTickerItems].map((item, index) => (
+          {[...copy.tickerItems, ...copy.tickerItems].map((item, index) => (
             <span key={`${item}-${index}`}>{item}</span>
           ))}
         </div>
       </div>
 
-      {/* SECTION 1 - HERO SLIDER */}
       <section style={{
         minHeight: '100vh',
         position: 'relative',
@@ -79,54 +300,54 @@ const HomePage = () => {
         paddingBottom: '80px',
         overflow: 'hidden'
       }}>
-        {/* Latar Belakang Gambar Berjalan */}
         {slides.map((slide, index) => (
-          <div 
-            key={index} 
+          <div
+            key={slide.title}
             style={{
               position: 'absolute',
               top: 0, left: 0, width: '100%', height: '100%',
               background: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.7)), url("${slide.image}") center/cover`,
               opacity: index === currentSlide ? 1 : 0,
               visibility: index === currentSlide ? 'visible' : 'hidden',
-              transition: 'opacity 1s ease-in-out, visibility 1s ease-in-out',
-              transform: index === currentSlide ? 'scale(1)' : 'scale(1.05)', // Tambahan efek membesar sedikit
+              transform: index === currentSlide ? 'scale(1)' : 'scale(1.05)',
               transitionProperty: 'opacity, visibility, transform',
               transitionDuration: '1s, 1s, 6s',
+              transitionTimingFunction: 'ease-in-out',
               zIndex: -1
             }}
           />
         ))}
 
         <div className="container text-center" style={{ position: 'relative', zIndex: 1 }}>
-          <h1 
-            key={`title-${currentSlide}`} // Agar animasi ke-trigger ulang saat slide ganti
+          <h1
+            key={`title-${language}-${currentSlide}`}
             className="animate-fade-in-up"
             style={{ fontSize: 'clamp(2.5rem, 5vw, 4.5rem)', fontWeight: '800', marginBottom: '24px', color: 'white', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}
           >
             {slides[currentSlide].title}
           </h1>
-          <p 
-            key={`desc-${currentSlide}`}
+          <p
+            key={`desc-${language}-${currentSlide}`}
             className="animate-fade-in-up"
             style={{ fontSize: '1.25rem', opacity: '0.9', maxWidth: '800px', margin: '0 auto 40px', color: 'white', animationDelay: '0.2s' }}
           >
             {slides[currentSlide].desc}
           </p>
           <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link to="/insight" className="btn btn-crypto" style={{ padding: '16px 32px', fontSize: '1.1rem' }}>LIHAT ANALISIS</Link>
-            <Link to="/projects" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '1.1rem', background: 'transparent', border: '2px solid var(--primary)' }}>JELAJAHI PROYEK</Link>
+            <Link to="/insight" className="btn btn-crypto" style={{ padding: '16px 32px', fontSize: '1.1rem' }}>{copy.heroInsight}</Link>
+            <Link to="/projects" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '1.1rem', background: 'transparent', border: '2px solid var(--primary)' }}>{copy.heroProjects}</Link>
           </div>
-          
-          {/* Indikator Titik (Dots) di Bawah */}
+
           <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '40px' }}>
-            {slides.map((_, index) => (
-              <button 
-                key={index}
+            {slides.map((slide, index) => (
+              <button
+                key={slide.title}
+                type="button"
+                aria-label={`Slide ${index + 1}`}
                 onClick={() => setCurrentSlide(index)}
-                style={{ 
-                  width: '12px', height: '12px', borderRadius: '50%', background: index === currentSlide ? 'var(--primary)' : 'rgba(255,255,255,0.4)', 
-                  border: 'none', cursor: 'pointer', transition: 'all 0.3s' 
+                style={{
+                  width: '12px', height: '12px', borderRadius: '50%', background: index === currentSlide ? 'var(--primary)' : 'rgba(255,255,255,0.4)',
+                  border: 'none', cursor: 'pointer', transition: 'all 0.3s'
                 }}
               />
             ))}
@@ -134,27 +355,21 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* SECTION 1B - MARKET SIGNAL */}
       <section style={{ padding: '60px 0', background: '#101418', color: 'white' }}>
         <div className="container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '24px', alignItems: 'center' }}>
           <div>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', color: '#69db7c', fontWeight: '800', fontSize: '0.85rem', marginBottom: '14px' }}>
-              <Briefcase size={18} /> LIVE OPPORTUNITY MARKET
+              <Briefcase size={18} /> {copy.marketEyebrow}
             </div>
             <h2 style={{ fontSize: 'clamp(2rem, 4vw, 3rem)', marginBottom: '16px', lineHeight: 1.1 }}>
-              Proyek, produk, dan talenta bambu dalam satu ekosistem.
+              {copy.marketTitle}
             </h2>
             <p style={{ color: '#ced4da', fontSize: '1.05rem', lineHeight: 1.7, maxWidth: '680px' }}>
-              Demand Market menghubungkan kebutuhan proyek yang sudah memiliki pendanaan dengan kontraktor, pemasok, arsitek, peneliti, dan komunitas bambu.
+              {copy.marketDesc}
             </p>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(120px, 1fr))', gap: '14px' }}>
-            {[
-              ['5+', 'Demand Aktif'],
-              ['150K', 'USDT Funding Ready'],
-              ['2K', 'BMC Top Bounty'],
-              ['24/7', 'Marketplace Signal'],
-            ].map(([value, label]) => (
+            {copy.marketStats.map(([value, label]) => (
               <div key={label} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '22px' }}>
                 <div style={{ fontSize: '1.8rem', fontWeight: '900', color: '#69db7c' }}>{value}</div>
                 <div style={{ color: '#adb5bd', fontSize: '0.85rem', fontWeight: '700' }}>{label}</div>
@@ -164,150 +379,104 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* SECTION 2 - POSITIONING */}
       <section style={{ padding: '80px 0', background: '#f8f9fa' }}>
         <div className="container text-center">
-          <h2 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '20px' }}>Dari Indonesia untuk Industri Bambu Dunia</h2>
+          <h2 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '20px' }}>{copy.positioningTitle}</h2>
           <p style={{ fontSize: '1.2rem', color: 'var(--text-muted)', maxWidth: '800px', margin: '0 auto' }}>
-            Indonesia memiliki potensi besar dalam pengembangan industri bambu berbasis produksi dan keberlanjutan, yang terhubung langsung dengan kebutuhan pasar global.
+            {copy.positioningDesc}
           </p>
         </div>
       </section>
 
-      {/* SECTION 3 - DATA UTAMA */}
       <section style={{ padding: '80px 0' }}>
         <div className="container">
-          <h2 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '40px', textAlign: 'center' }}>Data Industri Bambu Berbasis Produksi</h2>
+          <h2 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '40px', textAlign: 'center' }}>{copy.dataTitle}</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
-            <div className="glass" style={{ padding: '30px', textAlign: 'center', border: '1px solid #dee2e6' }}>
-              <TrendingUp size={40} color="var(--primary)" style={{ margin: '0 auto 20px' }} />
-              <h3 style={{ fontSize: '2.5rem', color: 'var(--primary)' }}>20-40%</h3>
-              <p style={{ fontWeight: 'bold', marginBottom: '10px' }}>Estimasi ROI Industri</p>
-              <span style={{ fontSize: '0.85rem', color: '#6c757d' }}>(Berbasis studi kasus)</span>
-            </div>
-            <div className="glass" style={{ padding: '30px', textAlign: 'center', border: '1px solid #dee2e6' }}>
-              <Target size={40} color="var(--primary)" style={{ margin: '0 auto 20px' }} />
-              <h3 style={{ fontSize: '2.5rem', color: 'var(--primary)' }}>1.000</h3>
-              <p style={{ fontWeight: 'bold', marginBottom: '10px' }}>Kapasitas Produksi</p>
-              <span style={{ fontSize: '0.85rem', color: '#6c757d' }}>Lembar / Hari</span>
-            </div>
-            <div className="glass" style={{ padding: '30px', textAlign: 'center', border: '1px solid #dee2e6' }}>
-              <Handshake size={40} color="var(--primary)" style={{ margin: '0 auto 20px' }} />
-              <h3 style={{ fontSize: '2.5rem', color: 'var(--primary)' }}>±Rp 680k</h3>
-              <p style={{ fontWeight: 'bold', marginBottom: '10px' }}>Harga Produk</p>
-              <span style={{ fontSize: '0.85rem', color: '#6c757d' }}>Per Lembar</span>
-            </div>
+            {copy.dataCards.map(([value, label, note], index) => {
+              const Icon = dataIcons[index];
+
+              return (
+                <div key={label} className="glass" style={{ padding: '30px', textAlign: 'center', border: '1px solid #dee2e6' }}>
+                  <Icon size={40} color="var(--primary)" style={{ margin: '0 auto 20px' }} />
+                  <h3 style={{ fontSize: '2.5rem', color: 'var(--primary)' }}>{value}</h3>
+                  <p style={{ fontWeight: 'bold', marginBottom: '10px' }}>{label}</p>
+                  <span style={{ fontSize: '0.85rem', color: '#6c757d' }}>{note}</span>
+                </div>
+              );
+            })}
           </div>
           <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '0.9rem', color: '#6c757d', fontStyle: 'italic' }}>
-            *Catatan: Data merupakan estimasi dan dapat bervariasi tergantung lokasi, skala, dan model bisnis.
+            {copy.dataNote}
           </p>
         </div>
       </section>
 
-      {/* SECTION 4 - SKALA INDUSTRI */}
       <section style={{ padding: '80px 0', background: 'var(--primary)', color: 'white' }}>
         <div className="container">
           <div style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
-            <h2 style={{ fontSize: '2.5rem', marginBottom: '24px' }}>Industri yang Berpotensi Tumbuh Global</h2>
+            <h2 style={{ fontSize: '2.5rem', marginBottom: '24px' }}>{copy.scaleTitle}</h2>
             <p style={{ fontSize: '1.2rem', lineHeight: '1.8', opacity: '0.9' }}>
-              Permintaan global terhadap material bambu meningkat sebagai alternatif kayu, logam, plastik, benang dan energi fosil yang lebih ramah lingkungan. Industri ini memiliki peluang berkembang pesat dalam sektor konstruksi, manufaktur, tekstil dan ekonomi karbon.
+              {copy.scaleDesc}
             </p>
           </div>
         </div>
       </section>
 
-      {/* SECTION 5 - MODEL BISNIS */}
       <section style={{ padding: '80px 0', background: '#f8f9fa' }}>
         <div className="container">
-          <h2 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '40px', textAlign: 'center' }}>Model Ekonomi Industri Bambu</h2>
+          <h2 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '40px', textAlign: 'center' }}>{copy.businessTitle}</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '30px' }}>
-            <div className="glass" style={{ padding: '30px', background: 'white', borderRadius: '16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
-                <div style={{ width: '40px', height: '40px', background: 'var(--primary)', color: 'white', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '1.2rem' }}>1</div>
-                <h3 style={{ fontSize: '1.3rem' }}>Produk Industri</h3>
+            {copy.businessModels.map(([title, desc], index) => (
+              <div key={title} className="glass" style={{ padding: '30px', background: 'white', borderRadius: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
+                  <div style={{ width: '40px', height: '40px', background: 'var(--primary)', color: 'white', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '1.2rem' }}>{index + 1}</div>
+                  <h3 style={{ fontSize: '1.3rem' }}>{title}</h3>
+                </div>
+                <p style={{ color: 'var(--text-muted)' }}>{desc}</p>
               </div>
-              <p style={{ color: 'var(--text-muted)' }}>Bambu laminasi, konstruksi modular, dan serat (tekstil) bambu berkualitas ekspor.</p>
-            </div>
-            
-            <div className="glass" style={{ padding: '30px', background: 'white', borderRadius: '16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
-                <div style={{ width: '40px', height: '40px', background: 'var(--primary)', color: 'white', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '1.2rem' }}>2</div>
-                <h3 style={{ fontSize: '1.3rem' }}>Rantai Pasok</h3>
-              </div>
-              <p style={{ color: 'var(--text-muted)' }}>Membangun distribusi bahan baku dan produk dari daerah potensial ke hilir industri masif.</p>
-            </div>
-
-            <div className="glass" style={{ padding: '30px', background: 'white', borderRadius: '16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
-                <div style={{ width: '40px', height: '40px', background: 'var(--primary)', color: 'white', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '1.2rem' }}>3</div>
-                <h3 style={{ fontSize: '1.3rem' }}>Nilai Lingkungan</h3>
-              </div>
-              <p style={{ color: 'var(--text-muted)' }}>Potensi ekonomi tambahan terukur dari jasa ekosistem lingkungan dan serapan kredit karbon.</p>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* SECTION 6 - PROYEK */}
       <section style={{ padding: '80px 0' }}>
         <div className="container">
-          <h2 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '50px', textAlign: 'center' }}>Contoh Proyek Pengembangan Bambu</h2>
-          
+          <h2 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '50px', textAlign: 'center' }}>{copy.projectsTitle}</h2>
+
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '40px', marginBottom: '40px' }}>
-                        <div style={{ background: 'white', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', border: '1px solid #eee' }}>
-              <div style={{ height: '200px', background: `url("${getAssetUrl('gambar/pehcibarani.png')}") center/cover` }}></div>
-              <div style={{ padding: '30px' }}>
-                <div style={{ color: 'var(--primary)', display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '12px', fontSize: '0.9rem', fontWeight: 'bold' }}>
-                  <MapPin size={16} /> Banten (490 Ha)
+            {projects.map((project) => (
+              <div key={project.title} style={{ background: 'white', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', border: '1px solid #eee' }}>
+                <div style={{ height: '200px', background: `url("${project.image}") center/cover` }} />
+                <div style={{ padding: '30px' }}>
+                  <div style={{ color: 'var(--primary)', display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '12px', fontSize: '0.9rem', fontWeight: 'bold' }}>
+                    <MapPin size={16} /> {project.location}
+                  </div>
+                  <h3 style={{ fontSize: '1.25rem', marginBottom: '16px' }}>{project.title}</h3>
+                  <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>{project.desc}</p>
                 </div>
-                <h3 style={{ fontSize: '1.25rem', marginBottom: '16px' }}>Perkebunan Emas Hijau Cibarani – Lebak</h3>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>Restorasi, produksi bambu terintegrasi dan sabuk ekologis untuk melindungi hutan adat dan hutan lindung dari illegal logging serta aktivitas penambangan emas liar.</p>
               </div>
-            </div>
-
-            <div style={{ background: 'white', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', border: '1px solid #eee' }}>
-              <div style={{ height: '200px', background: `url("${getAssetUrl('gambar/ceap.png')}") center/cover` }}></div>
-              <div style={{ padding: '30px' }}>
-                <div style={{ color: 'var(--primary)', display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '12px', fontSize: '0.9rem', fontWeight: 'bold' }}>
-                  <MapPin size={16} /> Tangerang Raya (120 Ha)
-                </div>
-                <h3 style={{ fontSize: '1.25rem', marginBottom: '16px' }}>Cisadane Adventure Eco Park</h3>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>Integrating environmental conservation, bamboo innovation, community economic development, and eco-based nature tourism.</p>
-              </div>
-            </div>
-
-            <div style={{ background: 'white', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', border: '1px solid #eee' }}>
-              <div style={{ height: '200px', background: `url("${getAssetUrl('gambar/mbh.jpeg')}") center/cover` }}></div>
-              <div style={{ padding: '30px' }}>
-                <div style={{ color: 'var(--primary)', display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '12px', fontSize: '0.9rem', fontWeight: 'bold' }}>
-                  <MapPin size={16} /> Sumatera (Nasional)
-                </div>
-                <h3 style={{ fontSize: '1.25rem', marginBottom: '16px' }}>Proyek Rumah Hunian Tetap Tipe 36</h3>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>Hunian modular pasca bencana lingkungan di area Sumatera, menyumbang hingga 6.000 unit produksi hunian terstandarisasi berbasis bambu ramah lingkungan.</p>
-              </div>
-            </div>
+            ))}
           </div>
 
           <div style={{ textAlign: 'center' }}>
             <Link to="/projects" className="btn btn-primary" style={{ padding: '14px 28px', fontSize: '1.1rem', display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
-              LIHAT DETAIL PROYEK <ArrowRight size={20} />
+              {copy.projectDetails} <ArrowRight size={20} />
             </Link>
           </div>
         </div>
       </section>
 
-      {/* SECTION 7 - EKOSISTEM */}
       <section style={{ padding: '80px 0', background: '#f8f9fa' }}>
         <div className="container">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '20px', flexWrap: 'wrap', marginBottom: '36px' }}>
             <div>
-              <h2 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '12px' }}>Produk Unggulan</h2>
+              <h2 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '12px' }}>{copy.productsTitle}</h2>
               <p style={{ color: 'var(--text-muted)', fontSize: '1.05rem', maxWidth: '720px' }}>
-                Katalog inti dari ekosistem industri bambu: material konstruksi, interior, dan sistem modular untuk kebutuhan B2B.
+                {copy.productsDesc}
               </p>
             </div>
             <Link to="/bamboochain/marketplace" className="btn btn-primary" style={{ padding: '12px 22px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-              Marketplace <ArrowRight size={18} />
+              {copy.marketplaceLink} <ArrowRight size={18} />
             </Link>
           </div>
 
@@ -324,7 +493,7 @@ const HomePage = () => {
                   <h3 style={{ fontSize: '1.35rem', color: 'var(--text-main)', marginBottom: '10px' }}>{product.title}</h3>
                   <p style={{ color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: '20px' }}>{product.desc}</p>
                   <Link to="/careers" style={{ color: 'var(--primary)', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '6px', textDecoration: 'none' }}>
-                    Lihat Demand Market <ArrowRight size={16} />
+                    {copy.productDemandLink} <ArrowRight size={16} />
                   </Link>
                 </div>
               </div>
@@ -333,79 +502,68 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* SECTION 8 - EKOSISTEM */}
       <section style={{ padding: '80px 0', background: '#f8f9fa' }}>
         <div className="container">
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '40px', alignItems: 'center' }}>
             <div>
-              <h2 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '24px' }}>Ekosistem Industri Bambu</h2>
+              <h2 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '24px' }}>{copy.ecosystemTitle}</h2>
               <ul style={{ display: 'flex', flexDirection: 'column', gap: '20px', color: 'var(--text-main)', fontSize: '1.1rem' }}>
-                <li style={{ display: 'flex', alignItems: 'center', gap: '12px' }}><CheckCircle size={24} color="var(--primary)" /> Budidaya dan penanaman</li>
-                <li style={{ display: 'flex', alignItems: 'center', gap: '12px' }}><CheckCircle size={24} color="var(--primary)" /> Produksi dan pengolahan inovatif</li>
-                <li style={{ display: 'flex', alignItems: 'center', gap: '12px' }}><CheckCircle size={24} color="var(--primary)" /> Distribusi dan pasar yang meluas</li>
-                <li style={{ display: 'flex', alignItems: 'center', gap: '12px' }}><CheckCircle size={24} color="var(--primary)" /> Pemanfaatan teknologi untuk monitoring & transparansi</li>
+                {copy.ecosystemItems.map((item) => (
+                  <li key={item} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <CheckCircle size={24} color="var(--primary)" /> {item}
+                  </li>
+                ))}
               </ul>
             </div>
             <div style={{ background: 'white', padding: '40px', borderRadius: '16px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
-              <h3 style={{ fontSize: '1.5rem', marginBottom: '20px', color: 'var(--primary)' }}>Dampak Integrasi Kami</h3>
+              <h3 style={{ fontSize: '1.5rem', marginBottom: '20px', color: 'var(--primary)' }}>{copy.integrationTitle}</h3>
               <ul style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <li style={{ display: 'flex', alignItems: 'center', gap: '12px' }}><Leaf size={20} color="var(--primary)" /> Restorasi lahan kritis dan terdegradasi</li>
-                <li style={{ display: 'flex', alignItems: 'center', gap: '12px' }}><Leaf size={20} color="var(--primary)" /> Perlindungan sistem sumber mata air bawah tanah</li>
-                <li style={{ display: 'flex', alignItems: 'center', gap: '12px' }}><Leaf size={20} color="var(--primary)" /> Pemberdayaan ekonomi warga di daerah rural</li>
+                {copy.integrationItems.map((item) => (
+                  <li key={item} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <Leaf size={20} color="var(--primary)" /> {item}
+                  </li>
+                ))}
               </ul>
             </div>
           </div>
         </div>
       </section>
 
-      {/* SECTION 9 - IMPACT */}
       <section style={{ padding: '80px 0', background: 'var(--primary)', color: 'white' }}>
         <div className="container text-center">
-          <h2 style={{ fontSize: '2.5rem', marginBottom: '40px' }}>Dampak Lingkungan dan Sosial</h2>
+          <h2 style={{ fontSize: '2.5rem', marginBottom: '40px' }}>{copy.impactTitle}</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '30px' }}>
-            <div>
-              <h3 style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>±490 Ha</h3>
-              <p style={{ opacity: '0.9', marginTop: '10px' }}>Kawasan Prioritas Dilindungi</p>
-            </div>
-            <div>
-              <h3 style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>±50.000</h3>
-              <p style={{ opacity: '0.9', marginTop: '10px' }}>Bibit Bambu Baru Ditanam</p>
-            </div>
-            <div>
-              <h3 style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>100%</h3>
-              <p style={{ opacity: '0.9', marginTop: '10px' }}>Perlindungan Sumber Mata Air</p>
-            </div>
-            <div>
-              <h3 style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>Berkelanjutan</h3>
-              <p style={{ opacity: '0.9', marginTop: '10px' }}>Peningkatan Ekonomi Lokal Rutin</p>
-            </div>
+            {copy.impactStats.map(([value, label]) => (
+              <div key={label}>
+                <h3 style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>{value}</h3>
+                <p style={{ opacity: '0.9', marginTop: '10px' }}>{label}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* SECTION 10 - PARTNERS */}
       <section style={{ padding: '80px 0', textAlign: 'center' }}>
         <div className="container">
-          <h2 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '20px' }}>Mitra & Kolaborasi</h2>
+          <h2 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '20px' }}>{copy.partnersTitle}</h2>
           <p style={{ fontSize: '1.2rem', color: 'var(--text-muted)', marginBottom: '40px', maxWidth: '700px', margin: '0 auto 40px' }}>
-            Kami bekerja sama dengan berbagai pihak dalam pengembangan ekosistem bambu berkelanjutan, termasuk Komunitas & masyarakat adat, Akademisi & peneliti, Industri & manufaktur, Pemerintah & lembaga, serta Teknologi & digital.
+            {copy.partnersDesc}
           </p>
           <div style={{ padding: '40px', background: '#f4fbf4', borderRadius: '16px', display: 'inline-block', minWidth: '300px' }}>
-            <h3 style={{ fontSize: '1.5rem', marginBottom: '16px' }}>Menjadi Mitra</h3>
-            <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>Terbuka untuk kolaborasi dalam pengembangan industri bambu berkelanjutan.</p>
-            <Link to="/contact" className="btn btn-primary" style={{ padding: '12px 24px' }}>HUBUNGI KAMI</Link>
+            <h3 style={{ fontSize: '1.5rem', marginBottom: '16px' }}>{copy.partnerCardTitle}</h3>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>{copy.partnerCardDesc}</p>
+            <Link to="/contact" className="btn btn-primary" style={{ padding: '12px 24px' }}>{copy.contactButton}</Link>
           </div>
         </div>
       </section>
 
-      {/* SECTION 11 - CTA */}
       <section style={{ padding: '100px 0', background: '#212529', color: 'white', textAlign: 'center' }}>
         <div className="container">
-          <h2 style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', marginBottom: '24px' }}>Pelajari Lebih Lanjut</h2>
+          <h2 style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', marginBottom: '24px' }}>{copy.ctaTitle}</h2>
           <p style={{ fontSize: '1.2rem', opacity: '0.8', marginBottom: '40px', maxWidth: '600px', margin: '0 auto 40px' }}>
-            Jelajahi data, analisis, dan perkembangan masa depan terkait industri primer bambu yang dapat diperbarui secara berkelanjutan.
+            {copy.ctaDesc}
           </p>
-          <Link to="/insight" className="btn btn-crypto" style={{ padding: '20px 40px', fontSize: '1.2rem' }}>LIHAT INSIGHT</Link>
+          <Link to="/insight" className="btn btn-crypto" style={{ padding: '20px 40px', fontSize: '1.2rem' }}>{copy.ctaButton}</Link>
         </div>
       </section>
 
