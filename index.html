@@ -5,9 +5,50 @@
     <link rel="icon" type="image/svg+xml" href="/BaMbooChain/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BaMbooChain</title>
+    <script>
+      (function () {
+        var canonicalHost = 'bamboochain.id';
+        var githubPagesHost = 'sultanbantam.github.io';
+        var githubPagesBase = '/BaMbooChain/';
+        var loc = window.location;
+        var host = loc.hostname;
+        var isLocalHost = host === 'localhost' || host === '127.0.0.1' || host === '::1';
+        var isGithubPages = host === githubPagesHost;
+        var isCanonicalHost = host === canonicalHost;
+        var isAllowedHost = isLocalHost || isGithubPages || isCanonicalHost;
+
+        function hashForPath(path, search, hash) {
+          if (hash && hash.length > 1) return hash;
+
+          var routePath = path || '/';
+          if (isGithubPages && routePath.indexOf(githubPagesBase) === 0) {
+            routePath = routePath.slice(githubPagesBase.length);
+          }
+
+          routePath = routePath.replace(/^\/+/, '');
+          return routePath ? '#/' + routePath + (search || '') : '#/';
+        }
+
+        if (!isAllowedHost) {
+          loc.replace('https://' + canonicalHost + '/' + hashForPath(loc.pathname, loc.search, loc.hash));
+          return;
+        }
+
+        if (isGithubPages) {
+          if (loc.pathname === '/BaMbooChain') {
+            loc.replace(loc.origin + githubPagesBase + loc.search + loc.hash);
+          }
+          return;
+        }
+
+        if ((isCanonicalHost || isLocalHost) && loc.pathname !== '/' && !loc.hash) {
+          loc.replace(loc.origin + '/' + hashForPath(loc.pathname, loc.search, loc.hash));
+        }
+      })();
+    </script>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=pub-3668510649750568"
      crossorigin="anonymous"></script>
-    <script type="module" crossorigin src="/BaMbooChain/assets/index-CBR-n65Y.js"></script>
+    <script type="module" crossorigin src="/BaMbooChain/assets/index-Dnk6GC8c.js"></script>
     <link rel="stylesheet" crossorigin href="/BaMbooChain/assets/index-BxyIaY5m.css">
   </head>
   <body>

@@ -5,10 +5,24 @@
     <title>BaMbooChain</title>
     <script>
       (function () {
-        var isGitHubPages = window.location.hostname.indexOf('github.io') !== -1;
+        var canonicalHost = 'bamboochain.id';
+        var githubPagesHost = 'sultanbantam.github.io';
+        var isGitHubPages = window.location.hostname === githubPagesHost;
+        var isCanonicalHost = window.location.hostname === canonicalHost;
+        var isLocalHost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '::1';
         var repoBase = isGitHubPages ? '/BaMbooChain/' : '/';
         var locationRef = window.location;
         var path = locationRef.pathname;
+
+        function toHashRoute(routePath) {
+          var cleanPath = routePath.replace(/^\/+/, '');
+          return cleanPath ? '#/' + cleanPath : '#/';
+        }
+
+        if (!isGitHubPages && !isCanonicalHost && !isLocalHost) {
+          locationRef.replace('https://' + canonicalHost + '/' + toHashRoute(path) + locationRef.search);
+          return;
+        }
 
         if (path.indexOf(repoBase) !== 0) {
           locationRef.replace(locationRef.origin + repoBase);
@@ -16,7 +30,7 @@
         }
 
         var routePath = path.slice(repoBase.length);
-        var hashRoute = routePath ? '#/' + routePath : '#/';
+        var hashRoute = toHashRoute(routePath);
         locationRef.replace(locationRef.origin + repoBase + hashRoute + locationRef.search + locationRef.hash);
       })();
     </script>
