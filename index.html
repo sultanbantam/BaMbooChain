@@ -7,15 +7,16 @@
     <title>BaMbooChain</title>
     <script>
       (function () {
-        var canonicalHost = 'bamboochain.id';
+        var primaryCustomHost = 'www.bamboochain.id';
+        var customHosts = ['bamboochain.id', primaryCustomHost];
         var githubPagesHost = 'sultanbantam.github.io';
         var githubPagesBase = '/BaMbooChain/';
         var loc = window.location;
         var host = loc.hostname;
         var isLocalHost = host === 'localhost' || host === '127.0.0.1' || host === '::1';
         var isGithubPages = host === githubPagesHost;
-        var isCanonicalHost = host === canonicalHost;
-        var isAllowedHost = isLocalHost || isGithubPages || isCanonicalHost;
+        var isCustomHost = customHosts.indexOf(host) !== -1;
+        var isAllowedHost = isLocalHost || isGithubPages || isCustomHost;
 
         function hashForPath(path, search, hash) {
           if (hash && hash.length > 1) return hash;
@@ -30,7 +31,7 @@
         }
 
         if (!isAllowedHost) {
-          loc.replace('https://' + canonicalHost + '/' + hashForPath(loc.pathname, loc.search, loc.hash));
+          loc.replace('https://' + primaryCustomHost + '/' + hashForPath(loc.pathname, loc.search, loc.hash));
           return;
         }
 
@@ -41,7 +42,7 @@
           return;
         }
 
-        if ((isCanonicalHost || isLocalHost) && loc.pathname !== '/' && !loc.hash) {
+        if ((isCustomHost || isLocalHost) && loc.pathname !== '/' && !loc.hash) {
           loc.replace(loc.origin + '/' + hashForPath(loc.pathname, loc.search, loc.hash));
         }
       })();
