@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Leaf, MapPin, ShieldCheck, CheckCircle, ArrowRight, User, Phone, Wallet, Handshake, Sprout, Axe, Trees } from 'lucide-react';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import BackButton from '../../components/BackButton';
 
 const JoinFarmerPage = () => {
+  const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [selectedRole, setSelectedRole] = useState('');
@@ -207,7 +209,7 @@ const JoinFarmerPage = () => {
               <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', maxWidth: '500px', margin: '0 auto 40px', lineHeight: '1.6' }}>
                 Terima kasih. Admin YSNJ akan melakukan inspeksi faktual di lapangan. Jika lolos verifikasi, dompet Web3 Anda akan di-*whitelist* ke dalam Smart Contract untuk menerima dana.
               </p>
-              <button onClick={() => window.location.href = '/bambunusa/farmers'} className="btn btn-primary" style={{ padding: '14px 40px' }}>Lihat Daftar Mitra</button>
+              <button onClick={() => navigate('/bambunusa/farmers')} className="btn btn-primary" style={{ padding: '14px 40px' }}>Lihat Daftar Mitra</button>
             </div>
           )}
         </div>
