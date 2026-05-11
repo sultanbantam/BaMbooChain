@@ -1,58 +1,29 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-version="2.0.1-recovery">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/BaMbooChain/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>BaMbooChain</title>
-    <script>
-      (function () {
-        var primaryCustomHost = 'www.bamboochain.id';
-        var customHosts = ['bamboochain.id', primaryCustomHost];
-        var githubPagesHost = 'sultanbantam.github.io';
-        var githubPagesBase = '/BaMbooChain/';
-        var loc = window.location;
-        var host = loc.hostname;
-        var isLocalHost = host === 'localhost' || host === '127.0.0.1' || host === '::1';
-        var isGithubPages = host === githubPagesHost;
-        var isCustomHost = customHosts.indexOf(host) !== -1;
-        var isAllowedHost = isLocalHost || isGithubPages || isCustomHost;
-
-        function hashForPath(path, search, hash) {
-          if (hash && hash.length > 1) return hash;
-
-          var routePath = path || '/';
-          if (isGithubPages && routePath.indexOf(githubPagesBase) === 0) {
-            routePath = routePath.slice(githubPagesBase.length);
-          }
-
-          routePath = routePath.replace(/^\/+/, '');
-          return routePath ? '#/' + routePath + (search || '') : '#/';
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+    <title>BaMbooChain - RECOVERY SUCCESS</title>
+    <script type="text/javascript">
+      // GitHub Pages SPA Hero
+      (function(l) {
+        if (l.search[1] === '/' ) {
+          var decoded = l.search.slice(1).split('&').map(function(s) { 
+            return s.replace(/~and~/g, '&')
+          }).join('?');
+          window.history.replaceState(null, null,
+              l.pathname.slice(0, -1) + decoded + l.hash
+          );
         }
-
-        if (!isAllowedHost) {
-          loc.replace('https://' + primaryCustomHost + '/' + hashForPath(loc.pathname, loc.search, loc.hash));
-          return;
-        }
-
-        if (isGithubPages) {
-          if (loc.pathname === '/BaMbooChain') {
-            loc.replace(loc.origin + githubPagesBase + loc.search + loc.hash);
-          }
-          return;
-        }
-
-        if ((isCustomHost || isLocalHost) && loc.pathname !== '/' && !loc.hash) {
-          loc.replace(loc.origin + '/' + hashForPath(loc.pathname, loc.search, loc.hash));
-        }
-      })();
+      }(window.location))
     </script>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=pub-3668510649750568"
      crossorigin="anonymous"></script>
-    <script type="module" crossorigin src="/BaMbooChain/assets/index-BaKZU3Br.js"></script>
-    <link rel="stylesheet" crossorigin href="/BaMbooChain/assets/index-BxyIaY5m.css">
+    <script type="module" crossorigin src="./assets/index-DaLaZBnn.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-CJ0zIVc2.css">
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root"></div>
   </body>
 </html>
