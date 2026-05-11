@@ -1,23 +1,60 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Leaf, MapPin, ShieldCheck, CheckCircle, ArrowRight, User, Phone, Wallet, Handshake, Sprout, Axe, Trees } from 'lucide-react';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import BackButton from '../../components/BackButton';
 
+import { useAuth } from '../../context/AuthContext';
+
 const JoinFarmerPage = () => {
+  const navigate = useNavigate();
+  const { submitPartnerApp, user } = useAuth();
   const [step, setStep] = useState(1);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [paymentType, setPaymentType] = useState('bank');
   const [selectedRole, setSelectedRole] = useState('');
+
+  // Form Data State
+  const [formData, setFormData] = useState({
+    name: user?.name || '',
+    whatsapp: user?.phone || '',
+    location: '',
+    paymentDetail: '',
+    capacity: '',
+    experience: '',
+    availability: '',
+    coordinates: ''
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
 
   const ROLES = [
     { id: 'bibit', name: 'Pemilik Bibit', icon: <Sprout size={24} />, desc: 'Menyediakan dan memelihara bibit bambu unggul sebelum masa tanam.' },
     { id: 'tanam', name: 'Petani Penanam', icon: <Axe size={24} />, desc: 'Ahli lapangan yang bertanggung jawab atas proses penanaman bibit.' },
     { id: 'rawat', name: 'Tim Perawatan', icon: <Leaf size={24} />, desc: 'Merawat, memberi pupuk, dan memastikan rumpun bambu tumbuh sehat.' },
     { id: 'lahan', name: 'Pemilik Lahan', icon: <Trees size={24} />, desc: 'Menyediakan lahan kosong untuk diubah menjadi hutan bambu produktif.' },
+    { id: 'pengolahan', name: 'Industri Pengolahan', icon: <Handshake size={24} />, desc: 'Penyedia jasa treatment (pengawetan) atau pengolahan produk turunan bambu.' },
+    { id: 'logistik', name: 'Logistik & Distribusi', icon: <MapPin size={24} />, desc: 'Bertanggung jawab atas pengiriman material dari lahan ke pabrik atau gudang.' },
   ];
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Process submission
+    submitPartnerApp({
+      name: formData.name,
+      role: ROLES.find(r => r.id === selectedRole)?.name,
+      method: paymentType === 'bank' ? 'Rekening Bank' : paymentType === 'bmc' ? 'Wallet BMC' : 'Wallet USDT',
+      whatsapp: formData.whatsapp,
+      location: formData.location,
+      details: formData,
+      paymentDetail: formData.paymentDetail
+    });
+
     setIsSubmitted(true);
   };
 
@@ -91,26 +128,74 @@ const JoinFarmerPage = () => {
 
                 {step === 2 && (
                   <div style={{ animation: 'slideIn 0.3s' }}>
-                    <h3 style={{ marginBottom: '24px', color: 'var(--text-main)' }}>2. Informasi Pribadi & Web3</h3>
+                    <h3 style={{ marginBottom: '24px', color: 'var(--text-main)' }}>2. Informasi Pribadi & Pembayaran</h3>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                       <div className="form-group">
                         <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}><User size={16} style={{display:'inline', marginBottom:'-3px', marginRight:'6px'}}/> Nama Lengkap (sesuai KTP)</label>
-                        <input type="text" placeholder="Contoh: Dadang Setiawan" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }} required />
+                        <input name="name" value={formData.name} onChange={handleChange} type="text" placeholder="Contoh: Mukoddas Syuhada" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }} required />
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                         <div>
                           <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}><Phone size={16} style={{display:'inline', marginBottom:'-3px', marginRight:'6px'}}/> Nomor WhatsApp</label>
-                          <input type="tel" placeholder="0812..." style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }} required />
+                          <input name="whatsapp" value={formData.whatsapp} onChange={handleChange} type="tel" placeholder="0811..." style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }} required />
                         </div>
                         <div>
                           <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}><MapPin size={16} style={{display:'inline', marginBottom:'-3px', marginRight:'6px'}}/> Domisili / Wilayah</label>
-                          <input type="text" placeholder="Contoh: Cibarani" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }} required />
+                          <input name="location" value={formData.location} onChange={handleChange} type="text" placeholder="Contoh: Jakarta" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }} required />
                         </div>
                       </div>
-                      <div className="form-group" style={{ background: '#fff9db', padding: '20px', borderRadius: '16px', border: '1px solid #fcc419' }}>
-                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem', color: '#e67700' }}><Wallet size={16} style={{display:'inline', marginBottom:'-3px', marginRight:'6px'}}/> Alamat Web3 Wallet (BEP-20)</label>
-                        <p style={{ fontSize: '0.8rem', color: '#d9480f', marginBottom: '12px' }}>Dana kompensasi/gaji Anda akan ditransfer otomatis melalui Smart Contract ke dompet ini.</p>
-                        <input type="text" placeholder="0x..." style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #fcc419', outline: 'none', background: 'white' }} required />
+
+                      <div className="form-group">
+                        <label style={{ display: 'block', marginBottom: '12px', fontWeight: 'bold', fontSize: '0.9rem' }}>Pilih Metode Penerimaan Dana</label>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '20px' }}>
+                          {[
+                            { id: 'bank', name: 'Rekening Bank' },
+                            { id: 'bmc', name: 'Wallet BMC' },
+                            { id: 'usdt', name: 'Wallet USDT (BEP20)' }
+                          ].map(t => (
+                            <button 
+                              key={t.id}
+                              type="button"
+                              onClick={() => setPaymentType(t.id)}
+                              style={{ 
+                                padding: '10px 20px', borderRadius: '50px', border: `1px solid ${paymentType === t.id ? 'var(--primary)' : '#eee'}`,
+                                background: paymentType === t.id ? 'var(--primary)' : 'white',
+                                color: paymentType === t.id ? 'white' : '#666',
+                                fontSize: '0.85rem', fontWeight: '600', cursor: 'pointer', transition: '0.2s'
+                              }}
+                            >
+                              {t.name}
+                            </button>
+                          ))}
+                        </div>
+
+                        {paymentType === 'bank' ? (
+                          <div style={{ background: '#f8f9fa', padding: '20px', borderRadius: '16px', border: '1px solid #dee2e6' }}>
+                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.85rem' }}>Detail Rekening Bank (Nama Bank, No Rek, Atas Nama)</label>
+                            <textarea 
+                              name="paymentDetail"
+                              value={formData.paymentDetail}
+                              onChange={handleChange}
+                              placeholder="Contoh: BRI - 12345678 - A/N Mukoddas" 
+                              style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none', resize: 'none' }} 
+                              rows={2} 
+                              required 
+                            />
+                          </div>
+                        ) : (
+                          <div style={{ background: '#fff9db', padding: '20px', borderRadius: '16px', border: '1px solid #fcc419' }}>
+                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem', color: '#e67700' }}>
+                              <Wallet size={16} style={{display:'inline', marginBottom:'-3px', marginRight:'6px'}}/> 
+                              Alamat Wallet {paymentType === 'bmc' ? 'BMC' : 'USDT'} (BEP-20)
+                            </label>
+                            <p style={{ fontSize: '0.8rem', color: '#d9480f', marginBottom: '12px' }}>Dana akan ditransfer otomatis melalui Smart Contract ke dompet ini.</p>
+                            <input 
+                              name="paymentDetail"
+                              value={formData.paymentDetail}
+                              onChange={handleChange}
+                              type="text" placeholder="0x..." style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #fcc419', outline: 'none', background: 'white' }} required />
+                          </div>
+                        )}
                       </div>
                       <div style={{ display: 'flex', gap: '12px', marginTop: '10px' }}>
                         <button type="button" onClick={() => setStep(1)} style={{ flex: 1, padding: '16px', borderRadius: '12px', border: '1px solid #dee2e6', background: 'transparent', cursor: 'pointer', fontWeight: 'bold' }}>Kembali</button>
@@ -129,11 +214,11 @@ const JoinFarmerPage = () => {
                         <>
                           <div className="form-group">
                             <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}>Kapasitas Pembibitan Saat Ini (Jumlah Bibit)</label>
-                            <input type="number" placeholder="Contoh: 1000" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }} required />
+                            <input name="capacity" value={formData.capacity} onChange={handleChange} type="number" placeholder="Contoh: 1000" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }} required />
                           </div>
                           <div className="form-group">
                             <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}>Spesies Bambu Utama</label>
-                            <input type="text" placeholder="Contoh: Bambu Betung, Bambu Hitam" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }} required />
+                            <input name="details_extra" onChange={handleChange} type="text" placeholder="Contoh: Bambu Betung, Bambu Hitam" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }} required />
                           </div>
                         </>
                       )}
@@ -142,11 +227,11 @@ const JoinFarmerPage = () => {
                         <>
                           <div className="form-group">
                             <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}>Luas Lahan yang Dimiliki (Meter Persegi / Hektar)</label>
-                            <input type="text" placeholder="Contoh: 2 Hektar" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }} required />
+                            <input name="capacity" value={formData.capacity} onChange={handleChange} type="text" placeholder="Contoh: 2 Hektar" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }} required />
                           </div>
                           <div className="form-group">
                             <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}>Koordinat / Titik Gmaps Lahan</label>
-                            <input type="text" placeholder="Contoh: -6.123, 106.123" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }} required />
+                            <input name="coordinates" value={formData.coordinates} onChange={handleChange} type="text" placeholder="Contoh: -6.123, 106.123" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }} required />
                           </div>
                         </>
                       )}
@@ -155,15 +240,41 @@ const JoinFarmerPage = () => {
                         <>
                           <div className="form-group">
                             <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}>Pengalaman (Tahun)</label>
-                            <select style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }}>
-                              <option>Pemula (Belum Pernah)</option>
-                              <option>Menengah (1-3 Tahun)</option>
-                              <option>Ahli (&gt; 3 Tahun)</option>
+                            <select name="experience" value={formData.experience} onChange={handleChange} style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }}>
+                              <option value="Pemula">Pemula (Belum Pernah)</option>
+                              <option value="Menengah">Menengah (1-3 Tahun)</option>
+                              <option value="Ahli">Ahli (&gt; 3 Tahun)</option>
                             </select>
                           </div>
                           <div className="form-group">
                             <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}>Ketersediaan Waktu (Jam/Minggu)</label>
-                            <input type="number" placeholder="Contoh: 20" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }} required />
+                            <input name="availability" value={formData.availability} onChange={handleChange} type="number" placeholder="Contoh: 20" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }} required />
+                          </div>
+                        </>
+                      )}
+
+                      {selectedRole === 'pengolahan' && (
+                        <>
+                          <div className="form-group">
+                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}>Kapasitas Output (Batang / Bulan)</label>
+                            <input name="capacity" value={formData.capacity} onChange={handleChange} type="text" placeholder="Contoh: 5000 batang" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }} required />
+                          </div>
+                          <div className="form-group">
+                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}>Jenis Fasilitas (Pabrik / Workshop / Perumahan)</label>
+                            <input name="details_extra" onChange={handleChange} type="text" placeholder="Contoh: Pabrik Pengawetan Borax" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }} required />
+                          </div>
+                        </>
+                      )}
+
+                      {selectedRole === 'logistik' && (
+                        <>
+                          <div className="form-group">
+                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}>Jumlah Armada & Jenis Kendaraan</label>
+                            <input name="capacity" value={formData.capacity} onChange={handleChange} type="text" placeholder="Contoh: 3 Truk Engkel" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }} required />
+                          </div>
+                          <div className="form-group">
+                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}>Wilayah Jangkauan Pengiriman</label>
+                            <input name="details_extra" onChange={handleChange} type="text" placeholder="Contoh: Seluruh Banten & Jabar" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }} required />
                           </div>
                         </>
                       )}
@@ -207,7 +318,7 @@ const JoinFarmerPage = () => {
               <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', maxWidth: '500px', margin: '0 auto 40px', lineHeight: '1.6' }}>
                 Terima kasih. Admin YSNJ akan melakukan inspeksi faktual di lapangan. Jika lolos verifikasi, dompet Web3 Anda akan di-*whitelist* ke dalam Smart Contract untuk menerima dana.
               </p>
-              <button onClick={() => window.location.href = '/bambunusa/farmers'} className="btn btn-primary" style={{ padding: '14px 40px' }}>Lihat Daftar Mitra</button>
+              <button onClick={() => navigate('/bambunusa/farmers')} className="btn btn-primary" style={{ padding: '14px 40px' }}>Lihat Daftar Mitra</button>
             </div>
           )}
         </div>

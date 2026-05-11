@@ -113,13 +113,29 @@ const AuthModal = () => {
   };
 
   const handleOAuth = (provider) => {
+    // Simulasi pemilihan akun
+    const mockEmail = window.prompt(`[Simulasi ${provider} Login]\n\nMasukkan alamat email Anda (bisa Gmail, Yahoo, atau lainnya):`, `nama@gmail.com`);
+    
+    if (!mockEmail) return; // Jika dibatalkan
+
+    const username = mockEmail.split('@')[0];
+    
     const userData = {
-      name: `${provider} User`,
-      email: `${provider}@example.com`,
+      name: `${username} (${provider})`,
+      username: username,
+      email: mockEmail,
       method: provider
     };
-    if (activeTab === 'signup') signup(userData);
-    else login(userData);
+    
+    if (activeTab === 'signup') {
+      if (signup(userData)) {
+        alert(`✅ Pendaftaran menggunakan ${provider} Berhasil!`);
+      }
+    } else {
+      if (login(userData)) {
+        alert(`✅ Berhasil Masuk menggunakan ${provider}!`);
+      }
+    }
   };
 
   // Switch tabs -> reset states
@@ -176,8 +192,8 @@ const AuthModal = () => {
             <h2 style={{ margin: '0 0 8px 0', fontSize: '1.5rem', color: 'var(--text-main)', fontWeight: '900' }}>
               {activeTab === 'forgot' ? "Pemulihan Akun" : activeTab === 'login' ? "Selamat Datang!" : "Buat Akun bambuNUSA"}
             </h2>
-            <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-              {activeTab === 'forgot' ? "Masukkan data Anda untuk mendapatkan akses kembali." : activeTab === 'login' ? "Akses dompet custodial dan ekosistem Anda." : "Gunakan data asli sesuai KYC untuk keamanan maksimal."}
+            <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: '1.5' }}>
+              {activeTab === 'forgot' ? "Lupa kata sandi? Masukkan Email atau Nomor HP yang terdaftar untuk menerima tautan pemulihan." : activeTab === 'login' ? "Akses dompet custodial dan ekosistem Anda." : "Gunakan data asli sesuai KYC untuk keamanan maksimal."}
             </p>
           </div>
 
@@ -262,8 +278,11 @@ const AuthModal = () => {
                 )}
 
                 {activeTab === 'login' && (
-                  <div style={{ textAlign: 'right' }}>
-                    <button type="button" onClick={() => setActiveTab('forgot')} style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: '0.85rem', fontWeight: 'bold', cursor: 'pointer' }}>Lupa sandi?</button>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
+                    <label style={{ fontSize: '0.8rem', color: '#888', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+                      <input type="checkbox" style={{ accentColor: 'var(--primary)' }} /> Ingat saya
+                    </label>
+                    <button type="button" onClick={() => setActiveTab('forgot')} style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: '0.85rem', fontWeight: 'bold', cursor: 'pointer', textDecoration: 'underline' }}>Lupa Password?</button>
                   </div>
                 )}
               </>

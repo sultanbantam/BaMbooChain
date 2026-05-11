@@ -68,7 +68,7 @@ const getUserTier = (bmcBalance) => {
 };
 
 const MembershipPage = () => {
-  const { walletAddress, bmcBalance, isConnected, connectWallet } = useWeb3();
+  const { walletAddress, bmcBalance, isConnected, openWalletModal } = useWeb3();
   const navigate = useNavigate();
   const userTier = getUserTier(bmcBalance);
   const bmcNum = getBMCNumber(bmcBalance);
@@ -117,7 +117,7 @@ const MembershipPage = () => {
         {!isConnected && (
           <div style={{ textAlign: 'center', padding: '40px', background: 'white', borderRadius: '16px', marginBottom: '40px', border: '2px dashed #dee2e6' }}>
             <p style={{ color: 'var(--text-muted)', marginBottom: '20px', fontSize: '1.05rem' }}>Hubungkan wallet untuk melihat status keanggotaan Anda</p>
-            <button onClick={connectWallet} className="btn btn-primary" style={{ padding: '14px 32px', fontSize: '1rem' }}>
+            <button onClick={openWalletModal} className="btn btn-primary" style={{ padding: '14px 32px', fontSize: '1rem' }}>
               🔗 Hubungkan Wallet
             </button>
           </div>

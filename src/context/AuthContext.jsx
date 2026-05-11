@@ -15,7 +15,10 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalInitialTab, setAuthModalInitialTab] = useState('login'); // 'login' or 'signup'
+  const [activeToast, setActiveToast] = useState(null);
   const [pendingValidations, setPendingValidations] = useState([]);
+  const [partnerApps, setPartnerApps] = useState([]);
+  const [locationProposals, setLocationProposals] = useState([]);
 
   // Load from local storage
   useEffect(() => {
@@ -40,6 +43,12 @@ export const AuthProvider = ({ children }) => {
           password: 'Password123!', walletAddress: '0x999d35Cc6634C0532925a3b844Bc454e4438f99a', bmcBalance: 15.5, 
           kycStatus: 'unsubmitted', isValidator: false, securitySettings: { pin: null, twoFactor: false, retina: false },
           joinedAt: '2026-03-20T00:00:00Z', transactions: []
+        },
+        {
+          id: 'admin1', name: 'Admin Yayasan', username: 'admin_yayasan', email: 'admin@yayasan.org', phone: '081122334455', 
+          password: 'AdminYayasan123!', walletAddress: '0x111d35Cc6634C0532925a3b844Bc454e4438f11a', bmcBalance: 1000000, 
+          kycStatus: 'verified', isValidator: true, securitySettings: { pin: '999999', twoFactor: true, retina: true },
+          joinedAt: '2024-01-01T00:00:00Z', transactions: []
         }
       ];
       localStorage.setItem('yayasan_all_users', JSON.stringify(seedUsers));
@@ -64,12 +73,73 @@ export const AuthProvider = ({ children }) => {
     if (savedValidations) {
       setPendingValidations(JSON.parse(savedValidations));
     }
+
+    const savedPartnerApps = localStorage.getItem('yayasan_partner_apps');
+    if (savedPartnerApps) setPartnerApps(JSON.parse(savedPartnerApps));
+
+    const savedLocationProposals = localStorage.getItem('yayasan_location_proposals');
+    if (savedLocationProposals) setLocationProposals(JSON.parse(savedLocationProposals));
   }, []);
 
   const getMockDB = () => JSON.parse(localStorage.getItem('yayasan_all_users') || '[]');
   const saveToMockDB = (newUser) => {
       const db = getMockDB();
       localStorage.setItem('yayasan_all_users', JSON.stringify([...db, newUser]));
+  };
+
+  const addNotification = (text, type = 'info', targetUser = user) => {
+    if (!targetUser) return targetUser;
+    const newNotif = {
+      id: 'notif_' + Math.random().toString(36).substr(2, 9),
+      text,
+      type,
+      isRead: false,
+      timestamp: new Date().toISOString()
+    };
+    const updatedUser = {
+      ...targetUser,
+      notifications: [newNotif, ...(targetUser.notifications || [])]
+    };
+    
+    // Only update active state if the notification is for the current logged in user
+    if (user && targetUser.id === user.id) {
+      setUser(updatedUser);
+      localStorage.setItem('yayasan_user', JSON.stringify(updatedUser));
+      setActiveToast(newNotif);
+      setTimeout(() => setActiveToast(null), 4000);
+    }
+    
+    return updatedUser;
+  };
+
+  const markAsRead = (id) => {
+    if (!user) return;
+    const updatedUser = {
+      ...user,
+      notifications: (user.notifications || []).map(n => n.id === id ? { ...n, isRead: true } : n)
+    };
+    setUser(updatedUser);
+    localStorage.setItem('yayasan_user', JSON.stringify(updatedUser));
+  };
+
+  const markAllAsRead = () => {
+    if (!user) return;
+    const updatedUser = {
+      ...user,
+      notifications: (user.notifications || []).map(n => ({ ...n, isRead: true }))
+    };
+    setUser(updatedUser);
+    localStorage.setItem('yayasan_user', JSON.stringify(updatedUser));
+  };
+
+  const clearNotifications = () => {
+    if (!user) return;
+    const updatedUser = {
+      ...user,
+      notifications: []
+    };
+    setUser(updatedUser);
+    localStorage.setItem('yayasan_user', JSON.stringify(updatedUser));
   };
 
   const login = (userData) => {
@@ -85,8 +155,12 @@ export const AuthProvider = ({ children }) => {
             alert("❌ Kata sandi salah!");
             return false;
         }
-        setUser(existing);
-        localStorage.setItem('yayasan_user', JSON.stringify(existing));
+        
+        // Tambahkan notifikasi selamat datang kembali
+        const userWithNotif = addNotification(`Selamat datang kembali, ${existing.username}!`, 'success', existing);
+        
+        setUser(userWithNotif);
+        localStorage.setItem('yayasan_user', JSON.stringify(userWithNotif));
         setIsAuthenticated(true);
         setIsAuthModalOpen(false);
         return true;
@@ -100,7 +174,7 @@ export const AuthProvider = ({ children }) => {
     const db = getMockDB();
     
     // Uniqueness Checks
-    if (db.some(u => u.username === userData.username)) { alert("❌ Username sudah digunakan!"); return false; }
+    if (userData.username && db.some(u => u.username === userData.username)) { alert("❌ Username sudah digunakan!"); return false; }
     if (userData.email && db.some(u => u.email === userData.email)) { alert("❌ Email sudah terdaftar!"); return false; }
     if (userData.phone && db.some(u => u.phone === userData.phone)) { alert("❌ Nomor HP sudah terdaftar!"); return false; }
 
@@ -129,12 +203,16 @@ export const AuthProvider = ({ children }) => {
       missions: [],
       pendingPayouts: 0,
       farmerStatus: 'none', // none, pending, verified
-      assignedLocation: null
+      assignedLocation: null,
+      notifications: []
     };
     
-    saveToMockDB(newUser);
-    setUser(newUser);
-    localStorage.setItem('yayasan_user', JSON.stringify(newUser));
+    // Tambahkan notifikasi perdana
+    const userWithNotif = addNotification(`Selamat bergabung di BaMbooChain! Akun Anda berhasil dibuat.`, 'success', newUser);
+    
+    saveToMockDB(userWithNotif);
+    setUser(userWithNotif);
+    localStorage.setItem('yayasan_user', JSON.stringify(userWithNotif));
     setIsAuthenticated(true);
     setIsAuthModalOpen(false);
     return true;
@@ -154,6 +232,16 @@ export const AuthProvider = ({ children }) => {
   const updateSecurity = (settings) => {
       if(!user) return;
       const updatedUser = { ...user, securitySettings: { ...user.securitySettings, ...settings } };
+      setUser(updatedUser);
+      localStorage.setItem('yayasan_user', JSON.stringify(updatedUser));
+      const db = getMockDB().map(u => u.id === user.id ? updatedUser : u);
+      localStorage.setItem('yayasan_all_users', JSON.stringify(db));
+      return true;
+  };
+
+  const updateProfile = (profileData) => {
+      if (!user) return false;
+      const updatedUser = { ...user, ...profileData };
       setUser(updatedUser);
       localStorage.setItem('yayasan_user', JSON.stringify(updatedUser));
       const db = getMockDB().map(u => u.id === user.id ? updatedUser : u);
@@ -277,11 +365,103 @@ export const AuthProvider = ({ children }) => {
     return newItem;
   };
 
-  const approveValidation = (validationId) => {
-    addReward(0.005, 'Komisi Validator', 'Earn');
+  const approveValidation = (validationId, submitterReward = 0, plantingId = null) => {
+    addReward(0.05, 'Komisi Validator', 'Earn');
+    
+    if (submitterReward > 0) {
+      addReward(submitterReward, 'Reward Input Data Tracker', 'Earn');
+    }
+
+    if (plantingId) {
+      const stored = localStorage.getItem('bambupedia_plantings');
+      if (stored) {
+        let plantings = JSON.parse(stored);
+        plantings = plantings.map(p => p.id === plantingId ? { ...p, isVerified: true } : p);
+        localStorage.setItem('bambupedia_plantings', JSON.stringify(plantings));
+      }
+    }
+
     const updatedValidations = pendingValidations.filter(v => v.id !== validationId);
     setPendingValidations(updatedValidations);
     localStorage.setItem('yayasan_validations', JSON.stringify(updatedValidations));
+  };
+
+  // --- PARTNER & LOCATION MANAGEMENT ---
+  const submitPartnerApp = (data) => {
+    const newApp = {
+      ...data,
+      id: 'app_' + Math.random().toString(36).substr(2, 9),
+      userId: user?.id || 'guest',
+      status: 'pending',
+      date: new Date().toISOString().split('T')[0]
+    };
+    const updatedApps = [newApp, ...partnerApps];
+    setPartnerApps(updatedApps);
+    localStorage.setItem('yayasan_partner_apps', JSON.stringify(updatedApps));
+    
+    // Update local user status if logged in
+    if (user) {
+      const updatedUser = { ...user, farmerStatus: 'pending' };
+      setUser(updatedUser);
+      localStorage.setItem('yayasan_user', JSON.stringify(updatedUser));
+      const db = getMockDB().map(u => u.id === user.id ? updatedUser : u);
+      localStorage.setItem('yayasan_all_users', JSON.stringify(db));
+    }
+    return newApp;
+  };
+
+  const approvePartnerApp = (appId) => {
+    const updatedApps = partnerApps.map(app => {
+      if (app.id === appId) {
+        // Find the user and update their status in "Global Mock DB"
+        const db = getMockDB();
+        const updatedDb = db.map(u => {
+          if (u.id === app.userId) {
+            return { ...u, farmerStatus: 'verified' };
+          }
+          return u;
+        });
+        localStorage.setItem('yayasan_all_users', JSON.stringify(updatedDb));
+        
+        // If the approved user is the CURRENT logged in user, update their state
+        if (user && user.id === app.userId) {
+          const updatedUser = { ...user, farmerStatus: 'verified' };
+          setUser(updatedUser);
+          localStorage.setItem('yayasan_user', JSON.stringify(updatedUser));
+        }
+
+        return { ...app, status: 'verified' };
+      }
+      return app;
+    });
+    setPartnerApps(updatedApps);
+    localStorage.setItem('yayasan_partner_apps', JSON.stringify(updatedApps));
+  };
+
+  const rejectPartnerApp = (appId) => {
+    const updatedApps = partnerApps.map(app => app.id === appId ? { ...app, status: 'rejected' } : app);
+    setPartnerApps(updatedApps);
+    localStorage.setItem('yayasan_partner_apps', JSON.stringify(updatedApps));
+  };
+
+  const submitLocationProposal = (data) => {
+    const newLoc = {
+      ...data,
+      id: 'loc_' + Math.random().toString(36).substr(2, 9),
+      userId: user?.id || 'guest',
+      status: 'pending',
+      date: new Date().toISOString().split('T')[0]
+    };
+    const updatedLocs = [newLoc, ...locationProposals];
+    setLocationProposals(updatedLocs);
+    localStorage.setItem('yayasan_location_proposals', JSON.stringify(updatedLocs));
+    return newLoc;
+  };
+
+  const approveLocation = (locId) => {
+    const updatedLocs = locationProposals.map(loc => loc.id === locId ? { ...loc, status: 'verified' } : loc);
+    setLocationProposals(updatedLocs);
+    localStorage.setItem('yayasan_location_proposals', JSON.stringify(updatedLocs));
   };
 
   const processCheckin = () => {
@@ -319,21 +499,34 @@ export const AuthProvider = ({ children }) => {
       isAuthModalOpen, 
       authModalInitialTab,
       pendingValidations,
+      partnerApps,
+      locationProposals,
       login, 
       signup, 
       logout,
       openLoginModal,
       openSignupModal,
       closeModal,
+      activeToast,
+      addNotification,
+      markAsRead,
+      markAllAsRead,
+      clearNotifications,
       addReward,
       spendBmc,
       transferBmc,
       stakeBmc,
       updateKyc,
       updateSecurity,
+      updateProfile,
       getMockDB,
       addPendingValidation,
       approveValidation,
+      submitPartnerApp,
+      approvePartnerApp,
+      rejectPartnerApp,
+      submitLocationProposal,
+      approveLocation,
       processCheckin
     }}>
       {children}

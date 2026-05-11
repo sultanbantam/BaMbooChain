@@ -53,7 +53,7 @@ const tierLabel = { seed: '🌱 Green Seed', guardian: '🎋 Guardian', builder:
 const tierColor = { seed: '#40c057', guardian: '#1c7ed6', builder: '#f59f00' };
 
 const AcademyPage = () => {
-  const { walletAddress, bmcBalance, isConnected, connectWallet } = useWeb3();
+  const { walletAddress, bmcBalance, isConnected, openWalletModal } = useWeb3();
   const userTier = getUserTier(bmcBalance);
   const bmcNum = getBMCNumber(bmcBalance);
 
@@ -70,7 +70,7 @@ const AcademyPage = () => {
             <BookOpen size={16} color="var(--primary)" />
             <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--primary)' }}>Token-Gated Learning • Perlu Token BMC</span>
           </div>
-          <h1 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '16px' }}>YSNJ Academy</h1>
+          <h1 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '16px' }}>Akademi Bambu Nusantara</h1>
           <p style={{ color: 'var(--text-muted)', maxWidth: '600px', margin: '0 auto' }}>
             Kurikulum eksklusif tentang industri bambu — dari analisis pasar hingga strategi bisnis global.
             Akses terbuka berdasarkan level keanggotaan BMC Anda.
@@ -83,7 +83,7 @@ const AcademyPage = () => {
             <Lock size={40} color="#adb5bd" style={{ marginBottom: '16px' }} />
             <h3 style={{ marginBottom: '12px' }}>Hubungkan Wallet untuk Akses Konten</h3>
             <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>Kursus Academy terkunci. Hubungkan wallet BSC dan pegang token BMC untuk membuka akses.</p>
-            <button onClick={connectWallet} className="btn btn-primary" style={{ padding: '14px 32px' }}>🔗 Hubungkan Wallet</button>
+            <button onClick={openWalletModal} className="btn btn-primary" style={{ padding: '14px 32px' }}>🔗 Hubungkan Wallet</button>
           </div>
         ) : (
           <div style={{ background: 'white', borderRadius: '12px', padding: '16px 24px', marginBottom: '32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', border: '1px solid #eee' }}>

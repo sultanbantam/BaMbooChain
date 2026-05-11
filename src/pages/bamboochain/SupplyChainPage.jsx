@@ -1,8 +1,10 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Share2, Database, Users, Activity, CheckCircle, MapPin, Search } from 'lucide-react';
 import BackButton from '../../components/BackButton';
 
 const SupplyChainPage = () => {
+  const navigate = useNavigate();
   // Mock data untuk jaringan petani
   const farmerNetwork = [
     { id: 1, name: "Koperasi Tani Cibarani", role: "Petani Hulu", location: "Lebak, Banten", rating: "4.9", verified: true },
@@ -67,16 +69,68 @@ const SupplyChainPage = () => {
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px' }}>
           
+          {/* TRACKING SIMULATOR (NEW) */}
+          <div style={{ background: 'linear-gradient(135deg, #0ca678 0%, #087f5b 100%)', borderRadius: '24px', padding: '32px', color: 'white', boxShadow: '0 15px 35px rgba(12,166,120,0.3)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <div>
+              <h3 style={{ fontSize: '1.4rem', fontWeight: 'bold', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Search size={24} /> Lacak ID Bambu
+              </h3>
+              <p style={{ fontSize: '0.95rem', opacity: 0.9, marginBottom: '24px' }}>Masukkan Serial ID atau Scan QR untuk melihat riwayat hidup (Life-cycle) batang bambu Anda.</p>
+              
+              <div style={{ position: 'relative', marginBottom: '20px' }}>
+                <input 
+                  type="text" 
+                  placeholder="Contoh: BMB-001" 
+                  style={{ width: '100%', padding: '16px', borderRadius: '14px', border: 'none', background: 'rgba(255,255,255,0.2)', color: 'white', fontWeight: 'bold', outline: 'none' }}
+                />
+                <button style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'white', color: 'var(--primary)', border: 'none', padding: '8px 16px', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer' }}>
+                  Lacak
+                </button>
+              </div>
+            </div>
+            
+            <div style={{ background: 'rgba(0,0,0,0.1)', padding: '16px', borderRadius: '16px', fontSize: '0.85rem' }}>
+              <strong>Tips:</strong> Semua batang bambu binaan YSNJ dilengkapi dengan tag fisik (RFID/QR) sejak usia 1 tahun.
+            </div>
+          </div>
+
+          {/* MANFAAT SECTION (NEW) */}
+          <div style={{ background: 'white', borderRadius: '24px', padding: '32px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
+            <h3 style={{ fontSize: '1.4rem', color: 'var(--text-main)', marginBottom: '20px', fontWeight: 'bold' }}>Mengapa Ini Penting?</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <div style={{ color: 'var(--primary)', flexShrink: 0 }}><CheckCircle size={20} /></div>
+                <div>
+                  <div style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>Anti-Pemalsuan</div>
+                  <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Mencegah pencampuran bambu muda atau ilegal ke dalam industri.</p>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <div style={{ color: 'var(--primary)', flexShrink: 0 }}><CheckCircle size={20} /></div>
+                <div>
+                  <div style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>Akurasi Karbon</div>
+                  <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Data usia & berat riil memberikan klaim offset CO2 yang valid dan laku di pasar global.</p>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <div style={{ color: 'var(--primary)', flexShrink: 0 }}><CheckCircle size={20} /></div>
+                <div>
+                  <div style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>Fair Trade</div>
+                  <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Petani mendapat harga lebih tinggi karena kualitasnya terjamin oleh sistem.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px' }}>
+          
           {/* DATABASE BAMBU */}
           <div style={{ background: 'white', borderRadius: '20px', padding: '32px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
               <h3 style={{ fontSize: '1.4rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '10px', margin: 0 }}>
                 <Database size={24} color="var(--primary)" /> Database Bambu Live
               </h3>
-              <div style={{ position: 'relative' }}>
-                <Search size={16} color="var(--text-muted)" style={{ position: 'absolute', top: '50%', transform: 'translateY(-50%)', left: '12px' }} />
-                <input type="text" placeholder="Cari ID Bambu..." style={{ padding: '8px 12px 8px 36px', borderRadius: '8px', border: '1px solid #ced4da', fontSize: '0.85rem' }} />
-              </div>
             </div>
             <p style={{ fontSize: '0.95rem', color: 'var(--text-muted)', marginBottom: '24px' }}>Data forensik jenis, lokasi, usia, dan kualitas material yang telah melalui tahapan scan QR.</p>
             
@@ -132,7 +186,9 @@ const SupplyChainPage = () => {
               ))}
             </div>
 
-            <button style={{ width: '100%', marginTop: '24px', padding: '12px', background: 'transparent', border: '1px dashed #ced4da', color: 'var(--text-muted)', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.2s' }}
+            <button 
+                    onClick={() => navigate('/bambunusa/join-farmer')}
+                    style={{ width: '100%', marginTop: '24px', padding: '12px', background: 'transparent', border: '1px dashed #ced4da', color: 'var(--text-muted)', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.2s' }}
                     onMouseEnter={(e) => { e.currentTarget.style.background = '#f8f9fa'; e.currentTarget.style.color = 'var(--primary)'; e.currentTarget.style.borderColor = 'var(--primary)'; }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.borderColor = '#ced4da'; }}>
               Lamar Menjadi Mitra Supply Chain

@@ -1,19 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { Globe, Bell, ChevronDown, Menu, X, Shield, Layout, TreeDeciduous, Truck, Factory, Wallet, Leaf, ShoppingCart, Users, GraduationCap, BarChart3, TrendingUp } from 'lucide-react';
+import { Globe, Bell, ChevronDown, Menu, X, Shield, Layout, TreeDeciduous, Truck, Factory, Wallet, Leaf, ShoppingCart, Users, GraduationCap, BarChart3, TrendingUp, User } from 'lucide-react';
 import { getAssetUrl } from '../utils/assets';
 import { Link, useNavigate } from 'react-router-dom';
 import AdSpace from './AdSpace';
 import { useLanguage } from '../context/LanguageContext';
 import { useWeb3 } from '../context/Web3Context';
+import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
   const [showBambooMenu, setShowBambooMenu] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showNotifMenu, setShowNotifMenu] = useState(false);
 
-  const { language, toggleLanguage } = useLanguage();
-  const { walletAddress, isConnected, connectWallet } = useWeb3();
+  const { language, toggleLanguage, t } = useLanguage();
+  const { walletAddress, isConnected, connectWallet, isConnecting, isWalletModalOpen, openWalletModal, closeWalletModal } = useWeb3();
+  const { user, isAuthenticated, openLoginModal, logout, markAsRead, markAllAsRead, clearNotifications } = useAuth();
   const navigate = useNavigate();
+
+  const userNotifications = user?.notifications || [];
+  const unreadCount = userNotifications.filter(n => !n.isRead).length;
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
@@ -25,38 +32,58 @@ const Navbar = () => {
   const shortAddress = walletAddress ? `${walletAddress.substring(0, 6)}...${walletAddress.substring(38)}` : '';
 
   const bambooNusaFeatures = [
-    { label: 'Overview', path: '/bamboochain', icon: <Layout size={16} /> },
-    { label: 'Plantation', path: '/bamboochain/plantation', icon: <TreeDeciduous size={16} /> },
-    { label: 'Supply Chain', path: '/bamboochain/supply-chain', icon: <Truck size={16} /> },
-    { label: 'Build', path: '/bamboochain/build', icon: <Factory size={16} /> },
-    { label: 'Token & Wallet', path: '/bamboochain/token-wallet', icon: <Wallet size={16} /> },
-    { label: 'Carbon Impact', path: '/bamboochain/carbon-impact', icon: <Leaf size={16} /> },
-    { label: 'Marketplace', path: '/bamboochain/marketplace', icon: <ShoppingCart size={16} /> },
-    { label: 'DAO & Community', path: '/bamboochain/dao', icon: <Users size={16} /> },
-    { label: 'Academy', path: '/bamboochain/academy', icon: <GraduationCap size={16} /> },
-    { label: 'Data Analytics', path: '/bamboochain/data-analytics', icon: <BarChart3 size={16} /> },
-    { label: 'Invest Ecosystem', path: '/bamboochain/invest', icon: <TrendingUp size={16} /> },
+    { label: t('feature_overview'), path: '/bamboochain', icon: <Layout size={16} /> },
+    { label: t('feature_plantation'), path: '/bamboochain/plantation', icon: <TreeDeciduous size={16} /> },
+    { label: t('feature_supply_chain'), path: '/bamboochain/supply-chain', icon: <Truck size={16} /> },
+    { label: t('feature_build'), path: '/bamboochain/build', icon: <Factory size={16} /> },
+    { label: t('feature_token_wallet'), path: '/bamboochain/token-wallet', icon: <Wallet size={16} /> },
+    { label: t('feature_carbon_impact'), path: '/bamboochain/carbon-impact', icon: <Leaf size={16} /> },
+    { label: t('feature_marketplace'), path: '/bamboochain/marketplace', icon: <ShoppingCart size={16} /> },
+    { label: t('feature_dao'), path: '/bamboochain/dao', icon: <Users size={16} /> },
+    { label: t('feature_academy'), path: '/bamboochain/academy', icon: <GraduationCap size={16} /> },
+    { label: t('feature_data_analytics'), path: '/bamboochain/data-analytics', icon: <BarChart3 size={16} /> },
+    { label: t('feature_invest'), path: '/bamboochain/invest', icon: <TrendingUp size={16} /> },
   ];
 
   const mobileMenuItems = [
-    { label: 'Beranda', path: '/' },
-    { label: 'Proyek', path: '/projects' },
-    { label: 'Wawasan', path: '/insight' },
-    { label: 'Dampak', path: '/impact' },
-    { label: 'Mitra', path: '/partners' },
-    { label: 'Tentang Kami', path: '/about' },
-    { label: 'Kontak', path: '/contact' },
-    { label: 'Bambupedia', path: '/bambupedia' },
-    { label: 'Akademi', path: '/academy' },
-    { label: 'Data & Alat', path: '/data-tools' },
-    { label: 'Pasar', path: '/bamboochain/marketplace' },
-    { label: 'Komunitas', path: '/community' },
+    { label: t('nav_home'), path: '/' },
+    { label: t('nav_projects'), path: '/projects' },
+    { label: t('nav_insights'), path: '/insight' },
+    { label: t('nav_impact'), path: '/impact' },
+    { label: t('nav_partners'), path: '/partners' },
+    { label: t('nav_about'), path: '/about' },
+    { label: t('nav_contact'), path: '/contact' },
+    { label: t('nav_bambupedia'), path: '/bambupedia' },
+    { label: t('nav_academy'), path: '/academy' },
+    { label: t('nav_datatools'), path: '/data-tools' },
+    { label: t('nav_marketplace'), path: '/bamboochain/marketplace' },
+    { label: t('nav_community'), path: '/community' },
     ...bambooNusaFeatures,
-    { label: 'Karir', path: '/careers' },
-    { label: 'Keanggotaan', path: '/membership' },
-    { label: 'FAQ', path: '/faq' },
-    { label: 'On-Chain ⛓️', path: '/transparency' },
+    { label: t('nav_careers'), path: '/careers' },
+    { label: t('nav_membership'), path: '/membership' },
+    { label: t('nav_faq'), path: '/faq' },
+    { label: t('nav_transparency'), path: '/transparency' },
   ];
+
+  const wallets = [
+    { name: 'MetaMask', icon: '🦊', color: '#E2761B', deepLink: 'https://metamask.app.link/dapp/' },
+    { name: 'Trust Wallet', icon: '🛡️', color: '#3375BB', deepLink: 'https://link.trustwallet.com/open_url?coin_id=60&url=' },
+    { name: 'Coinbase Wallet', icon: '💙', color: '#0052FF', deepLink: 'https://go.cb-w.com/dapp?cb_url=' },
+    { name: 'Bitget Wallet', icon: '💹', color: '#00C8FF', deepLink: 'https://bitkeep.com/en/download' },
+    { name: 'WalletConnect', icon: '🔌', color: '#3B99FC' },
+  ];
+
+  const handleWalletConnect = async (wallet) => {
+    if (typeof window.ethereum !== 'undefined') {
+      await connectWallet();
+      closeWalletModal();
+    } else if (wallet.deepLink) {
+      const currentUrl = window.location.href;
+      window.location.href = wallet.deepLink + currentUrl;
+    } else {
+      alert(`Silakan instal ${wallet.name} atau gunakan dApp Browser di dalam aplikasi dompet Anda.`);
+    }
+  };
 
   return (
     <nav style={{ position: 'fixed', top: 0, width: '100%', zIndex: 10000, background: 'white', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
@@ -76,9 +103,21 @@ const Navbar = () => {
           </div>
           {isMobileMenuOpen && (
             <div style={{ position: 'fixed', top: '70px', left: 0, width: '100%', height: 'calc(100vh - 70px)', background: 'white', zIndex: 10001, overflowY: 'auto', padding: '20px' }}>
-               <button onClick={connectWallet} style={{ width: '100%', background: '#f59f00', color: 'white', border: 'none', padding: '16px', borderRadius: '12px', fontWeight: 'bold', marginBottom: '20px' }}>
-                 {isConnected ? shortAddress : 'Connect Wallet'}
-               </button>
+               {isAuthenticated ? (
+                 <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)} style={{ width: '100%', background: '#f0fdf4', color: 'var(--primary)', border: '1px solid var(--primary)', padding: '16px', borderRadius: '12px', fontWeight: 'bold', marginBottom: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', textDecoration: 'none' }}>
+                   <img src={user?.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username || 'default'}`} alt="avatar" style={{ width: '24px', height: '24px', borderRadius: '50%' }} />
+                   {user?.name || t('nav_profile')}
+                 </Link>
+               ) : (
+                 <button onClick={() => { setIsMobileMenuOpen(false); openLoginModal(); }} style={{ width: '100%', background: '#f59f00', color: 'white', border: 'none', padding: '16px', borderRadius: '12px', fontWeight: 'bold', marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+                   <User size={20} /> {t('nav_login_join')}
+                 </button>
+               )}
+               {isAuthenticated && (
+                 <button onClick={() => { logout(); setIsMobileMenuOpen(false); }} style={{ width: '100%', background: '#fff0f0', color: '#e03131', border: '1px solid #ffc9c9', padding: '16px', borderRadius: '12px', fontWeight: 'bold', marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+                   {t('nav_logout')}
+                 </button>
+               )}
                {mobileMenuItems.map((item, idx) => (
                  <Link key={idx} to={item.path} onClick={() => setIsMobileMenuOpen(false)} style={{ display: 'block', padding: '15px 0', borderBottom: '1px solid #eee', color: '#333', textDecoration: 'none', fontWeight: '600' }}>{item.label}</Link>
                ))}
@@ -96,11 +135,11 @@ const Navbar = () => {
 
           {/* Row 2: Top Menu Bar */}
           <div style={{ background: 'white', height: '45px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '25px', padding: '0 32px', borderBottom: '1px solid #f1f3f5' }}>
-            <Link to="/bambupedia" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>Bambupedia</Link>
-            <Link to="/academy" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>Akademi</Link>
-            <Link to="/data-tools" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>Data & Alat</Link>
-            <Link to="/bamboochain/marketplace" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>Pasar</Link>
-            <Link to="/community" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>Komunitas</Link>
+            <Link to="/bambupedia" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('nav_bambupedia')}</Link>
+            <Link to="/academy" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('nav_academy')}</Link>
+            <Link to="/data-tools" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('nav_datatools')}</Link>
+            <Link to="/bamboochain/marketplace" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('nav_marketplace')}</Link>
+            <Link to="/community" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('nav_community')}</Link>
             
             {/* bambuNUSA DROPDOWN (11 Features) */}
             <div 
@@ -127,19 +166,107 @@ const Navbar = () => {
               )}
             </div>
 
-            <Link to="/careers" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none' }}>Karir</Link>
+            <Link to="/careers" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none' }}>{t('nav_careers')}</Link>
             <Link to="/membership" style={{ background: 'rgba(245, 159, 0, 0.1)', padding: '4px 12px', borderRadius: '20px', fontSize: '0.85rem', color: '#f59f00', fontWeight: 'bold', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <Shield size={14} /> Keanggotaan
+              <Shield size={14} /> {t('nav_membership')}
             </Link>
 
-            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '15px' }}>
-              <Bell size={18} color="#888" style={{ cursor: 'pointer' }} />
+            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '15px', position: 'relative' }}>
               <div 
-                onClick={connectWallet}
-                style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#e7f5ff', padding: '6px 14px', borderRadius: '20px', fontSize: '0.85rem', color: '#228be6', cursor: 'pointer', fontWeight: '600' }}
+                style={{ position: 'relative', display: 'flex', alignItems: 'center', cursor: 'pointer' }}
+                onClick={() => { setShowNotifMenu(!showNotifMenu); setShowProfileMenu(false); }}
               >
-                <Globe size={14} /> Google <span style={{ color: '#444' }}>{isConnected ? shortAddress : 'xe4d5...4b9e'}</span>
+                <Bell size={18} color="#888" />
+                {isAuthenticated && unreadCount > 0 && (
+                  <span style={{ position: 'absolute', top: '-5px', right: '-5px', background: '#e03131', color: 'white', fontSize: '0.6rem', padding: '2px 5px', borderRadius: '10px', fontWeight: 'bold' }}>
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
               </div>
+              
+              {showNotifMenu && isAuthenticated && (
+                <div style={{ position: 'absolute', top: '40px', right: '100px', width: '350px', background: 'white', boxShadow: '0 10px 40px rgba(0,0,0,0.1)', borderRadius: '16px', overflow: 'hidden', zIndex: 10006, border: '1px solid #eee' }}>
+                  <div style={{ padding: '15px', background: '#f8f9fa', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontWeight: 'bold', fontSize: '0.95rem' }}>{t('nav_notif_title')} {unreadCount > 0 && `(${unreadCount})`}</span>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                      {unreadCount > 0 && (
+                        <button onClick={markAllAsRead} style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 'bold' }}>{t('nav_notif_read')}</button>
+                      )}
+                      {userNotifications.length > 0 && (
+                        <button onClick={clearNotifications} style={{ background: 'none', border: 'none', color: '#e03131', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 'bold' }}>{t('nav_notif_clear')}</button>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div style={{ maxHeight: '350px', overflowY: 'auto' }}>
+                    {userNotifications.length > 0 ? (
+                      userNotifications.map(notif => (
+                        <div 
+                          key={notif.id} 
+                          onClick={() => !notif.isRead && markAsRead(notif.id)}
+                          style={{ 
+                            padding: '15px', 
+                            borderBottom: '1px solid #f1f3f5', 
+                            fontSize: '0.85rem',
+                            background: notif.isRead ? 'white' : '#f0fdf4',
+                            cursor: notif.isRead ? 'default' : 'pointer',
+                            display: 'flex',
+                            gap: '12px',
+                            alignItems: 'flex-start',
+                            transition: 'background 0.2s'
+                          }}
+                        >
+                          <div style={{ marginTop: '2px' }}>
+                            {notif.type === 'success' ? '✅' : notif.type === 'warning' ? '⚠️' : notif.type === 'error' ? '❌' : 'ℹ️'}
+                          </div>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ color: notif.isRead ? '#666' : '#1a1a1a', fontWeight: notif.isRead ? 'normal' : '600', lineHeight: '1.4' }}>
+                              {notif.text}
+                            </div>
+                            <div style={{ fontSize: '0.7rem', color: '#aaa', marginTop: '4px' }}>
+                              {new Date(notif.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                            </div>
+                          </div>
+                          {!notif.isRead && <div style={{ width: '8px', height: '8px', background: 'var(--primary)', borderRadius: '50%', marginTop: '5px' }} />}
+                        </div>
+                      ))
+                    ) : (
+                      <div style={{ padding: '30px 15px', textAlign: 'center', color: '#888', fontSize: '0.9rem' }}>
+                        {t('nav_notif_empty')}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+              {showNotifMenu && !isAuthenticated && (
+                <div style={{ position: 'absolute', top: '40px', right: '100px', width: '320px', background: 'white', boxShadow: '0 10px 40px rgba(0,0,0,0.1)', borderRadius: '16px', overflow: 'hidden', zIndex: 10006, border: '1px solid #eee', padding: '15px', textAlign: 'center', fontSize: '0.9rem', color: '#666' }}>
+                  {t('nav_notif_login_req')}
+                </div>
+              )}
+
+              {isAuthenticated ? (
+                <div 
+                  onClick={() => { setShowProfileMenu(!showProfileMenu); setShowNotifMenu(false); }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#f0fdf4', padding: '6px 14px', borderRadius: '20px', fontSize: '0.85rem', color: 'var(--primary)', cursor: 'pointer', fontWeight: '600', border: '1px solid var(--primary)', position: 'relative' }}
+                >
+                  <img src={user?.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username || 'default'}`} alt="avatar" style={{ width: '20px', height: '20px', borderRadius: '50%' }} />
+                  {user?.name?.split(' ')[0] || 'User'}
+                  
+                  {showProfileMenu && (
+                    <div style={{ position: 'absolute', top: '40px', right: '0', width: '200px', background: 'white', boxShadow: '0 10px 40px rgba(0,0,0,0.1)', borderRadius: '16px', overflow: 'hidden', zIndex: 10006, border: '1px solid #eee' }}>
+                      <Link to="/profile" style={{ display: 'block', padding: '12px 16px', color: '#333', textDecoration: 'none', borderBottom: '1px solid #eee' }}>👤 {t('nav_profile')}</Link>
+                      <button onClick={(e) => { e.stopPropagation(); logout(); setShowProfileMenu(false); }} style={{ width: '100%', textAlign: 'left', padding: '12px 16px', background: 'white', border: 'none', color: '#e03131', cursor: 'pointer', fontWeight: 'bold' }}>🚪 {t('nav_logout')}</button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div 
+                  onClick={openLoginModal}
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#e7f5ff', padding: '6px 14px', borderRadius: '20px', fontSize: '0.85rem', color: '#228be6', cursor: 'pointer', fontWeight: '600', border: '1px solid transparent' }}
+                >
+                  <User size={14} /> {t('nav_login_join')}
+                </div>
+              )}
             </div>
           </div>
 
@@ -156,14 +283,14 @@ const Navbar = () => {
             
             <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
                {[
-                 { label: 'Beranda', path: '/' },
-                 { label: 'Proyek', path: '/projects' },
-                 { label: 'Wawasan', path: '/insight' },
-                 { label: 'Dampak', path: '/impact' },
-                 { label: 'Mitra', path: '/partners' },
-                 { label: 'Tentang Kami', path: '/about' },
-                 { label: 'Kontak', path: '/contact' },
-                 { label: 'FAQ', path: '/faq' }
+                 { label: t('nav_home'), path: '/' },
+                 { label: t('nav_projects'), path: '/projects' },
+                 { label: t('nav_insights'), path: '/insight' },
+                 { label: t('nav_impact'), path: '/impact' },
+                 { label: t('nav_partners'), path: '/partners' },
+                 { label: t('nav_about'), path: '/about' },
+                 { label: t('nav_contact'), path: '/contact' },
+                 { label: t('nav_faq'), path: '/faq' }
                ].map(item => (
                  <Link key={item.label} to={item.path} style={{ fontWeight: '600', color: '#444', textDecoration: 'none', fontSize: '0.95rem', transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--primary)'} onMouseLeave={e => e.currentTarget.style.color = '#444'}>
                    {item.label}
@@ -171,7 +298,7 @@ const Navbar = () => {
                ))}
                
                <Link to="/transparency" style={{ color: 'white', background: 'var(--primary)', fontWeight: 'bold', padding: '8px 20px', borderRadius: '30px', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 10px rgba(12, 166, 120, 0.3)' }}>
-                 On-Chain ⛓️
+                 {t('nav_transparency')}
                </Link>
                
                <div style={{ borderLeft: '2px solid #f1f3f5', height: '24px', margin: '0 5px' }} />
@@ -185,6 +312,56 @@ const Navbar = () => {
 
         </div>
       )}
+       {/* ────────── WALLET SELECTION MODAL ────────── */}
+       {isWalletModalOpen && (
+         <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(10px)', zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+            <div style={{ background: 'white', width: '100%', maxWidth: '400px', borderRadius: '24px', padding: '30px', boxShadow: '0 20px 50px rgba(0,0,0,0.2)', position: 'relative' }}>
+               <button onClick={() => closeWalletModal()} style={{ position: 'absolute', top: '20px', right: '20px', border: 'none', background: '#f1f3f5', borderRadius: '50%', width: '32px', height: '32px', cursor: 'pointer' }}><X size={18} /></button>
+               
+               <div style={{ textAlign: 'center', marginBottom: '25px' }}>
+                  <div style={{ background: 'rgba(12, 166, 120, 0.1)', width: '60px', height: '60px', borderRadius: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 15px', color: 'var(--primary)' }}>
+                     <Wallet size={32} />
+                  </div>
+                  <h3 style={{ margin: 0, fontSize: '1.4rem' }}>{t('wallet_title')}</h3>
+                  <p style={{ color: '#666', fontSize: '0.9rem', marginTop: '8px' }}>{t('wallet_desc')}</p>
+               </div>
+
+               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {wallets.map((wallet) => (
+                    <button 
+                      key={wallet.name}
+                      onClick={() => handleWalletConnect(wallet)}
+                      style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '15px', 
+                        padding: '16px', 
+                        borderRadius: '16px', 
+                        border: '1px solid #eee', 
+                        background: 'white', 
+                        cursor: 'pointer', 
+                        transition: 'all 0.2s',
+                        textAlign: 'left'
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = wallet.color; e.currentTarget.style.background = '#fcfcfc'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = '#eee'; e.currentTarget.style.background = 'white'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                    >
+                      <span style={{ fontSize: '1.8rem' }}>{wallet.icon}</span>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 'bold', color: '#333' }}>{wallet.name}</div>
+                        <div style={{ fontSize: '0.75rem', color: '#888' }}>{wallet.name === 'MetaMask' ? 'Recommended' : 'Web3 Wallet'}</div>
+                      </div>
+                      <ChevronDown size={16} color="#ccc" style={{ transform: 'rotate(-90deg)' }} />
+                    </button>
+                  ))}
+               </div>
+
+               <p style={{ textAlign: 'center', fontSize: '0.75rem', color: '#aaa', marginTop: '25px' }}>
+                  {t('wallet_terms')}
+               </p>
+            </div>
+         </div>
+       )}
     </nav>
   );
 };

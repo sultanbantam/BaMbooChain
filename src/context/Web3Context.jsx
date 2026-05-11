@@ -30,6 +30,10 @@ export const Web3Provider = ({ children }) => {
   const [isConnecting, setIsConnecting] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [tokenInfo, setTokenInfo] = useState(null); // nama, symbol, totalSupply
+  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+
+  const openWalletModal = () => setIsWalletModalOpen(true);
+  const closeWalletModal = () => setIsWalletModalOpen(false);
 
   // Baca saldo BMC dari smart contract
   const fetchBMCBalance = useCallback(async (address) => {
@@ -85,7 +89,7 @@ export const Web3Provider = ({ children }) => {
 
   const connectWallet = useCallback(async () => {
     if (typeof window.ethereum === 'undefined') {
-      alert('Silakan instal MetaMask atau Trust Wallet terlebih dahulu.');
+      // Kita biarkan Navbar menangani UI pemilihan/instruksi instalasi
       return;
     }
     setIsConnecting(true);
@@ -174,6 +178,9 @@ export const Web3Provider = ({ children }) => {
       tokenInfo,
       connectWallet,
       disconnectWallet,
+      isWalletModalOpen,
+      openWalletModal,
+      closeWalletModal,
       BMC_CONTRACT_ADDRESS,
     }}>
       {children}

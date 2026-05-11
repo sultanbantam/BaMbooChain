@@ -123,7 +123,7 @@ const Footer = () => {
               Informasi di website ini bersifat edukasi dan bukan merupakan ajakan atau rekomendasi investasi. 
               <span onClick={() => handleNav('/faq')} style={{ color: 'var(--primary)', textDecoration: 'underline', marginRight: '10px', cursor: 'pointer' }}>Pusat Bantuan (FAQ)</span> | 
               <span onClick={() => handleNav('/disclaimer')} style={{ color: 'var(--primary)', textDecoration: 'underline', marginRight: '10px', cursor: 'pointer' }}>Baca Disclaimer Selengkapnya</span> | 
-              <span onClick={() => handleNav('/validator')} style={{ color: '#f59f00', textDecoration: 'underline', cursor: 'pointer' }}>Portal Validator Lapangan</span>
+              <span onClick={() => handleNav('/bamboochain/token-wallet?tab=validator')} style={{ color: '#f59f00', textDecoration: 'underline', cursor: 'pointer' }}>Portal Validator Lapangan</span>
             </p>
           </div>
         </div>

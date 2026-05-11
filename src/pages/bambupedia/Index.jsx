@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Send, BookOpen, Leaf, ChevronRight, Mic, Landmark, Wallet, ArrowRight, CheckCircle } from 'lucide-react';
+import { Search, Send, BookOpen, Leaf, ChevronRight, Mic, Landmark, Wallet, ArrowRight, CheckCircle, MessageSquare, Sprout } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 // ─── BASIS PENGETAHUAN BAMBU ─────────────────────────────────────────────────
 const BAMBOO_KB = [
@@ -249,6 +250,7 @@ const BambupediaPage = () => {
   const [activeTab, setActiveTab] = useState('chat');
   const [usingGroq, setUsingGroq] = useState(false);
   const messagesEndRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (GROQ_API_KEY && GROQ_API_KEY !== 'PASTE_GROQ_KEY_DISINI') {
@@ -322,26 +324,63 @@ const BambupediaPage = () => {
           </p>
         </div>
 
-        {/* Tab Switcher */}
-        <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '32px' }}>
-          {[{ id: 'chat', label: '💬 Tanya BambuBot' }, { id: 'library', label: '📚 Pustaka Bambu' }].map(tab => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-              style={{ padding: '10px 28px', borderRadius: '50px', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '0.9rem', transition: 'all 0.2s',
-                background: activeTab === tab.id ? 'var(--primary)' : 'white',
-                color: activeTab === tab.id ? 'white' : 'var(--text-muted)',
-                boxShadow: activeTab === tab.id ? '0 4px 12px rgba(12,166,120,0.3)' : '0 1px 4px rgba(0,0,0,0.08)',
-              }}>
-              {tab.label}
-            </button>
-          ))}
+        {/* Tab Switcher - HERO BUTTONS STYLE */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px', justifyContent: 'center', marginBottom: '40px' }}>
+          <button 
+            onClick={() => {
+              setActiveTab('chat');
+              setTimeout(() => {
+                document.getElementById('bambubot-chat-area')?.scrollIntoView({ behavior: 'smooth' });
+              }, 100);
+            }}
+            style={{ 
+              display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 30px', borderRadius: '24px', border: 'none', cursor: 'pointer', fontWeight: '800', fontSize: '1rem', transition: 'all 0.3s',
+              background: activeTab === 'chat' ? 'var(--primary)' : 'white',
+              color: activeTab === 'chat' ? 'white' : 'var(--text-main)',
+              boxShadow: activeTab === 'chat' ? '0 10px 20px rgba(12,166,120,0.2)' : '0 4px 12px rgba(0,0,0,0.05)',
+              minWidth: '220px', justifyContent: 'center'
+            }}>
+            <MessageSquare size={20} /> Tanya BambuBot
+          </button>
+          
+          <button 
+            onClick={() => setActiveTab('library')}
+            style={{ 
+              display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 30px', borderRadius: '24px', border: 'none', cursor: 'pointer', fontWeight: '800', fontSize: '1rem', transition: 'all 0.3s',
+              background: activeTab === 'library' ? 'var(--primary)' : 'white',
+              color: activeTab === 'library' ? 'white' : 'var(--text-main)',
+              boxShadow: activeTab === 'library' ? '0 10px 20px rgba(12,166,120,0.2)' : '0 4px 12px rgba(0,0,0,0.05)',
+              minWidth: '220px', justifyContent: 'center',
+              border: activeTab === 'library' ? 'none' : '1px solid #eee'
+            }}>
+            <BookOpen size={20} /> Pustaka Bambu
+          </button>
+
+          <button 
+            onClick={() => navigate('/bambupedia/tracker')}
+            style={{ 
+              display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 30px', borderRadius: '24px', border: 'none', cursor: 'pointer', fontWeight: '800', fontSize: '1rem', transition: 'all 0.3s',
+              background: 'white',
+              color: 'var(--text-main)',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+              minWidth: '220px', justifyContent: 'center',
+              border: '1px solid #eee'
+            }}>
+            <Sprout size={20} color="var(--primary)" /> Tracker Bambu
+          </button>
         </div>
 
         {/* ── TAB CHAT ── */}
         {activeTab === 'chat' && (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '24px', alignItems: 'start' }}>
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: window.innerWidth < 768 ? '1fr' : '1fr 320px', 
+            gap: '24px', 
+            alignItems: 'start' 
+          }}>
 
             {/* Chat Window */}
-            <div style={{ background: 'white', borderRadius: '20px', border: '1px solid #eee', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}>
+            <div id="bambubot-chat-area" style={{ background: 'white', borderRadius: '20px', border: '1px solid #eee', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.06)', order: window.innerWidth < 768 ? 1 : 1 }}>
               {/* Chat Header */}
               <div style={{ background: 'linear-gradient(135deg, #0ca678, #2b8a3e)', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{ width: '42px', height: '42px', background: 'rgba(255,255,255,0.2)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem' }}>🤖</div>
@@ -411,12 +450,15 @@ const BambupediaPage = () => {
             </div>
 
             {/* Sidebar: Pertanyaan Cepat */}
-            <div>
+            <div style={{ order: window.innerWidth < 768 ? 2 : 2 }}>
               <div style={{ background: 'white', borderRadius: '16px', padding: '20px', border: '1px solid #eee', marginBottom: '16px' }}>
                 <h3 style={{ fontSize: '0.95rem', fontWeight: '700', marginBottom: '14px', color: 'var(--text-main)' }}>⚡ Pertanyaan Cepat</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {QUICK_QUESTIONS.map((q, i) => (
-                    <button key={i} onClick={() => sendMessage(q)}
+                    <button key={i} onClick={() => {
+                      sendMessage(q);
+                      document.getElementById('bambubot-chat-area')?.scrollIntoView({ behavior: 'smooth' });
+                    }}
                       style={{ padding: '10px 14px', background: '#f8f9fa', border: '1px solid #eee', borderRadius: '10px', cursor: 'pointer', textAlign: 'left', fontSize: '0.82rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px', transition: 'all 0.2s' }}
                       onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(12,166,120,0.06)'; e.currentTarget.style.borderColor = 'var(--primary)'; }}
                       onMouseLeave={(e) => { e.currentTarget.style.background = '#f8f9fa'; e.currentTarget.style.borderColor = '#eee'; }}>

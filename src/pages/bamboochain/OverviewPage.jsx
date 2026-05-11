@@ -51,10 +51,25 @@ const OverviewPage = () => {
             <Link to="/bamboochain/plantation" className="btn btn-crypto" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 24px' }}>
               <PlusCircle size={18} /> Mulai Tanam Bambu
             </Link>
-            {user?.farmerStatus === 'none' && (
+            {user?.farmerStatus === 'none' ? (
               <Link to="/bambunusa/join-farmer" className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 24px' }}>
                 Join Petani
               </Link>
+            ) : (
+              <div style={{ 
+                padding: '10px 20px', 
+                borderRadius: '12px', 
+                background: user?.farmerStatus === 'verified' ? 'rgba(12, 166, 120, 0.1)' : 'rgba(245, 159, 0, 0.1)',
+                color: user?.farmerStatus === 'verified' ? 'var(--primary)' : '#f59f00',
+                fontWeight: 'bold',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                border: `1px solid ${user?.farmerStatus === 'verified' ? 'var(--primary)' : '#f59f00'}`
+              }}>
+                {user?.farmerStatus === 'verified' ? <CheckCircle size={18} /> : <Clock size={18} />}
+                {user?.farmerStatus === 'verified' ? 'Mitra Terverifikasi' : 'Menunggu Verifikasi'}
+              </div>
             )}
           </div>
         </div>
@@ -187,7 +202,7 @@ const OverviewPage = () => {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                  {[
                   { id: 1, action: "Penanaman berhasil", details: "50 Bambu di Blok A (Cibarani)", time: "2 jam yang lalu", type: "plant" },
-                  { id: 2, action: "Token diterima", details: "Reward karbon (50 BMC)", time: "1 hari yang lalu", type: "token" },
+                  { id: 2, action: "Token diterima", details: "Reward karbon (0.5 BMC)", time: "1 hari yang lalu", type: "token" },
                   { id: 3, action: "Pembaruan sensor IoT", details: "Kelembaban optimal di Blok C", time: "3 hari yang lalu", type: "iot" },
                 ].map((act) => (
                   <div key={act.id} style={{ display: 'flex', gap: '16px' }}>
@@ -205,7 +220,7 @@ const OverviewPage = () => {
               </div>
             </div>
             <div style={{ padding: '16px 24px', borderTop: '1px solid #f1f3f5', textAlign: 'center' }}>
-              <Link to="/bamboochain/overview" style={{ fontSize: '0.9rem', color: 'var(--primary)', fontWeight: '600', textDecoration: 'none' }}>Lihat Semua Aktivitas →</Link>
+              <Link to="/bamboochain/activities" style={{ fontSize: '0.9rem', color: 'var(--primary)', fontWeight: '600', textDecoration: 'none' }}>Lihat Semua Aktivitas →</Link>
             </div>
           </div>
 

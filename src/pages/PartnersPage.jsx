@@ -1,10 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Users, Factory, Cpu, GraduationCap, Landmark, ArrowRight, ShieldCheck, Building } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const PartnersPage = () => {
   const navigate = useNavigate();
+  const { isAuthenticated, user } = useAuth();
   const [isVisible, setIsVisible] = useState(false);
+  const [selectedPartner, setSelectedPartner] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState(null);
+  const [partnersList, setPartnersList] = useState([]); // Will be populated from categories
 
   useEffect(() => {
     setIsVisible(true);
@@ -104,6 +110,25 @@ const PartnersPage = () => {
     }
   ];
 
+  const handleViewProfile = (partner) => {
+    if (!isAuthenticated) {
+      navigate('/contact', { state: { from: 'partners', message: 'Silakan login atau hubungi kami untuk mendapatkan akses ke profil mitra strategis.' } });
+      return;
+    }
+    setSelectedPartner(partner);
+  };
+
+  const handleEditProfile = (partner) => {
+    setEditData(partner);
+    setIsEditing(true);
+  };
+
+  const handleSaveProfile = () => {
+    // Simulasi simpan data
+    setIsEditing(false);
+    alert("Profil berhasil diperbarui dan sedang ditinjau oleh Admin Yayasan.");
+  };
+
   return (
     <div style={{ paddingTop: '150px', paddingBottom: '100px', minHeight: '100vh', background: '#f8f9fa' }}>
       <div className="container">
@@ -146,11 +171,27 @@ const PartnersPage = () => {
               {/* Category Items */}
               <div style={{ padding: '30px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
                 {category.partners.map((partner, pIndex) => (
-                  <div key={pIndex} style={{ background: '#f8f9fa', padding: '24px', borderRadius: '16px', borderLeft: `4px solid ${category.color}`, transition: 'transform 0.2s' }} className="partner-card">
-                    <h3 style={{ fontSize: '1.1rem', color: 'var(--text-main)', margin: '0 0 8px 0', lineHeight: '1.4' }}>{partner.name}</h3>
-                    {partner.desc && (
-                      <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: '0.9rem', lineHeight: '1.5' }}>{partner.desc}</p>
-                    )}
+                  <div key={pIndex} style={{ background: '#f8f9fa', padding: '24px', borderRadius: '16px', borderLeft: `4px solid ${category.color}`, transition: 'transform 0.2s', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }} className="partner-card">
+                    <div>
+                      <h3 style={{ fontSize: '1.1rem', color: 'var(--text-main)', margin: '0 0 8px 0', lineHeight: '1.4' }}>{partner.name}</h3>
+                      {partner.desc && (
+                        <p style={{ color: 'var(--text-muted)', margin: '0 0 16px 0', fontSize: '0.9rem', lineHeight: '1.5' }}>{partner.desc}</p>
+                      )}
+                    </div>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                      <button 
+                        onClick={() => handleViewProfile(partner)}
+                        style={{ background: 'white', border: `1px solid ${category.color}`, color: category.color, padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 'bold' }}>
+                        View Profile
+                      </button>
+                      {isAuthenticated && (user?.role === 'partner' || user?.email?.includes('admin')) && (
+                        <button 
+                          onClick={() => handleEditProfile(partner)}
+                          style={{ background: category.color, border: 'none', color: 'white', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 'bold' }}>
+                          Edit
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -176,6 +217,79 @@ const PartnersPage = () => {
         
       </div>
 
+      {/* PARTNER PROFILE MODAL */}
+      {selectedPartner && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000, padding: '20px' }}>
+          <div style={{ background: 'white', borderRadius: '24px', maxWidth: '600px', width: '100%', padding: '40px', position: 'relative', animation: 'zoomIn 0.3s' }}>
+            <button onClick={() => setSelectedPartner(null)} style={{ position: 'absolute', top: '20px', right: '20px', background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer' }}>&times;</button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '30px' }}>
+              <div style={{ width: '80px', height: '80px', background: '#f1f3f5', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
+                <Building size={40} />
+              </div>
+              <div>
+                <h2 style={{ margin: 0, color: 'var(--text-main)' }}>{selectedPartner.name}</h2>
+                <span style={{ color: 'var(--primary)', fontWeight: 'bold', fontSize: '0.9rem' }}>Verified Partner</span>
+              </div>
+            </div>
+            <div style={{ marginBottom: '30px' }}>
+              <h3 style={{ fontSize: '1rem', color: 'var(--text-main)', marginBottom: '10px' }}>Mengenai Mitra</h3>
+              <p style={{ color: 'var(--text-muted)', lineHeight: '1.6' }}>{selectedPartner.desc || "Deskripsi lengkap mitra strategis Yayasan Sabumi Nusantara Jaya dalam pengembangan ekosistem ekonomi hijau."}</p>
+              
+              <h3 style={{ fontSize: '1rem', color: 'var(--text-main)', marginTop: '20px', marginBottom: '10px' }}>Detail Kolaborasi</h3>
+              <ul style={{ color: 'var(--text-muted)', paddingLeft: '20px', lineHeight: '1.8' }}>
+                <li>Status: Aktif</li>
+                <li>Mulai Kolaborasi: Januari 2024</li>
+                <li>Fokus Area: Pemberdayaan & Teknologi</li>
+              </ul>
+            </div>
+            <button 
+              onClick={() => setSelectedPartner(null)}
+              style={{ width: '100%', background: 'var(--primary)', color: 'white', border: 'none', padding: '16px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>
+              Tutup Profil
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* EDIT PROFILE MODAL */}
+      {isEditing && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000, padding: '20px' }}>
+          <div style={{ background: 'white', borderRadius: '24px', maxWidth: '600px', width: '100%', padding: '40px', position: 'relative' }}>
+            <h2 style={{ marginBottom: '30px', color: 'var(--text-main)' }}>Edit Profile Mitra</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '8px', fontWeight: 'bold' }}>Nama Lembaga</label>
+                <input 
+                  type="text" 
+                  defaultValue={editData?.name} 
+                  style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ced4da' }} 
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '8px', fontWeight: 'bold' }}>Deskripsi Kolaborasi</label>
+                <textarea 
+                  rows="4" 
+                  defaultValue={editData?.desc} 
+                  style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ced4da' }}
+                ></textarea>
+              </div>
+              <div style={{ display: 'flex', gap: '15px' }}>
+                <button 
+                  onClick={() => setIsEditing(false)}
+                  style={{ flex: 1, padding: '14px', borderRadius: '12px', border: '1px solid #ced4da', background: 'white', cursor: 'pointer' }}>
+                  Batal
+                </button>
+                <button 
+                  onClick={handleSaveProfile}
+                  style={{ flex: 1, padding: '14px', borderRadius: '12px', border: 'none', background: 'var(--primary)', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}>
+                  Simpan Perubahan
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <style>{`
         @keyframes fadeInUp {
           from { opacity: 0; transform: translateY(30px); }
@@ -184,6 +298,10 @@ const PartnersPage = () => {
         @keyframes slideIn {
           from { opacity: 0; transform: translateX(-30px); }
           to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes zoomIn {
+          from { opacity: 0; transform: scale(0.9); }
+          to { opacity: 1; transform: scale(1); }
         }
         .partner-card:hover {
           transform: translateY(-5px);

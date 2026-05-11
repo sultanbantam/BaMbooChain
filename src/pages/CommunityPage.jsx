@@ -41,7 +41,7 @@ const ANNOUNCEMENTS = [
 ];
 
 const CommunityPage = () => {
-  const { bmcBalance, isConnected, connectWallet } = useWeb3();
+  const { bmcBalance, isConnected, openWalletModal } = useWeb3();
   const userTier = getUserTier(bmcBalance);
   const bmcNum = getBMCNumber(bmcBalance);
   const [voted, setVoted] = useState({});
@@ -58,16 +58,21 @@ const CommunityPage = () => {
             <Users size={16} color="var(--primary)" />
             <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--primary)' }}>Komunitas & Governance • Ditenagai Token BMC</span>
           </div>
-          <h1 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '16px' }}>Komunitas YSNJ</h1>
+          <h1 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '16px' }}>Komunitas bambuNUSA</h1>
           <p style={{ color: 'var(--text-muted)', maxWidth: '600px', margin: '0 auto' }}>
             Bersama-sama membangun ekosistem bambu Indonesia. Voting, diskusi, dan keputusan strategis dilakukan secara transparan berbasis token BMC.
           </p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px', alignItems: 'start' }}>
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: window.innerWidth < 1100 ? '1fr' : '2fr 1fr', 
+          gap: '24px', 
+          alignItems: 'start' 
+        }}>
 
           {/* Kolom Kiri: Proposals */}
-          <div>
+          <div style={{ order: window.innerWidth < 1100 ? 1 : 1 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <h2 style={{ fontSize: '1.4rem', display: 'flex', gap: '8px', alignItems: 'center' }}>
                 <Vote size={22} color="var(--primary)" /> Voting Aktif
@@ -143,7 +148,7 @@ const CommunityPage = () => {
           </div>
 
           {/* Kolom Kanan */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', order: window.innerWidth < 1100 ? 2 : 2 }}>
 
             {/* Status keanggotaan */}
             <div style={{ background: 'white', borderRadius: '16px', padding: '20px', border: '1px solid #eee' }}>
@@ -165,7 +170,7 @@ const CommunityPage = () => {
                   )}
                 </div>
               ) : (
-                <button onClick={connectWallet} className="btn btn-primary" style={{ width: '100%', padding: '12px', fontSize: '0.9rem' }}>
+                <button onClick={openWalletModal} className="btn btn-primary" style={{ width: '100%', padding: '12px', fontSize: '0.9rem' }}>
                   🔗 Hubungkan Wallet
                 </button>
               )}
@@ -195,8 +200,8 @@ const CommunityPage = () => {
                 <MessageSquare size={18} color="var(--primary)" /> Bergabung
               </h3>
               {[
-                { icon: '💬', name: 'Telegram YSNJ', url: 'https://t.me/bambumbc' },
-                { icon: '🎮', name: 'Discord YSNJ', url: '#' },
+                { icon: '💬', name: 'Telegram bambuNUSA', url: 'https://t.me/bambucrypto' },
+                { icon: '🎮', name: 'Discord bambuNUSA', url: '#' },
                 { icon: '🐦', name: 'X/Twitter @bambucoid', url: 'https://x.com/bambucoid' },
               ].map((s, i) => (
                 <a key={i} href={s.url} target="_blank" rel="noreferrer"

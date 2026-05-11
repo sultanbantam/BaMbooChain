@@ -4,12 +4,34 @@ import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import BackButton from '../../components/BackButton';
 
+import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+
 const FarmerListPage = () => {
+  const { partnerApps } = useAuth();
+  const navigate = useNavigate();
+
+  const staticFarmers = [
+    { id: 's1', name: "Kang Dadang", area: "Tepi Cisadane", species: "Bambu Betung", trees: 450, joined: "Jan 2025", status: "Verified" },
+    { id: 's2', name: "Pak Mulyana", area: "Perbukitan Cibarani", species: "Bambu Wulung", trees: 1200, joined: "Feb 2025", status: "Verified" },
+    { id: 's3', name: "Teh Lilis", area: "Lembah Sukasari", species: "Bambu Tali", trees: 300, joined: "Mar 2025", status: "Verified" },
+    { id: 's4', name: "Abah Jajang", area: "Tepi Cisadane", species: "Bambu Hitam", trees: 850, joined: "Apr 2025", status: "Verified" },
+  ];
+
+  // Merge static with verified new applications
   const farmers = [
-    { id: 1, name: "Kang Dadang", area: "Tepi Cisadane", species: "Bambu Betung", trees: 450, joined: "Jan 2025", status: "Verified" },
-    { id: 2, name: "Pak Mulyana", area: "Perbukitan Cibarani", species: "Bambu Wulung", trees: 1200, joined: "Feb 2025", status: "Verified" },
-    { id: 3, name: "Teh Lilis", area: "Lembah Sukasari", species: "Bambu Tali", trees: 300, joined: "Mar 2025", status: "Verified" },
-    { id: 4, name: "Abah Jajang", area: "Tepi Cisadane", species: "Bambu Hitam", trees: 850, joined: "Apr 2025", status: "Verified" },
+    ...staticFarmers,
+    ...partnerApps
+      .filter(app => app.status === 'verified')
+      .map(app => ({
+        id: app.id,
+        name: app.name,
+        area: app.location,
+        species: app.role,
+        trees: app.details?.capacity || "TBA",
+        joined: new Date(app.date).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' }),
+        status: "Verified"
+      }))
   ];
 
   return (
@@ -71,7 +93,7 @@ const FarmerListPage = () => {
           <div style={{ marginTop: '60px', background: 'white', borderRadius: '24px', padding: '40px', textAlign: 'center', boxShadow: '0 10px 30px rgba(0,0,0,0.03)' }}>
             <h2 style={{ fontSize: '1.8rem', color: 'var(--text-main)', marginBottom: '16px' }}>Ingin Bergabung Sebagai Petani?</h2>
             <p style={{ color: 'var(--text-muted)', maxWidth: '600px', margin: '0 auto 32px' }}>Dapatkan akses ke teknologi bibit unggul, pendampingan ahli, dan pasar global melalui ekosistem digital kami.</p>
-            <button onClick={() => window.location.href='/bambunusa/join-farmer'} className="btn btn-primary" style={{ padding: '12px 32px' }}>Daftar Menjadi Mitra / Petani</button>
+            <button onClick={() => navigate('/bambunusa/join-farmer')} className="btn btn-primary" style={{ padding: '12px 32px' }}>Daftar Menjadi Mitra / Petani</button>
           </div>
 
           <div style={{ marginTop: '20px', background: 'rgba(245, 159, 0, 0.05)', border: '1px solid rgba(245, 159, 0, 0.2)', borderRadius: '24px', padding: '30px', textAlign: 'center' }}>
@@ -80,7 +102,7 @@ const FarmerListPage = () => {
               <h2 style={{ fontSize: '1.4rem', color: 'var(--text-main)', margin: 0 }}>Memiliki Keahlian di Bidang Kehutanan?</h2>
             </div>
             <p style={{ color: 'var(--text-muted)', maxWidth: '600px', margin: '0 auto 24px', fontSize: '0.95rem' }}>Bantu amankan ekosistem Web3 dengan melakukan verifikasi independen di lapangan. (Memerlukan Stake BMC Token).</p>
-            <button onClick={() => window.location.href='/bambunusa/join-validator'} style={{ background: 'transparent', border: '2px solid #f59f00', color: '#f59f00', borderRadius: '12px', padding: '10px 24px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s' }} onMouseOver={(e) => { e.currentTarget.style.background = '#f59f00'; e.currentTarget.style.color = 'white'; }} onMouseOut={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#f59f00'; }}>
+            <button onClick={() => navigate('/bambunusa/join-validator')} style={{ background: 'transparent', border: '2px solid #f59f00', color: '#f59f00', borderRadius: '12px', padding: '10px 24px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s' }} onMouseOver={(e) => { e.currentTarget.style.background = '#f59f00'; e.currentTarget.style.color = 'white'; }} onMouseOut={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#f59f00'; }}>
               Bergabung sebagai Validator
             </button>
           </div>

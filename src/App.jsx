@@ -19,7 +19,16 @@ import MembershipPage from './pages/MembershipPage';
 import AcademyPage from './pages/AcademyPage';
 import DataToolsPage from './pages/DataToolsPage';
 import CommunityPage from './pages/CommunityPage';
-import BambupediaPage from './pages/BambupediaPage';
+import BambupediaPage from './pages/bambupedia/Index';
+import BambupediaTracker from './pages/bambupedia/Tracker';
+import BambupediaPlant from './pages/bambupedia/Plant';
+import BambupediaPlantPast from './pages/bambupedia/PlantPast';
+import BambupediaMaintain from './pages/bambupedia/Maintain';
+import BambupediaHarvest from './pages/bambupedia/Harvest';
+import BambupediaUtilize from './pages/bambupedia/Utilize';
+import BambupediaCultivate from './pages/bambupedia/Cultivate';
+import BambupediaTaxonomy from './pages/bambupedia/TaxonomyAnalysis';
+import BambupediaHistory from './pages/bambupedia/History';
 import CareersPage from './pages/CareersPage';
 
 // BambooChain Modules
@@ -35,7 +44,9 @@ import BcAcademyPage from './pages/bamboochain/AcademyPage';
 import BcDataAnalyticsPage from './pages/bamboochain/DataAnalyticsPage';
 import BcInvestEcosystemPage from './pages/bamboochain/InvestEcosystemPage';
 import BcValidatorDashboardPage from './pages/bamboochain/ValidatorDashboardPage';
+import ActivityLogPage from './pages/bamboochain/ActivityLogPage';
 import WhitepaperPage from './pages/bamboochain/WhitepaperPage';
+import PreOrderPage from './pages/bamboochain/PreOrderPage';
 import FAQPage from './pages/FAQPage';
 import AdSpace from './components/AdSpace';
 import CareCenterWidget from './components/CareCenterWidget';
@@ -45,13 +56,16 @@ import FarmerListPage from './pages/bambunusa/FarmerListPage';
 import JoinFarmerPage from './pages/bambunusa/JoinFarmerPage';
 import JoinValidatorPage from './pages/bambunusa/JoinValidatorPage';
 import BcLifecyclePage from './pages/bambunusa/LifecyclePage';
+import AdminPortalPage from './pages/AdminPortalPage';
 
-import './index.css';
+import ScrollToTop from './components/ScrollToTop';
+import GlobalToast from './components/GlobalToast';
 
 function App() {
   return (
     <AuthProvider>
       <div className="App">
+        <ScrollToTop />
         <Navbar />
         <Routes>
           {/* Public Routes */}
@@ -65,6 +79,7 @@ function App() {
           <Route path="/disclaimer" element={<DisclaimerPage />} />
           <Route path="/transparency" element={<TransparencyPage />} />
           <Route path="/bamboochain/marketplace" element={<BcMarketplacePage />} />
+          <Route path="/bamboochain/pre-order" element={<PreOrderPage />} />
           <Route path="/careers" element={<CareersPage />} />
           
           {/* Protected Routes */}
@@ -74,6 +89,15 @@ function App() {
           <Route path="/data-tools" element={<ProtectedRoute><DataToolsPage /></ProtectedRoute>} />
           <Route path="/community" element={<ProtectedRoute><CommunityPage /></ProtectedRoute>} />
           <Route path="/bambupedia" element={<ProtectedRoute><BambupediaPage /></ProtectedRoute>} />
+          <Route path="/bambupedia/tracker" element={<ProtectedRoute><BambupediaTracker /></ProtectedRoute>} />
+          <Route path="/bambupedia/plant" element={<ProtectedRoute><BambupediaPlant /></ProtectedRoute>} />
+          <Route path="/bambupedia/plant-past" element={<ProtectedRoute><BambupediaPlantPast /></ProtectedRoute>} />
+          <Route path="/bambupedia/maintain" element={<ProtectedRoute><BambupediaMaintain /></ProtectedRoute>} />
+          <Route path="/bambupedia/harvest" element={<ProtectedRoute><BambupediaHarvest /></ProtectedRoute>} />
+          <Route path="/bambupedia/utilize" element={<ProtectedRoute><BambupediaUtilize /></ProtectedRoute>} />
+          <Route path="/bambupedia/cultivate" element={<ProtectedRoute><BambupediaCultivate /></ProtectedRoute>} />
+          <Route path="/bambupedia/taxonomy" element={<ProtectedRoute><BambupediaTaxonomy /></ProtectedRoute>} />
+          <Route path="/bambupedia/history" element={<ProtectedRoute><BambupediaHistory /></ProtectedRoute>} />
           
           {/* BambooChain Protected Routes */}
           <Route path="/bamboochain" element={<ProtectedRoute><BcOverviewPage /></ProtectedRoute>} />
@@ -87,19 +111,24 @@ function App() {
           <Route path="/bamboochain/data-analytics" element={<ProtectedRoute><BcDataAnalyticsPage /></ProtectedRoute>} />
           <Route path="/bamboochain/invest" element={<ProtectedRoute><BcInvestEcosystemPage /></ProtectedRoute>} />
           <Route path="/validator" element={<ProtectedRoute><BcValidatorDashboardPage /></ProtectedRoute>} />
+          <Route path="/bamboochain/activities" element={<ProtectedRoute><ActivityLogPage /></ProtectedRoute>} />
           <Route path="/bamboochain/whitepaper" element={<ProtectedRoute><WhitepaperPage /></ProtectedRoute>} />
           
           {/* bambuNUSA Protected Routes */}
           <Route path="/bambunusa" element={<ProtectedRoute><BcLifecyclePage /></ProtectedRoute>} />
           <Route path="/bambunusa/farmers" element={<ProtectedRoute><FarmerListPage /></ProtectedRoute>} />
-          <Route path="/bambunusa/join-farmer" element={<ProtectedRoute><JoinFarmerPage /></ProtectedRoute>} />
-          <Route path="/bambunusa/join-validator" element={<ProtectedRoute><JoinValidatorPage /></ProtectedRoute>} />
+          <Route path="/bambunusa/join" element={<JoinFarmerPage />} />
+          <Route path="/bambunusa/join-farmer" element={<JoinFarmerPage />} />
+          <Route path="/bambunusa/join-validator" element={<JoinValidatorPage />} />
+          <Route path="/admin-portal" element={<ProtectedRoute><AdminPortalPage /></ProtectedRoute>} />
           
           <Route path="/faq" element={<FAQPage />} />
         </Routes>
         <Footer />
         <AuthModal />
         <CareCenterWidget />
+        <div id="version-debug" style={{ fontSize: '10px', opacity: 0.3, textAlign: 'center', padding: '10px' }}>Build v1.0.7-Recovered</div>
+        <GlobalToast />
       </div>
     </AuthProvider>
   );
