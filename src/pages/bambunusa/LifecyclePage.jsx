@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Sprout, Droplets, Scissors, Activity, ShieldCheck, MapPin, Calendar, ArrowRight, Wind, Sun, AlertCircle } from 'lucide-react';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import BackButton from '../../components/BackButton';
 
 const LifecyclePage = () => {
+  const navigate = useNavigate();
   const [activeStage, setActiveStage] = useState('plant');
 
   const stages = [
@@ -120,7 +122,7 @@ const LifecyclePage = () => {
                 </div>
 
                 <button 
-                  onClick={() => window.location.href = '/bamboochain/plantation'}
+                  onClick={() => navigate('/bamboochain/plantation')}
                   className="btn btn-primary" style={{ padding: '16px 40px', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
                   Mulai Tanam Sekarang <ArrowRight size={20} />
                 </button>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ShieldCheck, MapPin, CheckCircle, ArrowRight, User, Phone, Wallet, Award, Lock, Unlock, AlertTriangle } from 'lucide-react';
 import { ethers } from 'ethers';
 import { escrowConfig } from '../../utils/escrowConfig';
@@ -7,6 +8,7 @@ import Footer from '../../components/Footer';
 import BackButton from '../../components/BackButton';
 
 const JoinValidatorPage = () => {
+  const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [walletConnected, setWalletConnected] = useState(false);
@@ -234,7 +236,7 @@ const JoinValidatorPage = () => {
               <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', maxWidth: '500px', margin: '0 auto 40px', lineHeight: '1.6' }}>
                 Data Anda telah masuk ke panel admin YSNJ. Setelah lolos proses wawancara singkat, dompet Web3 Anda akan resmi diaktifkan sebagai Validator di dalam Smart Contract!
               </p>
-              <button onClick={() => window.location.href = '/bambunusa/farmers'} style={{ background: '#f59f00', color: 'white', border: 'none', padding: '14px 40px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>Kembali ke Komunitas</button>
+              <button onClick={() => navigate('/bambunusa/farmers')} style={{ background: '#f59f00', color: 'white', border: 'none', padding: '14px 40px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>Kembali ke Komunitas</button>
             </div>
           )}
         </div>
