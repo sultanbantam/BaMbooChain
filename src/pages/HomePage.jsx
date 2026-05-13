@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Target, TrendingUp, Handshake, Leaf, MapPin, CheckCircle, ArrowRight, Briefcase, Star } from 'lucide-react';
+import { Target, TrendingUp, Handshake, Leaf, MapPin, CheckCircle, ArrowRight, Briefcase, Star, X, Sparkles, ShoppingBag, Globe, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { getAssetUrl } from '../utils/assets';
@@ -142,6 +142,21 @@ const homeText = {
     ctaTitle: 'Pelajari Lebih Lanjut',
     ctaDesc: 'Jelajahi data, analisis, dan perkembangan masa depan terkait industri primer bambu yang dapat diperbarui secara berkelanjutan.',
     ctaButton: 'LIHAT INSIGHT',
+    welcome: {
+      greeting: 'Selamat Datang di BaMbooChain!',
+      intro: 'Eksplorasi ekosistem industri bambu terintegrasi masa depan.',
+      stepTitle: 'Apa yang bisa Anda lakukan?',
+      step1Title: 'Restorasi & Produksi',
+      step1Desc: 'Lihat bagaimana kami memulihkan lahan dan membangun industri.',
+      step2Title: 'Marketplace & Demand',
+      step2Desc: 'Temukan produk bambu dan peluang proyek live.',
+      step3Title: 'Dampak Lingkungan',
+      step3Desc: 'Pantau kontribusi terhadap air dan karbon.',
+      step4Title: 'Kolaborasi Mitra',
+      step4Desc: 'Bergabunglah dalam jaringan global kami.',
+      btn: 'MULAI EKSPLORASI',
+      footer: 'BaMbooChain v2.0 - Membangun Masa Depan Hijau'
+    }
   },
   en: {
     tickerItems: [
@@ -260,6 +275,21 @@ const homeText = {
     ctaTitle: 'Learn More',
     ctaDesc: 'Explore data, analysis, and future developments related to renewable and sustainable primary bamboo industries.',
     ctaButton: 'VIEW INSIGHT',
+    welcome: {
+      greeting: 'Welcome to BaMbooChain!',
+      intro: 'Explore the integrated bamboo industry ecosystem of the future.',
+      stepTitle: 'What can you do?',
+      step1Title: 'Restoration & Production',
+      step1Desc: 'See how we restore land and build industries.',
+      step2Title: 'Marketplace & Demand',
+      step2Desc: 'Discover bamboo products and live project opportunities.',
+      step3Title: 'Environmental Impact',
+      step3Desc: 'Monitor contributions to water and carbon.',
+      step4Title: 'Partner Collaboration',
+      step4Desc: 'Join our global network.',
+      btn: 'START EXPLORING',
+      footer: 'BaMbooChain v2.0 - Building a Green Future'
+    }
   },
 };
 
@@ -267,39 +297,65 @@ const HomePage = () => {
   const { language } = useLanguage();
   const copy = homeText[language] || homeText.id;
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const slides = slideAssets.map((slide, index) => ({ ...slide, ...copy.slides[index] }));
   const featuredProducts = productAssets.map((product, index) => ({ ...product, ...copy.products[index] }));
   const projects = projectAssets.map((project, index) => ({ ...project, ...copy.projects[index] }));
   const slideCount = slides.length;
 
+  const closeWelcome = () => {
+    setShowWelcome(false);
+    localStorage.setItem('hasSeenWelcome', 'true');
+  };
+
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slideCount);
     }, 5000);
 
+    const hasSeenWelcome = localStorage.getItem('hasSeenWelcome');
+    if (!hasSeenWelcome) {
+      const timeout = setTimeout(() => setShowWelcome(true), 1500);
+      return () => {
+        clearInterval(timer);
+        clearTimeout(timeout);
+      };
+    }
+
     return () => clearInterval(timer);
   }, [slideCount]);
 
+  const isMobile = windowWidth <= 1100;
+
   return (
     <div>
-      <div className="home-activity-ticker" aria-label="BaMbooChain live activity">
-        <div className="home-ticker-track">
-          {[...copy.tickerItems, ...copy.tickerItems].map((item, index) => (
-            <span key={`${item}-${index}`}>{item}</span>
-          ))}
-        </div>
-      </div>
-
       <section style={{
         minHeight: '100vh',
         position: 'relative',
         display: 'flex',
-        alignItems: 'center',
-        paddingTop: '70px',
-        paddingBottom: '80px',
+        flexDirection: 'column',
+        paddingTop: 'var(--navbar-height)',
         overflow: 'hidden'
       }}>
+        {/* Activity Ticker - INSIDE hero, always above title */}
+        <div className="home-activity-ticker" aria-label="BaMbooChain live activity" style={{ position: 'relative', zIndex: 5, flexShrink: 0 }}>
+          <div className="home-ticker-track">
+            {[...copy.tickerItems, ...copy.tickerItems].map((item, index) => (
+              <span key={`${item}-${index}`}>{item}</span>
+            ))}
+          </div>
+        </div>
+
+        {/* Hero content */}
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', padding: '60px 0' }}>
         {slides.map((slide, index) => (
           <div
             key={slide.title}
@@ -322,7 +378,7 @@ const HomePage = () => {
           <h1
             key={`title-${language}-${currentSlide}`}
             className="animate-fade-in-up"
-            style={{ fontSize: 'clamp(2.5rem, 5vw, 4.5rem)', fontWeight: '800', marginBottom: '24px', color: 'white', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}
+            style={{ fontSize: 'clamp(2.2rem, 5vw, 4.5rem)', fontWeight: '800', marginBottom: '24px', color: 'white', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}
           >
             {slides[currentSlide].title}
           </h1>
@@ -566,10 +622,16 @@ const HomePage = () => {
           <Link to="/insight" className="btn btn-crypto" style={{ padding: '20px 40px', fontSize: '1.2rem' }}>{copy.ctaButton}</Link>
         </div>
       </section>
+      <div className="home-activity-ticker" aria-label="BaMbooChain live activity">
+        <div className="home-ticker-track">
+          {[...copy.tickerItems, ...copy.tickerItems].map((item, index) => (
+            <span key={`${item}-${index}`}>{item}</span>
+          ))}
+        </div>
+      </div>
 
       <style>{`
         .home-activity-ticker {
-          margin-top: var(--navbar-height);
           background: #111827;
           border-bottom: 1px solid rgba(255,255,255,0.1);
           overflow: hidden;
@@ -578,6 +640,8 @@ const HomePage = () => {
           font-size: 0.85rem;
           font-weight: 800;
           letter-spacing: 0;
+          position: relative;
+          z-index: 5;
         }
         .home-ticker-track {
           display: inline-flex;
@@ -594,12 +658,87 @@ const HomePage = () => {
           from { transform: translateX(0); }
           to { transform: translateX(-50%); }
         }
-        @media (max-width: 768px) {
+        @media (max-width: 1100px) {
+          .home-activity-ticker {
+            font-size: 0.75rem;
+          }
           .home-ticker-track span {
-            padding: 10px 18px;
+            padding: 8px 18px;
           }
         }
       `}</style>
+      {/* WELCOME MODAL / ONBOARDING */}
+      {showWelcome && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+          background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(10px)',
+          zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '15px'
+        }}>
+          <div className="animate-fade-in-up" style={{
+            background: 'white', borderRadius: '28px', width: '100%', maxWidth: '480px',
+            maxHeight: '92vh', overflow: 'hidden', display: 'flex', flexDirection: 'column',
+            boxShadow: '0 30px 60px -12px rgba(0,0,0,0.5)', position: 'relative'
+          }}>
+            {/* Compact Header */}
+            <div style={{ 
+              background: 'linear-gradient(135deg, #0ca678 0%, #087f5b 100%)', 
+              padding: '25px 20px', color: 'white', textAlign: 'center', position: 'relative' 
+            }}>
+              <button onClick={closeWelcome} style={{
+                position: 'absolute', top: '15px', right: '15px', background: 'rgba(255,255,255,0.2)',
+                border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', 
+                alignItems: 'center', justifyContent: 'center', color: 'white', cursor: 'pointer'
+              }}><X size={18} /></button>
+              
+              <div style={{ 
+                width: '50px', height: '50px', background: 'rgba(255,255,255,0.2)', 
+                borderRadius: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                margin: '0 auto 15px', backdropFilter: 'blur(10px)'
+              }}>
+                <Sparkles size={28} fill="white" />
+              </div>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: '800', marginBottom: '6px' }}>{copy.welcome.greeting}</h2>
+              <p style={{ opacity: 0.9, fontSize: '0.85rem', lineHeight: '1.4' }}>{copy.welcome.intro}</p>
+            </div>
+
+            {/* Scrollable Content Area */}
+            <div style={{ padding: '20px', overflowY: 'auto', flex: 1 }}>
+              <p style={{ fontWeight: 'bold', color: '#495057', marginBottom: '15px', textAlign: 'center', fontSize: '0.9rem' }}>{copy.welcome.stepTitle}</p>
+              
+              <div style={{ display: 'grid', gap: '15px', marginBottom: '25px' }}>
+                {[
+                  { icon: <Leaf size={18} />, color: '#0ca678', bg: '#ebfbee', title: copy.welcome.step1Title, desc: copy.welcome.step1Desc },
+                  { icon: <ShoppingBag size={18} />, color: '#228be6', bg: '#e7f5ff', title: copy.welcome.step2Title, desc: copy.welcome.step2Desc },
+                  { icon: <Globe size={18} />, color: '#fd7e14', bg: '#fff4e6', title: copy.welcome.step3Title, desc: copy.welcome.step3Desc },
+                  { icon: <Users size={18} />, color: '#7950f2', bg: '#f3f0ff', title: copy.welcome.step4Title, desc: copy.welcome.step4Desc }
+                ].map((step, i) => (
+                  <div key={i} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                    <div style={{ minWidth: '36px', height: '36px', background: step.bg, color: step.color, borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {step.icon}
+                    </div>
+                    <div>
+                      <h4 style={{ margin: '0 0 2px 0', fontSize: '0.95rem', fontWeight: '700' }}>{step.title}</h4>
+                      <p style={{ margin: 0, fontSize: '0.8rem', color: '#868e96', lineHeight: '1.4' }}>{step.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <button onClick={closeWelcome} className="btn btn-primary" style={{ 
+                width: '100%', padding: '14px', borderRadius: '14px', fontWeight: '800', fontSize: '1rem',
+                boxShadow: '0 10px 20px rgba(12, 166, 120, 0.2)', letterSpacing: '1px', border: 'none', cursor: 'pointer'
+              }}>
+                {copy.welcome.btn}
+              </button>
+              
+              <p style={{ textAlign: 'center', fontSize: '0.7rem', color: '#adb5bd', marginTop: '12px' }}>
+                {copy.welcome.footer}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

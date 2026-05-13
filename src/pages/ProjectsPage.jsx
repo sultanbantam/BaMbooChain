@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useWeb3 } from '../context/Web3Context';
+import { useLanguage } from '../context/LanguageContext';
 import { PROJECTS } from '../data/projectsData';
 import { MapPin, Lock, Unlock, ArrowRight, X, Info, Coins } from 'lucide-react';
 import BackButton from '../components/BackButton';
 
 const ProjectsPage = () => {
+  const { t } = useLanguage();
+  const navigate = useNavigate();
   const { isConnected, rawBmcBalance, connectWallet } = useWeb3();
   const [selectedProject, setSelectedProject] = useState(null);
   const [showLockModal, setShowLockModal] = useState(false);
@@ -31,8 +35,8 @@ const ProjectsPage = () => {
         <div style={{ marginBottom: '40px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '20px' }}>
           <div>
             <BackButton to="/" />
-            <h1 style={{ fontSize: '2.5rem', fontWeight: '800', color: 'var(--text-main)', marginTop: '16px' }}>Proyek YSNJ</h1>
-            <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>Menjelajahi inisiatif berkelanjutan untuk masa depan hijau.</p>
+            <h1 style={{ fontSize: '2.5rem', fontWeight: '800', color: 'var(--text-main)', marginTop: '16px' }}>{t('projects_title')}</h1>
+            <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>{t('projects_subtitle')}</p>
           </div>
           
           <div className="glass" style={{ padding: '15px 25px', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', gap: '15px' }}>
@@ -45,9 +49,9 @@ const ProjectsPage = () => {
               {hasAccess ? <Unlock size={20} /> : <Lock size={20} />}
             </div>
             <div>
-              <div style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Status Akses Detail</div>
+              <div style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--text-muted)', textTransform: 'uppercase' }}>{t('projects_access_status')}</div>
               <div style={{ fontWeight: '800', color: hasAccess ? '#16a34a' : '#dc2626' }}>
-                {hasAccess ? 'AKSES TERBUKA' : 'TERKUNCI (Min. 10 BMC)'}
+                {hasAccess ? t('projects_access_open') : t('projects_access_locked')}
               </div>
             </div>
           </div>
@@ -126,7 +130,7 @@ const ProjectsPage = () => {
                   onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
                   onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                 >
-                  {hasAccess ? 'LIHAT DETAIL PROYEK' : 'AKSES TERKUNCI'}
+                  {hasAccess ? t('projects_btn_detail') : t('projects_btn_locked')}
                   {hasAccess ? <ArrowRight size={18} /> : <Lock size={18} />}
                 </button>
               </div>
@@ -208,9 +212,9 @@ const ProjectsPage = () => {
             }}>
               <Lock size={40} />
             </div>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: '800', marginBottom: '16px' }}>Akses Detail Terbatas</h2>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: '800', marginBottom: '16px' }}>{t('projects_modal_lock_title')}</h2>
             <p style={{ color: '#666', lineHeight: '1.6', marginBottom: '30px' }}>
-              Anda memerlukan minimal <strong>10 BMC</strong> di dompet Anda untuk mengakses informasi detail mengenai proyek strategis YSNJ.
+              {t('projects_modal_lock_desc')}
             </p>
 
             {!isConnected ? (
@@ -222,7 +226,7 @@ const ProjectsPage = () => {
                   cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px'
                 }}
               >
-                HUBUNGKAN DOMPET
+                {t('projects_modal_lock_btn_wallet')}
               </button>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -239,8 +243,21 @@ const ProjectsPage = () => {
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px'
                   }}
                 >
-                  BELI BMC DI PANCAKESWAP <ArrowRight size={18} />
+                  {t('projects_modal_lock_btn_buy')} <ArrowRight size={18} />
                 </a>
+                
+                <div style={{ textAlign: 'center', color: '#888', fontSize: '0.8rem', fontWeight: 'bold' }}>ATAU</div>
+                
+                <button 
+                  onClick={() => navigate('/bamboochain/token-wallet')}
+                  style={{ 
+                    padding: '16px', borderRadius: '12px', border: 'none',
+                    background: 'var(--primary)', color: 'white', fontWeight: 'bold', cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px'
+                  }}
+                >
+                  {t('projects_modal_lock_btn_fiat')} <ArrowRight size={18} />
+                </button>
               </div>
             )}
 
@@ -248,7 +265,7 @@ const ProjectsPage = () => {
               onClick={() => setShowLockModal(false)}
               style={{ marginTop: '20px', background: 'none', border: 'none', color: '#888', fontWeight: 'bold', cursor: 'pointer' }}
             >
-              Mungkin Nanti
+              {t('projects_modal_lock_btn_cancel')}
             </button>
           </div>
         </div>

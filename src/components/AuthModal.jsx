@@ -113,13 +113,29 @@ const AuthModal = () => {
   };
 
   const handleOAuth = (provider) => {
+    // Simulasi pemilihan akun
+    const mockEmail = window.prompt(`[Simulasi ${provider} Login]\n\nMasukkan alamat email Anda (bisa Gmail, Yahoo, atau lainnya):`, `nama@gmail.com`);
+    
+    if (!mockEmail) return; // Jika dibatalkan
+
+    const username = mockEmail.split('@')[0];
+    
     const userData = {
-      name: `${provider} User`,
-      email: `${provider}@example.com`,
+      name: `${username} (${provider})`,
+      username: username,
+      email: mockEmail,
       method: provider
     };
-    if (activeTab === 'signup') signup(userData);
-    else login(userData);
+    
+    if (activeTab === 'signup') {
+      if (signup(userData)) {
+        alert(`✅ Pendaftaran menggunakan ${provider} Berhasil!`);
+      }
+    } else {
+      if (login(userData)) {
+        alert(`✅ Berhasil Masuk menggunakan ${provider}!`);
+      }
+    }
   };
 
   // Switch tabs -> reset states
@@ -133,15 +149,18 @@ const AuthModal = () => {
       position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
       background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      padding: '40px 20px', // More breathing room for mobile
-      zIndex: 100000
+      padding: '12px 16px',
+      zIndex: 100000,
+      overflowY: 'auto'
     }}>
       <div style={{
         background: 'white',
-        width: '100%', maxWidth: '480px', // Slightly wider for comfort
-        borderRadius: '32px', // More rounded corners
+        width: '100%', maxWidth: '440px',
+        maxHeight: '94vh',
+        borderRadius: '24px',
         boxShadow: '0 24px 60px rgba(0,0,0,0.25)',
-        overflow: 'hidden',
+        overflowY: 'auto',
+        overflowX: 'hidden',
         animation: 'fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
         position: 'relative'
       }}>
@@ -159,29 +178,29 @@ const AuthModal = () => {
         <div style={{ display: 'flex', borderBottom: '1px solid #f1f3f5' }}>
           {['login', 'signup'].map(tab => (
             <button key={tab} onClick={() => toggleTab(tab)} style={{
-              flex: 1, padding: '20px', background: activeTab === tab ? 'white' : '#f8f9fa',
+              flex: 1, padding: '14px', background: activeTab === tab ? 'white' : '#f8f9fa',
               border: 'none', borderBottom: activeTab === tab ? '3px solid var(--primary)' : '3px solid transparent',
-              fontSize: '1.1rem', fontWeight: 'bold', color: activeTab === tab ? 'var(--primary)' : 'var(--text-muted)',
+              fontSize: '1rem', fontWeight: 'bold', color: activeTab === tab ? 'var(--primary)' : 'var(--text-muted)',
               cursor: 'pointer', transition: 'all 0.2s'
             }}>
-              {tab === 'login' ? 'Masuk' : 'Daftar Baru'}
+              {tab === 'login' ? 'Masuk' : 'Daftar'}
             </button>
           ))}
         </div>
 
         {/* Formulir Content */}
-        <div style={{ padding: '32px' }}>
+        <div style={{ padding: '20px 24px 24px' }}>
           
-          <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-            <h2 style={{ margin: '0 0 8px 0', fontSize: '1.5rem', color: 'var(--text-main)', fontWeight: '900' }}>
+          <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+            <h2 style={{ margin: '0 0 6px 0', fontSize: '1.3rem', color: 'var(--text-main)', fontWeight: '900' }}>
               {activeTab === 'forgot' ? "Pemulihan Akun" : activeTab === 'login' ? "Selamat Datang!" : "Buat Akun bambuNUSA"}
             </h2>
-            <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-              {activeTab === 'forgot' ? "Masukkan data Anda untuk mendapatkan akses kembali." : activeTab === 'login' ? "Akses dompet custodial dan ekosistem Anda." : "Gunakan data asli sesuai KYC untuk keamanan maksimal."}
+            <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
+              {activeTab === 'forgot' ? "Masukkan Email atau Nomor HP untuk menerima tautan pemulihan." : activeTab === 'login' ? "Akses ekosistem Anda." : "Gunakan data asli sesuai KYC."}
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {activeTab !== 'forgot' && step === 1 && (
               <div style={{ display: 'flex', background: '#f8f9fa', borderRadius: '12px', padding: '4px', marginBottom: '8px' }}>
                 {['username', 'email', 'phone'].map(m => (
@@ -262,8 +281,11 @@ const AuthModal = () => {
                 )}
 
                 {activeTab === 'login' && (
-                  <div style={{ textAlign: 'right' }}>
-                    <button type="button" onClick={() => setActiveTab('forgot')} style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: '0.85rem', fontWeight: 'bold', cursor: 'pointer' }}>Lupa sandi?</button>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
+                    <label style={{ fontSize: '0.8rem', color: '#888', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+                      <input type="checkbox" style={{ accentColor: 'var(--primary)' }} /> Ingat saya
+                    </label>
+                    <button type="button" onClick={() => setActiveTab('forgot')} style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: '0.85rem', fontWeight: 'bold', cursor: 'pointer', textDecoration: 'underline' }}>Lupa Password?</button>
                   </div>
                 )}
               </>

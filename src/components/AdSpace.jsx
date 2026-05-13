@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { ExternalLink, Info, DollarSign, MessageCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { getAssetUrl } from '../utils/assets';
 
 /**
  * AdSpace Component
@@ -29,25 +30,37 @@ const AdSpace = ({ type = 'horizontal', size = 'normal', adSlot, directAd, heigh
   // RENDER: DIRECT AD (Sold)
   if (directAd) {
     return (
-      <a href={directAd.link} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', display: 'block' }}>
-        <div style={{ 
-          width: '100%', 
-          height: height || (type === 'horizontal' ? '120px' : 'auto'), 
-          borderRadius: '16px', 
-          overflow: 'hidden', 
-          position: 'relative',
-          boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
-          border: '1px solid #e9ecef'
-        }}>
-          <img src={directAd.image} alt={directAd.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+      <div style={{ 
+        width: '100%', 
+        background: 'white',
+        borderRadius: '24px', 
+        overflow: 'hidden', 
+        boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+        border: '1px solid #e9ecef',
+        marginBottom: '24px'
+      }}>
+        <div style={{ height: height || '200px', width: '100%', position: 'relative' }}>
+          <img src={getAssetUrl(directAd.image)} alt={directAd.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           <div style={{ 
-            position: 'absolute', top: '8px', right: '8px', background: 'rgba(0,0,0,0.5)', 
-            color: 'white', fontSize: '0.65rem', padding: '2px 8px', borderRadius: '10px', backdropFilter: 'blur(4px)' 
+            position: 'absolute', top: '12px', right: '12px', background: 'rgba(0,0,0,0.6)', 
+            color: 'white', fontSize: '0.7rem', padding: '4px 10px', borderRadius: '12px', backdropFilter: 'blur(4px)', fontWeight: 'bold' 
           }}>
             Promoted
           </div>
         </div>
-      </a>
+        <div style={{ padding: '20px' }}>
+          <h4 style={{ margin: '0 0 8px 0', fontSize: '1.1rem', color: 'var(--text-main)', lineHeight: '1.4' }}>{directAd.title}</h4>
+          <p style={{ margin: '0 0 16px 0', fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: '1.6', whiteSpace: 'pre-line' }}>
+            {directAd.description}
+          </p>
+          <a href={directAd.link} target="_blank" rel="noopener noreferrer" style={{ 
+            background: '#25D366', color: 'white', padding: '10px 16px', borderRadius: '20px', 
+            fontSize: '0.85rem', fontWeight: 'bold', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' 
+          }}>
+            <MessageCircle size={16} /> Hubungi Owner
+          </a>
+        </div>
+      </div>
     );
   }
 

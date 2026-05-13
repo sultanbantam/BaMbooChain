@@ -38,12 +38,12 @@ const InsightPage = () => {
     <div style={{ paddingTop: 'var(--navbar-height)', minHeight: '100vh', background: '#f8f9fa' }}>
       
       {/* ── GLOBAL NEWS TICKER (TOP) ── */}
-      <div style={{ background: '#212529', padding: '15px 0', borderBottom: '1px solid #343a40', overflow: 'hidden', position: 'relative' }}>
-        <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, background: 'var(--primary)', color: 'white', zIndex: 10, display: 'flex', alignItems: 'center', padding: '0 20px', fontWeight: 'bold', fontSize: '0.8rem', boxShadow: '5px 0 15px rgba(0,0,0,0.3)' }}>
+      <div className="ticker-wrapper" style={{ background: '#212529', padding: '15px 0', borderBottom: '1px solid #343a40', overflow: 'hidden', position: 'relative' }}>
+        <div className="ticker-label" style={{ position: 'absolute', left: 0, top: 0, bottom: 0, background: 'var(--primary)', color: 'white', zIndex: 10, display: 'flex', alignItems: 'center', padding: '0 20px', fontWeight: 'bold', fontSize: '0.8rem', boxShadow: '5px 0 15px rgba(0,0,0,0.3)' }}>
           <Globe size={16} style={{ marginRight: '8px' }} /> GLOBAL INSIGHT DAILY
         </div>
         
-        <div className="news-marquee" style={{ display: 'flex', whiteSpace: 'nowrap', animation: 'marquee 40s linear infinite', paddingLeft: '220px' }}>
+        <div className="marquee-container">
           {[...dailyNews, ...dailyNews].map((item, idx) => (
             <div key={idx} style={{ 
               display: 'inline-flex', 
@@ -68,9 +68,40 @@ const InsightPage = () => {
 
       <style>
         {`
+          .marquee-container {
+            display: flex;
+            white-space: nowrap;
+            animation: marquee 40s linear infinite;
+            padding-left: 220px;
+          }
+
+          /* Berhenti saat disentuh/hover agar mudah dibaca */
+          .marquee-container:hover {
+            animation-play-state: paused;
+          }
+
           @keyframes marquee {
             0% { transform: translateX(0); }
             100% { transform: translateX(-50%); }
+          }
+
+          /* Optimalisasi Mobile: Bisa digeser manual (Swipe) */
+          @media (max-width: 768px) {
+            .ticker-wrapper {
+              overflow-x: auto !important;
+              -webkit-overflow-scrolling: touch;
+              cursor: grab;
+            }
+            .marquee-container {
+              animation: none !important;
+              padding-left: 150px !important;
+              display: inline-flex !important;
+              width: auto !important;
+            }
+            .ticker-label {
+              padding: 0 10px !important;
+              font-size: 0.7rem !important;
+            }
           }
         `}
       </style>

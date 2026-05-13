@@ -42,7 +42,7 @@ const DaoCommunityPage = () => {
   ];
 
   const missions = [
-    { id: 1, title: "Vote di 1 Proposal Aktif", reward: "50 BMC", done: false },
+    { id: 1, title: "Vote di 1 Proposal Aktif", reward: "0.5 BMC", done: false },
     { id: 2, title: "Balas Diskusi di Forum", reward: "25 BMC", done: true },
     { id: 3, title: "Main Semai Bibit (Mini-Game)", reward: "100 BMC", done: false },
   ];
@@ -102,7 +102,7 @@ const DaoCommunityPage = () => {
                 </div>
                 <div style={{ fontSize: '1.8rem', fontWeight: '900', color: 'var(--text-main)' }}>4,250 <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>BMC</span></div>
               </div>
-              <button style={{ background: '#fff9db', color: '#f59f00', border: '1px solid #fcc419', padding: '10px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>Klaim</button>
+              <button onClick={() => alert('Fitur klaim hadiah sedang dalam tahap audit smart contract!')} style={{ background: '#fff9db', color: '#f59f00', border: '1px solid #fcc419', padding: '10px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>Klaim</button>
             </div>
           </div>
 
@@ -134,7 +134,7 @@ const DaoCommunityPage = () => {
                 <h4 style={{ margin: '0 0 4px 0', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '6px' }}><Gamepad2 size={18} /> Mini-Game: Bamboo Tycoon</h4>
                 <p style={{ margin: 0, fontSize: '0.8rem', color: 'rgba(255,255,255,0.8)' }}>Simulasi semai bibit untuk *farming* hadiah NFT langka!</p>
               </div>
-              <button style={{ background: 'white', color: '#1864ab', border: 'none', padding: '10px 20px', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 10px rgba(0,0,0,0.2)' }}>Mainkan</button>
+              <button onClick={() => alert('Mini-game Bamboo Tycoon akan segera diluncurkan di Season 2!')} style={{ background: 'white', color: '#1864ab', border: 'none', padding: '10px 20px', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 10px rgba(0,0,0,0.2)' }}>Mainkan</button>
             </div>
           </div>
 
@@ -161,7 +161,7 @@ const DaoCommunityPage = () => {
               ))}
             </div>
             
-            <button style={{ background: 'transparent', color: 'var(--text-muted)', border: '1px dashed #ced4da', padding: '8px', width: '100%', borderRadius: '12px', marginTop: '16px', fontSize: '0.8rem', cursor: 'pointer' }}>Lihat Peringkat Saya</button>
+            <button onClick={() => alert('Peringkat Anda saat ini: Bamboo Master (Top 5%)')} style={{ background: 'transparent', color: 'var(--text-muted)', border: '1px dashed #ced4da', padding: '8px', width: '100%', borderRadius: '12px', marginTop: '16px', fontSize: '0.8rem', cursor: 'pointer' }}>Lihat Peringkat Saya</button>
           </div>
         </div>
 
@@ -174,12 +174,12 @@ const DaoCommunityPage = () => {
               <h3 style={{ fontSize: '1.4rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '10px', margin: 0 }}>
                 <Vote size={24} color="#845ef7" /> Voting Project (Governance)
               </h3>
-              <button style={{ background: '#845ef7', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold', cursor: 'pointer' }}>Buat Proposal Baru</button>
+              <button onClick={() => alert('Hanya pengguna dengan tier Green Ranger ke atas yang dapat membuat proposal.')} style={{ background: '#845ef7', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold', cursor: 'pointer' }}>Buat Proposal Baru</button>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {proposals.map((prop, idx) => (
-                <div key={idx} style={{ padding: '20px', border: '1px solid #f1f3f5', borderRadius: '16px', cursor: 'pointer' }}>
+                <div key={idx} onClick={() => alert('Memuat detail proposal ' + prop.id + '...')} style={{ padding: '20px', border: '1px solid #f1f3f5', borderRadius: '16px', cursor: 'pointer', transition: 'background 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.background = '#fcfcfc'} onMouseLeave={(e) => e.currentTarget.style.background = 'white'}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
@@ -217,7 +217,7 @@ const DaoCommunityPage = () => {
               <div style={{ fontSize: '2.5rem', fontWeight: '900', color: '#f59f00' }}>$24,500 <span style={{ fontSize: '1.2rem', color: 'var(--text-muted)' }}>USDT</span></div>
             </div>
 
-            <button style={{ marginTop: 'auto', background: '#f59f00', color: 'white', padding: '16px', borderRadius: '30px', fontWeight: 'bold', fontSize: '1.05rem', border: 'none', cursor: 'pointer', display: 'flex', justifyContent: 'center', gap: '10px' }}>
+            <button onClick={() => alert('Membuka modal Web3 untuk donasi...')} style={{ marginTop: 'auto', background: '#f59f00', color: 'white', padding: '16px', borderRadius: '30px', fontWeight: 'bold', fontSize: '1.05rem', border: 'none', cursor: 'pointer', display: 'flex', justifyContent: 'center', gap: '10px' }}>
               <Heart size={20} /> Dukung Proyek Akar Rumput
             </button>
           </div>
@@ -226,14 +226,14 @@ const DaoCommunityPage = () => {
 
         {/* ROW 3: webNUSA (WISATA EDUKASI & PELATIHAN) */}
         <div style={{ marginTop: '20px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
             <div>
               <h3 style={{ fontSize: '1.8rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '12px', margin: 0 }}>
-                <Compass size={32} color="var(--primary)" /> webNUSA (Wisata Edukasi)
+                <Compass size={32} color="var(--primary)" /> webNUSA (Wisata Edukasi Bambu Nusantara)
               </h3>
               <p style={{ color: 'var(--text-muted)', margin: '4px 0 0 0' }}>Kunjungi pusat konservasi dan laboratorium bambu hidup terbesar di Nusantara.</p>
             </div>
-            <button style={{ background: 'transparent', color: 'var(--primary)', border: '1px solid var(--primary)', padding: '10px 20px', borderRadius: '20px', fontWeight: 'bold' }}>Jelajahi Peta Wisata</button>
+            <button onClick={() => alert('Membuka Peta Interaktif webNUSA...')} style={{ background: 'transparent', color: 'var(--primary)', border: '1px solid var(--primary)', padding: '10px 20px', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer' }}>Jelajahi Peta Wisata</button>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
@@ -252,7 +252,7 @@ const DaoCommunityPage = () => {
                    <div style={{ padding: '24px' }}>
                       <h4 style={{ margin: '0 0 8px 0', fontSize: '1.2rem', color: 'var(--text-main)' }}>{site.title}</h4>
                       <p style={{ margin: '0 0 20px 0', fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: '1.5' }}>{site.desc}</p>
-                      <button style={{ width: '100%', padding: '12px', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                      <button onClick={() => alert('Membuka formulir pemesanan kunjungan untuk ' + site.title)} style={{ width: '100%', padding: '12px', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                          Booking Kunjungan <Star size={14} />
                       </button>
                    </div>
@@ -275,7 +275,7 @@ const DaoCommunityPage = () => {
                <div style={{ background: 'white', padding: '8px 16px', borderRadius: '12px', border: '1px solid #dee2e6', fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-muted)' }}>
                  Unlocked: <span style={{ color: 'var(--primary)' }}>12/36</span>
                </div>
-               <button style={{ background: 'var(--text-main)', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer' }}>Buka Pack Baru</button>
+               <button onClick={() => alert('Membuka pack NFT karakter (Butuh 100 BMC)...')} style={{ background: 'var(--text-main)', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer' }}>Buka Pack Baru</button>
             </div>
           </div>
 
@@ -351,7 +351,7 @@ const DaoCommunityPage = () => {
             <h3 style={{ fontSize: '1.4rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '10px', margin: 0 }}>
               <MessageSquare size={24} color="#339af0" /> Diskusi Komunitas (Forum)
             </h3>
-            <button style={{ background: 'transparent', color: '#339af0', border: '1px solid #339af0', padding: '8px 16px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold' }}>Lihat Semua Topik</button>
+            <button onClick={() => alert('Mengalihkan ke forum diskusi komunitas...')} style={{ background: 'transparent', color: '#339af0', border: '1px solid #339af0', padding: '8px 16px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold', cursor: 'pointer' }}>Lihat Semua Topik</button>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px' }}>
             {discussions.map((chat) => (

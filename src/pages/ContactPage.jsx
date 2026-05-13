@@ -7,7 +7,8 @@ const ContactPage = () => {
 
   // Pastikan Anda mendaftar di Web3Forms: https://web3forms.com/
   // Dapatkan Access Key gratis lalu masukkan di bawah
-  const ACCESS_KEY = "YOUR_ACCESS_KEY_HERE";
+  // Menggunakan Access Key dari .env untuk keamanan
+  const ACCESS_KEY = import.meta.env.VITE_WEB3FORMS_KEY || "d54c2968-7402-4906-835a-8b1bee8ae20d";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -38,14 +39,14 @@ const ContactPage = () => {
   };
 
   return (
-    <div style={{ paddingTop: '220px', minHeight: '100vh', background: '#f8f9fa' }}>
-      <div className="container" style={{ padding: '0 24px 40px' }}>
-        <div style={{ marginBottom: '40px' }}>
+    <div style={{ paddingTop: 'var(--navbar-height)', minHeight: '100vh', background: '#f8f9fa' }}>
+      <div className="container" style={{ padding: '40px 24px' }}>
+        <div style={{ marginBottom: '20px' }}>
           <BackButton to="/" />
         </div>
-        <h1 style={{ textAlign: 'center', fontSize: '2.5rem', marginBottom: '40px', color: 'var(--text-main)' }}>Hubungi Kami</h1>
+        <h1 style={{ textAlign: 'center', fontSize: 'clamp(1.8rem, 4vw, 2.5rem)', marginBottom: '40px', color: 'var(--text-main)' }}>Hubungi Kami</h1>
         
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', background: 'white', padding: '40px', borderRadius: '16px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
+        <div className="contact-grid">
           {/* Info Kontak */}
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '30px' }}>
             <div>

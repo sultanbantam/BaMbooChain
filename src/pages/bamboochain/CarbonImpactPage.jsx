@@ -1,13 +1,26 @@
 import React from 'react';
-import { Wind, Droplets, Map, FileText, DownloadCloud, LineChart, Leaf, ShieldCheck, ArrowRight } from 'lucide-react';
+import { Wind, Droplets, Map, FileText, DownloadCloud, LineChart, Leaf, ShieldCheck, ArrowRight, Lock } from 'lucide-react';
 import BackButton from '../../components/BackButton';
+import { useAuth } from '../../context/AuthContext';
 
 const CarbonImpactPage = () => {
-  // Data metrik statis mock
+  const { user } = useAuth();
+
+  // Data metrik statis mock (Dapat dihubungkan ke fitur Plantation di tahap berikutnya)
   const impactData = {
     co2: "15,240",
     water: "2.5 Juta",
     land: "450"
+  };
+
+  const handleDownload = () => {
+    if (user?.kycStatus !== 'verified') {
+      alert("🔒 Akses Terbatas!\n\nLaporan dampak detail (Impact Report) mengandung data audit sensitif. Silakan lengkapi verifikasi KYC Anda di menu 'Token & Wallet' untuk membuka akses unduhan ini.");
+      return;
+    }
+    // Logika unduhan nyata di sini
+    alert("📥 Memulai pengunduhan Impact Report (Q3 2026)...");
+    window.open('https://example.com/report.pdf', '_blank');
   };
 
   return (
@@ -86,10 +99,13 @@ const CarbonImpactPage = () => {
               Unduh laporan transparansi penuh mengenai luasan kawasan yang terbangun, jumlah biomassa bambu, serta validasi auditor independen pihak ketiga yang tercatat permanen di jaringan Blockchain.
             </p>
 
-            <button style={{ background: 'var(--text-main)', color: 'white', padding: '16px', borderRadius: '30px', fontWeight: 'bold', fontSize: '1.05rem', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', transition: 'background 0.2s', width: '100%' }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = '#000'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--text-main)'; }}>
-              <DownloadCloud size={20} /> Download Report (PDF)
+            <button 
+              onClick={handleDownload}
+              style={{ background: 'var(--text-main)', color: 'white', padding: '16px', borderRadius: '30px', fontWeight: 'bold', fontSize: '1.05rem', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', transition: 'all 0.2s', width: '100%' }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = '#000'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--text-main)'; }}>
+              {user?.kycStatus === 'verified' ? <DownloadCloud size={20} /> : <Lock size={20} />}
+              {user?.kycStatus === 'verified' ? 'Download Report (PDF)' : 'Akses Terkunci (Butuh KYC)'}
             </button>
           </div>
 
