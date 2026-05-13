@@ -75,61 +75,60 @@ const HomePage = () => {
         }
       `}</style>
 
-      {/* RUNNING TEXT / DEMAND MARKET TICKER */}
-      <div style={{
-        background: '#1a1a1a',
-        color: 'white',
-        padding: '12px 0',
-        overflow: 'hidden',
-        whiteSpace: 'nowrap',
-        position: 'absolute',
-        top: '160px',
-        left: 0,
-        width: '100%',
-        zIndex: 50,
-        display: 'flex',
-        alignItems: 'center',
-        borderBottom: '2px solid var(--primary)',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
-      }}>
-        <div style={{ display: 'inline-block', animation: 'homeTicker 35s linear infinite' }}>
-          {[
-            t('home_ticker_1'),
-            t('home_ticker_2'),
-            t('home_ticker_3')
-          ].concat([
-            t('home_ticker_1'),
-            t('home_ticker_2'),
-            t('home_ticker_3')
-          ]).map((text, i) => (
-            <Link 
-              key={i} 
-              to="/careers" 
-              className="home-ticker-link"
-              onClick={() => {
-                setTimeout(() => {
-                  document.getElementById('demand')?.scrollIntoView({ behavior: 'smooth' });
-                }, 100);
-              }}
-            >
-              <Target size={16} />
-              {text}
-              <ArrowRight size={14} />
-            </Link>
-          ))}
-        </div>
-      </div>
-
       {/* SECTION 1 - HERO SLIDER */}
       <section style={{
         minHeight: '100vh',
         position: 'relative',
         display: 'flex',
-        alignItems: 'center',
-        paddingTop: 'calc(var(--navbar-height) + 50px)',
-        paddingBottom: '80px',
+        flexDirection: 'column',
+        paddingTop: 'var(--navbar-height)',
         overflow: 'hidden'
       }}>
+        {/* === TICKER DI SINI - SELALU DI ATAS JUDUL === */}
+        <div style={{
+          background: '#1a1a1a',
+          color: 'white',
+          padding: '10px 0',
+          overflow: 'hidden',
+          whiteSpace: 'nowrap',
+          width: '100%',
+          zIndex: 5,
+          flexShrink: 0,
+          display: 'flex',
+          alignItems: 'center',
+          borderBottom: '2px solid var(--primary)',
+          marginTop: '16px'
+        }}>
+          <div style={{ display: 'inline-block', animation: 'homeTicker 35s linear infinite' }}>
+            {[
+              t('home_ticker_1'),
+              t('home_ticker_2'),
+              t('home_ticker_3')
+            ].concat([
+              t('home_ticker_1'),
+              t('home_ticker_2'),
+              t('home_ticker_3')
+            ]).map((text, i) => (
+              <Link 
+                key={i} 
+                to="/careers" 
+                className="home-ticker-link"
+                onClick={() => {
+                  setTimeout(() => {
+                    document.getElementById('demand')?.scrollIntoView({ behavior: 'smooth' });
+                  }, 100);
+                }}
+              >
+                <Target size={16} />
+                {text}
+                <ArrowRight size={14} />
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* Hero content - di bawah ticker */}
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', paddingTop: '40px', paddingBottom: '80px' }}>
         {/* Latar Belakang Gambar Berjalan */}
         {slides.map((slide, index) => (
           <div 

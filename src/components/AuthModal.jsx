@@ -147,19 +147,28 @@ const AuthModal = () => {
   return (
     <div style={{
       position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-      background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      padding: '40px 20px', // More breathing room for mobile
-      zIndex: 100000
+      background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
+      display: 'flex',
+      alignItems: 'flex-start',
+      justifyContent: 'center',
+      paddingTop: 'max(env(safe-area-inset-top), 16px)',
+      paddingBottom: '16px',
+      paddingLeft: '16px',
+      paddingRight: '16px',
+      zIndex: 100000,
+      overflowY: 'auto'
     }}>
       <div style={{
         background: 'white',
-        width: '100%', maxWidth: '480px', // Slightly wider for comfort
-        borderRadius: '32px', // More rounded corners
-        boxShadow: '0 24px 60px rgba(0,0,0,0.25)',
-        overflow: 'hidden',
-        animation: 'fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
-        position: 'relative'
+        width: '100%', maxWidth: '420px',
+        borderRadius: '20px',
+        boxShadow: '0 24px 60px rgba(0,0,0,0.3)',
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        animation: 'fadeIn 0.3s ease',
+        position: 'relative',
+        marginTop: '8px',
+        marginBottom: '8px'
       }}>
         {/* Close Button */}
         <button onClick={closeModal} style={{
@@ -202,8 +211,8 @@ const AuthModal = () => {
               <div style={{ display: 'flex', background: '#f8f9fa', borderRadius: '12px', padding: '4px', marginBottom: '8px' }}>
                 {['username', 'email', 'phone'].map(m => (
                   <button key={m} type="button" onClick={() => setMethod(m)} style={{ 
-                    flex: 1, padding: '8px', background: method === m ? 'white' : 'transparent', 
-                    border: 'none', borderRadius: '8px', fontWeight: 'bold', fontSize: '0.8rem',
+                    flex: 1, padding: '6px 4px', background: method === m ? 'white' : 'transparent', 
+                    border: 'none', borderRadius: '8px', fontWeight: 'bold', fontSize: '0.78rem',
                     color: method === m ? 'var(--text-main)' : 'var(--text-muted)', 
                     boxShadow: method === m ? '0 2px 4px rgba(0,0,0,0.05)' : 'none', cursor: 'pointer' 
                   }}>
@@ -232,7 +241,7 @@ const AuthModal = () => {
                 {(method === 'email' || activeTab === 'forgot') && (
                   <div style={{ position: 'relative' }}>
                     <Mail size={18} style={{ position: 'absolute', top: '14px', left: '16px', color: '#adb5bd' }} />
-                    <input type="email" placeholder="Alamat Email" value={email} onChange={e => setEmail(e.target.value)} required style={{ width: '100%', padding: '14px 14px 14px 44px', borderRadius: '12px', border: '1px solid #dee2e6', fontSize: '1rem', boxSizing: 'border-box' }} />
+                    <input type="email" placeholder="Alamat Email" value={email} onChange={e => setEmail(e.target.value)} required style={{ width: '100%', padding: '11px 11px 11px 40px', borderRadius: '10px', border: '1px solid #dee2e6', fontSize: '0.95rem', boxSizing: 'border-box' }} />
                   </div>
                 )}
 
