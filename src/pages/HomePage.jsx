@@ -237,11 +237,11 @@ const HomePage = () => {
       </section>
 
       {/* SECTION 5 - MODEL BISNIS */}
-      <section style={{ padding: '80px 0', background: '#f8f9fa' }}>
+      <section style={{ padding: '80px 0', background: 'var(--bg-secondary)' }}>
         <div className="container">
           <h2 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '40px', textAlign: 'center' }}>{t('home_model_title')}</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '30px' }}>
-            <div className="glass" style={{ padding: '30px', background: 'white', borderRadius: '16px' }}>
+            <div className="glass" style={{ padding: '30px', background: 'var(--bg-card)', borderRadius: '16px', color: 'var(--text-main)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
                 <div style={{ width: '40px', height: '40px', background: 'var(--primary)', color: 'white', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '1.2rem' }}>1</div>
                 <h3 style={{ fontSize: '1.3rem' }}>{t('home_model_1_title')}</h3>
@@ -249,7 +249,7 @@ const HomePage = () => {
               <p style={{ color: 'var(--text-muted)' }}>{t('home_model_1_desc')}</p>
             </div>
             
-            <div className="glass" style={{ padding: '30px', background: 'white', borderRadius: '16px' }}>
+            <div className="glass" style={{ padding: '30px', background: 'var(--bg-card)', borderRadius: '16px', color: 'var(--text-main)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
                 <div style={{ width: '40px', height: '40px', background: 'var(--primary)', color: 'white', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '1.2rem' }}>2</div>
                 <h3 style={{ fontSize: '1.3rem' }}>{t('home_model_2_title')}</h3>
@@ -257,7 +257,7 @@ const HomePage = () => {
               <p style={{ color: 'var(--text-muted)' }}>{t('home_model_2_desc')}</p>
             </div>
 
-            <div className="glass" style={{ padding: '30px', background: 'white', borderRadius: '16px' }}>
+            <div className="glass" style={{ padding: '30px', background: 'var(--bg-card)', borderRadius: '16px', color: 'var(--text-main)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
                 <div style={{ width: '40px', height: '40px', background: 'var(--primary)', color: 'white', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '1.2rem' }}>3</div>
                 <h3 style={{ fontSize: '1.3rem' }}>{t('home_model_3_title')}</h3>
@@ -271,7 +271,7 @@ const HomePage = () => {
           <h2 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '50px', textAlign: 'center' }}>{t('home_project_title')}</h2>
           
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '40px', marginBottom: '40px' }}>
-                        <div style={{ background: 'white', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', border: '1px solid #eee' }}>
+                        <div style={{ background: 'var(--bg-card)', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.08)', border: '1px solid var(--border-color)' }}>
               <div style={{ height: '200px', background: `url("${getAssetUrl('gambar/pehcibarani.png')}") center/cover` }}></div>
               <div style={{ padding: '30px' }}>
                 <div style={{ color: 'var(--primary)', display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '12px', fontSize: '0.9rem', fontWeight: 'bold' }}>
@@ -282,7 +282,7 @@ const HomePage = () => {
               </div>
             </div>
 
-            <div style={{ background: 'white', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', border: '1px solid #eee' }}>
+            <div style={{ background: 'var(--bg-card)', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.08)', border: '1px solid var(--border-color)' }}>
               <div style={{ height: '200px', background: `url("${getAssetUrl('gambar/ceap.png')}") center/cover` }}></div>
               <div style={{ padding: '30px' }}>
                 <div style={{ color: 'var(--primary)', display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '12px', fontSize: '0.9rem', fontWeight: 'bold' }}>
@@ -293,7 +293,7 @@ const HomePage = () => {
               </div>
             </div>
 
-            <div style={{ background: 'white', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', border: '1px solid #eee' }}>
+            <div style={{ background: 'var(--bg-card)', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.08)', border: '1px solid var(--border-color)' }}>
               <div style={{ height: '200px', background: `url("${getAssetUrl('gambar/mbh.jpeg')}") center/cover` }}></div>
               <div style={{ padding: '30px' }}>
                 <div style={{ color: 'var(--primary)', display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '12px', fontSize: '0.9rem', fontWeight: 'bold' }}>
@@ -314,13 +314,13 @@ const HomePage = () => {
       </section>
 
       {/* SECTION 6.5 - PRODUK UNGGULAN */}
-      <section style={{ padding: '80px 0', background: '#fff' }}>
+      <section style={{ padding: '80px 0', background: 'var(--bg-color)' }}>
         <div className="container">
           <h2 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '50px', textAlign: 'center' }}>{t('home_featured_title')}</h2>
           
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '30px', marginBottom: '40px' }}>
             {/* Produk 1 */}
-            <div className="glass" style={{ background: 'white', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 8px 30px rgba(0,0,0,0.06)', border: '1px solid #eee' }}>
+            <div className="glass" style={{ background: 'var(--bg-card)', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 8px 30px rgba(0,0,0,0.08)', border: '1px solid var(--border-color)' }}>
               <div style={{ height: '220px', position: 'relative' }}>
                 <img src={getAssetUrl('gambar/produk_unggulan/Laminasi.jpeg')} alt="Bambu Laminasi" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'var(--primary)', color: 'white', padding: '4px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold' }}>Material</div>
@@ -337,7 +337,7 @@ const HomePage = () => {
             </div>
 
             {/* Produk 2 */}
-            <div className="glass" style={{ background: 'white', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 8px 30px rgba(0,0,0,0.06)', border: '1px solid #eee' }}>
+            <div className="glass" style={{ background: 'var(--bg-card)', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 8px 30px rgba(0,0,0,0.08)', border: '1px solid var(--border-color)' }}>
               <div style={{ height: '220px', position: 'relative' }}>
                 <img src={getAssetUrl('gambar/produk_unggulan/Interior.jpeg')} alt="Interior" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'var(--primary)', color: 'white', padding: '4px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold' }}>Interior</div>
@@ -354,7 +354,7 @@ const HomePage = () => {
             </div>
 
             {/* Produk 3 */}
-            <div className="glass" style={{ background: 'white', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 8px 30px rgba(0,0,0,0.06)', border: '1px solid #eee' }}>
+            <div className="glass" style={{ background: 'var(--bg-card)', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 8px 30px rgba(0,0,0,0.08)', border: '1px solid var(--border-color)' }}>
               <div style={{ height: '220px', position: 'relative' }}>
                 <img src={getAssetUrl('gambar/produk_unggulan/mbb.jpeg')} alt="Konstruksi Modular" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'var(--primary)', color: 'white', padding: '4px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold' }}>Konstruksi</div>
@@ -380,7 +380,7 @@ const HomePage = () => {
       </section>
 
       {/* SECTION 7 - EKOSISTEM */}
-      <section style={{ padding: '80px 0', background: '#f8f9fa' }}>
+      <section style={{ padding: '80px 0', background: 'var(--bg-secondary)' }}>
         <div className="container">
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '40px', alignItems: 'center' }}>
             <div>
@@ -392,7 +392,7 @@ const HomePage = () => {
                 <li style={{ display: 'flex', alignItems: 'center', gap: '12px' }}><CheckCircle size={24} color="var(--primary)" /> {t('home_eco_list_4')}</li>
               </ul>
             </div>
-            <div style={{ background: 'white', padding: '40px', borderRadius: '16px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
+            <div style={{ background: 'var(--bg-card)', padding: '40px', borderRadius: '16px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', color: 'var(--text-main)' }}>
               <h3 style={{ fontSize: '1.5rem', marginBottom: '20px', color: 'var(--primary)' }}>{t('home_eco_impact_title')}</h3>
               <ul style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <li style={{ display: 'flex', alignItems: 'center', gap: '12px' }}><Leaf size={20} color="var(--primary)" /> {t('home_eco_impact_1')}</li>
