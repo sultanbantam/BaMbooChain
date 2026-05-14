@@ -88,7 +88,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav style={{ position: 'fixed', top: 0, width: '100%', zIndex: 10000, background: 'white', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
+    <nav style={{ position: 'fixed', top: 0, width: '100%', zIndex: 10000, background: 'var(--bg-card)', boxShadow: '0 2px 10px rgba(0,0,0,0.1)', transition: 'background 0.3s ease' }}>
       {isMobile ? (
         /* ────────── MOBILE NAVBAR ────────── */
         <div style={{ width: '100%' }}>
@@ -107,7 +107,7 @@ const Navbar = () => {
             </div>
           </div>
           {isMobileMenuOpen && (
-            <div style={{ position: 'fixed', top: '70px', left: 0, width: '100%', height: 'calc(100vh - 70px)', background: 'white', zIndex: 10001, overflowY: 'auto', padding: '20px' }}>
+            <div style={{ position: 'fixed', top: '70px', left: 0, width: '100%', height: 'calc(100vh - 70px)', background: 'var(--bg-color)', zIndex: 10001, overflowY: 'auto', padding: '20px', transition: 'background 0.3s ease', color: 'var(--text-main)' }}>
                {isAuthenticated ? (
                  <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)} style={{ width: '100%', background: '#f0fdf4', color: 'var(--primary)', border: '1px solid var(--primary)', padding: '16px', borderRadius: '12px', fontWeight: 'bold', marginBottom: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', textDecoration: 'none' }}>
                    <img src={user?.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username || 'default'}`} alt="avatar" style={{ width: '24px', height: '24px', borderRadius: '50%' }} />
