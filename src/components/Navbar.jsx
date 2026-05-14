@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Globe, Bell, ChevronDown, Menu, X, Shield, Layout, TreeDeciduous, Truck, Factory, Wallet, Leaf, ShoppingCart, Users, GraduationCap, BarChart3, TrendingUp, User } from 'lucide-react';
+import { Globe, Bell, ChevronDown, Menu, X, Shield, Layout, TreeDeciduous, Truck, Factory, Wallet, Leaf, ShoppingCart, Users, GraduationCap, BarChart3, TrendingUp, User, Sun, Moon } from 'lucide-react';
 import { getAssetUrl } from '../utils/assets';
 import { Link, useNavigate } from 'react-router-dom';
 import AdSpace from './AdSpace';
 import { useLanguage } from '../context/LanguageContext';
 import { useWeb3 } from '../context/Web3Context';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 
 const Navbar = () => {
   const [showBambooMenu, setShowBambooMenu] = useState(false);
@@ -17,6 +18,7 @@ const Navbar = () => {
   const { language, toggleLanguage, t } = useLanguage();
   const { walletAddress, isConnected, connectWallet, isConnecting, isWalletModalOpen, openWalletModal, closeWalletModal } = useWeb3();
   const { user, isAuthenticated, openLoginModal, logout, markAsRead, markAllAsRead, clearNotifications } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
   const userNotifications = user?.notifications || [];
@@ -94,8 +96,11 @@ const Navbar = () => {
             <Link to="/" onClick={() => setIsMobileMenuOpen(false)}>
               <img src={getAssetUrl('logo-ysnj2.png')} alt="Logo" style={{ height: '35px' }} />
             </Link>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-               <Globe size={22} color="var(--primary)" onClick={toggleLanguage} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+               <button onClick={toggleTheme} className="theme-toggle-btn" title={isDark ? 'Mode Terang' : 'Mode Gelap'} style={{ width: '36px', height: '36px', background: 'transparent', border: 'none' }}>
+                 {isDark ? <Sun size={20} color="#f59f00" /> : <Moon size={20} color="var(--primary)" />}
+               </button>
+               <Globe size={22} color="var(--primary)" style={{ cursor: 'pointer' }} onClick={toggleLanguage} />
                <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} style={{ background: 'var(--primary)', border: 'none', borderRadius: '8px', color: 'white', padding: '6px' }}>
                  {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
                </button>
@@ -172,6 +177,15 @@ const Navbar = () => {
             </Link>
 
             <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '15px', position: 'relative' }}>
+              {/* Theme Toggle - Desktop */}
+              <button
+                onClick={toggleTheme}
+                className="theme-toggle-btn"
+                title={isDark ? 'Mode Terang' : 'Mode Gelap'}
+              >
+                {isDark ? <Sun size={18} color="#f59f00" /> : <Moon size={18} color="#555" />}
+              </button>
+
               <div 
                 style={{ position: 'relative', display: 'flex', alignItems: 'center', cursor: 'pointer' }}
                 onClick={() => { setShowNotifMenu(!showNotifMenu); setShowProfileMenu(false); }}
