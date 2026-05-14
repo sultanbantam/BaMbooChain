@@ -159,7 +159,7 @@ const AuthModal = () => {
       overflowY: 'auto'
     }}>
       <div style={{
-        background: 'white',
+        background: 'var(--bg-card)',
         width: '100%', maxWidth: '420px',
         borderRadius: '20px',
         boxShadow: '0 24px 60px rgba(0,0,0,0.3)',
@@ -168,23 +168,24 @@ const AuthModal = () => {
         animation: 'fadeIn 0.3s ease',
         position: 'relative',
         marginTop: '8px',
-        marginBottom: '8px'
+        marginBottom: '8px',
+        border: '1px solid var(--border-color)'
       }}>
         {/* Close Button */}
         <button onClick={closeModal} style={{
-          position: 'absolute', top: '20px', right: '20px', background: '#f8f9fa',
-          border: 'none', borderRadius: '50%', width: '32px', height: '32px',
+          position: 'absolute', top: '20px', right: '20px', background: 'var(--bg-secondary)',
+          border: '1px solid var(--border-color)', borderRadius: '50%', width: '32px', height: '32px',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'pointer', zIndex: 10, color: 'var(--text-muted)'
+          cursor: 'pointer', zIndex: 10, color: 'var(--text-main)'
         }}>
           <X size={18} />
         </button>
 
         {/* Tab Headers */}
-        <div style={{ display: 'flex', borderBottom: '1px solid #f1f3f5' }}>
+        <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color)' }}>
           {['login', 'signup'].map(tab => (
             <button key={tab} onClick={() => toggleTab(tab)} style={{
-              flex: 1, padding: '20px', background: activeTab === tab ? 'white' : '#f8f9fa',
+              flex: 1, padding: '20px', background: activeTab === tab ? 'var(--bg-card)' : 'var(--bg-secondary)',
               border: 'none', borderBottom: activeTab === tab ? '3px solid var(--primary)' : '3px solid transparent',
               fontSize: '1.1rem', fontWeight: 'bold', color: activeTab === tab ? 'var(--primary)' : 'var(--text-muted)',
               cursor: 'pointer', transition: 'all 0.2s'
@@ -208,10 +209,10 @@ const AuthModal = () => {
 
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {activeTab !== 'forgot' && step === 1 && (
-              <div style={{ display: 'flex', background: '#f8f9fa', borderRadius: '10px', padding: '3px', marginBottom: '4px' }}>
+              <div style={{ display: 'flex', background: 'var(--bg-secondary)', borderRadius: '10px', padding: '3px', marginBottom: '4px', border: '1px solid var(--border-color)' }}>
                 {['username', 'email', 'phone'].map(m => (
                   <button key={m} type="button" onClick={() => setMethod(m)} style={{ 
-                    flex: 1, padding: '6px 2px', background: method === m ? 'white' : 'transparent', 
+                    flex: 1, padding: '6px 2px', background: method === m ? 'var(--bg-card)' : 'transparent', 
                     border: 'none', borderRadius: '8px', fontWeight: 'bold', fontSize: '0.76rem',
                     color: method === m ? 'var(--text-main)' : 'var(--text-muted)', 
                     boxShadow: method === m ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', cursor: 'pointer' 
@@ -227,28 +228,28 @@ const AuthModal = () => {
                 {activeTab === 'signup' && (
                   <div style={{ position: 'relative' }}>
                     <User size={18} style={{ position: 'absolute', top: '14px', left: '16px', color: '#adb5bd' }} />
-                    <input type="text" placeholder="Nama Lengkap (Sesuai KYC)" value={name} onChange={e => setName(e.target.value)} required style={{ width: '100%', padding: '10px 10px 10px 38px', borderRadius: '10px', border: '1px solid #dee2e6', fontSize: '0.9rem', boxSizing: 'border-box' }} />
+                    <input type="text" placeholder="Nama Lengkap (Sesuai KYC)" value={name} onChange={e => setName(e.target.value)} required style={{ width: '100%', padding: '10px 10px 10px 38px', borderRadius: '10px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-main)', fontSize: '0.9rem', boxSizing: 'border-box' }} />
                   </div>
                 )}
 
                 {activeTab === 'signup' && (
                   <div style={{ position: 'relative' }}>
                     <Monitor size={18} style={{ position: 'absolute', top: '14px', left: '16px', color: '#adb5bd' }} />
-                    <input type="text" placeholder="Username Unik" value={username} onChange={e => setUsername(e.target.value)} required style={{ width: '100%', padding: '10px 10px 10px 38px', borderRadius: '10px', border: '1px solid #dee2e6', fontSize: '0.9rem', boxSizing: 'border-box' }} />
+                    <input type="text" placeholder="Username Unik" value={username} onChange={e => setUsername(e.target.value)} required style={{ width: '100%', padding: '10px 10px 10px 38px', borderRadius: '10px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-main)', fontSize: '0.9rem', boxSizing: 'border-box' }} />
                   </div>
                 )}
 
                 {(method === 'email' || activeTab === 'forgot') && (
                   <div style={{ position: 'relative' }}>
                     <Mail size={18} style={{ position: 'absolute', top: '14px', left: '16px', color: '#adb5bd' }} />
-                    <input type="email" placeholder="Alamat Email" value={email} onChange={e => setEmail(e.target.value)} required style={{ width: '100%', padding: '10px 10px 10px 38px', borderRadius: '10px', border: '1px solid #dee2e6', fontSize: '0.9rem', boxSizing: 'border-box' }} />
+                    <input type="email" placeholder="Alamat Email" value={email} onChange={e => setEmail(e.target.value)} required style={{ width: '100%', padding: '10px 10px 10px 38px', borderRadius: '10px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-main)', fontSize: '0.9rem', boxSizing: 'border-box' }} />
                   </div>
                 )}
 
                 {method === 'phone' && (
                   <div style={{ position: 'relative' }}>
                     <Phone size={18} style={{ position: 'absolute', top: '14px', left: '16px', color: '#adb5bd' }} />
-                    <input type="tel" placeholder="Nomor Handphone" value={phone} onChange={e => setPhone(e.target.value)} required style={{ width: '100%', padding: '10px 10px 10px 38px', borderRadius: '10px', border: '1px solid #dee2e6', fontSize: '0.9rem', boxSizing: 'border-box' }} />
+                    <input type="tel" placeholder="Nomor Handphone" value={phone} onChange={e => setPhone(e.target.value)} required style={{ width: '100%', padding: '10px 10px 10px 38px', borderRadius: '10px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-main)', fontSize: '0.9rem', boxSizing: 'border-box' }} />
                   </div>
                 )}
 

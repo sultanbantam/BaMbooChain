@@ -13,7 +13,7 @@ const Footer = () => {
   };
 
   return (
-    <footer style={{ background: '#212529', color: 'white', padding: '60px 20px 40px', borderTop: '5px solid var(--primary)' }}>
+    <footer style={{ background: 'var(--bg-card)', color: 'var(--text-main)', padding: '60px 20px 40px', borderTop: '5px solid var(--primary)', transition: 'all 0.3s ease' }}>
       <div className="container">
         
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '40px', marginBottom: '60px' }}>

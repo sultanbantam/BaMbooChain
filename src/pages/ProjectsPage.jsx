@@ -29,7 +29,8 @@ const ProjectsPage = () => {
       paddingTop: 'var(--navbar-height)', 
       paddingBottom: '100px',
       minHeight: '100vh',
-      background: 'linear-gradient(to bottom, #fdfdfd, #f4f7f4)'
+      background: 'var(--bg-color)',
+      transition: 'background 0.3s ease'
     }}>
       <div className="container">
         <div style={{ marginBottom: '40px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '20px' }}>
@@ -66,8 +67,8 @@ const ProjectsPage = () => {
               style={{ 
                 borderRadius: '24px', 
                 overflow: 'hidden', 
-                background: 'white',
-                border: '1px solid rgba(0,0,0,0.05)',
+                background: 'var(--bg-card)',
+                border: '1px solid var(--border-color)',
                 transition: 'transform 0.3s, box-shadow 0.3s',
                 display: 'flex',
                 flexDirection: 'column'
