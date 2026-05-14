@@ -76,59 +76,59 @@ const HomePage = () => {
       `}</style>
 
       {/* SECTION 1 - HERO SLIDER */}
+      {/* Ticker di LUAR section, setelah navbar, sebelum hero */}
+      <div style={{
+        position: 'relative',
+        marginTop: 'var(--navbar-height)',
+        background: '#1a1a1a',
+        color: 'white',
+        padding: '10px 0',
+        overflow: 'hidden',
+        whiteSpace: 'nowrap',
+        width: '100%',
+        zIndex: 100,
+        display: 'flex',
+        alignItems: 'center',
+        borderBottom: '2px solid var(--primary)'
+      }}>
+        <div style={{ display: 'inline-block', animation: 'homeTicker 35s linear infinite' }}>
+          {[
+            t('home_ticker_1'),
+            t('home_ticker_2'),
+            t('home_ticker_3')
+          ].concat([
+            t('home_ticker_1'),
+            t('home_ticker_2'),
+            t('home_ticker_3')
+          ]).map((text, i) => (
+            <Link 
+              key={i} 
+              to="/careers" 
+              className="home-ticker-link"
+              onClick={() => {
+                setTimeout(() => {
+                  document.getElementById('demand')?.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+              }}
+            >
+              <Target size={16} />
+              {text}
+              <ArrowRight size={14} />
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* Hero section — dimulai di bawah ticker, background hanya cover section ini */}
       <section style={{
-        minHeight: '100vh',
+        minHeight: 'calc(100vh - var(--navbar-height) - 42px)',
         position: 'relative',
         display: 'flex',
-        flexDirection: 'column',
-        paddingTop: 'var(--navbar-height)',
+        alignItems: 'center',
+        paddingTop: '60px',
+        paddingBottom: '80px',
         overflow: 'hidden'
       }}>
-        {/* === TICKER DI SINI - SELALU DI ATAS JUDUL === */}
-        <div style={{
-          background: '#1a1a1a',
-          color: 'white',
-          padding: '10px 0',
-          overflow: 'hidden',
-          whiteSpace: 'nowrap',
-          width: '100%',
-          zIndex: 5,
-          flexShrink: 0,
-          display: 'flex',
-          alignItems: 'center',
-          borderBottom: '2px solid var(--primary)',
-          marginTop: '16px'
-        }}>
-          <div style={{ display: 'inline-block', animation: 'homeTicker 35s linear infinite' }}>
-            {[
-              t('home_ticker_1'),
-              t('home_ticker_2'),
-              t('home_ticker_3')
-            ].concat([
-              t('home_ticker_1'),
-              t('home_ticker_2'),
-              t('home_ticker_3')
-            ]).map((text, i) => (
-              <Link 
-                key={i} 
-                to="/careers" 
-                className="home-ticker-link"
-                onClick={() => {
-                  setTimeout(() => {
-                    document.getElementById('demand')?.scrollIntoView({ behavior: 'smooth' });
-                  }, 100);
-                }}
-              >
-                <Target size={16} />
-                {text}
-                <ArrowRight size={14} />
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        {/* Hero content - di bawah ticker */}
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', paddingTop: '40px', paddingBottom: '80px' }}>
         {/* Latar Belakang Gambar Berjalan */}
         {slides.map((slide, index) => (
           <div 
@@ -140,7 +140,7 @@ const HomePage = () => {
               opacity: index === currentSlide ? 1 : 0,
               visibility: index === currentSlide ? 'visible' : 'hidden',
               transition: 'opacity 1s ease-in-out, visibility 1s ease-in-out',
-              transform: index === currentSlide ? 'scale(1)' : 'scale(1.05)', // Tambahan efek membesar sedikit
+              transform: index === currentSlide ? 'scale(1)' : 'scale(1.05)',
               transitionProperty: 'opacity, visibility, transform',
               transitionDuration: '1s, 1s, 6s',
               zIndex: -1
@@ -150,25 +150,25 @@ const HomePage = () => {
 
         <div className="container text-center" style={{ position: 'relative', zIndex: 1 }}>
           <h1 
-            key={`title-${currentSlide}`} // Agar animasi ke-trigger ulang saat slide ganti
+            key={`title-${currentSlide}`}
             className="animate-fade-in-up"
-            style={{ fontSize: 'clamp(2.5rem, 5vw, 4.5rem)', fontWeight: '800', marginBottom: '24px', color: 'white', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}
+            style={{ fontSize: 'clamp(2rem, 5vw, 4.5rem)', fontWeight: '800', marginBottom: '24px', color: 'white', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}
           >
             {slides[currentSlide].title}
           </h1>
           <p 
             key={`desc-${currentSlide}`}
             className="animate-fade-in-up"
-            style={{ fontSize: '1.25rem', opacity: '0.9', maxWidth: '800px', margin: '0 auto 40px', color: 'white', animationDelay: '0.2s' }}
+            style={{ fontSize: '1.1rem', opacity: '0.9', maxWidth: '800px', margin: '0 auto 40px', color: 'white', animationDelay: '0.2s' }}
           >
             {slides[currentSlide].desc}
           </p>
-          <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link to="/insight" className="btn btn-crypto" style={{ padding: '16px 32px', fontSize: '1.1rem' }}>{t('home_hero_btn_analysis')}</Link>
-            <Link to="/projects" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '1.1rem', background: 'transparent', border: '2px solid var(--primary)' }}>{t('home_hero_btn_projects')}</Link>
+          <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link to="/insight" className="btn btn-crypto" style={{ padding: '14px 28px', fontSize: '1rem' }}>{t('home_hero_btn_analysis')}</Link>
+            <Link to="/projects" className="btn btn-primary" style={{ padding: '14px 28px', fontSize: '1rem', background: 'transparent', border: '2px solid var(--primary)' }}>{t('home_hero_btn_projects')}</Link>
           </div>
           
-          {/* Indikator Titik (Dots) di Bawah */}
+          {/* Dots */}
           <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '40px' }}>
             {slides.map((_, index) => (
               <button 

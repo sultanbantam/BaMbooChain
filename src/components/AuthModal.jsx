@@ -206,15 +206,15 @@ const AuthModal = () => {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {activeTab !== 'forgot' && step === 1 && (
-              <div style={{ display: 'flex', background: '#f8f9fa', borderRadius: '12px', padding: '4px', marginBottom: '8px' }}>
+              <div style={{ display: 'flex', background: '#f8f9fa', borderRadius: '10px', padding: '3px', marginBottom: '4px' }}>
                 {['username', 'email', 'phone'].map(m => (
                   <button key={m} type="button" onClick={() => setMethod(m)} style={{ 
-                    flex: 1, padding: '6px 4px', background: method === m ? 'white' : 'transparent', 
-                    border: 'none', borderRadius: '8px', fontWeight: 'bold', fontSize: '0.78rem',
+                    flex: 1, padding: '6px 2px', background: method === m ? 'white' : 'transparent', 
+                    border: 'none', borderRadius: '8px', fontWeight: 'bold', fontSize: '0.76rem',
                     color: method === m ? 'var(--text-main)' : 'var(--text-muted)', 
-                    boxShadow: method === m ? '0 2px 4px rgba(0,0,0,0.05)' : 'none', cursor: 'pointer' 
+                    boxShadow: method === m ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', cursor: 'pointer' 
                   }}>
                     {m === 'username' ? 'User' : m === 'email' ? 'Email' : 'HP'}
                   </button>
@@ -227,28 +227,28 @@ const AuthModal = () => {
                 {activeTab === 'signup' && (
                   <div style={{ position: 'relative' }}>
                     <User size={18} style={{ position: 'absolute', top: '14px', left: '16px', color: '#adb5bd' }} />
-                    <input type="text" placeholder="Nama Lengkap (Sesuai KYC)" value={name} onChange={e => setName(e.target.value)} required style={{ width: '100%', padding: '14px 14px 14px 44px', borderRadius: '12px', border: '1px solid #dee2e6', fontSize: '1rem', boxSizing: 'border-box' }} />
+                    <input type="text" placeholder="Nama Lengkap (Sesuai KYC)" value={name} onChange={e => setName(e.target.value)} required style={{ width: '100%', padding: '10px 10px 10px 38px', borderRadius: '10px', border: '1px solid #dee2e6', fontSize: '0.9rem', boxSizing: 'border-box' }} />
                   </div>
                 )}
 
                 {activeTab === 'signup' && (
                   <div style={{ position: 'relative' }}>
                     <Monitor size={18} style={{ position: 'absolute', top: '14px', left: '16px', color: '#adb5bd' }} />
-                    <input type="text" placeholder="Username Unik" value={username} onChange={e => setUsername(e.target.value)} required style={{ width: '100%', padding: '14px 14px 14px 44px', borderRadius: '12px', border: '1px solid #dee2e6', fontSize: '1rem', boxSizing: 'border-box' }} />
+                    <input type="text" placeholder="Username Unik" value={username} onChange={e => setUsername(e.target.value)} required style={{ width: '100%', padding: '10px 10px 10px 38px', borderRadius: '10px', border: '1px solid #dee2e6', fontSize: '0.9rem', boxSizing: 'border-box' }} />
                   </div>
                 )}
 
                 {(method === 'email' || activeTab === 'forgot') && (
                   <div style={{ position: 'relative' }}>
                     <Mail size={18} style={{ position: 'absolute', top: '14px', left: '16px', color: '#adb5bd' }} />
-                    <input type="email" placeholder="Alamat Email" value={email} onChange={e => setEmail(e.target.value)} required style={{ width: '100%', padding: '11px 11px 11px 40px', borderRadius: '10px', border: '1px solid #dee2e6', fontSize: '0.95rem', boxSizing: 'border-box' }} />
+                    <input type="email" placeholder="Alamat Email" value={email} onChange={e => setEmail(e.target.value)} required style={{ width: '100%', padding: '10px 10px 10px 38px', borderRadius: '10px', border: '1px solid #dee2e6', fontSize: '0.9rem', boxSizing: 'border-box' }} />
                   </div>
                 )}
 
                 {method === 'phone' && (
                   <div style={{ position: 'relative' }}>
                     <Phone size={18} style={{ position: 'absolute', top: '14px', left: '16px', color: '#adb5bd' }} />
-                    <input type="tel" placeholder="Nomor Handphone" value={phone} onChange={e => setPhone(e.target.value)} required style={{ width: '100%', padding: '14px 14px 14px 44px', borderRadius: '12px', border: '1px solid #dee2e6', fontSize: '1rem', boxSizing: 'border-box' }} />
+                    <input type="tel" placeholder="Nomor Handphone" value={phone} onChange={e => setPhone(e.target.value)} required style={{ width: '100%', padding: '10px 10px 10px 38px', borderRadius: '10px', border: '1px solid #dee2e6', fontSize: '0.9rem', boxSizing: 'border-box' }} />
                   </div>
                 )}
 
@@ -256,7 +256,7 @@ const AuthModal = () => {
                   <>
                     <div style={{ position: 'relative' }}>
                       <Lock size={18} style={{ position: 'absolute', top: '14px', left: '16px', color: '#adb5bd' }} />
-                      <input type={showPassword ? "text" : "password"} placeholder="Kata Sandi" value={password} onChange={e => setPassword(e.target.value)} required style={{ width: '100%', padding: '14px 48px 14px 44px', borderRadius: '12px', border: '1px solid #dee2e6', fontSize: '1rem', boxSizing: 'border-box' }} />
+                      <input type={showPassword ? "text" : "password"} placeholder="Kata Sandi" value={password} onChange={e => setPassword(e.target.value)} required style={{ width: '100%', padding: '10px 48px 10px 38px', borderRadius: '10px', border: '1px solid #dee2e6', fontSize: '0.9rem', boxSizing: 'border-box' }} />
                       <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '12px', top: '12px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', fontWeight: 'bold', fontSize: '0.8rem' }}>
                         {showPassword ? "Sembunyi" : "Lihat"}
                       </button>
@@ -277,7 +277,7 @@ const AuthModal = () => {
                     {activeTab === 'signup' && (
                       <div style={{ position: 'relative' }}>
                         <ShieldCheck size={18} style={{ position: 'absolute', top: '14px', left: '16px', color: '#adb5bd' }} />
-                        <input type={showConfirmPassword ? "text" : "password"} placeholder="Konfirmasi Kata Sandi" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required style={{ width: '100%', padding: '14px 48px 14px 44px', borderRadius: '12px', border: '1px solid #dee2e6', fontSize: '1rem', boxSizing: 'border-box' }} />
+                        <input type={showConfirmPassword ? "text" : "password"} placeholder="Konfirmasi Kata Sandi" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required style={{ width: '100%', padding: '10px 48px 10px 38px', borderRadius: '10px', border: '1px solid #dee2e6', fontSize: '0.9rem', boxSizing: 'border-box' }} />
                         <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} style={{ position: 'absolute', right: '12px', top: '12px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', fontWeight: 'bold', fontSize: '0.8rem' }}>
                           {showConfirmPassword ? "Sembunyi" : "Lihat"}
                         </button>
@@ -309,7 +309,7 @@ const AuthModal = () => {
               </div>
             )}
 
-            <button type="submit" style={{ width: '100%', padding: '14px', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '12px', fontSize: '1.05rem', fontWeight: 'bold', cursor: 'pointer', marginTop: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(12, 166, 120, 0.2)' }}>
+            <button type="submit" style={{ width: '100%', padding: '12px', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '12px', fontSize: '1rem', fontWeight: 'bold', cursor: 'pointer', marginTop: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(12, 166, 120, 0.2)' }}>
               {activeTab === 'forgot' ? "Pulihkan Akun" : activeTab === 'login' ? "Masuk" : (step === 1 ? "Lanjut" : "Daftar Sekarang")} <ArrowRight size={18} />
             </button>
             
