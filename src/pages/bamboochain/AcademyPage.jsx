@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { BookOpen, GraduationCap, Award, PlayCircle, Clock, ShieldCheck, DownloadCloud, Lock, User, FileText, X, Sparkles, Calendar, ChevronRight, Heart, Share2, Send, MessageSquare, Gift } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { BookOpen, GraduationCap, Award, PlayCircle, Clock, ShieldCheck, DownloadCloud, Lock, User, FileText, X, Sparkles, Calendar, ChevronLeft, ChevronRight, Heart, Share2, Send, MessageSquare, Gift } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 const AcademyPage = () => {
@@ -20,8 +20,56 @@ const AcademyPage = () => {
     category: 'Sains Bambu',
     otherCategory: '', // For custom category input when 'Lainnya' is selected
     readTime: '5 Menit Baca',
-    image: '' // Base64 uploaded image URL
+    image: '', // Base64 uploaded image URL
+    images: [] // Array of Base64 uploaded image URLs
   });
+
+  const articleImageContainerRef = useRef(null);
+  const [currentArticleImgIdx, setCurrentArticleImgIdx] = useState(0);
+
+  // Reset scroll and index when selectedArticle changes
+  useEffect(() => {
+    if (selectedArticle) {
+      setCurrentArticleImgIdx(0);
+      if (articleImageContainerRef.current) {
+        articleImageContainerRef.current.scrollLeft = 0;
+      }
+    }
+  }, [selectedArticle]);
+
+  const handleArticleImageScroll = (e) => {
+    const container = e.currentTarget;
+    const scrollLeft = container.scrollLeft;
+    const width = container.clientWidth;
+    if (width > 0) {
+      const idx = Math.round(scrollLeft / width);
+      if (idx !== currentArticleImgIdx) {
+        setCurrentArticleImgIdx(idx);
+      }
+    }
+  };
+
+  const scrollToArticleImage = (idx) => {
+    setCurrentArticleImgIdx(idx);
+    if (articleImageContainerRef.current) {
+      const container = articleImageContainerRef.current;
+      container.scrollTo({ left: container.clientWidth * idx, behavior: 'smooth' });
+    }
+  };
+
+  const handlePrevArticleImg = () => {
+    const total = selectedArticle?.images?.length || 0;
+    if (total <= 1) return;
+    const newIdx = (currentArticleImgIdx - 1 + total) % total;
+    scrollToArticleImage(newIdx);
+  };
+
+  const handleNextArticleImg = () => {
+    const total = selectedArticle?.images?.length || 0;
+    if (total <= 1) return;
+    const newIdx = (currentArticleImgIdx + 1) % total;
+    scrollToArticleImage(newIdx);
+  };
 
   const [interactions, setInteractions] = useState({
     1: { likes: 42, liked: false, shares: 12, comments: [
@@ -152,6 +200,7 @@ const AcademyPage = () => {
       category: finalCategory,
       readTime: newArticleForm.readTime,
       image: newArticleForm.image || '',
+      images: newArticleForm.images || [],
       author: user?.displayName || user?.email?.split('@')[0] || "Pegiat Bambu Hijau",
       role: "Kontributor Pegiat Bambu",
       avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${articleId}`
@@ -160,7 +209,7 @@ const AcademyPage = () => {
     const success = await submitArticle(articleData);
     if (success) {
       setIsWriterModalOpen(false);
-      setNewArticleForm({ title: '', excerpt: '', content: '', category: 'Sains Bambu', otherCategory: '', readTime: '5 Menit Baca', image: '' });
+      setNewArticleForm({ title: '', excerpt: '', content: '', category: 'Sains Bambu', otherCategory: '', readTime: '5 Menit Baca', image: '', images: [] });
     }
   };
   // Mock Data untuk Kursus
@@ -764,11 +813,140 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
 
               {/* Modal Scrollable Body */}
               <div style={{ overflowY: 'auto', padding: '32px 40px', fontSize: '1.02rem', lineHeight: '1.8', color: 'var(--text-main)' }}>
-                {selectedArticle.image && (
-                  <div style={{ width: '100%', maxHeight: '480px', display: 'flex', justifyContent: 'center', alignItems: 'center', background: 'rgba(0,0,0,0.03)', borderRadius: '20px', overflow: 'hidden', marginBottom: '24px', border: '1px solid var(--border-color)' }}>
-                    <img src={selectedArticle.image} alt={selectedArticle.title} style={{ maxWidth: '100%', maxHeight: '480px', objectFit: 'contain' }} />
+                {/* Image Gallery / Slider */}
+                {selectedArticle.images && selectedArticle.images.length > 1 ? (
+                  <div style={{ position: 'relative', width: '100%', marginBottom: '24px' }}>
+                    {/* Horizontal scroll container with scroll snap */}
+                    <div 
+                      ref={articleImageContainerRef}
+                      onScroll={handleArticleImageScroll}
+                      style={{
+                        display: 'flex',
+                        overflowX: 'auto',
+                        scrollSnapType: 'x mandatory',
+                        scrollBehavior: 'smooth',
+                        borderRadius: '20px',
+                        background: '#fdfdfd',
+                        border: '1px solid var(--border-color)',
+                        maxHeight: '480px',
+                        msOverflowStyle: 'none',
+                        scrollbarWidth: 'none'
+                      }}
+                      className="hide-scrollbar"
+                    >
+                      {selectedArticle.images.map((img, idx) => (
+                        <div 
+                          key={idx} 
+                          style={{
+                            minWidth: '100%',
+                            maxHeight: '480px',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            scrollSnapAlign: 'start',
+                            background: '#fdfdfd'
+                          }}
+                        >
+                          <img 
+                            src={img} 
+                            alt={`Slide ${idx + 1}`} 
+                            style={{ 
+                              maxWidth: '100%', 
+                              maxHeight: '480px', 
+                              objectFit: 'contain',
+                              width: 'auto',
+                              height: 'auto'
+                            }} 
+                          />
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Navigation Buttons (Left/Right Arrows) */}
+                    <button
+                      onClick={handlePrevArticleImg}
+                      style={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '16px',
+                        transform: 'translateY(-50%)',
+                        background: 'rgba(255,255,255,0.9)',
+                        border: '1px solid var(--border-color)',
+                        borderRadius: '50%',
+                        width: '40px',
+                        height: '40px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                        zIndex: 10,
+                        color: 'var(--text-main)',
+                        transition: 'background 0.2s'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = '#ffffff'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.9)'}
+                    >
+                      <ChevronLeft size={20} />
+                    </button>
+
+                    <button
+                      onClick={handleNextArticleImg}
+                      style={{
+                        position: 'absolute',
+                        top: '50%',
+                        right: '16px',
+                        transform: 'translateY(-50%)',
+                        background: 'rgba(255,255,255,0.9)',
+                        border: '1px solid var(--border-color)',
+                        borderRadius: '50%',
+                        width: '40px',
+                        height: '40px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                        zIndex: 10,
+                        color: 'var(--text-main)',
+                        transition: 'background 0.2s'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = '#ffffff'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.9)'}
+                    >
+                      <ChevronRight size={20} />
+                    </button>
+
+                    {/* Dot Indicators */}
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      marginTop: '12px'
+                    }}>
+                      {selectedArticle.images.map((_, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => scrollToArticleImage(idx)}
+                          style={{
+                            width: currentArticleImgIdx === idx ? '24px' : '8px',
+                            height: '8px',
+                            borderRadius: '4px',
+                            background: currentArticleImgIdx === idx ? 'var(--primary)' : 'rgba(0,0,0,0.15)',
+                            border: 'none',
+                            cursor: 'pointer',
+                            transition: 'all 0.3s ease',
+                            padding: 0
+                          }}
+                        />
+                      ))}
+                    </div>
                   </div>
-                )}
+                ) : (selectedArticle.image || (selectedArticle.images && selectedArticle.images[0])) ? (
+                  <div style={{ width: '100%', maxHeight: '480px', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#fdfdfd', borderRadius: '20px', overflow: 'hidden', marginBottom: '24px', border: '1px solid var(--border-color)' }}>
+                    <img src={selectedArticle.image || selectedArticle.images[0]} alt={selectedArticle.title} style={{ maxWidth: '100%', maxHeight: '480px', objectFit: 'contain' }} />
+                  </div>
+                ) : null}
                 {selectedArticle.content.split('\n\n').map((para, i) => (
                   <p key={i} style={{ margin: '0 0 20px 0', whiteSpace: 'pre-line' }}>{para}</p>
                 ))}
@@ -1158,26 +1336,39 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
                       >
                         <Sparkles size={16} /> Pilih Foto Artikel
                       </button>
-                      <input 
+                       <input 
                         id="article-image-upload"
                         type="file"
                         accept="image/*"
+                        multiple
                         onChange={(e) => {
-                          const file = e.target.files[0];
-                          if (file) {
-                            const reader = new FileReader();
-                            reader.onload = (uploadEvent) => {
-                              setNewArticleForm({ ...newArticleForm, image: uploadEvent.target.result });
-                            };
-                            reader.readAsDataURL(file);
+                          const files = Array.from(e.target.files);
+                          if (files.length > 0) {
+                            const newImages = [];
+                            let loadedCount = 0;
+                            files.forEach((file) => {
+                              const reader = new FileReader();
+                              reader.onload = (uploadEvent) => {
+                                newImages.push(uploadEvent.target.result);
+                                loadedCount++;
+                                if (loadedCount === files.length) {
+                                  setNewArticleForm(prev => ({
+                                    ...prev,
+                                    images: [...(prev.images || []), ...newImages],
+                                    image: prev.image || newImages[0]
+                                  }));
+                                }
+                              };
+                              reader.readAsDataURL(file);
+                            });
                           }
                         }}
                         style={{ display: 'none' }}
                       />
-                      {newArticleForm.image && (
+                      {((newArticleForm.images && newArticleForm.images.length > 0) || newArticleForm.image) && (
                         <button
                           type="button"
-                          onClick={() => setNewArticleForm({ ...newArticleForm, image: '' })}
+                          onClick={() => setNewArticleForm({ ...newArticleForm, image: '', images: [] })}
                           style={{
                             background: 'rgba(250,82,82,0.08)',
                             color: '#fa5252',
@@ -1189,13 +1380,47 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
                             cursor: 'pointer'
                           }}
                         >
-                          Hapus Foto
+                          Hapus Semua Foto
                         </button>
                       )}
                     </div>
-                    {newArticleForm.image && (
-                      <div style={{ width: '100px', height: '100px', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border-color)', background: '#f8f9fa' }}>
-                        <img src={newArticleForm.image} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    {newArticleForm.images && newArticleForm.images.length > 0 && (
+                      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '10px' }}>
+                        {newArticleForm.images.map((img, idx) => (
+                          <div key={idx} style={{ position: 'relative', width: '80px', height: '80px', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border-color)', background: '#f8f9fa' }}>
+                            <img src={img} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const filtered = newArticleForm.images.filter((_, i) => i !== idx);
+                                setNewArticleForm({
+                                  ...newArticleForm,
+                                  images: filtered,
+                                  image: filtered.length > 0 ? filtered[0] : ''
+                                });
+                              }}
+                              style={{
+                                position: 'absolute',
+                                top: '2px',
+                                right: '2px',
+                                width: '20px',
+                                height: '20px',
+                                borderRadius: '50%',
+                                background: 'rgba(250,82,82,0.85)',
+                                color: 'white',
+                                border: 'none',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '10px',
+                                cursor: 'pointer',
+                                padding: 0
+                              }}
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
                       </div>
                     )}
                   </div>

@@ -1033,10 +1033,12 @@ export const AuthProvider = ({ children }) => {
             gps: '-',
             date: new Date().toISOString(),
             status: 'pending',
-            rewardAmount: 0.5, // Writer reward when approved
+            rewardAmount: 10.0, // Writer reward increased to 10.0 BMC to properly incentivize high-quality research/essays
             userId: user?.id || 'guest',
             plantingId: null,
-            uploadedFiles: articleData.image ? { 'Foto Cover': articleData.image } : {},
+            uploadedFiles: articleData.images && articleData.images.length > 0
+              ? articleData.images.reduce((acc, img, idx) => { acc[`Foto Pendukung ${idx + 1}`] = img; return acc; }, {})
+              : (articleData.image ? { 'Foto Cover': articleData.image } : {}),
             details: {
               name: user?.displayName || user?.email?.split('@')[0] || "Pegiat Bambu Hijau",
               articleId: articleId,
