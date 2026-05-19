@@ -1088,6 +1088,38 @@ export const AuthProvider = ({ children }) => {
           addNotification("Gagal mengirimkan artikel.", "error");
           return false;
         }
+      },
+      updateArticle: async (articleId, articleData) => {
+        try {
+          await updateDoc(doc(db, "articles", articleId), {
+            ...articleData,
+            timestamp: serverTimestamp()
+          });
+
+          try {
+            const validationsRef = collection(db, "validations");
+            const q = query(validationsRef, where("details.articleId", "==", articleId));
+            const querySnapshot = await getDocs(q);
+            querySnapshot.forEach(async (validationDoc) => {
+              await updateDoc(doc(db, "validations", validationDoc.id), {
+                title: `Verifikasi Artikel: ${articleData.title}`,
+                content: articleData.content,
+                uploadedFiles: articleData.images && articleData.images.length > 0
+                  ? articleData.images.reduce((acc, img, idx) => { acc[`Foto Pendukung ${idx + 1}`] = img; return acc; }, {})
+                  : (articleData.image ? { 'Foto Cover': articleData.image } : {}),
+              });
+            });
+          } catch (valErr) {
+            console.error("Error updating corresponding validation:", valErr);
+          }
+
+          addNotification("Artikel berhasil diperbarui!", "success");
+          return true;
+        } catch (err) {
+          console.error("Error updating article:", err);
+          addNotification("Gagal memperbarui artikel.", "error");
+          return false;
+        }
       }
     }}>
       {children}

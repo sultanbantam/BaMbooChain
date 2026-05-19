@@ -32,8 +32,19 @@ const compressImage = (base64Str, maxWidth = 800, maxHeight = 800, quality = 0.6
 };
 
 const AcademyPage = () => {
-  const { user, setIsAuthModalOpen, setAuthModalInitialTab, articles, submitArticle } = useAuth();
+  const { user, setIsAuthModalOpen, setAuthModalInitialTab, articles, submitArticle, updateArticle } = useAuth();
   const [selectedArticle, setSelectedArticle] = useState(null);
+  const [isEditingArticle, setIsEditingArticle] = useState(false);
+  const [editArticleForm, setEditArticleForm] = useState({
+    title: '',
+    excerpt: '',
+    content: '',
+    category: 'Sains Bambu',
+    otherCategory: '',
+    readTime: '5 Menit Baca',
+    image: '',
+    images: []
+  });
   const [newCommentText, setNewCommentText] = useState("");
   const [shareAlert, setShareAlert] = useState(null);
   
@@ -241,6 +252,56 @@ const AcademyPage = () => {
       setNewArticleForm({ title: '', excerpt: '', content: '', category: 'Sains Bambu', otherCategory: '', readTime: '5 Menit Baca', image: '', images: [] });
     }
   };
+
+  const startEditingArticle = () => {
+    if (!selectedArticle) return;
+    const defaultCategories = ["Sains Bambu", "Arsitektur Hijau", "Ekologi Karbon", "Kearifan Lokal", "Budidaya Bambu"];
+    const isOther = !defaultCategories.includes(selectedArticle.category);
+    
+    setEditArticleForm({
+      title: selectedArticle.title || '',
+      excerpt: selectedArticle.excerpt || '',
+      content: selectedArticle.content || '',
+      category: isOther ? 'Lainnya' : (selectedArticle.category || 'Sains Bambu'),
+      otherCategory: isOther ? (selectedArticle.category || '') : '',
+      readTime: selectedArticle.readTime || '5 Menit Baca',
+      image: selectedArticle.image || '',
+      images: selectedArticle.images || []
+    });
+    setIsEditingArticle(true);
+  };
+
+  const handleEditArticleSubmit = async () => {
+    if (!editArticleForm.title || !editArticleForm.excerpt || !editArticleForm.content) {
+      alert("⚠️ Harap lengkapi semua field sebelum menyimpan!");
+      return;
+    }
+    
+    if (editArticleForm.category === 'Lainnya' && !editArticleForm.otherCategory.trim()) {
+      alert("⚠️ Harap tentukan kategori lainnya!");
+      return;
+    }
+    
+    const finalCategory = editArticleForm.category === 'Lainnya' ? editArticleForm.otherCategory.trim() : editArticleForm.category;
+    
+    const articleData = {
+      ...selectedArticle,
+      title: editArticleForm.title,
+      excerpt: editArticleForm.excerpt,
+      content: editArticleForm.content,
+      category: finalCategory,
+      readTime: editArticleForm.readTime,
+      image: editArticleForm.image || '',
+      images: editArticleForm.images || []
+    };
+
+    const success = await updateArticle(selectedArticle.id, articleData);
+    if (success) {
+      setIsEditingArticle(false);
+      setSelectedArticle(articleData);
+    }
+  };
+
   // Mock Data untuk Kursus
   const courses = [
     { 
@@ -745,7 +806,7 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
             zIndex: 100000,
             padding: '20px'
           }}
-          onClick={() => setSelectedArticle(null)}
+          onClick={() => { setSelectedArticle(null); setIsEditingArticle(false); }}
           >
             <div style={{
               background: 'var(--bg-card)',
@@ -762,28 +823,290 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
             }}
             onClick={(e) => e.stopPropagation()}
             >
-              {/* Close Button */}
-              <button 
-                onClick={() => setSelectedArticle(null)}
-                style={{
-                  position: 'absolute',
-                  top: '20px',
-                  right: '20px',
-                  border: 'none',
-                  background: 'rgba(0,0,0,0.05)',
-                  borderRadius: '50%',
-                  width: '36px',
-                  height: '36px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  color: 'var(--text-main)',
-                  zIndex: 2
-                }}
-              >
-                <X size={18} />
-              </button>
+              {isEditingArticle ? (
+                <>
+                  {/* Close button */}
+                  <button 
+                    onClick={() => setIsEditingArticle(false)}
+                    style={{ position: 'absolute', top: '20px', right: '20px', border: 'none', background: 'rgba(0,0,0,0.05)', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-main)', zIndex: 2 }}
+                  >
+                    <X size={18} />
+                  </button>
+
+                  <div style={{ padding: '30px 40px 20px 40px', borderBottom: '1px solid var(--border-color)', background: 'linear-gradient(180deg, rgba(12,166,120,0.03), transparent)' }}>
+                    <h3 style={{ fontSize: '1.4rem', fontWeight: '900', color: 'var(--text-main)', margin: '0 0 8px 0', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <Sparkles size={22} color="var(--primary)" /> Edit Artikel/Esai
+                    </h3>
+                    <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', margin: 0 }}>
+                      Perbarui isi tulisan atau kelola foto pendukung untuk artikel ini.
+                    </p>
+                  </div>
+
+                  {/* Scrollable Form Body */}
+                  <div style={{ overflowY: 'auto', padding: '30px 40px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    <div>
+                      <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)', display: 'block', marginBottom: '8px' }}>Judul Artikel/Esai:</label>
+                      <input 
+                        type="text" 
+                        value={editArticleForm.title} 
+                        onChange={(e) => setEditArticleForm({...editArticleForm, title: e.target.value})}
+                        placeholder="Contoh: Metodologi Pengawetan Bambu Tali Modern..."
+                        style={{ width: '100%', padding: '12px', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.9rem', outline: 'none', background: 'white', color: 'var(--text-main)' }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                      <div>
+                        <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)', display: 'block', marginBottom: '8px' }}>Kategori:</label>
+                        <select 
+                          value={editArticleForm.category} 
+                          onChange={(e) => setEditArticleForm({...editArticleForm, category: e.target.value})}
+                          style={{ width: '100%', padding: '12px', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.9rem', outline: 'none', background: 'white', color: 'var(--text-main)' }}
+                        >
+                          <option value="Sains Bambu">Sains Bambu</option>
+                          <option value="Arsitektur Hijau">Arsitektur Hijau</option>
+                          <option value="Ekologi Karbon">Ekologi Karbon</option>
+                          <option value="Kearifan Lokal">Kearifan Lokal</option>
+                          <option value="Budidaya Bambu">Budidaya Bambu</option>
+                          <option value="Lainnya">Lainnya</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)', display: 'block', marginBottom: '8px' }}>Estimasi Waktu Baca:</label>
+                        <input 
+                          type="text" 
+                          value={editArticleForm.readTime} 
+                          onChange={(e) => setEditArticleForm({...editArticleForm, readTime: e.target.value})}
+                          placeholder="Contoh: 5 Menit Baca"
+                          style={{ width: '100%', padding: '12px', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.9rem', outline: 'none', background: 'white', color: 'var(--text-main)' }}
+                        />
+                      </div>
+                    </div>
+
+                    {editArticleForm.category === 'Lainnya' && (
+                      <div style={{ animation: 'fadeIn 0.3s ease' }}>
+                        <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)', display: 'block', marginBottom: '8px' }}>Kategori Lainnya (Sebutkan):</label>
+                        <input 
+                          type="text" 
+                          value={editArticleForm.otherCategory} 
+                          onChange={(e) => setEditArticleForm({...editArticleForm, otherCategory: e.target.value})}
+                          placeholder="Contoh: Kerajinan Bambu, Kebijakan Hijau, dll..."
+                          style={{ width: '100%', padding: '12px', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.9rem', outline: 'none', background: 'white', color: 'var(--text-main)' }}
+                        />
+                      </div>
+                    )}
+
+                    <div>
+                      <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)', display: 'block', marginBottom: '8px' }}>Ringkasan Singkat (Excerpt):</label>
+                      <input 
+                        type="text" 
+                        value={editArticleForm.excerpt} 
+                        onChange={(e) => setEditArticleForm({...editArticleForm, excerpt: e.target.value})}
+                        placeholder="Tulis ringkasan 1-2 kalimat untuk kartu artikel..."
+                        style={{ width: '100%', padding: '12px', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.9rem', outline: 'none', background: 'white', color: 'var(--text-main)' }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)', display: 'block', marginBottom: '8px' }}>Konten / Isi Lengkap Tulisan:</label>
+                      <textarea 
+                        value={editArticleForm.content} 
+                        onChange={(e) => setEditArticleForm({...editArticleForm, content: e.target.value})}
+                        placeholder="Tuliskan analisis ilmiah lengkap Anda di sini per paragraf..."
+                        style={{ width: '100%', minHeight: '180px', padding: '14px', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.9rem', outline: 'none', background: 'white', color: 'var(--text-main)', fontFamily: 'inherit', resize: 'vertical', marginBottom: '16px' }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)', display: 'block', marginBottom: '8px' }}>Foto / Gambar Pendukung (Opsional):</label>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                          <button
+                            type="button"
+                            onClick={() => document.getElementById('edit-article-image-upload').click()}
+                            style={{
+                              background: 'rgba(12,166,120,0.06)',
+                              color: 'var(--primary)',
+                              border: '1px dashed var(--primary)',
+                              borderRadius: '12px',
+                              padding: '12px 20px',
+                              fontWeight: 'bold',
+                              fontSize: '0.85rem',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px',
+                              transition: 'background 0.2s'
+                            }}
+                          >
+                            <Sparkles size={16} /> Tambah/Pilih Foto
+                          </button>
+                          <input 
+                            id="edit-article-image-upload"
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={(e) => {
+                              const files = Array.from(e.target.files);
+                              if (files.length > 0) {
+                                const newImages = [];
+                                let loadedCount = 0;
+                                files.forEach((file) => {
+                                  const reader = new FileReader();
+                                  reader.onload = async (uploadEvent) => {
+                                    const base64 = uploadEvent.target.result;
+                                    try {
+                                      const compressed = await compressImage(base64, 800, 800, 0.55);
+                                      newImages.push(compressed);
+                                    } catch (err) {
+                                      newImages.push(base64);
+                                    }
+                                    loadedCount++;
+                                    if (loadedCount === files.length) {
+                                      setEditArticleForm(prev => ({
+                                        ...prev,
+                                        images: [...(prev.images || []), ...newImages],
+                                        image: prev.image || newImages[0]
+                                      }));
+                                    }
+                                  };
+                                  reader.readAsDataURL(file);
+                                });
+                              }
+                            }}
+                            style={{ display: 'none' }}
+                          />
+                          {((editArticleForm.images && editArticleForm.images.length > 0) || editArticleForm.image) && (
+                            <button
+                              type="button"
+                              onClick={() => setEditArticleForm({ ...editArticleForm, image: '', images: [] })}
+                              style={{
+                                background: 'rgba(250,82,82,0.08)',
+                                color: '#fa5252',
+                                border: '1px solid rgba(250,82,82,0.2)',
+                                borderRadius: '10px',
+                                padding: '6px 12px',
+                                fontWeight: 'bold',
+                                fontSize: '0.75rem',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              Hapus Semua Foto
+                            </button>
+                          )}
+                        </div>
+                        {editArticleForm.images && editArticleForm.images.length > 0 && (
+                          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '10px' }}>
+                            {editArticleForm.images.map((img, idx) => (
+                              <div key={idx} style={{ position: 'relative', width: '80px', height: '80px', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border-color)', background: '#f8f9fa' }}>
+                                <img src={img} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const filtered = editArticleForm.images.filter((_, i) => i !== idx);
+                                    setEditArticleForm({
+                                      ...editArticleForm,
+                                      images: filtered,
+                                      image: filtered.length > 0 ? filtered[0] : ''
+                                    });
+                                  }}
+                                  style={{
+                                    position: 'absolute',
+                                    top: '2px',
+                                    right: '2px',
+                                    width: '20px',
+                                    height: '20px',
+                                    borderRadius: '50%',
+                                    background: 'rgba(250,82,82,0.85)',
+                                    color: 'white',
+                                    border: 'none',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: '10px',
+                                    cursor: 'pointer',
+                                    padding: 0
+                                  }}
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Form Footer */}
+                  <div style={{ padding: '20px 40px', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'flex-end', gap: '12px', background: 'var(--bg-card)' }}>
+                    <button 
+                      onClick={() => setIsEditingArticle(false)}
+                      style={{ background: 'rgba(0,0,0,0.05)', color: 'var(--text-main)', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}
+                    >
+                      Batal
+                    </button>
+                    <button 
+                      onClick={handleEditArticleSubmit}
+                      style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 15px rgba(12,166,120,0.2)' }}
+                    >
+                      Simpan Perubahan
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* Close & Edit Action Buttons */}
+                  <div style={{
+                    position: 'absolute',
+                    top: '20px',
+                    right: '20px',
+                    display: 'flex',
+                    gap: '10px',
+                    alignItems: 'center',
+                    zIndex: 10
+                  }}>
+                    {user && user.id === selectedArticle.userId && (
+                      <button 
+                        onClick={startEditingArticle}
+                        style={{
+                          border: 'none',
+                          background: 'rgba(12,166,120,0.1)',
+                          color: 'var(--primary)',
+                          borderRadius: '12px',
+                          padding: '8px 16px',
+                          fontWeight: 'bold',
+                          fontSize: '0.8rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          cursor: 'pointer',
+                          transition: 'background 0.2s'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(12,166,120,0.15)'}
+                        onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(12,166,120,0.1)'}
+                      >
+                        Edit Artikel
+                      </button>
+                    )}
+                    <button 
+                      onClick={() => setSelectedArticle(null)}
+                      style={{
+                        border: 'none',
+                        background: 'rgba(0,0,0,0.05)',
+                        borderRadius: '50%',
+                        width: '36px',
+                        height: '36px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        color: 'var(--text-main)'
+                      }}
+                    >
+                      <X size={18} />
+                    </button>
+                  </div>
 
               {/* Modal Header */}
               <div style={{ padding: '40px 40px 24px 40px', borderBottom: '1px solid var(--border-color)', background: 'linear-gradient(180deg, rgba(12,166,120,0.03), transparent)' }}>
@@ -1072,6 +1395,8 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
                   Selesai Membaca
                 </button>
               </div>
+            </>
+          )}
             </div>
           </div>
         )}
