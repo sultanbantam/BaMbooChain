@@ -2,6 +2,35 @@ import React, { useState, useEffect, useRef } from 'react';
 import { BookOpen, GraduationCap, Award, PlayCircle, Clock, ShieldCheck, DownloadCloud, Lock, User, FileText, X, Sparkles, Calendar, ChevronLeft, ChevronRight, Heart, Share2, Send, MessageSquare, Gift } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
+const compressImage = (base64Str, maxWidth = 800, maxHeight = 800, quality = 0.6) => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.src = base64Str;
+    img.onload = () => {
+      let width = img.width;
+      let height = img.height;
+      if (width > height) {
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+      } else {
+        if (height > maxHeight) {
+          width = Math.round((width * maxHeight) / height);
+          height = maxHeight;
+        }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = () => resolve(base64Str);
+  });
+};
+
 const AcademyPage = () => {
   const { user, setIsAuthModalOpen, setAuthModalInitialTab, articles, submitArticle } = useAuth();
   const [selectedArticle, setSelectedArticle] = useState(null);
@@ -1348,8 +1377,15 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
                             let loadedCount = 0;
                             files.forEach((file) => {
                               const reader = new FileReader();
-                              reader.onload = (uploadEvent) => {
-                                newImages.push(uploadEvent.target.result);
+                              reader.onload = async (uploadEvent) => {
+                                const base64 = uploadEvent.target.result;
+                                try {
+                                  // Compress to max 800x800 and quality 0.55
+                                  const compressed = await compressImage(base64, 800, 800, 0.55);
+                                  newImages.push(compressed);
+                                } catch (err) {
+                                  newImages.push(base64);
+                                }
                                 loadedCount++;
                                 if (loadedCount === files.length) {
                                   setNewArticleForm(prev => ({
