@@ -383,7 +383,9 @@ export const AuthProvider = ({ children }) => {
         lastCheckinDate: null,
         notifications: [],
         claimedReferrals: [],
-        referredBy: null
+        referredBy: null,
+        bioText: '',
+        statusText: ''
       };
 
       console.log("💾 Saving user profile to Firestore...");
@@ -501,7 +503,9 @@ export const AuthProvider = ({ children }) => {
           transactions: [],
           checkinStreak: 0,
           lastCheckinDate: null,
-          notifications: []
+          notifications: [],
+          bioText: '',
+          statusText: ''
         };
         await setDoc(doc(db, "users", fbUser.uid), newUser);
         setUser(newUser);
@@ -1118,6 +1122,102 @@ export const AuthProvider = ({ children }) => {
         } catch (err) {
           console.error("Error updating article:", err);
           addNotification("Gagal memperbarui artikel.", "error");
+          return false;
+        }
+      },
+      giftBmc: async (targetUserId, targetUserName, amount, description) => {
+        if (!user) {
+          alert("⚠️ Harap login terlebih dahulu untuk mengirimkan Gift!");
+          return false;
+        }
+        const bmcVal = parseFloat(amount);
+        if (isNaN(bmcVal) || bmcVal <= 0) {
+          alert("⚠️ Jumlah gift tidak valid!");
+          return false;
+        }
+        if ((user.bmcBalance || 0) < bmcVal) {
+          alert(`⚠️ Saldo BMC Anda tidak mencukupi! (Saldo: ${user.bmcBalance || 0} BMC)`);
+          return false;
+        }
+        if (user.id === targetUserId) {
+          alert("⚠️ Anda tidak bisa mengirimkan Gift ke diri sendiri!");
+          return false;
+        }
+
+        try {
+          // 1. Decrement sender's balance
+          const senderTx = {
+            id: 'tx_gift_send_' + Date.now(),
+            type: 'Send',
+            amount: `-${bmcVal}`,
+            date: new Date().toISOString().split('T')[0],
+            status: 'Selesai',
+            description: `Mengirim Gift ke @${targetUserName}: ${description}`
+          };
+          await updateDoc(doc(db, "users", user.id), {
+            bmcBalance: increment(-bmcVal),
+            transactions: arrayUnion(senderTx)
+          });
+
+          // 2. Increment receiver's balance
+          const receiverTx = {
+            id: 'tx_gift_recv_' + Date.now(),
+            type: 'Receive',
+            amount: `+${bmcVal}`,
+            date: new Date().toISOString().split('T')[0],
+            status: 'Selesai',
+            description: `Menerima Gift dari @${user.username}: ${description}`
+          };
+          
+          // Fetch receiver doc to add notification
+          const receiverDocRef = doc(db, "users", targetUserId);
+          const receiverSnap = await getDoc(receiverDocRef);
+          if (receiverSnap.exists()) {
+            const receiverData = receiverSnap.data();
+            const newNotif = {
+              id: 'notif_gift_' + Date.now(),
+              type: 'success',
+              text: `🎉 Anda menerima Gift sebesar ${bmcVal} BMC dari @${user.username}!`,
+              timestamp: Date.now(),
+              isRead: false
+            };
+            await updateDoc(receiverDocRef, {
+              bmcBalance: increment(bmcVal),
+              transactions: arrayUnion(receiverTx),
+              notifications: arrayUnion(newNotif)
+            });
+          }
+
+          // 3. Log the gift in status_interactions
+          const interactionRef = doc(db, "status_interactions", targetUserId);
+          const interactionSnap = await getDoc(interactionRef);
+          const giftItem = {
+            id: 'gift_' + Date.now(),
+            senderId: user.id,
+            senderName: user.name || user.username,
+            senderUsername: user.username,
+            amount: bmcVal,
+            timestamp: Date.now()
+          };
+
+          if (interactionSnap.exists()) {
+            await updateDoc(interactionRef, {
+              gifts: arrayUnion(giftItem)
+            });
+          } else {
+            await setDoc(interactionRef, {
+              likes: [],
+              shares: 0,
+              comments: [],
+              gifts: [giftItem]
+            });
+          }
+
+          addNotification(`Berhasil mengirimkan Gift sebesar ${bmcVal} BMC ke @${targetUserName}!`, "success");
+          return true;
+        } catch (err) {
+          console.error("Error sending gift:", err);
+          alert("❌ Gagal mengirimkan Gift.");
           return false;
         }
       }

@@ -1,0 +1,597 @@
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { db } from '../firebase/config';
+import { 
+  collection, query, where, getDocs, doc, getDoc, updateDoc, 
+  setDoc, arrayUnion, arrayRemove, increment, onSnapshot 
+} from 'firebase/firestore';
+import { 
+  User, Calendar, MapPin, Heart, MessageSquare, Share2, Gift, 
+  TreeDeciduous, GraduationCap, Shield, Award, Sparkles, X, ChevronRight
+} from 'lucide-react';
+
+const PublicPortfolioPage = () => {
+  const { username } = useParams();
+  const { user: currentUser, giftBmc } = useAuth();
+  const navigate = useNavigate();
+  
+  const [targetUser, setTargetUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  
+  // Stats states
+  const [plantCount, setPlantCount] = useState(0);
+  const [maintenanceCount, setMaintenanceCount] = useState(0);
+  const [articlesList, setArticlesList] = useState([]);
+  
+  // Status interactions
+  const [interactions, setInteractions] = useState({
+    likes: [],
+    shares: 0,
+    comments: [],
+    gifts: []
+  });
+  
+  // Interactive forms state
+  const [commentText, setCommentText] = useState('');
+  const [showCommentForm, setShowCommentForm] = useState(false);
+  const [giftAmount, setGiftAmount] = useState('1');
+  const [showGiftForm, setShowGiftForm] = useState(false);
+  const [giftingInProgress, setGiftingInProgress] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
+  
+  // Selected Article Modal
+  const [selectedArticle, setSelectedArticle] = useState(null);
+
+  // 1. Fetch Target User Data
+  useEffect(() => {
+    const fetchUser = async () => {
+      setLoading(true);
+      try {
+        const usersRef = collection(db, "users");
+        
+        // Try searching by username (case-insensitive conversion)
+        const q = query(usersRef, where("username", "==", username.toLowerCase()));
+        const snap = await getDocs(q);
+        
+        if (!snap.empty) {
+          const uDoc = snap.docs[0];
+          setTargetUser({ id: uDoc.id, ...uDoc.data() });
+        } else {
+          // Try searching directly by userId (UID) as backup
+          const docRef = doc(db, "users", username);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            setTargetUser({ id: docSnap.id, ...docSnap.data() });
+          } else {
+            setTargetUser(null);
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching user portfolio:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    if (username) fetchUser();
+  }, [username]);
+
+  // 2. Fetch User Stats and Articles (Once target user is resolved)
+  useEffect(() => {
+    if (!targetUser) return;
+    
+    const fetchStats = async () => {
+      try {
+        // Plantings
+        const plantingsQuery = query(collection(db, "plantings"), where("userId", "==", targetUser.id));
+        const plantingsSnap = await getDocs(plantingsQuery);
+        setPlantCount(plantingsSnap.size);
+        
+        // Maintenances
+        const maintQuery = query(collection(db, "maintenances"), where("userId", "==", targetUser.id));
+        const maintSnap = await getDocs(maintQuery);
+        setMaintenanceCount(maintSnap.size);
+        
+        // Articles
+        const articlesQuery = query(collection(db, "articles"), where("userId", "==", targetUser.id));
+        const articlesSnap = await getDocs(articlesQuery);
+        const articlesData = articlesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setArticlesList(articlesData);
+      } catch (err) {
+        console.error("Error loading ecosystem stats:", err);
+      }
+    };
+
+    fetchStats();
+
+    // Listen to status interactions in real time
+    const interRef = doc(db, "status_interactions", targetUser.id);
+    const unsub = onSnapshot(interRef, (docSnap) => {
+      if (docSnap.exists()) {
+        setInteractions(docSnap.data());
+      } else {
+        setInteractions({
+          likes: [],
+          shares: 0,
+          comments: [],
+          gifts: []
+        });
+      }
+    });
+
+    return () => unsub();
+
+  }, [targetUser]);
+
+  if (loading) {
+    return (
+      <div style={{ paddingTop: '150px', minHeight: '80vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '15px' }}>
+        <div style={{ width: '40px', height: '40px', border: '4px solid #f3f3f3', borderTop: '4px solid var(--primary)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+        <p style={{ color: 'var(--text-muted)' }}>Memuat Passport Pengguna...</p>
+        <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
+
+  if (!targetUser) {
+    return (
+      <div style={{ paddingTop: '150px', minHeight: '60vh', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+        <h2 style={{ fontSize: '2rem', color: 'var(--text-main)', marginBottom: '10px' }}>Passport Tidak Ditemukan</h2>
+        <p style={{ color: 'var(--text-muted)', marginBottom: '20px' }}>Akun dengan username "@{username}" belum terdaftar di ekosistem BaMbooChain.</p>
+        <button onClick={() => navigate('/')} style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>
+          Kembali ke Beranda
+        </button>
+      </div>
+    );
+  }
+
+  // Interactivity Actions
+  const handleLike = async () => {
+    if (!currentUser) {
+      alert("⚠️ Harap login untuk memberikan Suka!");
+      return;
+    }
+    
+    const interRef = doc(db, "status_interactions", targetUser.id);
+    const hasLiked = interactions.likes.includes(currentUser.id);
+    
+    try {
+      const snap = await getDoc(interRef);
+      if (snap.exists()) {
+        await updateDoc(interRef, {
+          likes: hasLiked ? arrayRemove(currentUser.id) : arrayUnion(currentUser.id)
+        });
+      } else {
+        await setDoc(interRef, {
+          likes: [currentUser.id],
+          shares: 0,
+          comments: [],
+          gifts: []
+        });
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleShare = async () => {
+    const shareUrl = window.location.href;
+    navigator.clipboard.writeText(shareUrl);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2000);
+
+    const interRef = doc(db, "status_interactions", targetUser.id);
+    try {
+      const snap = await getDoc(interRef);
+      if (snap.exists()) {
+        await updateDoc(interRef, { shares: increment(1) });
+      } else {
+        await setDoc(interRef, {
+          likes: [],
+          shares: 1,
+          comments: [],
+          gifts: []
+        });
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleAddComment = async (e) => {
+    e.preventDefault();
+    if (!currentUser) {
+      alert("⚠️ Harap login untuk menulis komentar!");
+      return;
+    }
+    if (!commentText.trim()) return;
+
+    const newComment = {
+      id: 'comment_' + Date.now(),
+      userId: currentUser.id,
+      username: currentUser.username || currentUser.name || "Anonim",
+      text: commentText.trim(),
+      timestamp: Date.now()
+    };
+
+    const interRef = doc(db, "status_interactions", targetUser.id);
+    try {
+      const snap = await getDoc(interRef);
+      if (snap.exists()) {
+        await updateDoc(interRef, { comments: arrayUnion(newComment) });
+      } else {
+        await setDoc(interRef, {
+          likes: [],
+          shares: 0,
+          comments: [newComment],
+          gifts: []
+        });
+      }
+      setCommentText('');
+      setShowCommentForm(false);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleSendGift = async () => {
+    if (!currentUser) {
+      alert("⚠️ Harap login untuk mengirimkan Gift!");
+      return;
+    }
+    const val = parseFloat(giftAmount);
+    if (isNaN(val) || val <= 0) {
+      alert("⚠️ Harap masukkan nilai gift yang valid.");
+      return;
+    }
+
+    setGiftingInProgress(true);
+    const success = await giftBmc(
+      targetUser.id, 
+      targetUser.username, 
+      val, 
+      `Tipping Status Ecoportfolio via @${currentUser.username}`
+    );
+    setGiftingInProgress(false);
+    if (success) {
+      setShowGiftForm(false);
+    }
+  };
+
+  // Badge Levels
+  const totalEcoActions = plantCount + maintenanceCount + articlesList.length;
+  let ecoLevel = "Eco-Beginner";
+  let badgeColor = "#6c757d";
+  if (totalEcoActions >= 15) {
+    ecoLevel = "Forest Guardian";
+    badgeColor = "#157347";
+  } else if (totalEcoActions >= 5) {
+    ecoLevel = "Bamboo Pioneer";
+    badgeColor = "#0d6efd";
+  }
+
+  const alreadyLiked = currentUser && interactions.likes.includes(currentUser.id);
+
+  return (
+    <div style={{ paddingTop: '130px', paddingBottom: '100px', minHeight: '100vh', background: 'var(--bg-color)', transition: 'background 0.3s ease' }}>
+      <div className="container" style={{ maxWidth: '1000px', margin: '0 auto', padding: '0 20px' }}>
+        
+        {/* Back Button */}
+        <button 
+          onClick={() => navigate('/')} 
+          style={{ background: 'none', border: 'none', color: 'var(--primary)', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer', marginBottom: '25px', padding: 0 }}
+        >
+          ← Kembali ke Beranda
+        </button>
+
+        {/* ────────── PASSPORT MAIN BOARD ────────── */}
+        <div style={{ background: 'var(--bg-card)', borderRadius: '30px', boxShadow: '0 15px 50px rgba(0,0,0,0.06)', border: '1px solid var(--border-color)', overflow: 'hidden', marginBottom: '35px', transition: 'background 0.3s' }}>
+          
+          {/* Header Panel */}
+          <div style={{ background: 'linear-gradient(135deg, #115e59, #064e3b)', padding: '40px', color: 'white', position: 'relative' }}>
+            <div style={{ position: 'absolute', top: '20px', right: '30px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', padding: '6px 16px', borderRadius: '30px', fontSize: '0.8rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Award size={14} color="#f59f00" /> BaMbooChain Passport
+            </div>
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: '30px', flexWrap: 'wrap', marginTop: '20px' }}>
+              <div style={{ width: '110px', height: '110px', borderRadius: '50%', background: 'var(--bg-color)', overflow: 'hidden', border: '4px solid var(--primary)', boxShadow: '0 5px 20px rgba(0,0,0,0.15)' }}>
+                <img 
+                  src={targetUser.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${targetUser.username || 'default'}`} 
+                  alt="Avatar" 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                />
+              </div>
+              <div style={{ flex: 1, minWidth: '250px' }}>
+                <h2 style={{ fontSize: '2.2rem', margin: 0, fontWeight: '800' }}>{targetUser.name || 'Pegiat Bambu'}</h2>
+                <p style={{ margin: '4px 0 12px 0', fontSize: '1.05rem', color: 'rgba(255,255,255,0.85)' }}>@{targetUser.username || 'user'}</p>
+                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'rgba(255,255,255,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 'bold' }}>
+                    <Shield size={12} /> {targetUser.kycStatus === 'verified' ? 'Verified Partner' : 'Registered Member'}
+                  </span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'rgba(245,159,0,0.25)', color: '#ffd43b', padding: '4px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 'bold' }}>
+                    <Sparkles size={12} /> {ecoLevel}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Details & Status Section */}
+          <div style={{ padding: '40px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '40px' }}>
+              
+              {/* Left Column: Bio & Status */}
+              <div>
+                <h4 style={{ margin: '0 0 10px 0', fontSize: '1rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Bio Kontributor</h4>
+                <p style={{ margin: '0 0 25px 0', fontSize: '1rem', color: 'var(--text-main)', lineHeight: '1.6', fontStyle: targetUser.bioText ? 'normal' : 'italic' }}>
+                  {targetUser.bioText || `Pegiat peduli lingkungan yang aktif berpartisipasi dalam program reboisasi dan konservasi bambu Indonesia.`}
+                </p>
+
+                {/* Status Box */}
+                <div style={{ background: 'var(--bg-color)', border: '1px solid var(--border-color)', borderRadius: '20px', padding: '24px', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
+                    <span style={{ background: 'rgba(12,166,120,0.1)', color: 'var(--primary)', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '6px', textTransform: 'uppercase' }}>
+                      Status Terkini
+                    </span>
+                  </div>
+                  <p style={{ margin: '0 0 18px 0', fontSize: '1.05rem', color: 'var(--text-main)', fontWeight: '500', lineHeight: '1.5' }}>
+                    "{targetUser.statusText || 'Mari bersama melestarikan lingkungan demi bumi yang lebih sehat! 🌿'}"
+                  </p>
+
+                  {/* Status Interactions Panel */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '15px', borderTop: '1px solid var(--border-color)', paddingTop: '15px', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+                    <button 
+                      onClick={handleLike} 
+                      style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '4px', color: alreadyLiked ? '#e03131' : 'var(--text-muted)', cursor: 'pointer', fontWeight: 'bold', padding: 0 }}
+                    >
+                      <Heart size={16} fill={alreadyLiked ? '#e03131' : 'none'} />
+                      <span>{interactions.likes.length} Likes</span>
+                    </button>
+                    <button 
+                      onClick={() => setShowCommentForm(!showCommentForm)} 
+                      style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--text-muted)', cursor: 'pointer', fontWeight: 'bold', padding: 0 }}
+                    >
+                      <MessageSquare size={16} color="var(--primary)" />
+                      <span>{interactions.comments.length} Comments</span>
+                    </button>
+                    <button 
+                      onClick={handleShare} 
+                      style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--text-muted)', cursor: 'pointer', fontWeight: 'bold', padding: 0 }}
+                    >
+                      <Share2 size={16} color="#228be6" />
+                      <span>{copiedLink ? 'Copied!' : `${interactions.shares} Share`}</span>
+                    </button>
+                    <button 
+                      onClick={() => setShowGiftForm(!showGiftForm)} 
+                      style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--text-muted)', cursor: 'pointer', fontWeight: 'bold', padding: 0 }}
+                    >
+                      <Gift size={16} color="#f59f00" />
+                      <span>{interactions.gifts.length} Gift</span>
+                    </button>
+                  </div>
+
+                  {/* Comment input form */}
+                  {showCommentForm && (
+                    <form onSubmit={handleAddComment} style={{ marginTop: '15px', display: 'flex', gap: '8px' }}>
+                      <input 
+                        type="text" 
+                        value={commentText} 
+                        onChange={(e) => setCommentText(e.target.value)}
+                        placeholder="Tulis komentar..."
+                        style={{ flex: 1, padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-card)', color: 'var(--text-main)', fontSize: '0.85rem' }}
+                      />
+                      <button type="submit" style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 'bold', cursor: 'pointer' }}>Kirim</button>
+                    </form>
+                  )}
+
+                  {/* Gift (tipping) form */}
+                  {showGiftForm && (
+                    <div style={{ marginTop: '15px', background: 'var(--bg-card)', padding: '15px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                      <p style={{ margin: '0 0 10px 0', fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-main)' }}>🎁 Kirim Insentif BMC Ke Kontributor</p>
+                      <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
+                        {['1', '5', '10', '25'].map(amt => (
+                          <button 
+                            key={amt} 
+                            onClick={() => setGiftAmount(amt)}
+                            style={{ flex: 1, padding: '6px 0', borderRadius: '6px', border: giftAmount === amt ? '2px solid #f59f00' : '1px solid var(--border-color)', background: giftAmount === amt ? 'rgba(245,159,0,0.1)' : 'var(--bg-color)', color: giftAmount === amt ? '#f59f00' : 'var(--text-main)', fontWeight: 'bold', fontSize: '0.8rem', cursor: 'pointer' }}
+                          >
+                            {amt} BMC
+                          </button>
+                        ))}
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <input 
+                          type="number" 
+                          value={giftAmount} 
+                          onChange={(e) => setGiftAmount(e.target.value)}
+                          placeholder="Jumlah kustom..."
+                          style={{ flex: 1, padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-color)', color: 'var(--text-main)', fontSize: '0.85rem' }}
+                        />
+                        <button 
+                          onClick={handleSendGift}
+                          disabled={giftingInProgress}
+                          style={{ background: '#f59f00', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 'bold', cursor: 'pointer' }}
+                        >
+                          {giftingInProgress ? 'Mengirim...' : 'Kirim Gift'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* List of comments */}
+                  {interactions.comments.length > 0 && (
+                    <div style={{ marginTop: '20px', borderTop: '1px solid var(--border-color)', paddingTop: '15px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      <p style={{ margin: 0, fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-muted)' }}>KOMENTAR ({interactions.comments.length})</p>
+                      <div style={{ maxHeight: '180px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', paddingRight: '5px' }}>
+                        {interactions.comments.map(comment => (
+                          <div key={comment.id} style={{ fontSize: '0.8rem', lineHeight: '1.4' }}>
+                            <strong style={{ color: 'var(--primary)' }}>@{comment.username}</strong>: <span style={{ color: 'var(--text-main)' }}>{comment.text}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                </div>
+              </div>
+
+              {/* Right Column: Statistics Grid & Details */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <h4 style={{ margin: 0, fontSize: '1rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Dasbor Aktivitas Ekosistem</h4>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px' }}>
+                  
+                  <div style={{ background: 'rgba(12, 166, 120, 0.04)', border: '1px solid rgba(12, 166, 120, 0.08)', padding: '20px', borderRadius: '20px' }}>
+                    <TreeDeciduous size={24} color="var(--primary)" style={{ marginBottom: '10px' }} />
+                    <div style={{ fontSize: '1.8rem', fontWeight: 'bold', color: 'var(--text-main)', margin: '0 0 4px 0' }}>{plantCount}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: '600' }}>Bambu Ditanam</div>
+                  </div>
+
+                  <div style={{ background: 'rgba(34, 139, 230, 0.04)', border: '1px solid rgba(34, 139, 230, 0.08)', padding: '20px', borderRadius: '20px' }}>
+                    <Shield size={24} color="#228be6" style={{ marginBottom: '10px' }} />
+                    <div style={{ fontSize: '1.8rem', fontWeight: 'bold', color: 'var(--text-main)', margin: '0 0 4px 0' }}>{maintenanceCount}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: '600' }}>Perawatan Lahan</div>
+                  </div>
+
+                  <div style={{ background: 'rgba(245, 159, 0, 0.04)', border: '1px solid rgba(245, 159, 0, 0.08)', padding: '20px', borderRadius: '20px' }}>
+                    <GraduationCap size={24} color="#f59f00" style={{ marginBottom: '10px' }} />
+                    <div style={{ fontSize: '1.8rem', fontWeight: 'bold', color: 'var(--text-main)', margin: '0 0 4px 0' }}>{articlesList.length}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: '600' }}>Karya Akademi</div>
+                  </div>
+
+                  <div style={{ background: 'rgba(12, 166, 120, 0.04)', border: '1px solid rgba(12, 166, 120, 0.08)', padding: '20px', borderRadius: '20px' }}>
+                    <Award size={24} color="var(--primary)" style={{ marginBottom: '10px' }} />
+                    <div style={{ fontSize: '1.8rem', fontWeight: 'bold', color: 'var(--text-main)', margin: '0 0 4px 0' }}>{targetUser.bmcBalance || 0}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: '600' }}>BMC Reward</div>
+                  </div>
+
+                </div>
+
+                <div style={{ background: '#f8f9fa', borderRadius: '20px', padding: '20px', border: '1px solid var(--border-color)' }}>
+                  <p style={{ margin: '0 0 8px 0', fontSize: '0.8rem', color: '#666', fontWeight: 'bold' }}>TANGGAL BERGABUNG</p>
+                  <p style={{ margin: 0, fontSize: '0.95rem', color: '#333', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '500' }}>
+                    <Calendar size={16} /> 
+                    {targetUser.joinedAt 
+                      ? new Date(targetUser.joinedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+                      : 'Maret 2026'
+                    }
+                  </p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+        {/* ────────── PUBLIC ARTICLES / RESEARCH ESSAYS LIST ────────── */}
+        <h3 style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)', marginBottom: '20px' }}>
+          Karya Tulis & Esai Ilmiah
+        </h3>
+        
+        {articlesList.length === 0 ? (
+          <div style={{ background: 'var(--bg-card)', padding: '40px', borderRadius: '24px', textAlign: 'center', border: '1px solid var(--border-color)', color: 'var(--text-muted)' }}>
+            Belum ada karya tulis atau esai ilmiah yang diterbitkan oleh kontributor ini di Akademi.
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '25px' }}>
+            {articlesList.map(article => (
+              <div 
+                key={article.id}
+                onClick={() => setSelectedArticle(article)}
+                style={{ background: 'var(--bg-card)', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 8px 25px rgba(0,0,0,0.03)', border: '1px solid var(--border-color)', cursor: 'pointer', transition: 'transform 0.2s', display: 'flex', flexDirection: 'column', height: '100%' }}
+                onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-4px)'}
+                onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+              >
+                {article.image && (
+                  <div style={{ height: '180px', overflow: 'hidden' }}>
+                    <img src={article.image} alt={article.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </div>
+                )}
+                <div style={{ padding: '24px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--primary)', textTransform: 'uppercase', marginBottom: '8px', display: 'block' }}>
+                    {article.category || 'Sains Bambu'}
+                  </span>
+                  <h4 style={{ fontSize: '1.15rem', margin: '0 0 10px 0', color: 'var(--text-main)', fontWeight: 'bold', lineHeight: '1.3' }}>
+                    {article.title}
+                  </h4>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: '0 0 20px 0', flex: 1, lineHeight: '1.5' }}>
+                    {article.excerpt || article.content?.substring(0, 100) + '...'}
+                  </p>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-color)', paddingTop: '12px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                    <span>{article.date}</span>
+                    <span style={{ color: 'var(--primary)', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                      Baca Selengkapnya <ChevronRight size={12} />
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+      </div>
+
+      {/* ────────── ARTICLE READ MODAL ────────── */}
+      {selectedArticle && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', zIndex: 11000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+          <div style={{ background: 'var(--bg-card)', width: '100%', maxWidth: '750px', maxHeight: '90vh', borderRadius: '24px', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 50px rgba(0,0,0,0.2)', border: '1px solid var(--border-color)' }}>
+            
+            {/* Modal Header */}
+            <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ background: 'rgba(12, 166, 120, 0.1)', color: 'var(--primary)', padding: '4px 10px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                {selectedArticle.category}
+              </span>
+              <button 
+                onClick={() => setSelectedArticle(null)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
+              >
+                <X size={22} />
+              </button>
+            </div>
+            
+            {/* Modal Body (Scrollable) */}
+            <div style={{ padding: '24px', overflowY: 'auto', flex: 1 }}>
+              <h2 style={{ fontSize: '1.6rem', color: 'var(--text-main)', marginBottom: '10px', fontWeight: '800', lineHeight: '1.3' }}>
+                {selectedArticle.title}
+              </h2>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '20px' }}>
+                Ditulis oleh @{selectedArticle.username} pada {selectedArticle.date}
+              </div>
+
+              {/* Cover Image Slider / Single Image */}
+              {selectedArticle.images && selectedArticle.images.length > 0 ? (
+                <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '15px', marginBottom: '20px' }}>
+                  {selectedArticle.images.map((img, idx) => (
+                    <img 
+                      key={idx} 
+                      src={img} 
+                      alt={`Foto Pendukung ${idx + 1}`} 
+                      style={{ height: '220px', borderRadius: '12px', objectFit: 'cover', flexShrink: 0 }} 
+                    />
+                  ))}
+                </div>
+              ) : selectedArticle.image ? (
+                <img 
+                  src={selectedArticle.image} 
+                  alt={selectedArticle.title} 
+                  style={{ width: '100%', maxHeight: '350px', objectFit: 'cover', borderRadius: '12px', marginBottom: '20px' }} 
+                />
+              ) : null}
+
+              {/* Article Content */}
+              <div style={{ fontSize: '1rem', color: 'var(--text-main)', lineHeight: '1.7', whiteSpace: 'pre-wrap' }}>
+                {selectedArticle.content}
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+};
+
+export default PublicPortfolioPage;

@@ -64,6 +64,8 @@ import ScrollToTop from './components/ScrollToTop';
 import GlobalToast from './components/GlobalToast';
 import SocialInteractions from './components/SocialInteractions';
 
+import PublicPortfolioPage from './pages/PublicPortfolioPage';
+
 function App() {
   return (
     <div className="App">
@@ -83,6 +85,7 @@ function App() {
           <Route path="/bamboochain/marketplace" element={<BcMarketplacePage />} />
           <Route path="/bamboochain/pre-order" element={<PreOrderPage />} />
           <Route path="/careers" element={<CareersPage />} />
+          <Route path="/portfolio/:username" element={<PublicPortfolioPage />} />
           
           {/* Protected Routes */}
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
