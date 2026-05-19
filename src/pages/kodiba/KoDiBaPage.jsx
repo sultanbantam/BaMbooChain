@@ -421,7 +421,7 @@ const KoDiBaPage = () => {
           </div>
           <div style={{ position: 'relative' }}>
             <img 
-              src="/assets/designs/bambu_cafe_3d.png" 
+              src="/gambar/1.jpeg" 
               style={{ width: '100%', borderRadius: '30px', filter: 'grayscale(0.15)', border: '2px solid rgba(81, 207, 102, 0.3)' }} 
               alt="Desain Fasilitas Bambu YSNJ" 
             />
