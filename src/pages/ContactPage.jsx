@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Send, Phone, Mail } from 'lucide-react';
 import BackButton from '../components/BackButton';
+import { db } from '../firebase/config';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 const ContactPage = () => {
   const [status, setStatus] = useState('');
@@ -26,6 +28,18 @@ const ContactPage = () => {
       const data = await response.json();
 
       if (data.success) {
+        // Also save to Firestore
+        try {
+          await addDoc(collection(db, "contacts"), {
+            name: formData.get('name'),
+            email: formData.get('email'),
+            message: formData.get('message'),
+            timestamp: serverTimestamp()
+          });
+        } catch (err) {
+          console.error("Firestore Save Error:", err);
+        }
+
         setStatus('Pesan berhasil terkirim!');
         e.target.reset();
       } else {

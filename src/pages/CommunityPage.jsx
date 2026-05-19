@@ -49,7 +49,7 @@ const CommunityPage = () => {
   const canVote = (minBMC) => isConnected && bmcNum >= minBMC;
 
   return (
-    <div style={{ paddingTop: '160px', minHeight: '100vh', background: '#f8f9fa' }}>
+    <div style={{ paddingTop: '160px', minHeight: '100vh', background: 'var(--bg-color)' }}>
       <div className="container" style={{ padding: '40px 24px' }}>
 
         {/* Header */}
@@ -92,7 +92,7 @@ const CommunityPage = () => {
                 const eligible = canVote(p.minBMC);
 
                 return (
-                  <div key={p.id} style={{ background: 'white', borderRadius: '16px', padding: '24px', border: `1px solid ${p.status === 'active' ? '#dee2e6' : '#f1f3f5'}` }}>
+                  <div key={p.id} style={{ background: 'var(--bg-card)', borderRadius: '16px', padding: '24px', border: `1px solid var(--border-color)` }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px', gap: '12px' }}>
                       <h3 style={{ fontSize: '1rem', lineHeight: '1.4', flex: 1 }}>{p.title}</h3>
                       <span style={{
@@ -112,7 +112,7 @@ const CommunityPage = () => {
                         <span style={{ color: '#2b8a3e' }}>✅ Setuju {yesW}%</span>
                         <span style={{ color: '#e03131' }}>❌ Tolak {noW}%</span>
                       </div>
-                      <div style={{ height: '8px', background: '#f1f3f5', borderRadius: '4px', overflow: 'hidden' }}>
+                      <div style={{ height: '8px', background: 'var(--bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
                         <div style={{ height: '100%', width: `${yesW}%`, background: 'linear-gradient(90deg, #40c057, #2b8a3e)', borderRadius: '4px' }} />
                       </div>
                     </div>
@@ -151,7 +151,7 @@ const CommunityPage = () => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', order: window.innerWidth < 1100 ? 2 : 2 }}>
 
             {/* Status keanggotaan */}
-            <div style={{ background: 'white', borderRadius: '16px', padding: '20px', border: '1px solid #eee' }}>
+            <div style={{ background: 'var(--bg-card)', borderRadius: '16px', padding: '20px', border: '1px solid var(--border-color)' }}>
               <h3 style={{ fontSize: '1rem', marginBottom: '16px', display: 'flex', gap: '8px', alignItems: 'center' }}>
                 <Users size={18} color="var(--primary)" /> Status Anda
               </h3>
@@ -177,7 +177,7 @@ const CommunityPage = () => {
             </div>
 
             {/* Pengumuman */}
-            <div style={{ background: 'white', borderRadius: '16px', padding: '20px', border: '1px solid #eee' }}>
+            <div style={{ background: 'var(--bg-card)', borderRadius: '16px', padding: '20px', border: '1px solid var(--border-color)' }}>
               <h3 style={{ fontSize: '1rem', marginBottom: '16px', display: 'flex', gap: '8px', alignItems: 'center' }}>
                 <Bell size={18} color="var(--primary)" /> Pengumuman
               </h3>
@@ -195,7 +195,7 @@ const CommunityPage = () => {
             </div>
 
             {/* Link komunitas */}
-            <div style={{ background: 'white', borderRadius: '16px', padding: '20px', border: '1px solid #eee' }}>
+            <div style={{ background: 'var(--bg-card)', borderRadius: '16px', padding: '20px', border: '1px solid var(--border-color)' }}>
               <h3 style={{ fontSize: '1rem', marginBottom: '16px', display: 'flex', gap: '8px', alignItems: 'center' }}>
                 <MessageSquare size={18} color="var(--primary)" /> Bergabung
               </h3>

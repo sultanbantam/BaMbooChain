@@ -2,18 +2,20 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   ShoppingCart, Tag, Filter, Search, PlusCircle, Star, 
   Image as ImageIcon, ArrowRightLeft, BarChart3, Info, 
-  TrendingUp, TrendingDown, X, CheckCircle, Upload, Shield,
+  TrendingUp, TrendingDown, X, CheckCircle, Upload, Shield, ShieldCheck, ShoppingBag,
   Eye, EyeOff, Video, Zap, Heart, MessageCircle, Truck, 
-  CreditCard, Sparkles, Play
+  CreditCard, Sparkles, Play, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import AdSpace from '../../components/AdSpace';
 import BackButton from '../../components/BackButton';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
+import { useMarketplace } from '../../context/MarketplaceContext';
 
 const MarketplacePage = () => {
   const { t } = useLanguage();
   const { user, isAuthenticated: isGlobalAuth } = useAuth();
+  const { chats, sendMessage } = useMarketplace();
   
   const categories = [
     t('market_cat_all'), 
@@ -72,7 +74,7 @@ const MarketplacePage = () => {
   const [selectedLive, setSelectedLive] = useState(null);
   const [showSellModal, setShowSellModal] = useState(false);
   const [newProduct, setNewProduct] = useState({ 
-    name: '', category: t('market_cat_material'), customCategory: '', price: '', images: [], description: '', unit: t('market_unit_stem'), customUnit: '', specs: '' 
+    name: '', category: t('market_cat_material'), customCategory: '', price: '', images: [], description: '', storyTelling: '', unit: t('market_unit_stem'), customUnit: '', specs: '' 
   });
   const [newComment, setNewComment] = useState('');
   const [liveComments, setLiveComments] = useState([
@@ -88,62 +90,140 @@ const MarketplacePage = () => {
   const [toast, setToast] = useState({ show: false, message: '' });
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
-  const [showChatModal, setShowChatModal] = useState(false);
-  const [chatTarget, setChatTarget] = useState(null);
-  const [chatMessages, setChatMessages] = useState([]);
+  const imageContainerRef = useRef(null);
 
-  // Dynamic Chat Initialization
   useEffect(() => {
-    if (showChatModal && chatTarget) {
-      setChatMessages([
-        { 
-          id: 1, 
-          sender: chatTarget.vendor || 'Vendor', 
-          text: t('market_chat_vendor_greeting')?.replace('{product}', chatTarget.name) || `Halo! Ada yang bisa kami bantu mengenai ${chatTarget.name}?`, 
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), 
-          isMe: false 
-        }
-      ]);
+    if (selectedProduct) {
+      setCurrentImgIndex(0);
+      if (imageContainerRef.current) {
+        imageContainerRef.current.scrollLeft = 0;
+      }
     }
-  }, [showChatModal, chatTarget, t]);
+  }, [selectedProduct]);
+
+  const handleImageScroll = (e) => {
+    const container = e.currentTarget;
+    const scrollLeft = container.scrollLeft;
+    const width = container.clientWidth;
+    if (width > 0) {
+      const idx = Math.round(scrollLeft / width);
+      if (idx !== currentImgIndex) {
+        setCurrentImgIndex(idx);
+      }
+    }
+  };
+
+  const scrollToImage = (idx) => {
+    setCurrentImgIndex(idx);
+    if (imageContainerRef.current) {
+      const container = imageContainerRef.current;
+      container.scrollTo({ left: container.clientWidth * idx, behavior: 'smooth' });
+    }
+  };
+
+  const handlePrevImg = () => {
+    const total = selectedProduct?.images?.length || 0;
+    if (total <= 1) return;
+    const newIdx = (currentImgIndex - 1 + total) % total;
+    scrollToImage(newIdx);
+  };
+
+  const handleNextImg = () => {
+    const total = selectedProduct?.images?.length || 0;
+    if (total <= 1) return;
+    const newIdx = (currentImgIndex + 1) % total;
+    scrollToImage(newIdx);
+  };
+
+  const [activeChat, setActiveChat] = useState(null); // replaces old mock chat state
   const [chatInput, setChatInput] = useState('');
 
   const [products, setProducts] = useState([
     { 
-      id: 1, name: "Bambu Betung Tahan Rayap", category: "Material konstruksi", priceIdr: 812500, vendor: "Koperasi Cibarani", rating: 4.8, reviews: 124, verified: true,
-      img: "https://images.unsplash.com/photo-1542450530-5bfa5dfef006?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", 
-      unit: "Batang", description: "Bambu Betung pilihan dengan perlakuan khusus anti-rayap menggunakan sistem perendaman tradisional dan modern. Sangat kuat untuk konstruksi.",
-      specs: ["Diameter: 12-15cm", "Panjang: 6 Meter", "Kadar Air: < 18%", "Umur: > 4 Tahun"]
+      id: 1, name: "Sedotan", category: "Kerajinan", priceIdr: 5000, vendor: "admin", rating: 5, reviews: 10, verified: true,
+      img: "gambar/produk/sdt.jpeg", 
+      images: ["gambar/produk/sdt.jpeg", "gambar/produk/sdt2.jpeg", "gambar/produk/sdt3.jpeg"],
+      status: 'Approved',
+      unit: "Pieces", 
+      description: "Sedotan bambu alami yang terbuat dari bambu tamiang pilihan dengan diameter 0,3 cm - 1 cm dan panjang 15 cm - 25 cm. Diproses secara tradisional oleh para pengrajin dari Gunung Kidul, Jawa Tengah, menghasilkan sedotan yang kuat, ringan, ramah lingkungan, dan dapat digunakan berulang kali. Cocok untuk minuman dingin maupun hangat, sekaligus menjadi alternatif pengganti sedotan plastik yang lebih berkelanjutan.",
+      storyTelling: "Sedotan bambu ini lahir dari alam karst Gunung Kidul, Jawa Tengah, daerah yang dikenal dengan ketangguhan masyarakat dan kekayaan bambunya. Dibuat secara tradisional oleh pengrajin utama Mas Kha Tiem bersama para perajin lokal, setiap batang bambu tamiang dipilih secara teliti, dipotong, dibersihkan, diamplas, lalu dikeringkan secara alami agar tetap kuat dan nyaman digunakan. Bukan sekadar sedotan, produk ini membawa semangat hidup selaras dengan alam. Dari tangan-tangan pengrajin desa, bambu yang tumbuh sederhana diubah menjadi produk ramah lingkungan yang membantu mengurangi limbah plastik sekaligus memberdayakan masyarakat lokal. Setiap sedotan memiliki karakter unik alami bambu Nusantara, menjadikannya tidak hanya fungsional tetapi juga memiliki nilai budaya dan keberlanjutan.",
+      specs: ["diameter 0,3 cm - 1 cm dan panjang 15 cm - 25 cm", "bisa dipakai berulang kali", "dibersihkan menggunakan air bersih dengan cara disemprot."]
     },
     { 
-      id: 2, name: "Kursi Santai Bambu Wulung", category: "Furniture", priceIdr: 7312500, vendor: "EcoFurn Jabar", rating: 4.9, reviews: 86, verified: true,
-      img: "https://images.unsplash.com/photo-1592078615290-033ee584e267?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", 
-      unit: "Set", description: "Desain minimalis ergonomis dari Bambu Wulung berkualitas tinggi. Finishing halus dengan coating food-grade premium.",
-      specs: ["Material: Bambu Wulung", "Kapasitas: 120kg", "Set: 1 Kursi + 1 Footrest"]
+      id: 2, name: "Jam Tangan Bambu Virageawie", category: "Kerajinan", priceIdr: 500000, vendor: "Virageawie Bandung", rating: 4.9, reviews: 92, verified: true,
+      img: "/gambar/produk/jam.jpg", 
+      status: 'Approved',
+      unit: "Pieces", 
+      description: "Dibuat dengan ketelitian tinggi oleh para master muda kreatif dari komunitas Virageawie Bandung Barat, jam tangan bambu ini menghadirkan perpaduan antara kerajinan tradisional, desain modern, dan semangat keberlanjutan. Menggunakan material pilihan dari bambu gombong, setiap detailnya diproses dengan presisi sehingga menghasilkan karakter yang ringan, kuat, sekaligus eksotik alami. Serat dan warna alami bambu menjadikan setiap jam memiliki pola yang unik—tidak ada yang benar-benar sama. Dipadukan dengan desain minimalis dan elegan, jam ini bukan sekadar penunjuk waktu, tetapi juga simbol gaya hidup ramah lingkungan dan kebanggaan terhadap karya anak bangsa.",
+      storyTelling: "Di tangan para anak muda kreatif Virageawie, bambu yang dahulu dipandang sederhana berubah menjadi karya bernilai tinggi. Dari rumpun bambu gombong di Nusantara, lahirlah jam tangan yang membawa cerita tentang alam, ketekunan, dan inovasi. Setiap potongan bambu dipilih, dipahat, dan dirakit dengan penuh kesabaran hingga menjadi sebuah karya presisi yang hidup. Saat dikenakan, jam ini bukan hanya mengingatkan tentang waktu, tetapi juga tentang perjalanan—bahwa dari alam yang dijaga dengan baik, akan lahir masa depan yang indah dan berkelanjutan. “Bukan sekadar jam tangan, tetapi cerita tentang bambu Nusantara yang terus hidup di setiap detik waktu.”",
+      specs: ["Material: Bambu Gombong Pilihan", "Karakter: Ringan, Kuat & Eksotik Alami", "Finishing: Presisi Halus dengan Karakter Unik"]
     },
     { 
       id: 3, name: "Lampu Hias Anyaman", category: "Kerajinan", priceIdr: 1950000, vendor: "Bamboo Art BDG", rating: 4.7, reviews: 215, verified: false,
       img: "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", 
+      status: 'Approved',
       unit: "Unit", description: "Lampu hias anyaman tangan karya pengrajin lokal. Memberikan efek cahaya dramatis untuk interior ruangan mewah.",
       specs: ["Fitting: E27", "Tegangan: 220V", "Material: Kulit Bambu Tali"]
     },
     { 
       id: 4, name: "Genesis bambuNUSA NFT #01", category: "NFT Bamboo", priceIdr: 16250000, vendor: "BaMbooChain Official", rating: 5.0, reviews: 12, verified: true,
       img: "https://images.unsplash.com/photo-1618331835717-801e976710b2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", 
+      status: 'Approved',
       unit: "Pieces", description: "Koleksi NFT eksklusif yang merepresentasikan kepemilikan pohon bambu nyata di area restorasi bursa BaMbooChain.",
       specs: ["Network: Pi Network", "Token: BEP-20", "Perks: Carbon Credit Share"]
     },
     { 
       id: 5, name: "Papan Laminasi Bambu", category: "Material konstruksi", priceIdr: 4500000, vendor: "IndoBamboo", rating: 4.6, reviews: 45, verified: true,
       img: "https://images.unsplash.com/photo-1598928376916-2fd125c192bd?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", 
+      status: 'Approved',
       unit: "Lembar", description: "Papan laminasi presisi tinggi untuk kebutuhan flooring dan furniture premium. Tahan lama dan estetik.",
       specs: ["Dimensi: 122x244cm", "Tebal: 18mm", "Material: Bambu Petung"]
     },
     { 
-      id: 6, name: "Tas Anyaman Bambu Elegan", category: "Kerajinan", priceIdr: 850000, vendor: "Kriya Nusantara", rating: 4.8, reviews: 32, verified: false,
-      img: "https://images.unsplash.com/photo-1544816153-0973024896fd?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", 
-      unit: "Pieces", description: "Tas anyaman bambu dengan aksen kulit sintetis, perpaduan sempurna antara tradisi dan gaya modern.",
-      specs: ["Material: Bambu + Leather", "Handmade: Yes", "Warna: Natural"]
+      id: 6, name: "🌿 Rumah Sang Ahli Bambu Dunia — Dijual Rp 4 Miliar", category: "Lainnya", priceIdr: 4000000000, vendor: "Yayasan Sabumi", rating: 5.0, reviews: 1, verified: true,
+      img: "gambar/produk/r5.jpeg", 
+      images: [
+        "gambar/produk/r5.jpeg",
+        "gambar/produk/r6.jpeg",
+        "gambar/produk/r7.jpeg",
+        "gambar/produk/r8.jpeg",
+        "gambar/produk/r9.jpeg"
+      ],
+      status: 'Approved',
+      unit: "Kawasan", 
+      description: `Rumah dan tanah milik Prof. Dr. Elizabeth A. Widjaja ini bukan sekadar hunian biasa, tetapi jejak sejarah penting perkembangan ilmu bambu Indonesia. Beliau dikenal sebagai salah satu ahli taksonomi bambu dunia yang selama puluhan tahun meneliti, mengidentifikasi, dan memberi nama ilmiah berbagai spesies bambu Nusantara. Bahkan, nama “Widjaja” tercatat dalam banyak nomenklatur ilmiah bambu Indonesia dan internasional.
+
+Di kawasan tenang Dramaga, Bogor, rumah ini menjadi museum hidup sekaligus laboratorium pribadi tempat lahirnya berbagai penelitian bambu Indonesia. Di sinilah koleksi bambu, catatan penelitian, dokumentasi lapangan, hingga diskusi ilmiah tentang bambu pernah berkembang selama puluhan tahun. Rumah utama berdiri di atas lahan ±2.590 m² dengan suasana hijau, kolam ikan, area kebun, dan lingkungan yang sangat mendukung aktivitas penelitian and konservasi.
+
+Tidak hanya memiliki rumah utama, kawasan ini juga dilengkapi rumah pendukung dan beberapa petak kebun yang menyatu dengan alam, menjadikannya sangat potensial untuk dikembangkan sebagai pusat riset bambu, museum bambu Nusantara, akademi bambu, eco-lab, atau kawasan edukasi lingkungan berbasis bambu dan biodiversitas.`,
+      storyTelling: `“Di rumah sederhana inilah, nama-nama bambu Indonesia ditulis untuk pertama kalinya ke dalam sejarah dunia.
+Setiap rumpun bambu yang pernah diteliti Prof. Elizabeth A. Widjaja bukan hanya tanaman, tetapi warisan ilmu pengetahuan Nusantara. Dari ruang-ruang inilah lahir identitas ilmiah bambu Indonesia yang kini dikenal dunia. Sebuah tempat sunyi yang menyimpan dedikasi besar untuk alam, ilmu pengetahuan, dan masa depan peradaban hijau.”
+
+“Bukan Sekadar Rumah, Tetapi Warisan Ilmu Pengetahuan Bambu Indonesia”
+
+Rumah dan kawasan ini merupakan tempat tinggal sekaligus laboratorium pribadi milik Prof. Dr. Elizabeth A. Widjaja, salah satu ahli taksonomi bambu dunia yang berjasa meneliti dan memberi nama ilmiah berbagai spesies bambu Indonesia. Nama “Widjaja” sendiri telah tercatat dalam sejarah penelitian bambu internasional. (en.wikipedia.org)
+
+Berlokasi di kawasan hijau dan tenang di Dramaga, Bogor, properti ini berdiri di atas total lahan ±4.770 m² dengan 4 sertifikat SHM, terdiri dari:
+- Rumah utama
+- Rumah pendukung
+- Area kebun
+- Kolam ikan
+- Dan lingkungan alami yang sangat asri.
+
+Tempat ini sangat potensial dikembangkan menjadi:
+🌿 Museum Bambu Nusantara
+🌿 Pusat Penelitian & Biodiversitas
+🌿 Eco Retreat & Akademi Bambu
+🌿 Bamboo Research Center
+🌿 Creative Eco Campus
+🌿 Kawasan Edukasi Lingkungan
+
+📍 Lokasi
+Jl. Cimurai RT03 No.20, Desa Sukawening, Kec. Dramaga, Kabupaten Bogor, Jawa Barat.
+
+💰 Harga Penawaran
+Rp 4 Miliar (nego)`,
+      specs: ["Total Lahan ±4.770 m²", "4 Sertifikat SHM", "Dramaga, Bogor", "Rumah Utama & Pendukung", "Kolam & Area Kebun"]
     }
   ]);
 
@@ -229,15 +309,17 @@ const MarketplacePage = () => {
       unit: finalUnit,
       priceIdr: priceNum,
       rating: 5.0,
-      vendor: user?.name || "Saya (Penjual Baru)",
+      vendor: user?.username || "admin",
       img: newProduct.images.length > 0 ? newProduct.images[0] : "https://images.unsplash.com/photo-1590059345003-34537330756e?auto=format&fit=crop&w=400",
       images: newProduct.images.length > 0 ? newProduct.images : ["https://images.unsplash.com/photo-1590059345003-34537330756e?auto=format&fit=crop&w=400"],
       verified: false,
-      specs: newProduct.specs.split(/[,;]\s+/).filter(s => s.trim() !== '')
+      specs: newProduct.specs.split(/[,;]\s+/).filter(s => s.trim() !== ''),
+      storyTelling: newProduct.storyTelling,
+      status: 'Pending Curation'
     };
     setProducts([productToAdd, ...products]);
     setShowSellModal(false);
-    setNewProduct({ name: '', category: t('market_cat_material'), customCategory: '', price: '', images: [], description: '', unit: t('market_unit_stem'), customUnit: '', specs: '', whatsapp: '' });
+    setNewProduct({ name: '', category: t('market_cat_material'), customCategory: '', price: '', images: [], description: '', storyTelling: '', unit: t('market_unit_stem'), customUnit: '', specs: '', whatsapp: '' });
     showToast(`Produk "${newProduct.name}" berhasil didaftarkan!`);
   };
 
@@ -261,6 +343,21 @@ const MarketplacePage = () => {
     setLiveComments(prev => [...prev, { user: 'Saya', text: newComment, time }]);
     setNewComment('');
   };
+
+  const handleApproveProduct = (id) => {
+    setProducts(prev => prev.map(p => p.id === id ? { ...p, status: 'Approved', verified: true } : p));
+    setSelectedProduct(null);
+    showToast(`Produk berhasil disetujui dan ditayangkan!`);
+  };
+
+  const handleRejectProduct = (id) => {
+    setProducts(prev => prev.filter(p => p.id !== id));
+    setSelectedProduct(null);
+    showToast(`Produk ditolak dan dihapus dari antrean.`);
+  };
+
+  const visibleProducts = products.filter(p => p.status === 'Approved');
+  const pendingProducts = products.filter(p => p.status === 'Pending Curation');
 
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
@@ -286,7 +383,7 @@ const MarketplacePage = () => {
     showToast(`Pesanan ${id} diperbarui menjadi: ${newStatus}`);
   };
 
-  const filteredProducts = activeCategory === "Semua" ? products : products.filter(p => p.category === activeCategory);
+  const filteredProducts = activeCategory === "Semua" ? visibleProducts : visibleProducts.filter(p => p.category === activeCategory);
   const cartTotalIdr = cart.reduce((sum, item) => sum + (item.priceIdr * item.qty), 0);
 
   const shippingOptions = [
@@ -429,54 +526,185 @@ const MarketplacePage = () => {
 
       {/* PRODUCT DETAIL MODAL */}
       {selectedProduct && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.85)', zIndex: 40000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', backdropFilter: 'blur(5px)' }}>
-          <div className="glass" style={{ width: '100%', maxWidth: '1000px', maxHeight: '90vh', background: 'white', borderRadius: '30px', overflow: 'hidden', position: 'relative', display: 'flex', flexDirection: windowWidth < 768 ? 'column' : 'row' }}>
-            <button onClick={() => { setSelectedProduct(null); setCurrentImgIndex(0); }} style={{ position: 'absolute', top: '20px', right: '20px', background: '#eee', border: 'none', borderRadius: '50%', padding: '8px', cursor: 'pointer', zIndex: 10 }}><X size={24} /></button>
-            <div style={{ flex: 1, height: windowWidth < 768 ? '300px' : 'auto', position: 'relative', background: '#f1f3f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-               <img src={selectedProduct.images?.[currentImgIndex] || selectedProduct.img} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-               
-               {selectedProduct.images?.length > 1 && (
-                 <>
-                   <button onClick={() => setCurrentImgIndex(prev => prev === 0 ? selectedProduct.images.length - 1 : prev - 1)} style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(0,0,0,0.3)', border: 'none', borderRadius: '50%', width: '40px', height: '40px', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <ArrowRightLeft size={20} style={{ transform: 'scaleX(-1)' }} />
-                   </button>
-                   <button onClick={() => setCurrentImgIndex(prev => (prev + 1) % selectedProduct.images.length)} style={{ position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(0,0,0,0.3)', border: 'none', borderRadius: '50%', width: '40px', height: '40px', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <ArrowRightLeft size={20} />
-                   </button>
-                 </>
-               )}
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', zIndex: 90000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: windowWidth < 900 ? '10px' : '20px' }}>
+          <div style={{ background: 'var(--bg-card)', width: '100%', maxWidth: '1000px', maxHeight: '90vh', borderRadius: windowWidth < 900 ? '20px' : '40px', overflow: 'hidden', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+            <button onClick={() => setSelectedProduct(null)} style={{ position: 'absolute', top: windowWidth < 900 ? '10px' : '25px', right: windowWidth < 900 ? '10px' : '25px', background: 'white', border: 'none', borderRadius: '50%', width: '45px', height: '45px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 10, boxShadow: '0 4px 15px rgba(0,0,0,0.2)' }}><X size={24} color="#333" /></button>
+            <div style={{ display: 'flex', flexDirection: windowWidth < 900 ? 'column' : 'row', flex: 1, minHeight: 0, overflowY: windowWidth < 900 ? 'auto' : 'hidden' }}>
+              <div style={{ flex: windowWidth < 900 ? 'none' : '1.2', height: windowWidth < 900 ? '450px' : 'auto', position: 'relative', background: 'rgba(0,0,0,0.02)', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                 <div style={{ flex: 1, position: 'relative', overflow: 'hidden', minHeight: 0 }}>
+                    <div 
+                       ref={imageContainerRef}
+                       onScroll={handleImageScroll}
+                       style={{ 
+                          width: '100%', 
+                          height: '100%', 
+                          display: 'flex', 
+                          overflowX: 'auto', 
+                          scrollSnapType: 'x mandatory', 
+                          scrollBehavior: 'smooth',
+                          WebkitOverflowScrolling: 'touch',
+                          scrollbarWidth: 'none',
+                          msOverflowStyle: 'none'
+                       }}
+                    >
+                       {selectedProduct.images && selectedProduct.images.length > 0 ? (
+                          selectedProduct.images.map((img, idx) => (
+                             <div key={idx} style={{ minWidth: '100%', height: '100%', scrollSnapAlign: 'start', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#fdfdfd', position: 'relative' }}>
+                                <img src={img} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} alt="" />
+                             </div>
+                          ))
+                       ) : (
+                          <div style={{ minWidth: '100%', height: '100%', scrollSnapAlign: 'start', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#fdfdfd' }}>
+                             <img src={selectedProduct.img} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} alt="" />
+                          </div>
+                       )}
+                    </div>
 
-               {selectedProduct.images?.length > 1 && (
-                 <div style={{ position: 'absolute', bottom: '20px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '8px' }}>
-                    {selectedProduct.images.map((_, i) => (
-                      <div 
-                        key={i} 
-                        onClick={() => setCurrentImgIndex(i)}
-                        style={{ width: '10px', height: '10px', borderRadius: '50%', background: i === currentImgIndex ? 'var(--primary)' : 'white', opacity: i === currentImgIndex ? 1 : 0.5, cursor: 'pointer', border: '1px solid rgba(0,0,0,0.1)' }}
-                      ></div>
-                    ))}
+                    {selectedProduct.images && selectedProduct.images.length > 1 && (
+                       <>
+                          <button 
+                             onClick={handlePrevImg}
+                             style={{ 
+                                position: 'absolute', 
+                                top: '50%', 
+                                left: '15px', 
+                                transform: 'translateY(-50%)', 
+                                background: 'rgba(255,255,255,0.85)', 
+                                border: 'none', 
+                                borderRadius: '50%', 
+                                width: '40px', 
+                                height: '40px', 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center', 
+                                cursor: 'pointer',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                                zIndex: 5,
+                                transition: 'background 0.2s'
+                             }}
+                             onMouseEnter={(e) => e.currentTarget.style.background = 'white'}
+                             onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.85)'}
+                          >
+                             <ChevronLeft size={24} color="#333" />
+                          </button>
+                          <button 
+                             onClick={handleNextImg}
+                             style={{ 
+                                position: 'absolute', 
+                                top: '50%', 
+                                right: '15px', 
+                                transform: 'translateY(-50%)', 
+                                background: 'rgba(255,255,255,0.85)', 
+                                border: 'none', 
+                                borderRadius: '50%', 
+                                width: '40px', 
+                                height: '40px', 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center', 
+                                cursor: 'pointer',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                                zIndex: 5,
+                                transition: 'background 0.2s'
+                             }}
+                             onMouseEnter={(e) => e.currentTarget.style.background = 'white'}
+                             onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.85)'}
+                          >
+                             <ChevronRight size={24} color="#333" />
+                          </button>
+                       </>
+                    )}
                  </div>
-               )}
-            </div>
-            <div style={{ flex: 1.2, padding: '40px', overflowY: 'auto' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div style={{ fontSize: '0.85rem', color: 'var(--primary)', fontWeight: 'bold' }}>{selectedProduct.category}</div>
-                <button onClick={() => { setChatTarget(selectedProduct); setShowChatModal(true); }} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--primary)', color: 'white', border: 'none', padding: '8px 15px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer' }}><MessageCircle size={16} /> CHAT VENDOR</button>
+                 {selectedProduct.images && selectedProduct.images.length > 1 && (
+                    <div style={{ display: 'flex', gap: '10px', padding: '15px', background: 'white', borderTop: '1px solid #eee', overflowX: 'auto' }}>
+                       {selectedProduct.images.map((img, idx) => (
+                          <img 
+                             key={idx} 
+                             onClick={() => scrollToImage(idx)} 
+                             src={img} 
+                             style={{ 
+                                width: '60px', 
+                                height: '60px', 
+                                objectFit: 'contain', 
+                                background: '#f8f9fa',
+                                borderRadius: '10px', 
+                                border: currentImgIndex === idx ? '3px solid var(--primary)' : '1px solid #eee', 
+                                cursor: 'pointer', 
+                                flexShrink: 0 
+                             }} 
+                             alt="" 
+                          />
+                       ))}
+                    </div>
+                 )}
               </div>
-              <h2 style={{ fontSize: '1.8rem', margin: '12px 0' }}>{selectedProduct.name}</h2>
-              <div style={{ background: 'rgba(12,166,120,0.05)', padding: '20px', borderRadius: '16px', marginBottom: '24px' }}>
-                <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--primary)' }}>{formatIdr(selectedProduct.priceIdr)}</div>
-                <div style={{ fontSize: '1.1rem', color: '#666', fontWeight: '500' }}>≈ {formatBmc(selectedProduct.priceIdr)}</div>
-                <div style={{ fontSize: '0.8rem', color: '#888', marginTop: '5px' }}>Per {selectedProduct.unit || 'Unit'}</div>
+              <div style={{ flex: windowWidth < 900 ? 'none' : '1', padding: windowWidth < 900 ? '20px' : '40px', display: 'flex', flexDirection: 'column', overflowY: windowWidth < 900 ? 'visible' : 'auto', minHeight: 0 }}>
+                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
+                      <span style={{ padding: '5px 15px', background: 'var(--primary)', color: 'white', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 'bold' }}>{selectedProduct.category}</span>
+                      {selectedProduct.verified && <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#228be6', fontSize: '0.8rem', fontWeight: 'bold' }}><ShieldCheck size={16} /> Terverifikasi Validator</span>}
+                   </div>
+                   
+                   <h2 style={{ fontSize: windowWidth < 900 ? '1.5rem' : '2.2rem', margin: '0 0 10px 0', fontWeight: '900', color: 'var(--text-main)', lineHeight: '1.2' }}>{selectedProduct.name}</h2>
+                   
+                   <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '25px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#f59f00', fontWeight: 'bold' }}><Star size={16} fill="#f59f00" /> {selectedProduct.rating}</span>
+                      <span style={{ borderLeft: '2px solid var(--border-color)', paddingLeft: '15px' }}>{selectedProduct.unit}</span>
+                   </div>
+
+                   <div style={{ background: 'rgba(12, 166, 120, 0.05)', border: '1px solid rgba(12, 166, 120, 0.2)', padding: '20px', borderRadius: '20px', marginBottom: '25px' }}>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '5px' }}>Harga Ekosistem:</div>
+                      <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--primary)', lineHeight: '1' }}>{formatIdr(selectedProduct.priceIdr)}</div>
+                      <div style={{ fontSize: '0.85rem', color: '#888', marginTop: '8px', fontWeight: 'bold' }}>≈ {formatBmc(selectedProduct.priceIdr)}</div>
+                   </div>
+
+                   <p style={{ color: 'var(--text-muted)', lineHeight: '1.7', marginBottom: '30px', fontSize: '0.95rem' }}>{selectedProduct.description || "Produk bambu berkualitas tinggi hasil kurasi tim Yayasan untuk standar ekosistem hijau."}</p>
+
+                   {selectedProduct.storyTelling && (
+                     <div style={{ marginBottom: '30px', background: 'rgba(12, 166, 120, 0.05)', padding: '20px', borderRadius: '20px', borderLeft: '4px solid var(--primary)' }}>
+                        <h4 style={{ margin: '0 0 10px 0', color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                           <Sparkles size={18} /> Cerita di Balik Produk
+                        </h4>
+                        <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: '1.6', color: 'var(--text-main)', fontStyle: 'italic' }}>"{selectedProduct.storyTelling}"</p>
+                     </div>
+                   )}
+
+                   {selectedProduct.specs && selectedProduct.specs.length > 0 && (
+                     <div style={{ marginBottom: '40px' }}>
+                        <h4 style={{ marginBottom: '15px' }}>Spesifikasi Utama:</h4>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                          {selectedProduct.specs.map((s, i) => (
+                             <span key={i} style={{ padding: '8px 15px', background: 'var(--bg-secondary)', borderRadius: '12px', fontSize: '0.8rem', color: 'var(--text-muted)', border: '1px solid var(--border-color)' }}>{s}</span>
+                          ))}
+                        </div>
+                     </div>
+                   )}
+
+                   {viewMode === 'admin' && selectedProduct.status === 'Pending Curation' ? (
+                      <div style={{ display: 'flex', gap: '15px', marginTop: 'auto' }}>
+                         <button onClick={() => handleApproveProduct(selectedProduct.id)} style={{ flex: 1, padding: windowWidth < 900 ? '14px' : '16px', borderRadius: '15px', background: 'var(--primary)', color: 'white', border: 'none', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}><CheckCircle size={20} /> SETUJUI PRODUK</button>
+                         <button onClick={() => handleRejectProduct(selectedProduct.id)} style={{ padding: windowWidth < 900 ? '14px 20px' : '16px 25px', borderRadius: '15px', background: '#fa5252', color: 'white', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}><X size={20} /></button>
+                      </div>
+                   ) : (
+                      <div style={{ marginTop: 'auto', display: 'flex', gap: '15px' }}>
+                         <button onClick={() => { addToCart(selectedProduct); setSelectedProduct(null); showToast(`"${selectedProduct.name}" ditambahkan ke keranjang`); }} style={{ flex: 1, padding: windowWidth < 900 ? '14px' : '18px', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '20px', fontSize: windowWidth < 900 ? '1rem' : '1.1rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', boxShadow: '0 10px 20px rgba(12, 166, 120, 0.2)' }}><ShoppingBag size={22} /> Tambah Ke Keranjang</button>
+                         <button 
+                            onClick={() => {
+                               if (!user) {
+                                  showToast("Silakan login terlebih dahulu untuk memulai chat.");
+                                  return;
+                               }
+                               const existingChat = chats.find(c => c.productId === selectedProduct.id && c.buyerId === user.id);
+                               if (existingChat) setActiveChat(existingChat);
+                               else setActiveChat({ isNew: true, product: selectedProduct });
+                            }} 
+                            style={{ width: windowWidth < 900 ? '50px' : '60px', height: windowWidth < 900 ? '50px' : '60px', background: '#228be6', color: 'white', border: 'none', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 10px 20px rgba(34, 139, 230, 0.3)' }} 
+                            title="Chat Penjual di Sistem Website"
+                         >
+                            <MessageCircle size={windowWidth < 900 ? 20 : 24} />
+                         </button>
+                      </div>
+                   )}
               </div>
-              <p style={{ lineHeight: '1.6', color: '#666', marginBottom: '24px' }}>{selectedProduct.description}</p>
-              <div style={{ marginBottom: '30px' }}>
-                <h4 style={{ marginBottom: '12px' }}>Spesifikasi</h4>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                  {selectedProduct.specs?.map((spec, i) => <div key={i} style={{ fontSize: '0.85rem', background: '#f1f3f5', padding: '8px 12px', borderRadius: '8px' }}>• {spec}</div>)}
-                </div>
-              </div>
-              <button onClick={() => addToCart(selectedProduct)} className="btn btn-primary" style={{ width: '100%', padding: '16px', borderRadius: '15px' }}>{t('market_checkout_btn_pay')}</button>
             </div>
           </div>
         </div>
@@ -500,7 +728,20 @@ const MarketplacePage = () => {
                    <h4 style={{ fontSize: '0.9rem', marginBottom: '10px' }}>Status Logistik Smart Tracking</h4>
                    <div style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>• {orderTracking?.status}</div>
                 </div>
-                <button onClick={() => { setShowCartModal(false); setCart([]); setCartStatus(''); }} className="btn btn-primary" style={{ width: '100%', padding: '16px', marginTop: '24px' }}>{t('market_checkout_btn_finish')}</button>
+                <div style={{ display: 'flex', gap: '10px', marginTop: '24px' }}>
+                   <button onClick={() => { setShowCartModal(false); setCart([]); setCartStatus(''); }} className="btn btn-primary" style={{ flex: 1, padding: '16px' }}>{t('market_checkout_btn_finish')}</button>
+                   <button onClick={() => {
+                      setShowCartModal(false);
+                      setCart([]);
+                      setCartStatus('');
+                      setActiveChat({
+                         isNew: true,
+                         product: { id: 'admin_yayasan', name: 'Customer Service Yayasan', vendor: 'Admin Yayasan' }
+                      });
+                   }} style={{ background: '#228be6', color: 'white', border: 'none', borderRadius: '15px', padding: '0 20px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                      <MessageCircle size={24} />
+                   </button>
+                </div>
               </div>
             ) : cartStatus === 'payment' ? (
               <>
@@ -564,61 +805,6 @@ const MarketplacePage = () => {
         </div>
       )}
       
-      {/* INTERNAL CHAT SYSTEM MODAL */}
-      {showChatModal && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.8)', zIndex: 70000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-          <div className="glass" style={{ width: '100%', maxWidth: '800px', height: '600px', background: 'white', borderRadius: '30px', display: 'flex', overflow: 'hidden' }}>
-             {/* Sidebar Chat List */}
-             <div style={{ width: windowWidth < 600 ? '0' : '260px', background: '#f8f9fa', borderRight: '1px solid #eee', display: windowWidth < 600 ? 'none' : 'flex', flexDirection: 'column' }}>
-                <div style={{ padding: '25px', borderBottom: '1px solid #eee' }}>
-                   <h3 style={{ margin: 0, fontSize: '1.1rem' }}>Pesan Saya</h3>
-                </div>
-                <div style={{ flex: 1, overflowY: 'auto' }}>
-                   {[chatTarget?.vendor || 'EcoFurn Jabar', 'Koperasi Cibarani', 'Bamboo Art BDG'].map((v, i) => (
-                     <div key={i} style={{ padding: '15px 25px', background: i === 0 ? 'white' : 'transparent', borderLeft: i === 0 ? '4px solid var(--primary)' : 'none', cursor: 'pointer' }}>
-                        <div style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>{v}</div>
-                        <div style={{ fontSize: '0.75rem', color: '#888' }}>Online</div>
-                     </div>
-                   ))}
-                </div>
-             </div>
-
-             {/* Main Chat Area */}
-             <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                <div style={{ padding: '20px 30px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                   <div>
-                      <div style={{ fontWeight: 'bold' }}>{chatTarget?.vendor || 'Vendor'}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--primary)' }}>Sedang mengetik...</div>
-                   </div>
-                   <button onClick={() => setShowChatModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={20} /></button>
-                </div>
-
-                <div style={{ flex: 1, padding: '30px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '15px', background: '#fafafa' }}>
-                   {chatMessages.map(m => (
-                     <div key={m.id} style={{ alignSelf: m.isMe ? 'flex-end' : 'flex-start', maxWidth: '80%' }}>
-                        <div style={{ background: m.isMe ? 'var(--primary)' : 'white', color: m.isMe ? 'white' : 'var(--text-main)', padding: '12px 18px', borderRadius: m.isMe ? '20px 20px 0 20px' : '20px 20px 20px 0', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', fontSize: '0.9rem' }}>
-                           {m.text}
-                        </div>
-                        <div style={{ fontSize: '0.65rem', color: '#888', marginTop: '5px', textAlign: m.isMe ? 'right' : 'left' }}>{m.time}</div>
-                     </div>
-                   ))}
-                </div>
-
-                <form onSubmit={handleSendChatMessage} style={{ padding: '20px 30px', background: 'white', borderTop: '1px solid #eee', display: 'flex', gap: '15px' }}>
-                   <input 
-                    type="text" 
-                    placeholder="Tulis pesan ke vendor..." 
-                    value={chatInput}
-                    onChange={(e) => setChatInput(e.target.value)}
-                    style={{ flex: 1, padding: '12px 20px', borderRadius: '25px', border: '1px solid #eee', background: '#f8f9fa' }} 
-                   />
-                   <button type="submit" style={{ background: 'var(--primary)', color: 'white', border: 'none', width: '45px', height: '45px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Play size={18} fill="white" /></button>
-                </form>
-             </div>
-          </div>
-        </div>
-      )}
-
       {/* FLOATING CART BUTTON */}
       {cart.length > 0 && !showCartModal && (
         <button onClick={() => setShowCartModal(true)} style={{ position: 'fixed', bottom: '30px', right: '30px', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '50%', width: '65px', height: '65px', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 25000, cursor: 'pointer', boxShadow: '0 8px 30px rgba(12,166,120,0.5)' }}>
@@ -678,9 +864,63 @@ const MarketplacePage = () => {
             
             <div style={{ display: 'inline-flex', background: 'white', padding: '5px', borderRadius: '30px', boxShadow: '0 5px 20px rgba(0,0,0,0.05)', border: '1px solid var(--primary)' }}>
               <button onClick={() => setViewMode('buyer')} style={{ padding: '8px 24px', borderRadius: '25px', border: 'none', background: viewMode === 'buyer' ? 'var(--primary)' : 'transparent', color: viewMode === 'buyer' ? 'white' : 'var(--text-main)', fontWeight: 'bold', cursor: 'pointer' }}>{t('market_mode_buyer')}</button>
+              <button onClick={() => setViewMode('inbox')} style={{ padding: '8px 24px', borderRadius: '25px', border: 'none', background: viewMode === 'inbox' ? 'var(--primary)' : 'transparent', color: viewMode === 'inbox' ? 'white' : 'var(--text-main)', fontWeight: 'bold', cursor: 'pointer', position: 'relative' }}>
+                 KOTAK PESAN
+                 {chats.filter(c => c.vendor === user?.username && c.messages?.some(m => !m.isMe)).length > 0 && (
+                    <span style={{ position: 'absolute', top: '0', right: '0', background: 'red', color: 'white', width: '15px', height: '15px', borderRadius: '50%', fontSize: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>!</span>
+                 )}
+              </button>
               <button onClick={() => handleSwitchMode('admin')} style={{ padding: '8px 24px', borderRadius: '25px', border: 'none', background: viewMode === 'admin' ? 'var(--primary)' : 'transparent', color: viewMode === 'admin' ? 'white' : 'var(--text-main)', fontWeight: 'bold', cursor: 'pointer' }}>{t('market_mode_admin')}</button>
             </div>
           </div>
+
+          {viewMode === 'inbox' && (
+             <div className="container" style={{ marginBottom: '50px' }}>
+                <div style={{ background: 'var(--bg-card)', borderRadius: '30px', padding: '40px', border: '1px solid var(--border-color)', minHeight: '500px' }}>
+                   <h2 style={{ marginBottom: '30px', display: 'flex', alignItems: 'center', gap: '15px' }}><MessageCircle size={32} color="var(--primary)" /> Kotak Pesan Vendor</h2>
+                   {chats.filter(c => c.vendor === user?.username).length === 0 ? (
+                      <div style={{ textAlign: 'center', padding: '50px 0', color: 'var(--text-muted)' }}>
+                         Belum ada pesan dari pembeli.
+                      </div>
+                   ) : (
+                      <div style={{ display: 'grid', gridTemplateColumns: windowWidth < 800 ? '1fr' : '300px 1fr', gap: '20px', height: '600px' }}>
+                         <div style={{ borderRight: windowWidth < 800 ? 'none' : '1px solid var(--border-color)', paddingRight: windowWidth < 800 ? '0' : '20px', overflowY: 'auto' }}>
+                            {chats.filter(c => c.vendor === user?.username).map(chat => (
+                               <div key={chat.id} onClick={() => setActiveChat(chat)} style={{ padding: '15px', borderRadius: '15px', cursor: 'pointer', background: activeChat?.id === chat.id ? 'rgba(12, 166, 120, 0.1)' : 'transparent', border: activeChat?.id === chat.id ? '1px solid var(--primary)' : '1px solid transparent', marginBottom: '10px' }}>
+                                  <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>{chat.buyerName || chat.buyerId}</div>
+                                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Produk: {chat.productName}</div>
+                               </div>
+                            ))}
+                         </div>
+                         <div style={{ display: 'flex', flexDirection: 'column', background: 'var(--bg-secondary)', borderRadius: '20px', overflow: 'hidden' }}>
+                            {activeChat ? (
+                               <>
+                                  <div style={{ padding: '20px', borderBottom: '1px solid var(--border-color)', background: 'var(--bg-card)' }}>
+                                     <h3 style={{ margin: 0 }}>{activeChat.buyerName || activeChat.buyerId}</h3>
+                                     <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>Tanya tentang: {activeChat.productName}</p>
+                                  </div>
+                                  <div style={{ flex: 1, overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                     {(activeChat.messages || []).map((msg, i) => (
+                                        <div key={i} style={{ alignSelf: msg.isMe ? 'flex-end' : 'flex-start', background: msg.isMe ? 'var(--primary)' : 'var(--bg-card)', color: msg.isMe ? 'white' : 'var(--text-main)', padding: '12px 18px', borderRadius: msg.isMe ? '20px 20px 0 20px' : '20px 20px 20px 0', maxWidth: '80%', border: msg.isMe ? 'none' : '1px solid var(--border-color)' }}>
+                                           <div style={{ fontSize: '0.95rem' }}>{msg.text}</div>
+                                           <div style={{ fontSize: '0.7rem', opacity: 0.7, textAlign: 'right', marginTop: '5px' }}>{msg.time}</div>
+                                        </div>
+                                     ))}
+                                  </div>
+                                  <div style={{ padding: '20px', background: 'var(--bg-card)', borderTop: '1px solid var(--border-color)', display: 'flex', gap: '10px' }}>
+                                     <input type="text" value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && (() => { if(chatInput.trim()){ sendMessage(activeChat.id, activeChat.productId, activeChat.productName, activeChat.vendor, chatInput, true); setChatInput(''); } })()} placeholder="Ketik balasan Anda..." style={{ flex: 1, padding: '15px 20px', borderRadius: '30px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', outline: 'none' }} />
+                                     <button onClick={() => { if(chatInput.trim()){ sendMessage(activeChat.id, activeChat.productId, activeChat.productName, activeChat.vendor, chatInput, true); setChatInput(''); } }} style={{ background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '50%', width: '50px', height: '50px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Play size={20} fill="white" /></button>
+                                  </div>
+                               </>
+                            ) : (
+                               <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>Pilih pesan untuk mulai membalas.</div>
+                            )}
+                         </div>
+                      </div>
+                   )}
+                </div>
+             </div>
+          )}
 
           {/* SELL PRODUCT MODAL */}
           {showSellModal && (
@@ -738,6 +978,11 @@ const MarketplacePage = () => {
                    <div style={{ marginBottom: '15px' }}>
                       <label style={{ fontSize: '0.75rem', color: '#888', display: 'block', marginBottom: '5px' }}>{t('market_sell_desc')}</label>
                       <textarea required placeholder="Jelaskan detail produk Bapak..." value={newProduct.description} onChange={e => setNewProduct({...newProduct, description: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #ddd', minHeight: '80px', fontFamily: 'inherit' }} />
+                   </div>
+
+                   <div style={{ marginBottom: '15px' }}>
+                      <label style={{ fontSize: '0.75rem', color: '#888', display: 'block', marginBottom: '5px' }}>Cerita di Balik Produk (Story Telling)</label>
+                      <textarea placeholder="Ceritakan keunikan produk, asal usul bambu, dan pengrajin di baliknya..." value={newProduct.storyTelling} onChange={e => setNewProduct({...newProduct, storyTelling: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #ddd', minHeight: '100px', fontFamily: 'inherit' }} />
                    </div>
 
                    <div style={{ marginBottom: '15px' }}>
@@ -799,7 +1044,7 @@ const MarketplacePage = () => {
                 <h3 style={{ marginBottom: '8px', fontWeight: '900' }}>Khusus Untuk Anda <Sparkles size={20} /></h3>
                 <p style={{ opacity: 0.9, marginBottom: '30px' }}>Rekomendasi berbasis minat hijau Bapak.</p>
                 <div style={{ display: 'flex', gap: '20px', overflowX: 'auto' }}>
-                   {products.slice(0, 4).map(p => (
+                   {visibleProducts.slice(0, 4).map(p => (
                      <div key={p.id} onClick={() => setSelectedProduct(p)} style={{ minWidth: '200px', background: 'rgba(255,255,255,0.1)', borderRadius: '20px', padding: '15px', border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer' }}>
                         <img src={p.img} style={{ width: '100%', height: '120px', borderRadius: '12px', objectFit: 'cover', marginBottom: '10px' }} alt="" />
                         <div style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>{p.name}</div>
@@ -859,6 +1104,78 @@ const MarketplacePage = () => {
           </div>
         </>
       )}
+
+      {/* IN-APP CHAT OVERLAY */}
+      {activeChat && viewMode !== 'inbox' && (() => {
+         const isNew = activeChat.isNew;
+         const chatDoc = chats.find(c => c.id === activeChat.id);
+         const messages = isNew ? (activeChat.messages || []) : (chatDoc?.messages || []);
+         const title = isNew ? activeChat.product.vendor : (chatDoc ? (user?.username === chatDoc.vendor ? chatDoc.buyerName || chatDoc.buyerId : chatDoc.vendor) : 'Chat');
+         const subtitle = isNew ? activeChat.product.name : (chatDoc ? `Produk: ${chatDoc.productName}` : '');
+
+         return (
+         <div style={{ position: 'fixed', bottom: '90px', right: '20px', width: '350px', background: 'var(--bg-card)', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.3)', border: '1px solid var(--border-color)', zIndex: 2100, display: 'flex', flexDirection: 'column' }}>
+            <div style={{ background: '#228be6', padding: '15px 20px', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+               <div>
+                  <div style={{ fontWeight: 'bold', fontSize: '1rem' }}>{title}</div>
+                  <div style={{ fontSize: '0.75rem', opacity: 0.9 }}>{subtitle}</div>
+               </div>
+               <button onClick={() => setActiveChat(null)} style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}><X size={20} /></button>
+            </div>
+            
+            <div style={{ height: '300px', overflowY: 'auto', padding: '20px', background: 'var(--bg-secondary)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+               {isNew && messages.length === 0 && (
+                  <div style={{ alignSelf: 'flex-start', background: 'var(--bg-card)', color: 'var(--text-main)', padding: '12px 18px', borderRadius: '20px 20px 20px 0', maxWidth: '80%', border: '1px solid var(--border-color)' }}>
+                     <div style={{ fontSize: '0.95rem' }}>Halo! Ada yang bisa kami bantu mengenai {activeChat.product.name}?</div>
+                     <div style={{ fontSize: '0.7rem', opacity: 0.7, textAlign: 'right', marginTop: '5px' }}>{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                  </div>
+               )}
+               {messages.map((msg, i) => (
+                  <div key={i} style={{ alignSelf: msg.isMe ? 'flex-end' : 'flex-start', background: msg.isMe ? 'var(--primary)' : 'var(--bg-card)', color: msg.isMe ? 'white' : 'var(--text-main)', padding: '12px 18px', borderRadius: msg.isMe ? '20px 20px 0 20px' : '20px 20px 20px 0', maxWidth: '80%', border: msg.isMe ? 'none' : '1px solid var(--border-color)' }}>
+                     <div style={{ fontSize: '0.95rem' }}>{msg.text}</div>
+                     <div style={{ fontSize: '0.7rem', opacity: 0.7, textAlign: 'right', marginTop: '5px' }}>{msg.time}</div>
+                  </div>
+               ))}
+            </div>
+
+            <div style={{ padding: '15px', background: 'var(--bg-card)', borderTop: '1px solid var(--border-color)', display: 'flex', gap: '10px' }}>
+               <input 
+                  type="text" 
+                  value={chatInput} 
+                  onChange={e => setChatInput(e.target.value)} 
+                  onKeyPress={e => e.key === 'Enter' && (() => { 
+                     if(chatInput.trim()){ 
+                        if(isNew) {
+                           const newChatId = `${user.id}_${activeChat.product.id}`;
+                           sendMessage(newChatId, activeChat.product.id, activeChat.product.name, activeChat.product.vendor, chatInput, false);
+                           setActiveChat(null); // Close active chat, it will appear in inbox
+                           showToast("Pesan terkirim ke vendor!");
+                        } else {
+                           sendMessage(activeChat.id, activeChat.productId, activeChat.productName, activeChat.vendor, chatInput, false); 
+                        }
+                        setChatInput(''); 
+                     } 
+                  })()} 
+                  placeholder="Ketik pesan..." 
+                  style={{ flex: 1, padding: '10px 15px', borderRadius: '20px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', outline: 'none' }} 
+               />
+               <button onClick={() => { 
+                     if(chatInput.trim()){ 
+                        if(isNew) {
+                           const newChatId = `${user.id}_${activeChat.product.id}`;
+                           sendMessage(newChatId, activeChat.product.id, activeChat.product.name, activeChat.product.vendor, chatInput, false);
+                           setActiveChat(null);
+                           showToast("Pesan terkirim ke vendor!");
+                        } else {
+                           sendMessage(activeChat.id, activeChat.productId, activeChat.productName, activeChat.vendor, chatInput, false); 
+                        }
+                        setChatInput(''); 
+                     } 
+               }} style={{ background: '#228be6', color: 'white', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Play size={18} fill="white" /></button>
+            </div>
+         </div>
+         );
+      })()}
     </div>
   );
 };

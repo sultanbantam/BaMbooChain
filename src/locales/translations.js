@@ -30,10 +30,11 @@ export const translations = {
     feature_academy: "Akademi",
     feature_data_analytics: "Analitik Data",
     feature_invest: "Investasi Ekosistem",
+    feature_kodiba: "KoDiBa (Koperasi)",
 
     // Navbar (Sekunder)
     nav_bambupedia: "Bambupedia",
-    nav_academy: "Akademi",
+    nav_academy: "Akademi BMC",
     nav_datatools: "Data & Alat",
     nav_marketplace: "Pasar",
     nav_community: "Komunitas",
@@ -58,6 +59,7 @@ export const translations = {
     nav_notif_read: "Tandai Dibaca",
     nav_notif_clear: "Bersihkan",
     nav_notif_login_req: "Silakan login untuk melihat notifikasi.",
+    nav_events: "Kalender Event",
 
     // Wallet Modal
     wallet_title: "Hubungkan Dompet",
@@ -206,6 +208,23 @@ export const translations = {
     welcome_btn: "MULAI MENJELAJAH! 🚀",
     welcome_footer: "Tanam kebaikan hari ini, petik masa depan esok pagi.",
 
+    // Onboarding Smart Guide
+    guide_title: "Apa yang ingin Anda lakukan hari ini?",
+    guide_opt1: "Mau menyimpan data bambu",
+    guide_opt2: "Mau mencari proyek bambu",
+    guide_opt3: "Mau memberikan database bambu",
+    guide_opt4: "Mau donasi atau kerja sama",
+    guide_opt5: "Mau menjadi mitra",
+    guide_opt6: "Mau jual atau beli produk",
+    guide_opt7: "Mau tahu tentang bambu",
+    guide_opt8: "Mau mencari data bambu",
+    guide_opt9: "Mau memberikan usulan arah ekosistem",
+    guide_opt10: "Mau mendapatkan airdrop token BMC",
+    guide_opt11: "Mau belajar jadi pegiat bambu",
+    guide_opt12: "Mau jadi anggota Koperasi (KoDiBa)",
+    guide_opt13: "Mau ikut event atau kegiatan bambu",
+    guide_opt14: "Mau belajar tentang BMC",
+
     // Marketplace
     market_title: "bambuNUSA Marketplace",
     market_subtitle: "Katalog produk bambu lestari dari hulu ke hilir untuk ekosistem hijau Nusantara.",
@@ -345,10 +364,11 @@ export const translations = {
     feature_academy: "Academy",
     feature_data_analytics: "Data Analytics",
     feature_invest: "Invest Ecosystem",
+    feature_kodiba: "KoDiBa (Cooperative)",
 
     // Navbar (Sekunder)
     nav_bambupedia: "Bambupedia",
-    nav_academy: "Academy",
+    nav_academy: "BMC Academy",
     nav_datatools: "Data & Tools",
     nav_marketplace: "Marketplace",
     nav_community: "Community",
@@ -373,6 +393,7 @@ export const translations = {
     nav_notif_read: "Mark Read",
     nav_notif_clear: "Clear All",
     nav_notif_login_req: "Please login to see notifications.",
+    nav_events: "Event Calendar",
 
     // Wallet Modal
     wallet_title: "Connect Wallet",
@@ -518,8 +539,9 @@ export const translations = {
     welcome_step3_desc: "See how much oxygen has been produced for our beloved earth.",
     welcome_step4_title: "Voice Ideas in DAO",
     welcome_step4_desc: "Be part of community decision-making for the green future of the Archipelago.",
-    welcome_btn: "START EXPLORING! 🚀",
-    welcome_footer: "Plant goodness today, reap the future tomorrow.",
+    guide_opt12: "Join Digital Cooperative (KoDiBa)",
+    guide_opt13: "Join bamboo events or activities",
+    guide_opt14: "Want to learn about BMC",
 
     // Marketplace
     market_title: "bambuNUSA Marketplace",

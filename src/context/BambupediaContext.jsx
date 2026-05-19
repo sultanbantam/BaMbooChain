@@ -1,4 +1,16 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { db } from '../firebase/config';
+import { useAuth } from './AuthContext';
+import { 
+  collection, 
+  addDoc, 
+  updateDoc, 
+  doc, 
+  onSnapshot, 
+  query, 
+  where, 
+  serverTimestamp 
+} from 'firebase/firestore';
 
 const BambupediaContext = createContext();
 
@@ -11,94 +23,173 @@ export const useBambupedia = () => {
 };
 
 export const BambupediaProvider = ({ children }) => {
-  const loadData = (key, defaultValue) => {
-    const saved = localStorage.getItem(key);
-    return saved ? JSON.parse(saved) : defaultValue;
-  };
-
-  const [plantings, setPlantings] = useState(() => loadData('bambupedia_plantings', []));
-  const [maintenances, setMaintenances] = useState(() => loadData('bambupedia_maintenances', []));
-  const [harvests, setHarvests] = useState(() => loadData('bambupedia_harvests', []));
-  const [utilizations, setUtilizations] = useState(() => loadData('bambupedia_utilizations', []));
-  const [cultivations, setCultivations] = useState(() => loadData('bambupedia_cultivations', []));
-  const [taxonomies, setTaxonomies] = useState(() => loadData('bambupedia_taxonomies', []));
+  const { user } = useAuth();
   
-  useEffect(() => { localStorage.setItem('bambupedia_plantings', JSON.stringify(plantings)); }, [plantings]);
-  useEffect(() => { localStorage.setItem('bambupedia_maintenances', JSON.stringify(maintenances)); }, [maintenances]);
-  useEffect(() => { localStorage.setItem('bambupedia_harvests', JSON.stringify(harvests)); }, [harvests]);
-  useEffect(() => { localStorage.setItem('bambupedia_utilizations', JSON.stringify(utilizations)); }, [utilizations]);
-  useEffect(() => { localStorage.setItem('bambupedia_cultivations', JSON.stringify(cultivations)); }, [cultivations]);
-  useEffect(() => { localStorage.setItem('bambupedia_taxonomies', JSON.stringify(taxonomies)); }, [taxonomies]);
+  const [plantings, setPlantings] = useState([]);
+  const [maintenances, setMaintenances] = useState([]);
+  const [harvests, setHarvests] = useState([]);
+  const [utilizations, setUtilizations] = useState([]);
+  const [cultivations, setCultivations] = useState([]);
+  const [taxonomies, setTaxonomies] = useState([]);
+  
+  // Real-time Sync from Firestore
+  useEffect(() => {
+    if (!db || !user) {
+      // Clear data if logged out
+      setPlantings([]);
+      setMaintenances([]);
+      setHarvests([]);
+      setUtilizations([]);
+      setCultivations([]);
+      setTaxonomies([]);
+      return;
+    }
 
-  const addPlanting = (data) => {
+    const userId = user.id;
+
+    // Helper for creating listeners
+    const createListener = (collectionName, setState) => {
+      const q = query(collection(db, collectionName), where("userId", "==", userId));
+      return onSnapshot(q, (snapshot) => {
+        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setState(data);
+      }, (err) => console.error(`Sync Error (${collectionName}):`, err));
+    };
+
+    const unsubPlantings = createListener("plantings", setPlantings);
+    const unsubMaintenances = createListener("maintenances", setMaintenances);
+    const unsubHarvests = createListener("harvests", setHarvests);
+    const unsubUtilizations = createListener("utilizations", setUtilizations);
+    const unsubCultivations = createListener("cultivations", setCultivations);
+    const unsubTaxonomies = createListener("taxonomies", setTaxonomies);
+
+    return () => {
+      unsubPlantings();
+      unsubMaintenances();
+      unsubHarvests();
+      unsubUtilizations();
+      unsubCultivations();
+      unsubTaxonomies();
+    };
+  }, [user]);
+
+  const addPlanting = async (data) => {
+    if (!user) return null;
     const newPlanting = {
       ...data,
-      id: 'pl_' + Math.random().toString(36).substr(2, 9),
+      userId: user.id,
       date: data.date || new Date().toISOString(),
-      status: data.status || 'planted'
+      status: data.status || 'planted',
+      createdAt: serverTimestamp()
     };
-    setPlantings(prev => [newPlanting, ...prev]);
-    return newPlanting;
+    
+    try {
+      const docRef = await addDoc(collection(db, "plantings"), newPlanting);
+      return { id: docRef.id, ...newPlanting };
+    } catch (err) {
+      console.error("Add Planting Error:", err);
+      return null;
+    }
   };
 
-  const verifyPlanting = (id) => {
-    setPlantings(prev => prev.map(p => p.id === id ? { ...p, isVerified: true } : p));
+  const verifyPlanting = async (id) => {
+    try {
+      await updateDoc(doc(db, "plantings", id), { isVerified: true });
+    } catch (err) {
+      console.error("Verify Planting Error:", err);
+    }
   };
 
-  const addMaintenance = (data) => {
+  const addMaintenance = async (data) => {
+    if (!user) return null;
     const newMaintenance = {
       ...data,
-      id: 'mt_' + Math.random().toString(36).substr(2, 9),
-      date: new Date().toISOString()
+      userId: user.id,
+      date: new Date().toISOString(),
+      createdAt: serverTimestamp()
     };
-    setMaintenances(prev => [newMaintenance, ...prev]);
-    return newMaintenance;
+    try {
+      const docRef = await addDoc(collection(db, "maintenances"), newMaintenance);
+      return { id: docRef.id, ...newMaintenance };
+    } catch (err) {
+      console.error(err);
+      return null;
+    }
   };
 
-  const addHarvest = (data) => {
+  const addHarvest = async (data) => {
+    if (!user) return null;
     const newHarvest = {
       ...data,
-      id: 'hv_' + Math.random().toString(36).substr(2, 9),
-      date: new Date().toISOString()
+      userId: user.id,
+      date: new Date().toISOString(),
+      createdAt: serverTimestamp()
     };
-    setHarvests(prev => [newHarvest, ...prev]);
     
-    // Update planting status to harvested
-    if (data.plantingId) {
-      setPlantings(prev => prev.map(p => p.id === data.plantingId ? { ...p, status: 'harvested' } : p));
+    try {
+      const docRef = await addDoc(collection(db, "harvests"), newHarvest);
+      
+      // Update planting status to harvested
+      if (data.plantingId) {
+        await updateDoc(doc(db, "plantings", data.plantingId), { status: 'harvested' });
+      }
+      
+      return { id: docRef.id, ...newHarvest };
+    } catch (err) {
+      console.error(err);
+      return null;
     }
-    
-    return newHarvest;
   };
 
-  const addUtilization = (data) => {
+  const addUtilization = async (data) => {
+    if (!user) return null;
     const newUtil = {
       ...data,
-      id: 'ut_' + Math.random().toString(36).substr(2, 9),
-      date: new Date().toISOString()
+      userId: user.id,
+      date: new Date().toISOString(),
+      createdAt: serverTimestamp()
     };
-    setUtilizations(prev => [newUtil, ...prev]);
-    return newUtil;
+    try {
+      const docRef = await addDoc(collection(db, "utilizations"), newUtil);
+      return { id: docRef.id, ...newUtil };
+    } catch (err) {
+      console.error(err);
+      return null;
+    }
   };
 
-  const addCultivation = (data) => {
+  const addCultivation = async (data) => {
+    if (!user) return null;
     const newCult = {
       ...data,
-      id: 'cl_' + Math.random().toString(36).substr(2, 9),
-      date: new Date().toISOString()
+      userId: user.id,
+      date: new Date().toISOString(),
+      createdAt: serverTimestamp()
     };
-    setCultivations(prev => [newCult, ...prev]);
-    return newCult;
+    try {
+      const docRef = await addDoc(collection(db, "cultivations"), newCult);
+      return { id: docRef.id, ...newCult };
+    } catch (err) {
+      console.error(err);
+      return null;
+    }
   };
 
-  const addTaxonomy = (data) => {
+  const addTaxonomy = async (data) => {
+    if (!user) return null;
     const newTax = {
       ...data,
-      id: 'tx_' + Math.random().toString(36).substr(2, 9),
-      date: new Date().toISOString()
+      userId: user.id,
+      date: new Date().toISOString(),
+      createdAt: serverTimestamp()
     };
-    setTaxonomies(prev => [newTax, ...prev]);
-    return newTax;
+    try {
+      const docRef = await addDoc(collection(db, "taxonomies"), newTax);
+      return { id: docRef.id, ...newTax };
+    } catch (err) {
+      console.error(err);
+      return null;
+    }
   };
 
   return (

@@ -48,7 +48,7 @@ const DaoCommunityPage = () => {
   ];
 
   return (
-    <div style={{ paddingTop: 'var(--navbar-height)', paddingBottom: '80px', minHeight: '100vh', background: '#f8f9fa' }}>
+    <div style={{ paddingTop: 'var(--navbar-height)', paddingBottom: '80px', minHeight: '100vh', background: 'var(--bg-color)' }}>
       
       {/* HEADER SECTION */}
       <div className="container" style={{ textAlign: 'center', marginBottom: '50px' }}>
@@ -95,7 +95,7 @@ const DaoCommunityPage = () => {
             </div>
 
             {/* My Rewards */}
-            <div style={{ background: 'white', borderRadius: '20px', padding: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', border: '1px solid #f1f3f5', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ background: 'var(--bg-card)', borderRadius: '20px', padding: '24px', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 'bold', marginBottom: '4px' }}>
                   <Gift size={16} color="#f59f00" /> Total Reward Saya
@@ -107,7 +107,7 @@ const DaoCommunityPage = () => {
           </div>
 
           {/* Kolom 2: Game & Missions */}
-          <div style={{ background: 'white', borderRadius: '20px', padding: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', border: '1px solid #f1f3f5', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ background: 'var(--bg-card)', borderRadius: '20px', padding: '24px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <h3 style={{ fontSize: '1.2rem', margin: 0, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Target size={20} color="#e03131" /> Misi & Tantangan Harian
@@ -117,7 +117,7 @@ const DaoCommunityPage = () => {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
               {missions.map(mission => (
-                <div key={mission.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px', background: mission.done ? '#f8f9fa' : 'white', border: '1px solid #dee2e6', borderRadius: '12px', opacity: mission.done ? 0.6 : 1 }}>
+                <div key={mission.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px', background: mission.done ? 'var(--bg-secondary)' : 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '12px', opacity: mission.done ? 0.6 : 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: mission.done ? 'none' : '2px solid #ced4da', background: mission.done ? 'var(--primary)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
                       {mission.done && '✓'}
@@ -139,14 +139,14 @@ const DaoCommunityPage = () => {
           </div>
 
           {/* Kolom 3: Leaderboard */}
-          <div style={{ background: 'white', borderRadius: '20px', padding: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', border: '1px solid #f1f3f5' }}>
+          <div style={{ background: 'var(--bg-card)', borderRadius: '20px', padding: '24px', border: '1px solid var(--border-color)' }}>
             <h3 style={{ fontSize: '1.2rem', margin: '0 0 20px 0', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Trophy size={20} color="#f59f00" /> Papan Peringkat Global
             </h3>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {leaderboard.map((user, idx) => (
-                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingBottom: '12px', borderBottom: idx === leaderboard.length - 1 ? 'none' : '1px solid #f1f3f5' }}>
+                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingBottom: '12px', borderBottom: idx === leaderboard.length - 1 ? 'none' : '1px solid var(--border-color)' }}>
                   <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: user.rank === 1 ? '#fcc419' : user.rank === 2 ? '#ced4da' : user.rank === 3 ? '#e8a317' : '#f8f9fa', color: user.rank <= 3 ? 'white' : 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '0.8rem' }}>
                     {user.rank}
                   </div>
@@ -169,7 +169,7 @@ const DaoCommunityPage = () => {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px' }}>
           
           {/* VOTING (PROPOSALS) */}
-          <div style={{ background: 'white', borderRadius: '24px', padding: '32px', boxShadow: '0 10px 40px rgba(0,0,0,0.06)' }}>
+          <div style={{ background: 'var(--bg-card)', borderRadius: '24px', padding: '32px', border: '1px solid var(--border-color)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
               <h3 style={{ fontSize: '1.4rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '10px', margin: 0 }}>
                 <Vote size={24} color="#845ef7" /> Voting Project (Governance)
@@ -179,7 +179,7 @@ const DaoCommunityPage = () => {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {proposals.map((prop, idx) => (
-                <div key={idx} onClick={() => alert('Memuat detail proposal ' + prop.id + '...')} style={{ padding: '20px', border: '1px solid #f1f3f5', borderRadius: '16px', cursor: 'pointer', transition: 'background 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.background = '#fcfcfc'} onMouseLeave={(e) => e.currentTarget.style.background = 'white'}>
+                <div key={idx} onClick={() => alert('Memuat detail proposal ' + prop.id + '...')} style={{ padding: '20px', border: '1px solid var(--border-color)', borderRadius: '16px', cursor: 'pointer', transition: 'background 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-secondary)'} onMouseLeave={(e) => e.currentTarget.style.background = 'var(--bg-card)'}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
@@ -212,7 +212,7 @@ const DaoCommunityPage = () => {
             </h3>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginBottom: '32px' }}>Dana hibah kerumunan (crowdfunding) untuk inisiatif akar rumput.</p>
             
-            <div style={{ background: 'white', borderRadius: '16px', padding: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', marginBottom: '24px' }}>
+            <div style={{ background: 'var(--bg-card)', borderRadius: '16px', padding: '24px', border: '1px solid var(--border-color)', marginBottom: '24px' }}>
               <div style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--text-muted)' }}>Total Pundi Amal Terkumpul</div>
               <div style={{ fontSize: '2.5rem', fontWeight: '900', color: '#f59f00' }}>$24,500 <span style={{ fontSize: '1.2rem', color: 'var(--text-muted)' }}>USDT</span></div>
             </div>
@@ -242,7 +242,7 @@ const DaoCommunityPage = () => {
                { title: "Workshop Bambu Jabar", loc: "Sukabumi, Jabar", desc: "Pelatihan teknik konstruksi bambu modern & pengawetan.", img: "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?ixlib=rb-4.0.3" },
                { title: "Eco-Village Banten", loc: "Lebak, Banten", desc: "Kawasan hunian bambu berkelanjutan & kebun bibit.", img: "https://images.unsplash.com/photo-1587825027984-c4476461c8f9?ixlib=rb-4.0.3" }
              ].map((site, i) => (
-                <div key={i} style={{ background: 'white', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 8px 30px rgba(0,0,0,0.05)', border: '1px solid #f1f3f5' }}>
+                <div key={i} style={{ background: 'var(--bg-card)', borderRadius: '24px', overflow: 'hidden', border: '1px solid var(--border-color)' }}>
                    <div style={{ height: '160px', position: 'relative' }}>
                       <img src={site.img} alt={site.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'rgba(0,0,0,0.6)', color: 'white', padding: '4px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -272,7 +272,7 @@ const DaoCommunityPage = () => {
               <p style={{ color: 'var(--text-muted)', margin: '4px 0 0 0' }}>Koleksi 36 karakter unik pelindung rumpun bambu Nusantara.</p>
             </div>
             <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-               <div style={{ background: 'white', padding: '8px 16px', borderRadius: '12px', border: '1px solid #dee2e6', fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-muted)' }}>
+               <div style={{ background: 'var(--bg-card)', padding: '8px 16px', borderRadius: '12px', border: '1px solid var(--border-color)', fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-muted)' }}>
                  Unlocked: <span style={{ color: 'var(--primary)' }}>12/36</span>
                </div>
                <button onClick={() => alert('Membuka pack NFT karakter (Butuh 100 BMC)...')} style={{ background: 'var(--text-main)', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer' }}>Buka Pack Baru</button>
@@ -283,20 +283,19 @@ const DaoCommunityPage = () => {
             display: 'grid', 
             gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', 
             gap: '12px',
-            background: 'rgba(255,255,255,0.5)',
+            background: 'var(--bg-secondary)',
             padding: '20px',
             borderRadius: '32px',
-            border: '2px dashed #dee2e6'
+            border: '2px dashed var(--border-color)'
           }}>
             {bambooCharacters.map((char) => (
               <div 
                 key={char.id} 
                 style={{ 
-                  background: 'white', 
+                  background: 'var(--bg-card)', 
                   borderRadius: '20px', 
                   padding: '12px', 
-                  boxShadow: '0 4px 15px rgba(0,0,0,0.05)', 
-                  border: '1px solid #f1f3f5',
+                  border: '1px solid var(--border-color)',
                   transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
                   cursor: 'pointer',
                   position: 'relative',
@@ -309,8 +308,7 @@ const DaoCommunityPage = () => {
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.05)';
-                  e.currentTarget.style.borderColor = '#f1f3f5';
+                  e.currentTarget.style.borderColor = 'var(--border-color)';
                 }}
               >
                 {/* Rarity Badge */}
@@ -346,7 +344,7 @@ const DaoCommunityPage = () => {
         </div>
 
         {/* ROW 5: FORUM */}
-        <div style={{ background: 'white', borderRadius: '24px', padding: '32px', boxShadow: '0 10px 40px rgba(0,0,0,0.06)', marginTop: '20px' }}>
+        <div style={{ background: 'var(--bg-card)', borderRadius: '24px', padding: '32px', border: '1px solid var(--border-color)', marginTop: '20px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
             <h3 style={{ fontSize: '1.4rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '10px', margin: 0 }}>
               <MessageSquare size={24} color="#339af0" /> Diskusi Komunitas (Forum)
@@ -355,9 +353,9 @@ const DaoCommunityPage = () => {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px' }}>
             {discussions.map((chat) => (
-              <div key={chat.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '20px', border: '1px solid #f1f3f5', borderRadius: '16px' }}>
+              <div key={chat.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '20px', border: '1px solid var(--border-color)', borderRadius: '16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                  <div style={{ width: '48px', height: '48px', background: 'rgba(51,154,240,0.1)', color: '#339af0', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ width: '48px', height: '48px', background: 'var(--bg-secondary)', color: '#339af0', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <User size={24} />
                   </div>
                   <div>

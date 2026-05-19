@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Leaf, MapPin, ShieldCheck, CheckCircle, ArrowRight, User, Phone, Wallet, Handshake, Sprout, Axe, Trees } from 'lucide-react';
+import { 
+  Leaf, MapPin, ShieldCheck, CheckCircle, ArrowRight, User, Phone, Wallet, 
+  Handshake, Sprout, Axe, Trees, Hammer, BookOpen, Microscope, Ruler, Users 
+} from 'lucide-react';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import BackButton from '../../components/BackButton';
@@ -39,13 +42,18 @@ const JoinFarmerPage = () => {
     { id: 'lahan', name: 'Pemilik Lahan', icon: <Trees size={24} />, desc: 'Menyediakan lahan kosong untuk diubah menjadi hutan bambu produktif.' },
     { id: 'pengolahan', name: 'Industri Pengolahan', icon: <Handshake size={24} />, desc: 'Penyedia jasa treatment (pengawetan) atau pengolahan produk turunan bambu.' },
     { id: 'logistik', name: 'Logistik & Distribusi', icon: <MapPin size={24} />, desc: 'Bertanggung jawab atas pengiriman material dari lahan ke pabrik atau gudang.' },
+    { id: 'tukang', name: 'Tukang Bangunan', icon: <Hammer size={24} />, desc: 'Ahli konstruksi spesialis material bambu untuk bangunan lestari.' },
+    { id: 'dosen', name: 'Dosen', icon: <BookOpen size={24} />, desc: 'Tenaga pendidik yang memberikan materi edukasi terkait bambu.' },
+    { id: 'peneliti', name: 'Peneliti', icon: <Microscope size={24} />, desc: 'Melakukan riset dan pengembangan inovasi produk turunan bambu.' },
+    { id: 'arsitek', name: 'Arsitek', icon: <Ruler size={24} />, desc: 'Perancang desain bangunan dan interior berbasis material bambu.' },
+    { id: 'mediator', name: 'Mediator', icon: <Users size={24} />, desc: 'Penghubung antar stakeholder dalam ekosistem ekonomi bambu dan bisa memediasi konflik.' },
   ];
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     // Process submission
-    submitPartnerApp({
+    const success = await submitPartnerApp({
       name: formData.name,
       role: ROLES.find(r => r.id === selectedRole)?.name,
       method: paymentType === 'bank' ? 'Rekening Bank' : paymentType === 'bmc' ? 'Wallet BMC' : 'Wallet USDT',
@@ -55,276 +63,213 @@ const JoinFarmerPage = () => {
       paymentDetail: formData.paymentDetail
     });
 
-    setIsSubmitted(true);
+    if (success) {
+      setIsSubmitted(true);
+    } else {
+      alert("Gagal mengirim pendaftaran. Silakan coba lagi.");
+    }
   };
 
-  return (
-    <div style={{ background: '#f8f9fa', minHeight: '100vh' }}>
-      <Navbar />
-      
-      <div style={{ paddingTop: '150px', paddingBottom: '80px' }}>
-        <div className="container" style={{ marginBottom: '24px' }}>
-          <BackButton to="/bambunusa/farmers" />
+  if (isSubmitted) {
+    return (
+      <div style={{ minHeight: '100vh', background: 'var(--bg-color)' }}>
+        <Navbar />
+        <div className="container" style={{ padding: '120px 20px', textAlign: 'center' }}>
+          <div style={{ maxWidth: '600px', margin: '0 auto', background: 'white', padding: '60px 40px', borderRadius: '40px', boxShadow: '0 20px 50px rgba(0,0,0,0.05)' }}>
+            <div style={{ width: '80px', height: '80px', background: '#ebfbee', color: 'var(--primary)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 30px' }}>
+              <ShieldCheck size={40} />
+            </div>
+            <h1 style={{ fontSize: '2.2rem', fontWeight: 'bold', marginBottom: '20px' }}>Pendaftaran Terkirim!</h1>
+            <p style={{ color: '#666', fontSize: '1.1rem', lineHeight: '1.6', marginBottom: '40px' }}>
+              Terima kasih telah mendaftar sebagai mitra {ROLES.find(r => r.id === selectedRole)?.name}. Tim Yayasan akan memverifikasi data Anda dalam 2x24 jam.
+            </p>
+            <button onClick={() => navigate('/')} className="btn btn-primary" style={{ width: '100%', padding: '16px' }}>Kembali ke Beranda</button>
+          </div>
         </div>
+        <Footer />
+      </div>
+    );
+  }
 
-        <div className="container" style={{ maxWidth: '800px' }}>
-          {!isSubmitted ? (
-            <div style={{ background: 'white', borderRadius: '32px', padding: '50px', boxShadow: '0 20px 60px rgba(0,0,0,0.05)', animation: 'fadeIn 0.5s ease-out' }}>
-              <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-                <div style={{ background: 'rgba(12, 166, 120, 0.1)', width: '70px', height: '70px', borderRadius: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', color: 'var(--primary)' }}>
-                  <Handshake size={36} />
+  return (
+    <div style={{ minHeight: '100vh', background: 'var(--bg-color)' }}>
+      <Navbar />
+      <div className="container" style={{ padding: '100px 20px' }}>
+        <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+          <BackButton />
+          
+          <div style={{ background: 'white', borderRadius: '40px', padding: '60px', boxShadow: '0 20px 50px rgba(0,0,0,0.05)', position: 'relative', marginTop: '30px' }}>
+            <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+              <div style={{ width: '60px', height: '60px', background: '#ebfbee', color: 'var(--primary)', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+                <Handshake size={32} />
+              </div>
+              <h1 style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--text-main)', marginBottom: '12px' }}>Pendaftaran Kemitraan</h1>
+              <p style={{ color: 'var(--text-muted)' }}>Mulai langkah Anda bergabung ke ekosistem Web3 bambuNUSA.</p>
+            </div>
+
+            {/* Progress Bar */}
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '40px' }}>
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} style={{ flex: 1, height: '6px', background: i <= step ? 'var(--primary)' : '#e9ecef', borderRadius: '3px', transition: 'all 0.3s' }}></div>
+              ))}
+            </div>
+
+            <form onSubmit={handleSubmit}>
+              {step === 1 && (
+                <div style={{ animation: 'slideIn 0.3s' }}>
+                  <h3 style={{ marginBottom: '24px', color: 'var(--text-main)' }}>1. Pilih Peran Kemitraan</h3>
+                  <p style={{ color: 'var(--text-muted)', marginBottom: '24px', fontSize: '0.95rem' }}>Silakan pilih spesialisasi yang paling sesuai dengan keahlian atau aset yang Anda miliki. Peran ini akan didaftarkan ke dalam sistem Smart Contract Escrow.</p>
+                  
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginBottom: '32px' }}>
+                    {ROLES.map((role) => (
+                      <div 
+                        key={role.id}
+                        onClick={() => setSelectedRole(role.id)}
+                        style={{ 
+                          padding: '24px', 
+                          borderRadius: '16px', 
+                          border: `2px solid ${selectedRole === role.id ? 'var(--primary)' : '#dee2e6'}`,
+                          background: selectedRole === role.id ? 'rgba(12, 166, 120, 0.05)' : 'white',
+                          cursor: 'pointer',
+                          transition: '0.2s'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px', color: selectedRole === role.id ? 'var(--primary)' : 'var(--text-muted)' }}>
+                          {role.icon}
+                          <div style={{ fontWeight: 'bold', color: 'var(--text-main)' }}>{role.name}</div>
+                        </div>
+                        <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: '1.5' }}>{role.desc}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <button 
+                    type="button" 
+                    onClick={() => setStep(2)} 
+                    disabled={!selectedRole}
+                    className="btn btn-primary" 
+                    style={{ width: '100%', padding: '16px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', opacity: selectedRole ? 1 : 0.5, cursor: selectedRole ? 'pointer' : 'not-allowed' }}
+                  >
+                    Lanjut <ArrowRight size={20} />
+                  </button>
                 </div>
-                <h1 style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--text-main)', marginBottom: '12px' }}>Pendaftaran Kemitraan</h1>
-                <p style={{ color: 'var(--text-muted)' }}>Mulai langkah Anda bergabung ke ekosistem Web3 bambuNUSA.</p>
-              </div>
+              )}
 
-              {/* Progress Bar */}
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '40px' }}>
-                {[1, 2, 3, 4].map(i => (
-                  <div key={i} style={{ flex: 1, height: '6px', background: i <= step ? 'var(--primary)' : '#e9ecef', borderRadius: '3px', transition: 'all 0.3s' }}></div>
-                ))}
-              </div>
-
-              <form onSubmit={handleSubmit}>
-                {step === 1 && (
-                  <div style={{ animation: 'slideIn 0.3s' }}>
-                    <h3 style={{ marginBottom: '24px', color: 'var(--text-main)' }}>1. Pilih Peran Kemitraan</h3>
-                    <p style={{ color: 'var(--text-muted)', marginBottom: '24px', fontSize: '0.95rem' }}>Silakan pilih spesialisasi yang paling sesuai dengan keahlian atau aset yang Anda miliki. Peran ini akan didaftarkan ke dalam sistem Smart Contract Escrow.</p>
-                    
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginBottom: '32px' }}>
-                      {ROLES.map((role) => (
-                        <div 
-                          key={role.id}
-                          onClick={() => setSelectedRole(role.id)}
-                          style={{ 
-                            padding: '24px', 
-                            borderRadius: '16px', 
-                            border: `2px solid ${selectedRole === role.id ? 'var(--primary)' : '#dee2e6'}`,
-                            background: selectedRole === role.id ? 'rgba(12, 166, 120, 0.05)' : 'white',
-                            cursor: 'pointer',
-                            transition: '0.2s'
-                          }}
-                        >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px', color: selectedRole === role.id ? 'var(--primary)' : 'var(--text-muted)' }}>
-                            {role.icon}
-                            <div style={{ fontWeight: 'bold', color: 'var(--text-main)' }}>{role.name}</div>
-                          </div>
-                          <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: '1.5' }}>{role.desc}</div>
-                        </div>
-                      ))}
+              {step === 2 && (
+                <div style={{ animation: 'slideIn 0.3s' }}>
+                  <h3 style={{ marginBottom: '24px', color: 'var(--text-main)' }}>2. Informasi Pribadi & Pembayaran</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    <div className="form-group">
+                      <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}><User size={16} style={{display:'inline', marginBottom:'-3px', marginRight:'6px'}}/> Nama Lengkap (sesuai KTP)</label>
+                      <input name="name" value={formData.name} onChange={handleChange} type="text" placeholder="Contoh: Mukoddas Syuhada" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }} required />
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                      <div>
+                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}><Phone size={16} style={{display:'inline', marginBottom:'-3px', marginRight:'6px'}}/> Nomor WhatsApp</label>
+                        <input name="whatsapp" value={formData.whatsapp} onChange={handleChange} type="tel" placeholder="0811..." style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }} required />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}><MapPin size={16} style={{display:'inline', marginBottom:'-3px', marginRight:'6px'}}/> Domisili / Wilayah</label>
+                        <input name="location" value={formData.location} onChange={handleChange} type="text" placeholder="Contoh: Jakarta" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }} required />
+                      </div>
                     </div>
 
-                    <button 
-                      type="button" 
-                      onClick={() => setStep(2)} 
-                      disabled={!selectedRole}
-                      className="btn btn-primary" 
-                      style={{ width: '100%', padding: '16px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', opacity: selectedRole ? 1 : 0.5, cursor: selectedRole ? 'pointer' : 'not-allowed' }}
-                    >
-                      Lanjut <ArrowRight size={20} />
-                    </button>
-                  </div>
-                )}
-
-                {step === 2 && (
-                  <div style={{ animation: 'slideIn 0.3s' }}>
-                    <h3 style={{ marginBottom: '24px', color: 'var(--text-main)' }}>2. Informasi Pribadi & Pembayaran</h3>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                      <div className="form-group">
-                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}><User size={16} style={{display:'inline', marginBottom:'-3px', marginRight:'6px'}}/> Nama Lengkap (sesuai KTP)</label>
-                        <input name="name" value={formData.name} onChange={handleChange} type="text" placeholder="Contoh: Mukoddas Syuhada" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }} required />
-                      </div>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                        <div>
-                          <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}><Phone size={16} style={{display:'inline', marginBottom:'-3px', marginRight:'6px'}}/> Nomor WhatsApp</label>
-                          <input name="whatsapp" value={formData.whatsapp} onChange={handleChange} type="tel" placeholder="0811..." style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }} required />
-                        </div>
-                        <div>
-                          <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}><MapPin size={16} style={{display:'inline', marginBottom:'-3px', marginRight:'6px'}}/> Domisili / Wilayah</label>
-                          <input name="location" value={formData.location} onChange={handleChange} type="text" placeholder="Contoh: Jakarta" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }} required />
-                        </div>
-                      </div>
-
-                      <div className="form-group">
-                        <label style={{ display: 'block', marginBottom: '12px', fontWeight: 'bold', fontSize: '0.9rem' }}>Pilih Metode Penerimaan Dana</label>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '20px' }}>
-                          {[
-                            { id: 'bank', name: 'Rekening Bank' },
-                            { id: 'bmc', name: 'Wallet BMC' },
-                            { id: 'usdt', name: 'Wallet USDT (BEP20)' }
-                          ].map(t => (
-                            <button 
-                              key={t.id}
-                              type="button"
-                              onClick={() => setPaymentType(t.id)}
-                              style={{ 
-                                padding: '10px 20px', borderRadius: '50px', border: `1px solid ${paymentType === t.id ? 'var(--primary)' : '#eee'}`,
-                                background: paymentType === t.id ? 'var(--primary)' : 'white',
-                                color: paymentType === t.id ? 'white' : '#666',
-                                fontSize: '0.85rem', fontWeight: '600', cursor: 'pointer', transition: '0.2s'
-                              }}
-                            >
-                              {t.name}
-                            </button>
-                          ))}
-                        </div>
-
-                        {paymentType === 'bank' ? (
-                          <div style={{ background: '#f8f9fa', padding: '20px', borderRadius: '16px', border: '1px solid #dee2e6' }}>
-                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.85rem' }}>Detail Rekening Bank (Nama Bank, No Rek, Atas Nama)</label>
-                            <textarea 
-                              name="paymentDetail"
-                              value={formData.paymentDetail}
-                              onChange={handleChange}
-                              placeholder="Contoh: BRI - 12345678 - A/N Mukoddas" 
-                              style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none', resize: 'none' }} 
-                              rows={2} 
-                              required 
-                            />
+                    <div style={{ marginTop: '20px' }}>
+                      <label style={{ display: 'block', marginBottom: '16px', fontWeight: 'bold', fontSize: '0.9rem' }}><Wallet size={16} style={{display:'inline', marginBottom:'-3px', marginRight:'6px'}}/> Pilih Metode Pencairan Komisi</label>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+                        {[
+                          { id: 'bank', name: 'Bank Transfer' },
+                          { id: 'bmc', name: 'Wallet BMC' },
+                          { id: 'usdt', name: 'Wallet USDT' }
+                        ].map(m => (
+                          <div 
+                            key={m.id} 
+                            onClick={() => setPaymentType(m.id)}
+                            style={{ 
+                              padding: '12px', borderRadius: '10px', border: `1px solid ${paymentType === m.id ? 'var(--primary)' : '#dee2e6'}`, 
+                              background: paymentType === m.id ? 'rgba(12, 166, 120, 0.05)' : 'white', textAlign: 'center', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 'bold'
+                            }}
+                          >
+                            {m.name}
                           </div>
-                        ) : (
-                          <div style={{ background: '#fff9db', padding: '20px', borderRadius: '16px', border: '1px solid #fcc419' }}>
-                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem', color: '#e67700' }}>
-                              <Wallet size={16} style={{display:'inline', marginBottom:'-3px', marginRight:'6px'}}/> 
-                              Alamat Wallet {paymentType === 'bmc' ? 'BMC' : 'USDT'} (BEP-20)
-                            </label>
-                            <p style={{ fontSize: '0.8rem', color: '#d9480f', marginBottom: '12px' }}>Dana akan ditransfer otomatis melalui Smart Contract ke dompet ini.</p>
-                            <input 
-                              name="paymentDetail"
-                              value={formData.paymentDetail}
-                              onChange={handleChange}
-                              type="text" placeholder="0x..." style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #fcc419', outline: 'none', background: 'white' }} required />
-                          </div>
-                        )}
-                      </div>
-                      <div style={{ display: 'flex', gap: '12px', marginTop: '10px' }}>
-                        <button type="button" onClick={() => setStep(1)} style={{ flex: 1, padding: '16px', borderRadius: '12px', border: '1px solid #dee2e6', background: 'transparent', cursor: 'pointer', fontWeight: 'bold' }}>Kembali</button>
-                        <button type="button" onClick={() => setStep(3)} className="btn btn-primary" style={{ flex: 2, padding: '16px', fontWeight: 'bold', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}>Lanjut <ArrowRight size={20} /></button>
+                        ))}
                       </div>
                     </div>
-                  </div>
-                )}
 
-                {step === 3 && (
-                  <div style={{ animation: 'slideIn 0.3s' }}>
-                    <h3 style={{ marginBottom: '24px', color: 'var(--text-main)' }}>3. Detail Kapasitas Kemitraan</h3>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                      
-                      {selectedRole === 'bibit' && (
-                        <>
-                          <div className="form-group">
-                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}>Kapasitas Pembibitan Saat Ini (Jumlah Bibit)</label>
-                            <input name="capacity" value={formData.capacity} onChange={handleChange} type="number" placeholder="Contoh: 1000" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }} required />
-                          </div>
-                          <div className="form-group">
-                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}>Spesies Bambu Utama</label>
-                            <input name="details_extra" onChange={handleChange} type="text" placeholder="Contoh: Bambu Betung, Bambu Hitam" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }} required />
-                          </div>
-                        </>
-                      )}
-
-                      {selectedRole === 'lahan' && (
-                        <>
-                          <div className="form-group">
-                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}>Luas Lahan yang Dimiliki (Meter Persegi / Hektar)</label>
-                            <input name="capacity" value={formData.capacity} onChange={handleChange} type="text" placeholder="Contoh: 2 Hektar" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }} required />
-                          </div>
-                          <div className="form-group">
-                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}>Koordinat / Titik Gmaps Lahan</label>
-                            <input name="coordinates" value={formData.coordinates} onChange={handleChange} type="text" placeholder="Contoh: -6.123, 106.123" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }} required />
-                          </div>
-                        </>
-                      )}
-
-                      {(selectedRole === 'tanam' || selectedRole === 'rawat') && (
-                        <>
-                          <div className="form-group">
-                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}>Pengalaman (Tahun)</label>
-                            <select name="experience" value={formData.experience} onChange={handleChange} style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }}>
-                              <option value="Pemula">Pemula (Belum Pernah)</option>
-                              <option value="Menengah">Menengah (1-3 Tahun)</option>
-                              <option value="Ahli">Ahli (&gt; 3 Tahun)</option>
-                            </select>
-                          </div>
-                          <div className="form-group">
-                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}>Ketersediaan Waktu (Jam/Minggu)</label>
-                            <input name="availability" value={formData.availability} onChange={handleChange} type="number" placeholder="Contoh: 20" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }} required />
-                          </div>
-                        </>
-                      )}
-
-                      {selectedRole === 'pengolahan' && (
-                        <>
-                          <div className="form-group">
-                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}>Kapasitas Output (Batang / Bulan)</label>
-                            <input name="capacity" value={formData.capacity} onChange={handleChange} type="text" placeholder="Contoh: 5000 batang" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }} required />
-                          </div>
-                          <div className="form-group">
-                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}>Jenis Fasilitas (Pabrik / Workshop / Perumahan)</label>
-                            <input name="details_extra" onChange={handleChange} type="text" placeholder="Contoh: Pabrik Pengawetan Borax" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }} required />
-                          </div>
-                        </>
-                      )}
-
-                      {selectedRole === 'logistik' && (
-                        <>
-                          <div className="form-group">
-                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}>Jumlah Armada & Jenis Kendaraan</label>
-                            <input name="capacity" value={formData.capacity} onChange={handleChange} type="text" placeholder="Contoh: 3 Truk Engkel" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }} required />
-                          </div>
-                          <div className="form-group">
-                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}>Wilayah Jangkauan Pengiriman</label>
-                            <input name="details_extra" onChange={handleChange} type="text" placeholder="Contoh: Seluruh Banten & Jabar" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }} required />
-                          </div>
-                        </>
-                      )}
-
-                      <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
-                        <button type="button" onClick={() => setStep(2)} style={{ flex: 1, padding: '16px', borderRadius: '12px', border: '1px solid #dee2e6', background: 'transparent', cursor: 'pointer', fontWeight: 'bold' }}>Kembali</button>
-                        <button type="button" onClick={() => setStep(4)} className="btn btn-primary" style={{ flex: 2, padding: '16px', fontWeight: 'bold', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}>Lanjut <ArrowRight size={20} /></button>
-                      </div>
+                    <div className="form-group" style={{ marginTop: '10px' }}>
+                      <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}>Detail Rekening / Alamat Wallet</label>
+                      <input name="paymentDetail" value={formData.paymentDetail} onChange={handleChange} type="text" placeholder={paymentType === 'bank' ? "Bank Mandiri - 123456789 - Atas Nama Anda" : "0x..."} style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }} required />
                     </div>
                   </div>
-                )}
 
-                {step === 4 && (
-                  <div style={{ animation: 'slideIn 0.3s' }}>
-                    <h3 style={{ marginBottom: '24px', color: 'var(--text-main)' }}>4. Komitmen & Validasi Akhir</h3>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                      <div style={{ background: 'rgba(12, 166, 120, 0.05)', padding: '20px', borderRadius: '16px', border: '1px dashed var(--primary)' }}>
-                        <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-main)', lineHeight: '1.6' }}>
-                          Saya bersedia mengikuti SOP ekosistem bambuNUSA, memberikan laporan bukti lapangan dengan jujur kepada Validator, dan menyetujui bahwa dana kompensasi saya akan disalurkan secara otomatis melalui teknologi Blockchain (Smart Contract Escrow).
-                        </p>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <input type="checkbox" id="agree" required style={{ width: '20px', height: '20px' }} />
-                        <label htmlFor="agree" style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Saya menyetujui Pakta Integritas Mitra bambuNUSA.</label>
-                      </div>
-                      <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
-                        <button type="button" onClick={() => setStep(3)} style={{ flex: 1, padding: '16px', borderRadius: '12px', border: '1px solid #dee2e6', background: 'transparent', cursor: 'pointer', fontWeight: 'bold' }}>Kembali</button>
-                        <button type="submit" className="btn btn-primary" style={{ flex: 2, padding: '16px', fontWeight: 'bold' }}>Ajukan Kemitraan</button>
-                      </div>
+                  <div style={{ display: 'flex', gap: '15px', marginTop: '30px' }}>
+                    <button type="button" onClick={() => setStep(1)} className="btn" style={{ flex: 1, padding: '16px', border: '1px solid #dee2e6', background: 'white' }}>Sebelumnya</button>
+                    <button type="button" onClick={() => setStep(3)} className="btn btn-primary" style={{ flex: 1, padding: '16px' }}>Lanjut <ArrowRight size={20} /></button>
+                  </div>
+                </div>
+              )}
+
+              {step === 3 && (
+                <div style={{ animation: 'slideIn 0.3s' }}>
+                  <h3 style={{ marginBottom: '24px', color: 'var(--text-main)' }}>3. Detail Kapasitas & Pengalaman</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    <div className="form-group">
+                      <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}>Berapa Kapasitas/Output yang Bisa Anda Sediakan?</label>
+                      <input name="capacity" value={formData.capacity} onChange={handleChange} type="text" placeholder="Contoh: 1000 bibit/bulan atau Lahan 2 Hektar" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }} required />
+                    </div>
+                    <div className="form-group">
+                      <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}>Pengalaman Terkait (Tahun/Proyek)</label>
+                      <textarea name="experience" value={formData.experience} onChange={handleChange} placeholder="Ceritakan pengalaman Anda di bidang ini..." style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none', minHeight: '100px' }} required />
+                    </div>
+                    <div className="form-group">
+                      <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}>Waktu Ketersediaan</label>
+                      <select name="availability" value={formData.availability} onChange={handleChange} style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }} required>
+                        <option value="">-- Pilih Ketersediaan --</option>
+                        <option value="fulltime">Full Time</option>
+                        <option value="parttime">Part Time</option>
+                        <option value="seasonal">Musiman / On-Project</option>
+                      </select>
                     </div>
                   </div>
-                )}
-              </form>
-            </div>
-          ) : (
-            <div style={{ background: 'white', borderRadius: '32px', padding: '60px', textAlign: 'center', boxShadow: '0 20px 60px rgba(0,0,0,0.05)', animation: 'scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1)' }}>
-              <div style={{ width: '100px', height: '100px', background: 'var(--primary)', borderRadius: '50%', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 32px' }}>
-                <ShieldCheck size={60} />
-              </div>
-              <h1 style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--text-main)', marginBottom: '16px' }}>Pengajuan Sedang Ditinjau!</h1>
-              <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', maxWidth: '500px', margin: '0 auto 40px', lineHeight: '1.6' }}>
-                Terima kasih. Admin YSNJ akan melakukan inspeksi faktual di lapangan. Jika lolos verifikasi, dompet Web3 Anda akan di-*whitelist* ke dalam Smart Contract untuk menerima dana.
-              </p>
-              <button onClick={() => navigate('/bambunusa/farmers')} className="btn btn-primary" style={{ padding: '14px 40px' }}>Lihat Daftar Mitra</button>
-            </div>
-          )}
+
+                  <div style={{ display: 'flex', gap: '15px', marginTop: '30px' }}>
+                    <button type="button" onClick={() => setStep(2)} className="btn" style={{ flex: 1, padding: '16px', border: '1px solid #dee2e6', background: 'white' }}>Sebelumnya</button>
+                    <button type="button" onClick={() => setStep(4)} className="btn btn-primary" style={{ flex: 1, padding: '16px' }}>Lanjut <ArrowRight size={20} /></button>
+                  </div>
+                </div>
+              )}
+
+              {step === 4 && (
+                <div style={{ animation: 'slideIn 0.3s' }}>
+                  <h3 style={{ marginBottom: '24px', color: 'var(--text-main)' }}>4. Konfirmasi & Disclaimer</h3>
+                  <div style={{ background: '#f8f9fa', padding: '25px', borderRadius: '16px', marginBottom: '30px', border: '1px solid #e9ecef' }}>
+                    <h4 style={{ marginBottom: '15px', color: 'var(--text-main)' }}>Ketentuan Kemitraan:</h4>
+                    <ul style={{ paddingLeft: '20px', fontSize: '0.9rem', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      <li>Data yang saya berikan adalah benar dan dapat dipertanggungjawabkan.</li>
+                      <li>Saya setuju untuk mengikuti kurasi dan verifikasi dari tim Yayasan.</li>
+                      <li>Saya memahami bahwa komisi akan dibayarkan melalui sistem Escrow setelah verifikasi pekerjaan selesai.</li>
+                      <li>Pendaftaran ini tidak memungut biaya apapun (Gratis).</li>
+                    </ul>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '15px' }}>
+                    <button type="button" onClick={() => setStep(3)} className="btn" style={{ flex: 1, padding: '16px', border: '1px solid #dee2e6', background: 'white' }}>Sebelumnya</button>
+                    <button type="submit" className="btn btn-primary" style={{ flex: 1, padding: '16px', background: 'linear-gradient(135deg, #0ca678 0%, #087f5b 100%)', boxShadow: '0 10px 20px rgba(12, 166, 120, 0.2)' }}>Kirim Pendaftaran <CheckCircle size={20} /></button>
+                  </div>
+                </div>
+              )}
+            </form>
+          </div>
         </div>
       </div>
-
       <Footer />
+
+      <style>{`
+        @keyframes slideIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </div>
   );
 };

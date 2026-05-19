@@ -3,7 +3,7 @@ import { X, Mail, Phone, Lock, User, ArrowRight, CheckCircle, Monitor, ShieldChe
 import { useAuth } from '../context/AuthContext';
 
 const AuthModal = () => {
-  const { isAuthModalOpen, closeModal, authModalInitialTab, login, signup } = useAuth();
+  const { isAuthModalOpen, closeModal, authModalInitialTab, login, signup, loginWithGoogle } = useAuth();
   
   const [activeTab, setActiveTab] = useState('login'); // 'login', 'signup', 'forgot'
   const [method, setMethod] = useState('email'); // 'email', 'phone', 'username'
@@ -21,6 +21,7 @@ const AuthModal = () => {
   const [otp, setOtp] = useState('');
   const [captchaInput, setCaptchaInput] = useState('');
   const [generatedCaptcha, setGeneratedCaptcha] = useState('');
+  const [referralCode, setReferralCode] = useState('');
 
   const generateCaptcha = () => {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -31,6 +32,12 @@ const AuthModal = () => {
 
   useEffect(() => {
     generateCaptcha();
+    // Auto-fill referral code from URL if present
+    const urlParams = new URLSearchParams(window.location.search || window.location.hash.split('?')[1] || '');
+    const refCode = urlParams.get('ref');
+    if (refCode) {
+      setReferralCode(refCode);
+    }
   }, []);
 
   const getPasswordStrength = (pw) => {
@@ -59,7 +66,7 @@ const AuthModal = () => {
 
   if (!isAuthModalOpen) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     // Recovery Logic
@@ -71,6 +78,12 @@ const AuthModal = () => {
 
     // Bot Check
     if (step === 1 && activeTab === 'signup') {
+        if (!name) return alert("❌ Silakan masukkan Nama Lengkap!");
+        if (!username) return alert("❌ Silakan masukkan Username!");
+        if (password.length < 8) return alert("❌ Kata sandi minimal 8 karakter!");
+        if (password !== confirmPassword) return alert("❌ Konfirmasi kata sandi tidak cocok!");
+        if (!/[0-9]/.test(password)) return alert("❌ Kata sandi harus mengandung angka!");
+        if (!/[^A-Za-z0-9]/.test(password)) return alert("❌ Kata sandi harus mengandung karakter spesial!");
         setStep(2);
         return;
     }
@@ -83,14 +96,6 @@ const AuthModal = () => {
         }
     }
 
-    // Signup Validation
-    if (activeTab === 'signup') {
-      if (password.length < 8) return alert("❌ Kata sandi minimal 8 karakter!");
-      if (password !== confirmPassword) return alert("❌ Konfirmasi kata sandi tidak cocok!");
-      if (!/[0-9]/.test(password)) return alert("❌ Kata sandi harus mengandung angka!");
-      if (!/[^A-Za-z0-9]/.test(password)) return alert("❌ Kata sandi harus mengandung karakter spesial!");
-    }
-
     // Data package
     const userData = {
       name: name || 'User',
@@ -98,43 +103,35 @@ const AuthModal = () => {
       email,
       phone,
       password,
-      method
+      method,
+      referralCode
     };
 
     if (activeTab === 'signup') {
-      if (signup(userData)) {
-          alert("✅ Pendaftaran Berhasil!");
+      // Final step signup
+      const success = await signup(userData);
+      if (success) {
+        alert("✅ Pendaftaran Berhasil!");
+        closeModal();
       }
     } else {
-      if (login(userData)) {
-          alert("✅ Berhasil Masuk!");
+      const success = await login(userData);
+      if (success) {
+        alert("✅ Berhasil Masuk!");
+        closeModal();
       }
     }
   };
 
-  const handleOAuth = (provider) => {
-    // Simulasi pemilihan akun
-    const mockEmail = window.prompt(`[Simulasi ${provider} Login]\n\nMasukkan alamat email Anda (bisa Gmail, Yahoo, atau lainnya):`, `nama@gmail.com`);
-    
-    if (!mockEmail) return; // Jika dibatalkan
-
-    const username = mockEmail.split('@')[0];
-    
-    const userData = {
-      name: `${username} (${provider})`,
-      username: username,
-      email: mockEmail,
-      method: provider
-    };
-    
-    if (activeTab === 'signup') {
-      if (signup(userData)) {
-        alert(`✅ Pendaftaran menggunakan ${provider} Berhasil!`);
+  const handleOAuth = async (provider) => {
+    if (provider === 'Google') {
+      const success = await loginWithGoogle();
+      if (success) {
+        alert("✅ Berhasil Masuk dengan Google!");
+        closeModal();
       }
     } else {
-      if (login(userData)) {
-        alert(`✅ Berhasil Masuk menggunakan ${provider}!`);
-      }
+      alert(`Simulasi login ${provider} belum tersedia. Gunakan Google atau Email.`);
     }
   };
 
@@ -284,6 +281,13 @@ const AuthModal = () => {
                         </button>
                       </div>
                     )}
+                    
+                    {activeTab === 'signup' && (
+                      <div style={{ position: 'relative' }}>
+                        <Award size={18} style={{ position: 'absolute', top: '14px', left: '16px', color: '#adb5bd' }} />
+                        <input type="text" placeholder="Kode Referral (Opsional)" value={referralCode} onChange={e => setReferralCode(e.target.value)} style={{ width: '100%', padding: '10px 10px 10px 38px', borderRadius: '10px', border: '1px solid #dee2e6', fontSize: '0.9rem', boxSizing: 'border-box', background: '#f8f9fa' }} />
+                      </div>
+                    )}
                   </>
                 )}
 
@@ -299,13 +303,25 @@ const AuthModal = () => {
             )}
 
             {step === 2 && activeTab === 'signup' && (
-              <div style={{ background: '#f8f9fa', padding: '20px', borderRadius: '16px', textAlign: 'center' }}>
-                <h4 style={{ margin: '0 0 12px 0' }}>🤖 Keamanan Anti-Bot</h4>
+              <div style={{ background: 'var(--bg-secondary)', padding: '20px', borderRadius: '16px', textAlign: 'center', border: '1px solid var(--border-color)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <button type="button" onClick={() => setStep(1)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <ArrowRight size={14} style={{ transform: 'rotate(180deg)' }} /> Kembali
+                  </button>
+                  <h4 style={{ margin: 0 }}>🤖 Keamanan Anti-Bot</h4>
+                  <div style={{ width: '40px' }}></div>
+                </div>
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '16px' }}>Ketik kode berikut untuk memastikan Anda bukan robot:</p>
-                <div style={{ fontSize: '1.8rem', fontWeight: '900', letterSpacing: '8px', color: 'var(--primary)', background: 'white', padding: '12px', borderRadius: '12px', border: '2px dashed var(--primary)', fontFamily: 'monospace', marginBottom: '16px', userSelect: 'none' }}>
+                <div style={{ 
+                  fontSize: '2rem', fontWeight: '900', letterSpacing: '2px', 
+                  color: 'var(--primary)', background: 'var(--bg-card)', padding: '15px', 
+                  borderRadius: '12px', border: '2px dashed var(--primary)', 
+                  fontFamily: 'monospace', marginBottom: '16px', userSelect: 'none',
+                  textAlign: 'center'
+                }}>
                   {generatedCaptcha}
                 </div>
-                <input type="text" placeholder="Ketik kode di atas" value={captchaInput} onChange={e => setCaptchaInput(e.target.value)} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #ced4da', textAlign: 'center', fontSize: '1.1rem', fontWeight: 'bold' }} />
+                <input type="text" placeholder="Ketik kode di atas" value={captchaInput} onChange={e => setCaptchaInput(e.target.value)} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--bg-card)', color: 'var(--text-main)', textAlign: 'center', fontSize: '1.1rem', fontWeight: 'bold' }} />
                 <button type="button" onClick={generateCaptcha} style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: '0.8rem', marginTop: '10px', cursor: 'pointer' }}>Ganti Kode</button>
               </div>
             )}

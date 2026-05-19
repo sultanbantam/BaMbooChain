@@ -19,7 +19,7 @@ const SupplyChainPage = () => {
   ];
 
   return (
-    <div style={{ paddingTop: 'var(--navbar-height)', paddingBottom: '80px', minHeight: '100vh', background: '#f8f9fa' }}>
+    <div style={{ paddingTop: 'var(--navbar-height)', paddingBottom: '80px', minHeight: '100vh', background: 'var(--bg-color)' }}>
       
       {/* Back Navigation */}
       <div className="container" style={{ marginBottom: '20px' }}>
@@ -55,7 +55,7 @@ const SupplyChainPage = () => {
               { step: 3, title: 'Pengolahan', icon: <Share2 size={24}/>, desc: 'Pabrik & Treatment', active: false },
               { step: 4, title: 'Distribusi', icon: <MapPin size={24}/>, desc: 'Pengiriman & Logistik', active: false }
             ].map((s) => (
-              <div key={s.step} style={{ background: 'white', padding: '24px', borderRadius: '16px', textAlign: 'center', boxShadow: s.active ? '0 10px 30px rgba(12,166,120,0.15)' : '0 4px 15px rgba(0,0,0,0.05)', position: 'relative', zIndex: 1, border: s.active ? '2px solid var(--primary)' : '1px solid #f1f3f5' }}>
+              <div key={s.step} style={{ background: 'var(--bg-card)', padding: '24px', borderRadius: '16px', textAlign: 'center', boxShadow: s.active ? '0 10px 30px rgba(12,166,120,0.15)' : '0 4px 15px rgba(0,0,0,0.05)', position: 'relative', zIndex: 1, border: s.active ? '2px solid var(--primary)' : '1px solid var(--border-color)' }}>
                 <div style={{ width: '50px', height: '50px', background: s.active ? 'var(--primary)' : '#f8f9fa', color: s.active ? 'white' : '#adb5bd', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
                   {s.icon}
                 </div>
@@ -95,7 +95,7 @@ const SupplyChainPage = () => {
           </div>
 
           {/* MANFAAT SECTION (NEW) */}
-          <div style={{ background: 'white', borderRadius: '24px', padding: '32px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
+          <div style={{ background: 'var(--bg-card)', borderRadius: '24px', padding: '32px', border: '1px solid var(--border-color)' }}>
             <h3 style={{ fontSize: '1.4rem', color: 'var(--text-main)', marginBottom: '20px', fontWeight: 'bold' }}>Mengapa Ini Penting?</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={{ display: 'flex', gap: '12px' }}>
@@ -126,7 +126,7 @@ const SupplyChainPage = () => {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px' }}>
           
           {/* DATABASE BAMBU */}
-          <div style={{ background: 'white', borderRadius: '20px', padding: '32px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
+          <div style={{ background: 'var(--bg-card)', borderRadius: '20px', padding: '32px', border: '1px solid var(--border-color)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
               <h3 style={{ fontSize: '1.4rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '10px', margin: 0 }}>
                 <Database size={24} color="var(--primary)" /> Database Bambu Live
@@ -159,16 +159,16 @@ const SupplyChainPage = () => {
           </div>
 
           {/* JARINGAN PETANI & INDUSTRI */}
-          <div style={{ background: 'white', borderRadius: '20px', padding: '32px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
+          <div style={{ background: 'var(--bg-card)', borderRadius: '20px', padding: '32px', border: '1px solid var(--border-color)' }}>
             <h3 style={{ fontSize: '1.4rem', color: 'var(--text-main)', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px' }}>
               <Users size={24} color="var(--primary)" /> Mitra Ekosistem
             </h3>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {farmerNetwork.map((partner) => (
-                <div key={partner.id} style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', border: '1px solid #f1f3f5', borderRadius: '12px', transition: 'all 0.2s', cursor: 'pointer' }}
-                     onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.background = '#f8f9fa'; }}
-                     onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#f1f3f5'; e.currentTarget.style.background = 'transparent'; }}>
+                <div key={partner.id} style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', border: '1px solid var(--border-color)', borderRadius: '12px', transition: 'all 0.2s', cursor: 'pointer' }}
+                     onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.background = 'var(--bg-secondary)'; }}
+                     onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.background = 'transparent'; }}>
                   <div style={{ width: '48px', height: '48px', background: 'rgba(12,166,120,0.1)', color: 'var(--primary)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', fontWeight: 'bold' }}>
                     {partner.name.charAt(0)}
                   </div>

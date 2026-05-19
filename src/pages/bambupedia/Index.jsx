@@ -309,7 +309,7 @@ const BambupediaPage = () => {
   };
 
   return (
-    <div style={{ paddingTop: '160px', minHeight: '100vh', background: '#f8f9fa' }}>
+    <div style={{ paddingTop: '160px', minHeight: '100vh', background: 'var(--bg-color)' }}>
       <div className="container" style={{ padding: '40px 24px' }}>
 
         {/* Header */}
@@ -335,7 +335,7 @@ const BambupediaPage = () => {
             }}
             style={{ 
               display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 30px', borderRadius: '24px', border: 'none', cursor: 'pointer', fontWeight: '800', fontSize: '1rem', transition: 'all 0.3s',
-              background: activeTab === 'chat' ? 'var(--primary)' : 'white',
+              background: activeTab === 'chat' ? 'var(--primary)' : 'var(--bg-card)',
               color: activeTab === 'chat' ? 'white' : 'var(--text-main)',
               boxShadow: activeTab === 'chat' ? '0 10px 20px rgba(12,166,120,0.2)' : '0 4px 12px rgba(0,0,0,0.05)',
               minWidth: '220px', justifyContent: 'center'
@@ -347,11 +347,11 @@ const BambupediaPage = () => {
             onClick={() => setActiveTab('library')}
             style={{ 
               display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 30px', borderRadius: '24px', border: 'none', cursor: 'pointer', fontWeight: '800', fontSize: '1rem', transition: 'all 0.3s',
-              background: activeTab === 'library' ? 'var(--primary)' : 'white',
+              background: activeTab === 'library' ? 'var(--primary)' : 'var(--bg-card)',
               color: activeTab === 'library' ? 'white' : 'var(--text-main)',
               boxShadow: activeTab === 'library' ? '0 10px 20px rgba(12,166,120,0.2)' : '0 4px 12px rgba(0,0,0,0.05)',
               minWidth: '220px', justifyContent: 'center',
-              border: activeTab === 'library' ? 'none' : '1px solid #eee'
+              border: activeTab === 'library' ? 'none' : '1px solid var(--border-color)'
             }}>
             <BookOpen size={20} /> Pustaka Bambu
           </button>
@@ -360,11 +360,11 @@ const BambupediaPage = () => {
             onClick={() => navigate('/bambupedia/tracker')}
             style={{ 
               display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 30px', borderRadius: '24px', border: 'none', cursor: 'pointer', fontWeight: '800', fontSize: '1rem', transition: 'all 0.3s',
-              background: 'white',
+              background: 'var(--bg-card)',
               color: 'var(--text-main)',
               boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
               minWidth: '220px', justifyContent: 'center',
-              border: '1px solid #eee'
+              border: '1px solid var(--border-color)'
             }}>
             <Sprout size={20} color="var(--primary)" /> Tracker Bambu
           </button>
@@ -380,7 +380,7 @@ const BambupediaPage = () => {
           }}>
 
             {/* Chat Window */}
-            <div id="bambubot-chat-area" style={{ background: 'white', borderRadius: '20px', border: '1px solid #eee', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.06)', order: window.innerWidth < 768 ? 1 : 1 }}>
+            <div id="bambubot-chat-area" style={{ background: 'var(--bg-card)', borderRadius: '20px', border: '1px solid var(--border-color)', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.06)', order: window.innerWidth < 768 ? 1 : 1 }}>
               {/* Chat Header */}
               <div style={{ background: 'linear-gradient(135deg, #0ca678, #2b8a3e)', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{ width: '42px', height: '42px', background: 'rgba(255,255,255,0.2)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem' }}>🤖</div>
@@ -408,7 +408,7 @@ const BambupediaPage = () => {
                     )}
                     <div style={{
                       maxWidth: '75%', padding: '12px 16px', borderRadius: msg.role === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-                      background: msg.role === 'user' ? 'linear-gradient(135deg, #0ca678, #2b8a3e)' : '#f8f9fa',
+                      background: msg.role === 'user' ? 'linear-gradient(135deg, #0ca678, #2b8a3e)' : 'var(--bg-secondary)',
                       color: msg.role === 'user' ? 'white' : 'var(--text-main)',
                       fontSize: '0.88rem', lineHeight: '1.6',
                     }}
@@ -451,7 +451,7 @@ const BambupediaPage = () => {
 
             {/* Sidebar: Pertanyaan Cepat */}
             <div style={{ order: window.innerWidth < 768 ? 2 : 2 }}>
-              <div style={{ background: 'white', borderRadius: '16px', padding: '20px', border: '1px solid #eee', marginBottom: '16px' }}>
+              <div style={{ background: 'var(--bg-card)', borderRadius: '16px', padding: '20px', border: '1px solid var(--border-color)', marginBottom: '16px' }}>
                 <h3 style={{ fontSize: '0.95rem', fontWeight: '700', marginBottom: '14px', color: 'var(--text-main)' }}>⚡ Pertanyaan Cepat</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {QUICK_QUESTIONS.map((q, i) => (
@@ -459,9 +459,9 @@ const BambupediaPage = () => {
                       sendMessage(q);
                       document.getElementById('bambubot-chat-area')?.scrollIntoView({ behavior: 'smooth' });
                     }}
-                      style={{ padding: '10px 14px', background: '#f8f9fa', border: '1px solid #eee', borderRadius: '10px', cursor: 'pointer', textAlign: 'left', fontSize: '0.82rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px', transition: 'all 0.2s' }}
+                      style={{ padding: '10px 14px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '10px', cursor: 'pointer', textAlign: 'left', fontSize: '0.82rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px', transition: 'all 0.2s' }}
                       onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(12,166,120,0.06)'; e.currentTarget.style.borderColor = 'var(--primary)'; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.background = '#f8f9fa'; e.currentTarget.style.borderColor = '#eee'; }}>
+                      onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--bg-secondary)'; e.currentTarget.style.borderColor = 'var(--border-color)'; }}>
                       <Leaf size={13} color="var(--primary)" style={{ flexShrink: 0 }} />
                       {q}
                     </button>
@@ -484,9 +484,9 @@ const BambupediaPage = () => {
             {PUSTAKA_ITEMS.map((a, i) => {
               const isOwned = ownedNfts.includes(a.id);
               return (
-                <div key={i} style={{ background: 'white', borderRadius: '16px', padding: '24px', border: '1px solid #eee', cursor: 'pointer', transition: 'all 0.2s', position: 'relative', overflow: 'hidden' }}
+                <div key={i} style={{ background: 'var(--bg-card)', borderRadius: '16px', padding: '24px', border: '1px solid var(--border-color)', cursor: 'pointer', transition: 'all 0.2s', position: 'relative', overflow: 'hidden' }}
                   onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 8px 24px rgba(12,166,120,0.1)'; e.currentTarget.style.borderColor = 'var(--primary)'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = '#eee'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = 'var(--border-color)'; }}
                   onClick={() => { setSelectedArticle(a); setShowArticleModal(true); setArticlePaymentMethod(null); setTxSuccess(false); }}>
                   
                   {isOwned && (

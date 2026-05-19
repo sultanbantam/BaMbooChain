@@ -47,6 +47,8 @@ import BcValidatorDashboardPage from './pages/bamboochain/ValidatorDashboardPage
 import ActivityLogPage from './pages/bamboochain/ActivityLogPage';
 import WhitepaperPage from './pages/bamboochain/WhitepaperPage';
 import PreOrderPage from './pages/bamboochain/PreOrderPage';
+import KoDiBaPage from './pages/kodiba/KoDiBaPage';
+import EventsPage from './pages/community/EventsPage';
 import FAQPage from './pages/FAQPage';
 import AdSpace from './components/AdSpace';
 import CareCenterWidget from './components/CareCenterWidget';
@@ -60,11 +62,11 @@ import AdminPortalPage from './pages/AdminPortalPage';
 
 import ScrollToTop from './components/ScrollToTop';
 import GlobalToast from './components/GlobalToast';
+import SocialInteractions from './components/SocialInteractions';
 
 function App() {
   return (
-    <AuthProvider>
-      <div className="App">
+    <div className="App">
         <ScrollToTop />
         <Navbar />
         <Routes>
@@ -113,6 +115,8 @@ function App() {
           <Route path="/validator" element={<ProtectedRoute><BcValidatorDashboardPage /></ProtectedRoute>} />
           <Route path="/bamboochain/activities" element={<ProtectedRoute><ActivityLogPage /></ProtectedRoute>} />
           <Route path="/bamboochain/whitepaper" element={<ProtectedRoute><WhitepaperPage /></ProtectedRoute>} />
+          <Route path="/bamboochain/kodiba" element={<ProtectedRoute><KoDiBaPage /></ProtectedRoute>} />
+          <Route path="/events" element={<ProtectedRoute><EventsPage /></ProtectedRoute>} />
           
           {/* bambuNUSA Protected Routes */}
           <Route path="/bambunusa" element={<ProtectedRoute><BcLifecyclePage /></ProtectedRoute>} />
@@ -124,13 +128,13 @@ function App() {
           
           <Route path="/faq" element={<FAQPage />} />
         </Routes>
+        <SocialInteractions />
         <Footer />
         <AuthModal />
         <CareCenterWidget />
-        <div id="version-debug" style={{ fontSize: '10px', opacity: 0.3, textAlign: 'center', padding: '10px' }}>Build v1.0.7-Recovered</div>
+        <div id="version-debug" style={{ fontSize: '10px', opacity: 0.3, textAlign: 'center', padding: '10px' }}>Build v1.0.8-ThemeFix</div>
         <GlobalToast />
       </div>
-    </AuthProvider>
   );
 }
 

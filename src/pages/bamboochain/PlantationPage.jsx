@@ -21,7 +21,7 @@ const PlantationPage = () => {
   const [currentProjectId, setCurrentProjectId] = useState(1);
   const [showExampleModal, setShowExampleModal] = useState(false);
   const [exampleImg, setExampleImg] = useState('');
-  const { user } = useAuth(); // Need to import useAuth
+  const { user, submitLocationProposal } = useAuth(); // Need to import useAuth
   
   // States for Suggestion Feature
   const [coords, setCoords] = useState({ lat: -6.2088, lng: 106.8456 }); // Default Jakarta
@@ -42,21 +42,37 @@ const PlantationPage = () => {
     localStorage.setItem('ysnj_suggestions', JSON.stringify(suggestions));
   }, [suggestions]);
 
-  const handleSuggest = () => {
+  const handleSuggest = async () => {
     if (!newLoc.name || !newLoc.area) {
       alert("Silakan lengkapi nama lokasi dan estimasi luas.");
       return;
     }
-    const suggestion = {
-      ...newLoc,
-      id: Date.now(),
-      coords,
-      status: 'Pending Verification',
-      date: new Date().toLocaleDateString()
+
+    const proposalData = {
+      name: newLoc.name,
+      size: newLoc.area,
+      type: newLoc.type,
+      vision: newLoc.vision,
+      coordinates: `${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}`,
+      owner: user?.name || 'Guest'
     };
-    setSuggestions(prev => [suggestion, ...prev]);
-    alert("Terima kasih! Usulan lokasi Anda telah disimpan ke sistem dan akan divalidasi oleh tim Admin Yayasan melalui pemindaian GIS.");
-    setNewLoc({ name: '', area: '', type: 'Lahan Adat', vision: '' });
+
+    const success = await submitLocationProposal(proposalData);
+
+    if (success) {
+      const suggestion = {
+        ...newLoc,
+        id: Date.now(),
+        coords,
+        status: 'Pending Verification',
+        date: new Date().toLocaleDateString()
+      };
+      setSuggestions(prev => [suggestion, ...prev]);
+      alert("Terima kasih! Usulan lokasi Anda telah disimpan ke sistem dan akan divalidasi oleh tim Admin Yayasan melalui pemindaian GIS.");
+      setNewLoc({ name: '', area: '', type: 'Lahan Adat', vision: '' });
+    } else {
+      alert("Maaf, gagal mengirim usulan. Silakan coba lagi.");
+    }
   };
 
   const openExample = (imgNum) => {

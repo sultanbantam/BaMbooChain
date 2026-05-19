@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Target, TrendingUp, Handshake, Leaf, MapPin, CheckCircle, ArrowRight, Tag, Star, X, Sparkles, ShoppingBag, Globe, Users } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { 
+  Target, TrendingUp, Handshake, Leaf, MapPin, CheckCircle, ArrowRight, Tag, Star, X, Sparkles, ShoppingBag, Globe, Users, 
+  Database, Briefcase, UploadCloud, HeartHandshake, BookOpen, Search, MessageSquare, Coins, GraduationCap 
+} from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { getAssetUrl } from '../utils/assets';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -8,6 +11,9 @@ const HomePage = () => {
   const { t } = useLanguage();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showWelcome, setShowWelcome] = useState(false);
+  const [welcomeStep, setWelcomeStep] = useState(1); // 1 = Info, 2 = Question
+  const [showKodibaTos, setShowKodibaTos] = useState(false);
+  const navigate = useNavigate();
 
   const slides = [
     {
@@ -32,22 +38,17 @@ const HomePage = () => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
     }, 5000); // Ganti slide otomatis setiap 5 detik
 
-    // Check if user has seen welcome modal
-    const hasSeenWelcome = localStorage.getItem('hasSeenWelcome');
-    if (!hasSeenWelcome) {
-      const timeout = setTimeout(() => setShowWelcome(true), 1500);
-      return () => {
-        clearInterval(timer);
-        clearTimeout(timeout);
-      };
-    }
+    const timeout = setTimeout(() => setShowWelcome(true), 1500);
+    return () => {
+      clearInterval(timer);
+      clearTimeout(timeout);
+    };
 
     return () => clearInterval(timer);
   }, []);
 
   const closeWelcome = () => {
     setShowWelcome(false);
-    localStorage.setItem('hasSeenWelcome', 'true');
   };
 
   return (
@@ -463,9 +464,10 @@ const HomePage = () => {
           zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '15px'
         }}>
           <div className="animate-fade-in-up" style={{
-            background: 'white', borderRadius: '28px', width: '100%', maxWidth: '480px',
+            background: 'white', borderRadius: '28px', width: '100%', maxWidth: welcomeStep === 1 ? '480px' : '700px',
             maxHeight: '92vh', overflow: 'hidden', display: 'flex', flexDirection: 'column',
-            boxShadow: '0 30px 60px -12px rgba(0,0,0,0.5)', position: 'relative'
+            boxShadow: '0 30px 60px -12px rgba(0,0,0,0.5)', position: 'relative',
+            transition: 'all 0.3s ease'
           }}>
             {/* Compact Header */}
             <div style={{ 
@@ -485,43 +487,151 @@ const HomePage = () => {
               }}>
                 <Sparkles size={28} fill="white" />
               </div>
-              <h2 style={{ fontSize: '1.5rem', fontWeight: '800', marginBottom: '6px' }}>{t('welcome_greeting')}</h2>
-              <p style={{ opacity: 0.9, fontSize: '0.85rem', lineHeight: '1.4' }}>{t('welcome_intro')}</p>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: '800', marginBottom: '6px' }}>
+                {welcomeStep === 1 ? t('welcome_greeting') : t('guide_title')}
+              </h2>
+              <p style={{ opacity: 0.9, fontSize: '0.85rem', lineHeight: '1.4' }}>
+                {welcomeStep === 1 ? t('welcome_intro') : "Pilih langkah pertama Anda untuk membangun ekosistem bambu bersama kami."}
+              </p>
             </div>
 
             {/* Scrollable Content Area */}
             <div style={{ padding: '20px', overflowY: 'auto', flex: 1 }}>
-              <p style={{ fontWeight: 'bold', color: '#495057', marginBottom: '15px', textAlign: 'center', fontSize: '0.9rem' }}>{t('welcome_step_title')}</p>
-              
-              <div style={{ display: 'grid', gap: '15px', marginBottom: '25px' }}>
-                {[
-                  { icon: <Leaf size={18} />, color: '#0ca678', bg: '#ebfbee', title: t('welcome_step1_title'), desc: t('welcome_step1_desc') },
-                  { icon: <ShoppingBag size={18} />, color: '#228be6', bg: '#e7f5ff', title: t('welcome_step2_title'), desc: t('welcome_step2_desc') },
-                  { icon: <Globe size={18} />, color: '#fd7e14', bg: '#fff4e6', title: t('welcome_step3_title'), desc: t('welcome_step3_desc') },
-                  { icon: <Users size={18} />, color: '#7950f2', bg: '#f3f0ff', title: t('welcome_step4_title'), desc: t('welcome_step4_desc') }
-                ].map((step, i) => (
-                  <div key={i} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                    <div style={{ minWidth: '36px', height: '36px', background: step.bg, color: step.color, borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {step.icon}
-                    </div>
-                    <div>
-                      <h4 style={{ margin: '0 0 2px 0', fontSize: '0.95rem', fontWeight: '700' }}>{step.title}</h4>
-                      <p style={{ margin: 0, fontSize: '0.8rem', color: '#868e96', lineHeight: '1.4' }}>{step.desc}</p>
-                    </div>
+              {welcomeStep === 1 ? (
+                <>
+                  <p style={{ fontWeight: 'bold', color: '#495057', marginBottom: '15px', textAlign: 'center', fontSize: '0.9rem' }}>{t('welcome_step_title')}</p>
+                  
+                  <div style={{ display: 'grid', gap: '15px', marginBottom: '25px' }}>
+                    {[
+                      { icon: <Leaf size={18} />, color: '#0ca678', bg: '#ebfbee', title: t('welcome_step1_title'), desc: t('welcome_step1_desc') },
+                      { icon: <ShoppingBag size={18} />, color: '#228be6', bg: '#e7f5ff', title: t('welcome_step2_title'), desc: t('welcome_step2_desc') },
+                      { icon: <Globe size={18} />, color: '#fd7e14', bg: '#fff4e6', title: t('welcome_step3_title'), desc: t('welcome_step3_desc') },
+                      { icon: <Users size={18} />, color: '#7950f2', bg: '#f3f0ff', title: t('welcome_step4_title'), desc: t('welcome_step4_desc') }
+                    ].map((step, i) => (
+                      <div key={i} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                        <div style={{ minWidth: '36px', height: '36px', background: step.bg, color: step.color, borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          {step.icon}
+                        </div>
+                        <div>
+                          <h4 style={{ margin: '0 0 2px 0', fontSize: '0.95rem', fontWeight: '700' }}>{step.title}</h4>
+                          <p style={{ margin: 0, fontSize: '0.8rem', color: '#868e96', lineHeight: '1.4' }}>{step.desc}</p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
 
-              <button onClick={closeWelcome} className="btn btn-primary" style={{ 
-                width: '100%', padding: '14px', borderRadius: '14px', fontWeight: '800', fontSize: '1rem',
-                boxShadow: '0 10px 20px rgba(12, 166, 120, 0.2)', letterSpacing: '1px', border: 'none', cursor: 'pointer'
-              }}>
-                {t('welcome_btn')}
-              </button>
+                  <button onClick={() => setWelcomeStep(2)} className="btn btn-primary" style={{ 
+                    width: '100%', padding: '14px', borderRadius: '14px', fontWeight: '800', fontSize: '1rem',
+                    boxShadow: '0 10px 20px rgba(12, 166, 120, 0.2)', letterSpacing: '1px', border: 'none', cursor: 'pointer'
+                  }}>
+                    {t('welcome_btn')}
+                  </button>
+                </>
+              ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px' }}>
+                  {[
+                    { id: 1, icon: <Database />, color: '#0ca678', bg: '#ebfbee', label: t('guide_opt1'), path: '/bambupedia/tracker' },
+                    { id: 2, icon: <Briefcase />, color: '#228be6', bg: '#e7f5ff', label: t('guide_opt2'), path: '/careers' },
+                    { id: 3, icon: <UploadCloud />, color: '#fd7e14', bg: '#fff4e6', label: t('guide_opt3'), path: '/bambupedia/maintain' },
+                    { id: 4, icon: <HeartHandshake />, color: '#fa5252', bg: '#fff5f5', label: t('guide_opt4'), path: '/about' },
+                    { id: 5, icon: <Handshake />, color: '#7950f2', bg: '#f3f0ff', label: t('guide_opt5'), path: '/bamboochain/supply-chain' },
+                    { id: 6, icon: <ShoppingBag />, color: '#15aabf', bg: '#e3fafc', label: t('guide_opt6'), path: '/bamboochain/marketplace' },
+                    { id: 7, icon: <BookOpen />, color: '#82c91e', bg: '#f4fce3', label: t('guide_opt7'), path: '/bambupedia' },
+                    { id: 8, icon: <Search />, color: '#4c6ef5', bg: '#edf2ff', label: t('guide_opt8'), path: '/data-tools' },
+                    { id: 9, icon: <MessageSquare />, color: '#e64980', bg: '#fff0f6', label: t('guide_opt9'), path: '/bamboochain/dao' },
+                    { id: 10, icon: <Coins />, color: '#fab005', bg: '#fff9db', label: t('guide_opt10'), path: '/bamboochain/token-wallet' },
+                    { id: 11, icon: <GraduationCap />, color: '#474747', bg: '#f1f3f5', label: t('guide_opt11'), path: '/bamboochain/academy' },
+                    { id: 14, icon: <GraduationCap />, color: '#7950f2', bg: '#f3f0ff', label: t('guide_opt14'), path: '/academy' },
+                    { id: 12, icon: <Users />, color: '#0ca678', bg: '#ebfbee', label: t('guide_opt12'), path: '/bamboochain/kodiba' },
+                    { id: 13, icon: <Sparkles />, color: '#228be6', bg: '#e7f5ff', label: t('guide_opt13'), path: '/events' }
+                  ].map(opt => (
+                    <Link key={opt.id} to={opt.path} onClick={(e) => {
+                      if (opt.id === 12) {
+                        e.preventDefault();
+                        setShowWelcome(false);
+                        setShowKodibaTos(true);
+                      } else {
+                        closeWelcome();
+                      }
+                    }} style={{ 
+                      textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', 
+                      textAlign: 'center', padding: '15px 10px', borderRadius: '20px', background: '#f8f9fa',
+                      border: '1px solid #e9ecef', transition: 'all 0.2s ease', cursor: 'pointer'
+                    }} onMouseEnter={e => { e.currentTarget.style.background = opt.bg; e.currentTarget.style.borderColor = opt.color; }} onMouseLeave={e => { e.currentTarget.style.background = '#f8f9fa'; e.currentTarget.style.borderColor = '#e9ecef'; }}>
+                      <div style={{ color: opt.color, marginBottom: '8px' }}>
+                        {React.cloneElement(opt.icon, { size: 24 })}
+                      </div>
+                      <span style={{ fontSize: '0.75rem', fontWeight: '700', color: '#495057', lineHeight: '1.2' }}>{opt.label}</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
               
               <p style={{ textAlign: 'center', fontSize: '0.7rem', color: '#adb5bd', marginTop: '12px' }}>
                 {t('welcome_footer')}
               </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* KODIBA TOS MODAL */}
+      {showKodibaTos && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.8)', zIndex: 100000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+          <div 
+            className="animate-fade-in-up"
+            style={{ background: '#1a1a1a', padding: '40px', borderRadius: '30px', width: '100%', maxWidth: '800px', maxHeight: '90vh', overflowY: 'auto', textAlign: 'left', border: '1px solid #51cf66', display: 'flex', flexDirection: 'column' }}
+          >
+            <h2 style={{ fontSize: '1.8rem', fontWeight: '900', marginBottom: '10px', color: '#51cf66', textAlign: 'center' }}>KOPERASI DIGITAL BAMBU (KODIBA)</h2>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '30px', textAlign: 'center', color: 'white' }}>Membangun Ekonomi Hijau Secara Gotong Royong</h3>
+            
+            <div style={{ color: '#adb5bd', lineHeight: '1.6', fontSize: '0.95rem', marginBottom: '30px', paddingRight: '15px' }}>
+              <p style={{ marginBottom: '15px' }}>
+                KODIBA adalah koperasi simpan pinjam dan pusat data bambu berbasis digital yang membantu masyarakat mencatat, menyimpan, dan mengembangkan informasi tentang bambu dari hulu sampai hilir. Konsep ini melanjutkan gerakan ekosistem bambu Nusantara yang sudah dikembangkan melalui Komunitas Bambu Nusantara, Akademi Bambu Nusantara, PERPUBI, dan Yayasan Sabumi Nusantara Jaya.
+              </p>
+              <p style={{ marginBottom: '10px' }}>Di dalam KODIBA, masyarakat bisa menyetor dan menyimpan data seperti:</p>
+              <ul style={{ listStyleType: 'disc', paddingLeft: '20px', marginBottom: '15px', color: '#ced4da' }}>
+                <li style={{ marginBottom: '5px' }}>jumlah dan jenis bibit bambu,</li>
+                <li style={{ marginBottom: '5px' }}>usia dan metode pembibitan,</li>
+                <li style={{ marginBottom: '5px' }}>lokasi dan pemilik lahan,</li>
+                <li style={{ marginBottom: '5px' }}>jumlah rumpun dan batang bambu,</li>
+                <li style={{ marginBottom: '5px' }}>aktivitas ekonomi di sekitar kebun bambu,</li>
+                <li style={{ marginBottom: '5px' }}>hasil penelitian, buku, jurnal, desain, pedoman teknis, dan karya ilmiah lainnya.</li>
+              </ul>
+              <p style={{ marginBottom: '15px' }}>
+                Semua data tersebut dapat menjadi aset bersama yang bermanfaat untuk pelestarian lingkungan, penelitian, pendidikan, industri, hingga pemberdayaan ekonomi masyarakat. Konsep pengumpulan database bambu sebagai bagian dari pelestarian dan pembangunan ekosistem bambu juga dijelaskan dalam profil Bambunusa Group.
+              </p>
+              <p style={{ marginBottom: '15px' }}>
+                Sebagai bentuk penghargaan, setiap data yang disetor dan diverifikasi akan dikonversi menjadi nilai digital berupa Token BMC, sehingga masyarakat, petani, peneliti, dosen, pengrajin, dan para sesepuh bisa mendapatkan manfaat ekonomi dari ilmu, pengalaman, dan data yang mereka miliki.
+              </p>
+              <p style={{ marginBottom: '10px' }}>KODIBA hadir untuk:</p>
+              <ul style={{ listStyleType: 'disc', paddingLeft: '20px', marginBottom: '15px', color: '#ced4da' }}>
+                <li style={{ marginBottom: '5px' }}>membantu petani mendapatkan akses permodalan dan pasar,</li>
+                <li style={{ marginBottom: '5px' }}>menjaga pengetahuan bambu agar tidak hilang,</li>
+                <li style={{ marginBottom: '5px' }}>memperkuat kerja sama antar pegiat bambu,</li>
+                <li style={{ marginBottom: '5px' }}>serta membangun ekonomi hijau yang adil, terbuka, dan berkelanjutan.</li>
+              </ul>
+              <p style={{ fontStyle: 'italic', color: '#51cf66', textAlign: 'center', marginTop: '30px', marginBottom: '10px', fontWeight: 'bold', fontSize: '1.05rem' }}>
+                Karena setiap rumpun bambu bukan hanya tanaman, tetapi sumber kehidupan, ilmu pengetahuan, budaya, dan masa depan Nusantara. 🌿
+              </p>
+            </div>
+            
+            <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', marginTop: 'auto' }}>
+              <button 
+                onClick={() => setShowKodibaTos(false)}
+                style={{ padding: '15px 30px', background: 'transparent', border: '1px solid #adb5bd', color: '#adb5bd', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1rem' }}
+              >
+                Kembali
+              </button>
+              <button 
+                onClick={() => {
+                  setShowKodibaTos(false);
+                  navigate('/bamboochain/kodiba');
+                }}
+                style={{ padding: '15px 30px', background: '#51cf66', border: 'none', color: 'black', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1rem', boxShadow: '0 4px 15px rgba(0,0,0,0.2)' }}
+              >
+                Mengerti & Lanjutkan
+              </button>
             </div>
           </div>
         </div>

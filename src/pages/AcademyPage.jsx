@@ -70,7 +70,7 @@ const AcademyPage = () => {
             <BookOpen size={16} color="var(--primary)" />
             <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--primary)' }}>Token-Gated Learning • Perlu Token BMC</span>
           </div>
-          <h1 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '16px' }}>Akademi Bambu Nusantara</h1>
+          <h1 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '16px' }}>Akademi BMC</h1>
           <p style={{ color: 'var(--text-muted)', maxWidth: '600px', margin: '0 auto' }}>
             Kurikulum eksklusif tentang industri bambu — dari analisis pasar hingga strategi bisnis global.
             Akses terbuka berdasarkan level keanggotaan BMC Anda.

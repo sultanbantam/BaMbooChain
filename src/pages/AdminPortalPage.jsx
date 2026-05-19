@@ -29,19 +29,19 @@ const AdminPortalPage = () => {
     }
   }, [isAuthenticated, user, navigate]);
 
-  const handleApprovePartner = (id) => {
-    approvePartnerApp(id);
+  const handleApprovePartner = async (app) => {
+    await approvePartnerApp(app.id, app.userId);
     alert('Mitra berhasil diverifikasi!');
   };
 
-  const handleRejectPartner = (id) => {
+  const handleRejectPartner = async (id) => {
     if (window.confirm('Yakin ingin menolak pendaftaran ini?')) {
-      rejectPartnerApp(id);
+      await rejectPartnerApp(id);
     }
   };
 
-  const handleApproveLocation = (id) => {
-    approveLocation(id);
+  const handleApproveLocation = async (id) => {
+    await approveLocation(id);
     alert('Lokasi penanaman disetujui!');
   };
 
@@ -159,7 +159,7 @@ const AdminPortalPage = () => {
                           <button onClick={() => alert('Detail Mitra')} style={{ padding: '8px', borderRadius: '8px', border: '1px solid #dee2e6', background: 'white', cursor: 'pointer' }}><Eye size={16} /></button>
                           {app.status === 'pending' && (
                             <>
-                              <button onClick={() => handleApprovePartner(app.id)} style={{ padding: '8px', borderRadius: '8px', border: 'none', background: '#40c057', color: 'white', cursor: 'pointer' }}><CheckCircle size={16} /></button>
+                              <button onClick={() => handleApprovePartner(app)} style={{ padding: '8px', borderRadius: '8px', border: 'none', background: '#40c057', color: 'white', cursor: 'pointer' }}><CheckCircle size={16} /></button>
                               <button onClick={() => handleRejectPartner(app.id)} style={{ padding: '8px', borderRadius: '8px', border: 'none', background: '#fa5252', color: 'white', cursor: 'pointer' }}><XCircle size={16} /></button>
                             </>
                           )}

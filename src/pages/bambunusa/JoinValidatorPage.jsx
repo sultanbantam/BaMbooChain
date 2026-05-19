@@ -6,9 +6,11 @@ import { escrowConfig } from '../../utils/escrowConfig';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import BackButton from '../../components/BackButton';
+import { useAuth } from '../../context/AuthContext';
 
 const JoinValidatorPage = () => {
   const navigate = useNavigate();
+  const { submitPartnerApp, user } = useAuth();
   const [step, setStep] = useState(1);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [walletConnected, setWalletConnected] = useState(false);
@@ -18,9 +20,24 @@ const JoinValidatorPage = () => {
 
   const MIN_TOKEN_REQUIRED = 500;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsSubmitted(true);
+    
+    const success = await submitPartnerApp({
+      name: user?.name || "Validator Candidate",
+      role: 'Validator Lapangan',
+      method: 'Wallet Web3',
+      location: 'Banten/Jabar',
+      walletAddress: walletAddress,
+      tokenBalance: tokenBalance,
+      status: 'pending'
+    });
+
+    if (success) {
+      setIsSubmitted(true);
+    } else {
+      alert("Gagal mengirim pendaftaran.");
+    }
   };
 
   const connectWalletAndCheckBalance = async () => {

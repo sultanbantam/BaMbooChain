@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Wallet, PieChart, FileText, Gift, History, Cpu, TrendingUp, 
   ArrowDownToLine, ArrowUpFromLine, Send, CheckCircle, Clock, ExternalLink,
-  ChevronRight, Play, Camera, MapPin, Upload, ShieldCheck, Users, ShoppingCart, Award, CalendarDays, Lock
+  ChevronRight, Play, Camera, MapPin, Upload, ShieldCheck, Users, ShoppingCart, Award, CalendarDays, Lock, Leaf
 } from 'lucide-react';
 import { useWeb3 } from '../../context/Web3Context';
 import { useAuth } from '../../context/AuthContext';
@@ -13,7 +13,7 @@ import BackButton from '../../components/BackButton';
 // TAB COMPONENTS
 // ======================================
 
-const OverviewTab = () => {
+const OverviewTab = ({ setActiveTab, setInitialModal }) => {
   const { user } = useAuth();
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 1100);
 
@@ -28,6 +28,20 @@ const OverviewTab = () => {
       navigator.clipboard.writeText(user.walletAddress);
       alert('Alamat Dompet Pintar (Smart Wallet) berhasil disalin!');
     }
+  };
+
+  const handleSendClick = () => {
+    if (setInitialModal) setInitialModal('send');
+    if (setActiveTab) setActiveTab('dashboard');
+  };
+
+  const handleReceiveClick = () => {
+    if (setInitialModal) setInitialModal('receive');
+    if (setActiveTab) setActiveTab('dashboard');
+  };
+
+  const handleTradeClick = () => {
+    if (setActiveTab) setActiveTab('get_bmc');
   };
 
   return (
@@ -59,15 +73,15 @@ const OverviewTab = () => {
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', position: 'relative', zIndex: 1 }}>
-              <button style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '16px', padding: '12px 8px', color: 'white', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+              <button onClick={handleSendClick} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '16px', padding: '12px 8px', color: 'white', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
                 <ArrowUpFromLine size={20} />
                 <span style={{ fontSize: '0.7rem', fontWeight: 'bold' }}>Send</span>
               </button>
-              <button onClick={handleCopyWallet} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '16px', padding: '12px 8px', color: 'white', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+              <button onClick={handleReceiveClick} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '16px', padding: '12px 8px', color: 'white', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
                 <ArrowDownToLine size={20} />
                 <span style={{ fontSize: '0.7rem', fontWeight: 'bold' }}>Receive</span>
               </button>
-              <button style={{ background: 'white', border: 'none', borderRadius: '16px', padding: '12px 8px', color: 'var(--primary)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+              <button onClick={handleTradeClick} style={{ background: 'white', border: 'none', borderRadius: '16px', padding: '12px 8px', color: 'var(--primary)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
                 <TrendingUp size={20} />
                 <span style={{ fontSize: '0.7rem', fontWeight: 'bold' }}>Trade</span>
               </button>
@@ -331,14 +345,23 @@ const WhitepaperTab = () => {
   );
 };
 
-const WalletDashboardTab = () => {
-  const { user, transferBmc, getMockDB } = useAuth();
+const WalletDashboardTab = ({ initialModal, setInitialModal }) => {
+  const { user, transferBmc, calculateLockedBalance, getAvailableBalance, addReward } = useAuth();
   const [modalType, setModalType] = useState(null); // 'send', 'receive'
   const [sendAddr, setSendAddr] = useState('');
   const [sendAmount, setSendAmount] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    if (initialModal) {
+      setModalType(initialModal);
+      if (setInitialModal) {
+        setInitialModal(null);
+      }
+    }
+  }, [initialModal, setInitialModal]);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -349,7 +372,7 @@ const WalletDashboardTab = () => {
   // Real-time search simulation
   useEffect(() => {
     if (searchQuery.length > 1 && user) {
-      const db = getMockDB();
+      const db = []; // getMockDB disabled for now
       const results = db.filter(u => 
         u && u.id !== user.id && 
         ((u.name || "").toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -372,21 +395,20 @@ const WalletDashboardTab = () => {
     );
   }
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if(!sendAddr || !sendAmount) return alert("Harap isi alamat dompet dan nominal BMC!");
     if(!user || user.kycStatus !== 'verified') return alert("⚠️ Akun Anda belum terverifikasi KYC. Silakan selesaikan KYC di menu KYC Center untuk melakukan transfer.");
     
     const amt = parseFloat(sendAmount);
     if(isNaN(amt) || amt <= 0) return alert("Nominal tidak valid!");
     
-    if(transferBmc(amt, sendAddr)) {
+    const success = await transferBmc(amt, sendAddr);
+    if(success) {
       alert(`✅ Berhasil mentransfer ${amt} BMC tanpa potong Gas Fee ke ${sendAddr}!`);
       setModalType(null);
       setSendAddr('');
       setSendAmount('');
       setSearchQuery('');
-    } else {
-      alert('❌ Saldo BMC Anda tidak mencukupi untuk transfer ini.');
     }
   };
 
@@ -451,20 +473,46 @@ const WalletDashboardTab = () => {
         </div>
       )}
 
-      <h2 style={{ fontSize: isMobile ? '1.5rem' : '2rem', fontWeight: '900', color: 'var(--text-main)', marginBottom: '24px' }}>Wallet Dashboard</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
+        <h2 style={{ fontSize: isMobile ? '1.5rem' : '2rem', fontWeight: '900', color: 'var(--text-main)', margin: 0 }}>Wallet Dashboard</h2>
+        {calculateLockedBalance && calculateLockedBalance(user) > 0 && (
+          <div style={{ background: '#fff4e6', color: '#e8590c', padding: '6px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold', border: '1px solid #ffd8a8', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Lock size={14} /> Ada Saldo Airdrop Terkunci
+          </div>
+        )}
+      </div>
       
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'minmax(300px, 1fr) minmax(300px, 1fr)', gap: '20px' }}>
         {/* Card Kiri */}
         <div style={{ background: 'linear-gradient(135deg, var(--primary), #1b5e20)', borderRadius: '24px', padding: isMobile ? '24px' : '32px', color: 'white', position: 'relative', overflow: 'hidden', boxShadow: '0 12px 30px rgba(12,166,120,0.2)' }}>
           <div style={{ position: 'relative', zIndex: 1 }}>
-            <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.8)', marginBottom: '4px' }}>Off-Chain Balance BMC</div>
-            <div style={{ fontSize: isMobile ? '2.5rem' : '3rem', fontWeight: '900', marginBottom: '8px' }}>{balanceBMC}</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+              <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.8)' }}>Total Balance BMC</div>
+            </div>
+            <div style={{ fontSize: isMobile ? '2.5rem' : '3rem', fontWeight: '900', marginBottom: '16px' }}>{balanceBMC}</div>
+            
+            {calculateLockedBalance && (
+              <div style={{ display: 'flex', gap: '16px', marginBottom: '20px', padding: '12px', background: 'rgba(0,0,0,0.15)', borderRadius: '16px' }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.7)', fontWeight: 'bold', textTransform: 'uppercase' }}>Available to Send</div>
+                  <div style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>{getAvailableBalance().toLocaleString('en-US', {maximumFractionDigits: 2})} BMC</div>
+                </div>
+                <div style={{ width: '1px', background: 'rgba(255,255,255,0.2)' }}></div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '0.7rem', color: '#fcc419', fontWeight: 'bold', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '4px' }}><Lock size={10}/> Locked Airdrop</div>
+                  <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#ffec99' }}>{calculateLockedBalance(user).toLocaleString('en-US', {maximumFractionDigits: 2})} BMC</div>
+                </div>
+              </div>
+            )}
             
             <div style={{ background: 'rgba(0,0,0,0.15)', padding: '10px 14px', borderRadius: '12px', marginBottom: '24px', backdropFilter: 'blur(5px)', fontSize: '0.75rem', fontFamily: 'monospace' }}>
               {isMobile ? `${myWallet.substring(0, 10)}...${myWallet.substring(34)}` : myWallet}
             </div>
 
-            <div style={{ display: 'flex', gap: '12px' }}>
+            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+              <button onClick={() => { addReward(1000, 'Dev Mint (Testing)', 'Earn'); alert('Berhasil menyuntikkan 1000 BMC (Dev Mode)!'); }} style={{ flex: '1 1 100%', padding: '10px', background: '#fcc419', color: '#b00020', border: 'none', borderRadius: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.85rem', boxShadow: '0 4px 10px rgba(0,0,0,0.2)' }}>
+                🚀 Suntik 1000 BMC (Mode Dev)
+              </button>
               <button onClick={() => setModalType('receive')} style={{ flex: 1, padding: '12px', background: 'white', color: 'var(--primary)', border: 'none', borderRadius: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.9rem' }}>
                 <ArrowDownToLine size={18} /> Receive
               </button>
@@ -489,6 +537,55 @@ const WalletDashboardTab = () => {
           </div>
         </div>
       </div>
+
+      {/* Syarat & Ketentuan Unlock Airdrop */}
+      {calculateLockedBalance && calculateLockedBalance(user) > 0 && (
+        <div style={{ marginTop: '24px', background: 'white', borderRadius: '24px', padding: isMobile ? '24px' : '32px', boxShadow: '0 8px 24px rgba(0,0,0,0.04)', border: '1px solid #ffe8cc' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+            <div style={{ width: '40px', height: '40px', background: '#fff4e6', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Lock size={20} color="#e8590c" />
+            </div>
+            <div>
+              <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '900' }}>Misi Unlock Saldo Airdrop</h3>
+              <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Selesaikan misi berikut untuk mencairkan token gratis Anda.</div>
+            </div>
+          </div>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px', marginTop: '24px' }}>
+            {/* Mission 1 */}
+            <div style={{ padding: '16px', borderRadius: '16px', border: user?.kycStatus === 'verified' ? '2px solid #51cf66' : '2px solid #e9ecef', background: user?.kycStatus === 'verified' ? '#ebfbee' : '#f8f9fa' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                <div style={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <ShieldCheck size={18} color={user?.kycStatus === 'verified' ? '#2b8a3e' : '#adb5bd'} />
+                  1. Verifikasi KYC
+                </div>
+                {user?.kycStatus === 'verified' ? (
+                  <CheckCircle size={20} color="#51cf66" />
+                ) : (
+                  <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#adb5bd', background: '#e9ecef', padding: '4px 8px', borderRadius: '12px' }}>Belum</span>
+                )}
+              </div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Status Anda saat ini: <strong>{user?.kycStatus}</strong></div>
+            </div>
+
+            {/* Mission 2 */}
+            <div style={{ padding: '16px', borderRadius: '16px', border: ((user?.stakedBalance || 0) >= 10 || (user?.transactions || []).some(t => t.type === 'Fiat')) ? '2px solid #51cf66' : '2px solid #e9ecef', background: ((user?.stakedBalance || 0) >= 10 || (user?.transactions || []).some(t => t.type === 'Fiat')) ? '#ebfbee' : '#f8f9fa' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                <div style={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Leaf size={18} color={((user?.stakedBalance || 0) >= 10 || (user?.transactions || []).some(t => t.type === 'Fiat')) ? '#2b8a3e' : '#adb5bd'} />
+                  2. Anggota Aktif Ekosistem
+                </div>
+                {((user?.stakedBalance || 0) >= 10 || (user?.transactions || []).some(t => t.type === 'Fiat')) ? (
+                  <CheckCircle size={20} color="#51cf66" />
+                ) : (
+                  <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#adb5bd', background: '#e9ecef', padding: '4px 8px', borderRadius: '12px' }}>Belum</span>
+                )}
+              </div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Staking min. 10 BMC atau pernah Top-Up via Fiat. Progress Staking: <strong>{user?.stakedBalance || 0}/10 BMC</strong>.</div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -499,6 +596,7 @@ const BuyBMC = () => {
   const [activePkg, setActivePkg] = useState(null);
   const [bankName, setBankName] = useState('');
   const [paymentProof, setPaymentProof] = useState(null);
+  const [customBmc, setCustomBmc] = useState('');
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   useEffect(() => {
@@ -517,7 +615,10 @@ const BuyBMC = () => {
 
   const handleFileChange = (e) => {
     if(e.target.files && e.target.files[0]) {
-      setPaymentProof(URL.createObjectURL(e.target.files[0]));
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = (event) => setPaymentProof(event.target.result);
+      reader.readAsDataURL(file);
     }
   };
 
@@ -596,13 +697,43 @@ const BuyBMC = () => {
 
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '32px' }}>
         {packages.map((pkg, i) => (
-          <div key={i} style={{ background: 'white', borderRadius: '24px', padding: '24px', border: '2px solid #e9ecef', position: 'relative', textAlign: 'center', transition: 'transform 0.2s' }}>
+          <div key={i} style={{ background: 'white', borderRadius: '24px', padding: '24px', border: '2px solid #e9ecef', position: 'relative', textAlign: 'center', transition: 'transform 0.2s', display: 'flex', flexDirection: 'column' }}>
             {pkg.badge && <div style={{ position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)', background: pkg.bmc === 10 ? '#12b886' : '#f59f00', color: 'white', fontSize: '0.7rem', fontWeight: 'bold', padding: '4px 14px', borderRadius: '20px', whiteSpace: 'nowrap', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}>{pkg.badge}</div>}
-            <div style={{ fontSize: '2rem', fontWeight: '900', color: 'var(--text-main)', marginBottom: '4px' }}>{pkg.bmc} <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>BMC</span></div>
+            <div style={{ fontSize: '2rem', fontWeight: '900', color: 'var(--text-main)', marginBottom: '4px', marginTop: 'auto' }}>{pkg.bmc} <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>BMC</span></div>
             <div style={{ fontSize: '1.1rem', color: 'var(--primary)', fontWeight: 'bold', marginBottom: '16px' }}>Rp {pkg.idr}</div>
-            <button onClick={() => setActivePkg(pkg)} style={{ width: '100%', background: 'var(--primary)', color: 'white', border: 'none', padding: '12px', borderRadius: '15px', fontWeight: '900', cursor: 'pointer', fontSize: '0.9rem', boxShadow: '0 4px 12px rgba(12, 166, 120, 0.15)' }}>Pesan Sekarang</button>
+            <button onClick={() => setActivePkg(pkg)} style={{ width: '100%', background: 'var(--primary)', color: 'white', border: 'none', padding: '12px', borderRadius: '15px', fontWeight: '900', cursor: 'pointer', fontSize: '0.9rem', boxShadow: '0 4px 12px rgba(12, 166, 120, 0.15)', marginTop: 'auto' }}>Pesan Sekarang</button>
           </div>
         ))}
+        
+        {/* Custom BMC Amount Card */}
+        <div style={{ background: 'white', borderRadius: '24px', padding: '24px', border: '2px dashed var(--primary)', position: 'relative', textAlign: 'center', transition: 'transform 0.2s', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)', background: 'var(--primary)', color: 'white', fontSize: '0.7rem', fontWeight: 'bold', padding: '4px 14px', borderRadius: '20px', whiteSpace: 'nowrap', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}>Beli Bebas</div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '4px', marginTop: 'auto' }}>
+            <input 
+              type="number" 
+              value={customBmc} 
+              onChange={(e) => setCustomBmc(e.target.value)} 
+              placeholder="0" 
+              min="1"
+              style={{ width: '80px', padding: '8px', borderRadius: '12px', border: '2px solid #e9ecef', fontSize: '1.5rem', fontWeight: '900', textAlign: 'center', color: 'var(--text-main)', outlineColor: 'var(--primary)' }} 
+            />
+            <span style={{ fontSize: '1rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>BMC</span>
+          </div>
+          <div style={{ fontSize: '1.1rem', color: 'var(--primary)', fontWeight: 'bold', marginBottom: '16px' }}>
+            Rp {customBmc && parseFloat(customBmc) > 0 ? (parseFloat(customBmc) * MARKET_PRICE).toLocaleString('id-ID') : 0}
+          </div>
+          <button 
+            onClick={() => {
+              if(customBmc && parseFloat(customBmc) > 0) {
+                setActivePkg({ bmc: parseFloat(customBmc), idr: Math.floor(parseFloat(customBmc) * MARKET_PRICE).toLocaleString('id-ID') });
+              } else {
+                alert("Masukkan nominal BMC yang valid!");
+              }
+            }} 
+            style={{ width: '100%', background: 'white', color: 'var(--primary)', border: '2px solid var(--primary)', padding: '10px', borderRadius: '15px', fontWeight: '900', cursor: 'pointer', fontSize: '0.9rem', marginTop: 'auto' }}>
+            Pesan Sekarang
+          </button>
+        </div>
       </div>
       <div style={{ background: '#f8f9fa', padding: '20px', borderRadius: '20px', fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.6, border: '1px solid #e9ecef' }}>
         <strong>💳 Metode Pembayaran Terdukung:</strong><br/>
@@ -626,14 +757,14 @@ const EarnBMC = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const currentUTC = new Date().toISOString().split('T')[0];
+  const currentUTC = new Intl.DateTimeFormat('fr-CA', { timeZone: 'Asia/Jakarta' }).format(new Date());
   const lastCheckin = user?.lastCheckinDate || null;
   const streak = user?.checkinStreak || 0;
   const canCheckinToday = lastCheckin !== currentUTC;
 
-  const handleDaily = () => {
+  const handleDaily = async () => {
     if (!canCheckinToday) return;
-    const result = processCheckin();
+    const result = await processCheckin();
     if (result) {
       alert(`✅ Daily Check-in Day ${result.nextStreak} berhasil! +${result.amount} BMC ditambahkan ke saldo Anda.`);
     }
@@ -1054,8 +1185,20 @@ const ValidatorBMC = () => {
         </div>
       )}
 
-      <h3 style={{ fontSize: isMobile ? '1.3rem' : '1.5rem', marginBottom: '8px', fontWeight: '900' }}>Dashboard Validator</h3>
-      <p style={{ color: 'var(--text-muted)', marginBottom: '24px', fontSize: '0.9rem' }}>Bantu sistem konsensus dengan memverifikasi data lapangan.</p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
+        <div>
+          <h3 style={{ fontSize: isMobile ? '1.3rem' : '1.5rem', marginBottom: '8px', fontWeight: '900' }}>Dashboard Validator</h3>
+          <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: '0.9rem' }}>Bantu sistem konsensus dengan memverifikasi data lapangan.</p>
+        </div>
+        {isStaked && tierLevel < 3 && (
+          <button 
+            onClick={() => { setStakeTarget(500 - staked); setTermsModal(true); }}
+            style={{ padding: '10px 16px', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem', boxShadow: '0 4px 12px rgba(12, 166, 120, 0.2)' }}
+          >
+            🚀 Upgrade to Master
+          </button>
+        )}
+      </div>
 
       {isStaked ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -1094,9 +1237,13 @@ const ValidatorBMC = () => {
                      </div>
 
                      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px', fontSize: '0.85rem' }}>
-                       <div style={{ background: 'white', padding: '12px', borderRadius: '12px' }}><strong>📍 GPS:</strong> <span style={{ color: '#1864ab', marginLeft: '4px' }}>{task.gps || '-'}</span></div>
+                       <div style={{ background: 'white', padding: '12px', borderRadius: '12px' }}>                        {task.tags?.includes('Artikel') ? (
+                          <strong>📝 Jenis Konten:</strong>
+                        ) : (
+                          <strong>📍 GPS:</strong>
+                        )} <span style={{ color: '#1864ab', marginLeft: '4px' }}>{task.tags?.includes('Artikel') ? 'Artikel & Esai Ilmiah (Academy)' : (task.gps || '-')}</span></div>
                        {task.details && (
-                         <div style={{ background: 'white', padding: '12px', borderRadius: '12px' }}><strong>👤 Pemilik:</strong> <span style={{ marginLeft: '4px' }}>{task.details.pemilik || task.details.name || 'Anonim'}</span></div>
+                         <div style={{ background: 'white', padding: '12px', borderRadius: '12px' }}>{task.tags?.includes('Artikel') ? <strong>👤 Penulis Pegiat:</strong> : <strong>👤 Pemilik:</strong>} <span style={{ marginLeft: '4px' }}>{task.details.pemilik || task.details.name || 'Anonim'}</span></div>
                        )}
                      </div>
 
@@ -1105,23 +1252,24 @@ const ValidatorBMC = () => {
                          <div style={{ fontWeight: 'bold', fontSize: '0.8rem', marginBottom: '12px', color: 'var(--text-muted)' }}>📷 BERKAS LAPORAN:</div>
                          <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '8px' }}>
                            {Object.entries(task.uploadedFiles).map(([key, imgUrl]) => (
-                             <div key={key} onClick={() => setPreviewImgWithWatermark(imgUrl)} style={{ flexShrink: 0, width: '70px', height: '70px', borderRadius: '12px', background: `url(${imgUrl}) center/cover`, border: '2.5px solid white', cursor: 'zoom-in', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}>
-                               <div style={{ position: 'absolute', background: 'rgba(0,0,0,0.6)', color: 'white', fontSize: '0.55rem', padding: '2px 4px', bottom: 0, left: 0, right: 0, textAlign: 'center', borderBottomLeftRadius: '10px', borderBottomRightRadius: '10px' }}>{key}</div>
+                             <div key={key} onClick={() => setPreviewImgWithWatermark(imgUrl)} style={{ position: 'relative', flexShrink: 0, width: '90px', height: '90px', borderRadius: '12px', backgroundImage: `url("${imgUrl}")`, backgroundPosition: 'center', backgroundSize: 'cover', backgroundColor: '#e9ecef', border: '2.5px solid white', cursor: 'zoom-in', boxShadow: '0 4px 10px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                               {!imgUrl || typeof imgUrl !== 'string' || !imgUrl.startsWith('data:') ? <span style={{fontSize: '0.6rem', color: '#adb5bd', textAlign: 'center'}}>No Image</span> : null}
+                               <div style={{ position: 'absolute', background: 'rgba(0,0,0,0.7)', color: 'white', fontSize: '0.6rem', padding: '4px', bottom: 0, left: 0, right: 0, textAlign: 'center', borderBottomLeftRadius: '10px', borderBottomRightRadius: '10px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{key}</div>
                              </div>
                            ))}
                          </div>
                        </div>
                      )}
 
-                     <div style={{ background: '#e9ecef', padding: '12px', borderRadius: '12px', marginTop: '8px' }}>
-                       <div style={{ fontWeight: 'bold', fontSize: '0.8rem', marginBottom: '8px', color: '#495057' }}>💬 Chat Konfirmasi</div>
-                       <input type="text" placeholder="Tanyakan detail spesifik..." style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ced4da', fontSize: '0.85rem', marginBottom: '8px', boxSizing: 'border-box' }} />
-                       <button onClick={() => alert('Pesan terkirim. Menunggu balasan.')} style={{ background: 'var(--text-main)', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer' }}>Kirim Pesan</button>
+                     <div style={{ background: 'var(--bg-secondary)', padding: '12px', borderRadius: '12px', marginTop: '8px', border: '1px solid var(--border-color, #e9ecef)' }}>
+                       <div style={{ fontWeight: 'bold', fontSize: '0.8rem', marginBottom: '8px', color: 'var(--text-main)' }}>💬 Chat Konfirmasi</div>
+                       <input type="text" placeholder="Tanyakan detail spesifik..." style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color, #ced4da)', background: 'var(--bg-primary, white)', color: 'var(--text-main)', fontSize: '0.85rem', marginBottom: '8px', boxSizing: 'border-box' }} />
+                       <button onClick={() => alert('Pesan terkirim. Menunggu balasan.')} style={{ background: 'var(--text-main)', color: 'var(--bg-primary, white)', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer' }}>Kirim Pesan</button>
                      </div>
 
                      <div style={{ display: 'flex', gap: '12px', marginTop: '4px' }}>
-                       <button onClick={() => { approveValidation(task.id, task.rewardAmount, task.plantingId); alert('Data ditolak.'); }} style={{ flex: 1, background: 'white', color: '#e03131', border: '1.5px solid #e03131', padding: '12px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem' }}>Tolak</button>
-                       <button onClick={() => { approveValidation(task.id, task.rewardAmount, task.plantingId); alert('✅ Verifikasi Sah! Komisi +0.05 BMC untuk Anda.'); }} style={{ flex: 1, background: '#51cf66', color: 'white', border: 'none', padding: '12px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem', boxShadow: '0 4px 12px rgba(81,207,102,0.3)' }}>Sahkan Data</button>
+                       <button onClick={() => { approveValidation(task.id, 0, task.plantingId, task.userId); alert('Data ditolak.'); }} style={{ flex: 1, background: 'white', color: '#e03131', border: '1.5px solid #e03131', padding: '12px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem' }}>Tolak</button>
+                       <button onClick={() => { approveValidation(task.id, task.rewardAmount, task.plantingId, task.userId); alert('✅ Verifikasi Sah! Komisi +0.05 BMC untuk Anda.'); }} style={{ flex: 1, background: '#51cf66', color: 'white', border: 'none', padding: '12px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem', boxShadow: '0 4px 12px rgba(81,207,102,0.3)' }}>Sahkan Data</button>
                      </div>
                    </div>
                  ))}
@@ -1350,6 +1498,12 @@ const KYCCenterTab = () => {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [fullName, setFullName] = useState(user?.name || '');
+  const [docType, setDocType] = useState('KTP'); // 'KTP' | 'Passport' | 'SIM' | 'StudentCard'
+  const [nik, setNik] = useState('');
+  const [ktpPhoto, setKtpPhoto] = useState(null);
+  const [selfiePhoto, setSelfiePhoto] = useState(null);
+  const [scanStep, setScanStep] = useState(null); // null | 'analyzing' | 'ela' | 'deepfake' | 'facematch' | 'success'
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -1370,34 +1524,196 @@ const KYCCenterTab = () => {
     );
   }
 
+  const handleKtpChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = (event) => setKtpPhoto(event.target.result);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSelfieChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = (event) => setSelfiePhoto(event.target.result);
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleKycSubmit = (e) => {
     e.preventDefault();
+    if (!ktpPhoto) return alert(`⚠️ Silakan pilih/unggah Foto ${docType} Anda terlebih dahulu!`);
+    if (!selfiePhoto) return alert("⚠️ Silakan pilih/unggah Foto Selfie Anda bersama identitas terlebih dahulu!");
+    if (nik.length < 5) return alert("⚠️ Nomor identitas harus valid!");
+
     setLoading(true);
+    setScanStep('analyzing');
+
+    // Simulate AI Scanner workflow
     setTimeout(() => {
-      updateKyc({ submittedAt: new Date().toISOString() });
-      if (addPendingValidation) {
-        addPendingValidation({
-          title: `Verifikasi KYC (${user?.name})`,
-          gps: '-',
-          tags: 'KYC, Identity',
-          details: { name: user?.name, action: 'Verifikasi Dokumen Identitas' },
-          uploadedFiles: {
-            'KTP': 'https://via.placeholder.com/400x250?text=KTP+Tampak+Depan', 
-            'Selfie KTP': 'https://via.placeholder.com/300x400?text=Selfie+KTP'
-          },
-          rewardAmount: 1
-        });
-      }
-      setLoading(false);
-      setSubmitted(true);
-      alert("✅ Data KYC berhasil dikirim! Validator sedang meninjau dokumen Anda.");
+      setScanStep('ela');
+      setTimeout(() => {
+        setScanStep('deepfake');
+        setTimeout(() => {
+          setScanStep('facematch');
+          setTimeout(() => {
+            setScanStep('success');
+            setTimeout(async () => {
+              const success = await updateKyc({ 
+                fullName, 
+                nik, 
+                docType,
+                ktpPhoto, 
+                selfiePhoto, 
+                submittedAt: new Date().toISOString() 
+              });
+
+              if (success) {
+                if (addPendingValidation) {
+                  addPendingValidation({
+                    userId: user?.id,
+                    title: `Verifikasi KYC [${docType}] (${fullName || user?.name})`,
+                    gps: '-',
+                    tags: `KYC, ${docType}, Identity`,
+                    isKyc: true,
+                    details: { name: fullName || user?.name, nik: nik, docType: docType, action: 'Verifikasi Dokumen Identitas' },
+                    uploadedFiles: {
+                      'KTP': ktpPhoto, 
+                      'Selfie KTP': selfiePhoto
+                    },
+                    rewardAmount: 0
+                  });
+                }
+                setSubmitted(true);
+                alert("✅ Data KYC berhasil dipindai oleh AI & dikirim ke Antrean Validator!");
+              }
+              setScanStep(null);
+              setLoading(false);
+            }, 1200);
+          }, 1500);
+        }, 1500);
+      }, 1500);
     }, 1500);
+  };
+
+  const getDocLabel = () => {
+    switch (docType) {
+      case 'Passport': return 'Nomor Paspor (Passport Number)';
+      case 'SIM': return 'Nomor SIM (Driver License Number)';
+      case 'StudentCard': return 'Nomor Kartu Pelajar / Mahasiswa (Student ID)';
+      default: return 'NIK (Nomor Induk Kependudukan - KTP)';
+    }
+  };
+
+  const getDocPlaceholder = () => {
+    switch (docType) {
+      case 'Passport': return 'Contoh: A12345678';
+      case 'SIM': return 'Contoh: 123456789012';
+      case 'StudentCard': return 'Contoh: 20260518';
+      default: return '16 digit angka NIK';
+    }
+  };
+
+  const handleIdNumberChange = (val) => {
+    if (docType === 'KTP' || docType === 'SIM') {
+      setNik(val.replace(/\D/g, '').substring(0, docType === 'KTP' ? 16 : 14));
+    } else if (docType === 'Passport') {
+      setNik(val.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().substring(0, 9));
+    } else {
+      setNik(val.substring(0, 20));
+    }
   };
 
   return (
     <div style={{ animation: 'fadeIn 0.3s ease-in-out' }}>
       <h2 style={{ fontSize: isMobile ? '1.8rem' : '2.5rem', fontWeight: '900', color: 'var(--text-main)', marginBottom: '8px' }}>KYC Center</h2>
       <p style={{ color: 'var(--text-muted)', fontSize: '1rem', marginBottom: '32px' }}>Verifikasi identitas untuk akses penuh ekosistem.</p>
+
+      {/* Futuristic Scanner Overlay */}
+      {scanStep && (
+        <div style={{ position: 'fixed', top:0, left:0, right:0, bottom:0, background: 'rgba(0,0,0,0.85)', zIndex: 100000, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(10px)', color: 'white', padding: '24px' }}>
+          <div style={{ background: 'white', border: '1px solid #dee2e6', borderRadius: '32px', padding: isMobile ? '24px' : '40px', width: '90%', maxWidth: '500px', textAlign: 'center', boxShadow: '0 24px 60px rgba(0,0,0,0.3)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px', color: 'var(--text-main)' }}>
+            <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', width: '100%', position: 'relative' }}>
+              {/* Photo Previews with Laser Scan Effect */}
+              <div style={{ position: 'relative', width: '120px', height: '120px', borderRadius: '16px', overflow: 'hidden', border: '2px solid var(--primary)', background: '#f8f9fa' }}>
+                <img src={ktpPhoto} alt="KTP Scan" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                {scanStep !== 'success' && <div style={{ position: 'absolute', top: 0, width: '100%', height: '4px', background: '#12b886', boxShadow: '0 0 15px #12b886', animation: 'scanLine 2s infinite ease-in-out' }}></div>}
+              </div>
+              <div style={{ position: 'relative', width: '120px', height: '120px', borderRadius: '16px', overflow: 'hidden', border: '2px solid var(--primary)', background: '#f8f9fa' }}>
+                <img src={selfiePhoto} alt="Selfie Scan" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                {scanStep !== 'success' && <div style={{ position: 'absolute', top: 0, width: '100%', height: '4px', background: '#12b886', boxShadow: '0 0 15px #12b886', animation: 'scanLine 2s infinite ease-in-out' }}></div>}
+              </div>
+            </div>
+
+            <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '900', letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--primary)' }}>🤖 AI Liveness & Fraud Engine</h3>
+            
+            <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '12px', textAlign: 'left', background: '#f8f9fa', padding: '20px', borderRadius: '20px', border: '1px solid #dee2e6' }}>
+              {[
+                { key: 'analyzing', label: '1. Menganalisis metadata EXIF file asli...' },
+                { key: 'ela', label: '2. Memeriksa ELA (Error Level Analysis) editan foto...' },
+                { key: 'deepfake', label: '3. Memindai rekayasa AI & Deepfake wajah...' },
+                { key: 'facematch', label: '4. Pencocokan biometrik wajah (Kemiripan: 98.4%)...' }
+              ].map((step, idx) => {
+                const stepsOrder = ['analyzing', 'ela', 'deepfake', 'facematch', 'success'];
+                const currentIdx = stepsOrder.indexOf(scanStep);
+                const stepIdx = stepsOrder.indexOf(step.key);
+                
+                let icon = <Clock size={16} color="#adb5bd" />;
+                let color = '#868e96';
+                let fontWeight = 'normal';
+
+                if (currentIdx > stepIdx) {
+                  icon = <CheckCircle size={16} color="#12b886" />;
+                  color = '#099268';
+                  fontWeight = 'bold';
+                } else if (currentIdx === stepIdx) {
+                  icon = <div className="spinner-kyc" />;
+                  color = 'var(--primary)';
+                  fontWeight = 'bold';
+                }
+
+                return (
+                  <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.85rem', color, fontWeight }}>
+                    {icon}
+                    <span>{step.label}</span>
+                  </div>
+                );
+              })}
+            </div>
+
+            {scanStep === 'success' ? (
+              <div style={{ background: '#e6fcf5', color: '#099268', padding: '12px 24px', borderRadius: '12px', fontSize: '0.85rem', fontWeight: 'bold', border: '1.5px solid #12b886', animation: 'pulse 1.5s infinite' }}>
+                🎉 AI VERDICT: DOKUMEN 100% ASLI & AMAN!
+              </div>
+            ) : (
+              <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontStyle: 'italic' }}>
+                Mohon tidak menutup jendela ini selama pemindaian AI berlangsung...
+              </div>
+            )}
+          </div>
+          
+          <style>{`
+            @keyframes scanLine {
+              0% { top: 0%; }
+              50% { top: 100%; }
+              100% { top: 0%; }
+            }
+            .spinner-kyc {
+              width: 14px;
+              height: 14px;
+              border: 2px solid var(--primary);
+              border-top-color: transparent;
+              border-radius: 50%;
+              animation: spinKyc 1s infinite linear;
+            }
+            @keyframes spinKyc {
+              100% { transform: rotate(360deg); }
+            }
+          `}</style>
+        </div>
+      )}
 
       {submitted ? (
         <div style={{ background: 'white', borderRadius: '24px', padding: isMobile ? '32px 24px' : '48px', textAlign: 'center', boxShadow: '0 8px 24px rgba(0,0,0,0.04)' }}>
@@ -1419,28 +1735,58 @@ const KYCCenterTab = () => {
           <form onSubmit={handleKycSubmit} style={{ flex: 1, width: '100%', background: 'white', borderRadius: '24px', padding: isMobile ? '24px' : '32px', boxShadow: '0 8px 24px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column', gap: '20px' }}>
              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px' }}>
                 <div>
-                   <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 'bold' }}>Nama Lengkap (KTP)</label>
-                   <input type="text" defaultValue={user?.name} required style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1.5px solid #e9ecef', fontSize: '0.95rem' }} />
+                   <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 'bold' }}>Nama Lengkap (Sesuai Identitas)</label>
+                   <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} required style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1.5px solid #e9ecef', fontSize: '0.95rem' }} />
                 </div>
                 <div>
-                   <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 'bold' }}>NIK (KTP)</label>
-                   <input type="text" placeholder="16 digit" required style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1.5px solid #e9ecef', fontSize: '0.95rem' }} />
+                   <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 'bold' }}>Jenis Dokumen Identitas</label>
+                   <select value={docType} onChange={(e) => { setDocType(e.target.value); setNik(''); }} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1.5px solid #e9ecef', fontSize: '0.95rem', outlineColor: 'var(--primary)', background: 'white' }}>
+                      <option value="KTP">KTP (Kartu Tanda Penduduk - Indonesia)</option>
+                      <option value="Passport">Paspor (Passport - Global)</option>
+                      <option value="SIM">SIM (Surat Izin Mengemudi)</option>
+                      <option value="StudentCard">Kartu Pelajar / Kartu Mahasiswa (Student ID)</option>
+                   </select>
                 </div>
+             </div>
+
+             <div>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 'bold' }}>{getDocLabel()}</label>
+                <input type="text" value={nik} onChange={(e) => handleIdNumberChange(e.target.value)} placeholder={getDocPlaceholder()} required style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1.5px solid #e9ecef', fontSize: '0.95rem' }} />
              </div>
              
              <div>
-                <label style={{ display: 'block', marginBottom: '12px', fontSize: '0.85rem', fontWeight: 'bold' }}>Foto KTP & Selfie</label>
+                <label style={{ display: 'block', marginBottom: '12px', fontSize: '0.85rem', fontWeight: 'bold' }}>Foto Identitas & Selfie</label>
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px' }}>
-                   <div style={{ background: '#f8f9fa', padding: '24px', borderRadius: '20px', border: '1.5px dashed #dee2e6', textAlign: 'center' }}>
-                      <Camera size={24} color="#adb5bd" style={{ marginBottom: '8px' }} />
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>KTP Asli</div>
-                      <input type="file" style={{ display: 'none' }} id="ktp-upload" />
+                   <div style={{ background: '#f8f9fa', padding: '24px', borderRadius: '20px', border: '1.5px dashed #dee2e6', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '220px' }}>
+                      {ktpPhoto ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                          <span style={{ fontSize: '0.8rem', color: '#12b886', fontWeight: 'bold', marginBottom: '8px' }}>✅ Foto Terunggah</span>
+                          <img src={ktpPhoto} alt="Identity Preview" style={{ width: '100%', maxWidth: '180px', height: '100px', objectFit: 'cover', borderRadius: '12px', border: '2px solid #dee2e6', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }} />
+                        </div>
+                      ) : (
+                        <>
+                          <Camera size={28} color="#adb5bd" style={{ marginBottom: '8px' }} />
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>{docType} Asli</div>
+                          <div style={{ fontSize: '0.65rem', color: '#adb5bd', marginTop: '2px' }}>Belum ada foto dipilih</div>
+                        </>
+                      )}
+                      <input type="file" accept="image/*" style={{ display: 'none' }} id="ktp-upload" onChange={handleKtpChange} />
                       <button type="button" onClick={() => document.getElementById('ktp-upload').click()} style={{ marginTop: '12px', background: 'white', padding: '8px 16px', borderRadius: '8px', border: '1px solid #dee2e6', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', width: '100%' }}>Pilih Foto</button>
                    </div>
-                   <div style={{ background: '#f8f9fa', padding: '24px', borderRadius: '20px', border: '1.5px dashed #dee2e6', textAlign: 'center' }}>
-                      <Users size={24} color="#adb5bd" style={{ marginBottom: '8px' }} />
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>Selfie + KTP</div>
-                      <input type="file" style={{ display: 'none' }} id="selfie-upload" />
+                   <div style={{ background: '#f8f9fa', padding: '24px', borderRadius: '20px', border: '1.5px dashed #dee2e6', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '220px' }}>
+                      {selfiePhoto ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                          <span style={{ fontSize: '0.8rem', color: '#12b886', fontWeight: 'bold', marginBottom: '8px' }}>✅ Selfie Terunggah</span>
+                          <img src={selfiePhoto} alt="Selfie Preview" style={{ width: '100%', maxWidth: '180px', height: '100px', objectFit: 'cover', borderRadius: '12px', border: '2px solid #dee2e6', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }} />
+                        </div>
+                      ) : (
+                        <>
+                          <Users size={28} color="#adb5bd" style={{ marginBottom: '8px' }} />
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>Selfie + {docType}</div>
+                          <div style={{ fontSize: '0.65rem', color: '#adb5bd', marginTop: '2px' }}>Belum ada foto dipilih</div>
+                        </>
+                      )}
+                      <input type="file" accept="image/*" style={{ display: 'none' }} id="selfie-upload" onChange={handleSelfieChange} />
                       <button type="button" onClick={() => document.getElementById('selfie-upload').click()} style={{ marginTop: '12px', background: 'white', padding: '8px 16px', borderRadius: '8px', border: '1px solid #dee2e6', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', width: '100%' }}>Pilih Foto</button>
                    </div>
                 </div>
@@ -1525,9 +1871,9 @@ const SecuritySettingsTab = () => {
            { title: 'Biometrik (Retina)', desc: 'Scan mata untuk akses cepat.', status: user?.securitySettings?.retina, action: toggleRetina, btnText: user?.securitySettings?.retina ? 'AKTIF' : 'DAFTARKAN' },
            { title: 'Wallet PIN', desc: '6 digit PIN untuk kirim BMC.', status: false, action: () => {}, btnText: 'UBAH PIN' }
          ].map((item, i) => (
-           <div key={i} style={{ background: 'white', borderRadius: '24px', padding: '24px', border: '1px solid #f1f3f5', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
+           <div key={i} style={{ background: 'var(--bg-card)', borderRadius: '24px', padding: '24px', border: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
               <div>
-                 <h4 style={{ margin: '0 0 6px 0', fontWeight: '900', fontSize: '1rem' }}>{item.title}</h4>
+                 <h4 style={{ margin: '0 0 6px 0', fontWeight: '900', color: 'var(--text-main)', fontSize: '1rem' }}>{item.title}</h4>
                  <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>{item.desc}</p>
               </div>
               <button onClick={item.action} style={{ padding: '8px 16px', borderRadius: '20px', border: 'none', background: item.status ? '#e6fcf5' : '#f8f9fa', color: item.status ? '#12b886' : '#adb5bd', fontWeight: '900', cursor: 'pointer', fontSize: '0.75rem', transition: 'all 0.2s' }}>
@@ -1544,6 +1890,7 @@ const TokenWalletPage = () => {
   const { walletAddress, isConnected, connectWallet } = useWeb3();
   const location = useLocation();
   const [activeTab, setActiveTab] = useState(location.search.includes('tab=validator') ? 'get_bmc' : 'overview');
+  const [initialModal, setInitialModal] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 1100);
 
   useEffect(() => {
@@ -1565,7 +1912,7 @@ const TokenWalletPage = () => {
   ];
 
   return (
-    <div style={{ paddingTop: isMobile ? '80px' : 'var(--navbar-height)', paddingBottom: '80px', minHeight: '100vh', background: '#f8f9fa' }}>
+    <div style={{ paddingTop: isMobile ? '80px' : 'var(--navbar-height)', paddingBottom: '80px', minHeight: '100vh', background: 'var(--bg-color)' }}>
       <div className="container" style={{ marginBottom: isMobile ? '16px' : '24px' }}>
         <BackButton to="/bamboochain" />
       </div>
@@ -1575,11 +1922,11 @@ const TokenWalletPage = () => {
         {/* NAVIGATION: Sidebar (Desktop) or Horizontal Scroll (Mobile) */}
         <div className="wallet-sidebar">
           <div className="no-scrollbar" style={{ 
-            background: isMobile ? 'transparent' : 'white', 
+            background: isMobile ? 'transparent' : 'var(--bg-card)', 
             borderRadius: isMobile ? '0' : '24px', 
             padding: isMobile ? '4px 0' : '20px', 
             boxShadow: isMobile ? 'none' : '0 10px 30px rgba(0,0,0,0.03)',
-            border: isMobile ? 'none' : '1px solid #f1f3f5',
+            border: isMobile ? 'none' : '1px solid var(--border-color)',
             overflowX: isMobile ? 'auto' : 'visible',
             display: isMobile ? 'flex' : 'block',
             borderBottom: isMobile ? '1px solid #e9ecef' : 'none',
@@ -1612,9 +1959,9 @@ const TokenWalletPage = () => {
                       width: isMobile ? 'auto' : '100%', 
                       padding: isMobile ? '10px 20px' : '14px 16px', 
                       textAlign: 'left',
-                      background: isActive ? 'var(--primary)' : (isMobile ? 'white' : 'transparent'),
+                      background: isActive ? 'var(--primary)' : (isMobile ? 'var(--bg-card)' : 'transparent'),
                       color: isActive ? 'white' : 'var(--text-main)',
-                      border: isMobile ? (isActive ? 'none' : '1px solid #e9ecef') : 'none',
+                      border: isMobile ? (isActive ? 'none' : '1px solid var(--border-color)') : 'none',
                       borderRadius: '16px',
                       fontWeight: isActive ? '900' : '600',
                       cursor: 'pointer', transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -1635,9 +1982,9 @@ const TokenWalletPage = () => {
  
         {/* MAIN CONTENT AREA */}
         <div className="wallet-content">
-          {activeTab === 'overview' && <OverviewTab />}
+          {activeTab === 'overview' && <OverviewTab setActiveTab={setActiveTab} setInitialModal={setInitialModal} />}
           {activeTab === 'whitepaper' && <WhitepaperTab />}
-          {activeTab === 'dashboard' && <WalletDashboardTab isConnected={isConnected} connectWallet={connectWallet} walletAddress={walletAddress} />}
+          {activeTab === 'dashboard' && <WalletDashboardTab isConnected={isConnected} connectWallet={connectWallet} walletAddress={walletAddress} initialModal={initialModal} setInitialModal={setInitialModal} />}
           {activeTab === 'get_bmc' && <GetBMCTab />}
           {activeTab === 'transactions' && <TransactionsTab />}
           {activeTab === 'kyc' && <KYCCenterTab />}

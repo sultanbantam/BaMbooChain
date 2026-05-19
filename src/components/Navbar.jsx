@@ -45,6 +45,7 @@ const Navbar = () => {
     { label: t('feature_academy'), path: '/bamboochain/academy', icon: <GraduationCap size={16} /> },
     { label: t('feature_data_analytics'), path: '/bamboochain/data-analytics', icon: <BarChart3 size={16} /> },
     { label: t('feature_invest'), path: '/bamboochain/invest', icon: <TrendingUp size={16} /> },
+    { label: t('feature_kodiba'), path: '/bamboochain/kodiba', icon: <Wallet size={16} /> },
   ];
 
   const mobileMenuItems = [
@@ -60,6 +61,7 @@ const Navbar = () => {
     { label: t('nav_datatools'), path: '/data-tools' },
     { label: t('nav_marketplace'), path: '/bamboochain/marketplace' },
     { label: t('nav_community'), path: '/community' },
+    { label: t('nav_events'), path: '/events' },
     ...bambooNusaFeatures,
     { label: t('nav_careers'), path: '/careers' },
     { label: t('nav_membership'), path: '/membership' },
@@ -139,12 +141,13 @@ const Navbar = () => {
           </div>
 
           {/* Row 2: Top Menu Bar */}
-          <div style={{ background: 'white', height: '45px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '25px', padding: '0 32px', borderBottom: '1px solid #f1f3f5' }}>
+          <div style={{ background: 'var(--bg-card)', height: '45px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '25px', padding: '0 32px', borderBottom: '1px solid var(--border-color)' }}>
             <Link to="/bambupedia" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('nav_bambupedia')}</Link>
             <Link to="/academy" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('nav_academy')}</Link>
             <Link to="/data-tools" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('nav_datatools')}</Link>
             <Link to="/bamboochain/marketplace" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('nav_marketplace')}</Link>
             <Link to="/community" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('nav_community')}</Link>
+            <Link to="/events" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('nav_events')}</Link>
             
             {/* bambuNUSA DROPDOWN (11 Features) */}
             <div 
@@ -154,7 +157,7 @@ const Navbar = () => {
             >
               bambuNUSA <ChevronDown size={14} />
               {showBambooMenu && (
-                <div style={{ position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)', width: '260px', background: 'white', boxShadow: '0 15px 40px rgba(0,0,0,0.15)', borderRadius: '0 0 16px 16px', padding: '10px', zIndex: 10005, border: '1px solid #eee' }}>
+                <div style={{ position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)', width: '260px', background: 'var(--bg-card)', boxShadow: '0 15px 40px rgba(0,0,0,0.15)', borderRadius: '0 0 16px 16px', padding: '10px', zIndex: 10005, border: '1px solid var(--border-color)' }}>
                    {bambooNusaFeatures.map((feature, index) => (
                      <Link 
                        key={index} 
@@ -199,8 +202,8 @@ const Navbar = () => {
               </div>
               
               {showNotifMenu && isAuthenticated && (
-                <div style={{ position: 'absolute', top: '40px', right: '100px', width: '350px', background: 'white', boxShadow: '0 10px 40px rgba(0,0,0,0.1)', borderRadius: '16px', overflow: 'hidden', zIndex: 10006, border: '1px solid #eee' }}>
-                  <div style={{ padding: '15px', background: '#f8f9fa', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ position: 'absolute', top: '40px', right: '100px', width: '350px', background: 'var(--bg-card)', boxShadow: '0 10px 40px rgba(0,0,0,0.1)', borderRadius: '16px', overflow: 'hidden', zIndex: 10006, border: '1px solid var(--border-color)' }}>
+                  <div style={{ padding: '15px', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontWeight: 'bold', fontSize: '0.95rem' }}>{t('nav_notif_title')} {unreadCount > 0 && `(${unreadCount})`}</span>
                     <div style={{ display: 'flex', gap: '10px' }}>
                       {unreadCount > 0 && (
@@ -253,7 +256,7 @@ const Navbar = () => {
                 </div>
               )}
               {showNotifMenu && !isAuthenticated && (
-                <div style={{ position: 'absolute', top: '40px', right: '100px', width: '320px', background: 'white', boxShadow: '0 10px 40px rgba(0,0,0,0.1)', borderRadius: '16px', overflow: 'hidden', zIndex: 10006, border: '1px solid #eee', padding: '15px', textAlign: 'center', fontSize: '0.9rem', color: '#666' }}>
+                <div style={{ position: 'absolute', top: '40px', right: '100px', width: '320px', background: 'var(--bg-card)', boxShadow: '0 10px 40px rgba(0,0,0,0.1)', borderRadius: '16px', overflow: 'hidden', zIndex: 10006, border: '1px solid var(--border-color)', padding: '15px', textAlign: 'center', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
                   {t('nav_notif_login_req')}
                 </div>
               )}
@@ -267,7 +270,7 @@ const Navbar = () => {
                   {user?.name?.split(' ')[0] || 'User'}
                   
                   {showProfileMenu && (
-                    <div style={{ position: 'absolute', top: '40px', right: '0', width: '200px', background: 'white', boxShadow: '0 10px 40px rgba(0,0,0,0.1)', borderRadius: '16px', overflow: 'hidden', zIndex: 10006, border: '1px solid #eee' }}>
+                    <div style={{ position: 'absolute', top: '40px', right: '0', width: '200px', background: 'var(--bg-card)', boxShadow: '0 10px 40px rgba(0,0,0,0.1)', borderRadius: '16px', overflow: 'hidden', zIndex: 10006, border: '1px solid var(--border-color)' }}>
                       <Link to="/profile" style={{ display: 'block', padding: '12px 16px', color: '#333', textDecoration: 'none', borderBottom: '1px solid #eee' }}>👤 {t('nav_profile')}</Link>
                       <button onClick={(e) => { e.stopPropagation(); logout(); setShowProfileMenu(false); }} style={{ width: '100%', textAlign: 'left', padding: '12px 16px', background: 'white', border: 'none', color: '#e03131', cursor: 'pointer', fontWeight: 'bold' }}>🚪 {t('nav_logout')}</button>
                     </div>
@@ -329,7 +332,7 @@ const Navbar = () => {
        {/* ────────── WALLET SELECTION MODAL ────────── */}
        {isWalletModalOpen && (
          <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(10px)', zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-            <div style={{ background: 'white', width: '100%', maxWidth: '400px', borderRadius: '24px', padding: '30px', boxShadow: '0 20px 50px rgba(0,0,0,0.2)', position: 'relative' }}>
+            <div style={{ background: 'var(--bg-card)', width: '100%', maxWidth: '400px', borderRadius: '24px', padding: '30px', boxShadow: '0 20px 50px rgba(0,0,0,0.2)', position: 'relative', border: '1px solid var(--border-color)' }}>
                <button onClick={() => closeWalletModal()} style={{ position: 'absolute', top: '20px', right: '20px', border: 'none', background: '#f1f3f5', borderRadius: '50%', width: '32px', height: '32px', cursor: 'pointer' }}><X size={18} /></button>
                
                <div style={{ textAlign: 'center', marginBottom: '25px' }}>

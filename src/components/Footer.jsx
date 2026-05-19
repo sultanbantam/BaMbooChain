@@ -20,7 +20,7 @@ const Footer = () => {
           
           <div>
             <h3 style={{ fontSize: '1.5rem', marginBottom: '24px', color: 'var(--primary)' }}>{t('foot_contact')}</h3>
-            <ul style={{ display: 'flex', flexDirection: 'column', gap: '16px', color: '#adb5bd' }}>
+            <ul style={{ display: 'flex', flexDirection: 'column', gap: '16px', color: 'var(--text-muted)' }}>
               <li style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
                 <MapPin size={24} color="var(--primary)" style={{ flexShrink: 0 }} />
                 <span>Jl. Kelapa Dua Link. Cantilan RT. 001 RW. 009 Kel. Kagungan<br />Kec. Serang, Kota Serang, Banten.</span>
@@ -38,8 +38,8 @@ const Footer = () => {
 
           <div>
             <h3 style={{ fontSize: '1.5rem', marginBottom: '24px', color: 'var(--primary)' }}>{t('foot_social')}</h3>
-            <p style={{ color: '#adb5bd', marginBottom: '20px' }}>{t('foot_social_desc')}</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', color: '#adb5bd' }}>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '20px' }}>{t('foot_social_desc')}</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', color: 'var(--text-muted)' }}>
               <a href="https://www.youtube.com/@bambupedia" target="_blank" rel="noreferrer" style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                 <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <rect width="24" height="24" rx="6" fill="#4CAF50"/>
@@ -86,25 +86,25 @@ const Footer = () => {
           
           <div>
             <h3 style={{ fontSize: '1.5rem', marginBottom: '24px', color: 'var(--primary)' }}>Crypto Exchange & Web3</h3>
-            <p style={{ color: '#adb5bd', marginBottom: '20px' }}>Gunakan link referral untuk menyelesaikan misi.</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', color: '#adb5bd' }}>
-              <a href="https://www.bmwweb.biz/referral/earn-together/refer2earn-usdc/claim?hl=en&ref=GRO_28502_FFUQO&utm_source=referral_entrance" target="_blank" rel="noreferrer" style={{ display: 'flex', gap: '12px', alignItems: 'center', color: '#adb5bd', textDecoration: 'none' }}>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '20px' }}>Gunakan link referral untuk menyelesaikan misi.</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', color: 'var(--text-muted)' }}>
+              <a href="https://www.bmwweb.biz/referral/earn-together/refer2earn-usdc/claim?hl=en&ref=GRO_28502_FFUQO&utm_source=referral_entrance" target="_blank" rel="noreferrer" style={{ display: 'flex', gap: '12px', alignItems: 'center', color: 'var(--text-muted)', textDecoration: 'none' }}>
                 <LinkIcon size={20} color="var(--primary)" /> Binance
               </a>
-              <a href="https://www.kucoin.com/r/rf/QBSA2YN1" target="_blank" rel="noreferrer" style={{ display: 'flex', gap: '12px', alignItems: 'center', color: '#adb5bd', textDecoration: 'none' }}>
+              <a href="https://www.kucoin.com/r/rf/QBSA2YN1" target="_blank" rel="noreferrer" style={{ display: 'flex', gap: '12px', alignItems: 'center', color: 'var(--text-muted)', textDecoration: 'none' }}>
                 <LinkIcon size={20} color="var(--primary)" /> KuCoin
               </a>
-              <a href="https://www.tokocrypto.com/app?scope=register&ref=A9S2F9I6" target="_blank" rel="noreferrer" style={{ display: 'flex', gap: '12px', alignItems: 'center', color: '#adb5bd', textDecoration: 'none' }}>
+              <a href="https://www.tokocrypto.com/app?scope=register&ref=A9S2F9I6" target="_blank" rel="noreferrer" style={{ display: 'flex', gap: '12px', alignItems: 'center', color: 'var(--text-muted)', textDecoration: 'none' }}>
                 <LinkIcon size={20} color="var(--primary)" /> Tokocrypto
               </a>
-              <a href="https://app.bxjddjt.com/referral/earn-together/invite/UFEWVFpY?ref=UFEWVFpY&ref_type=103&utm_cmp=rXJBDjtJ&activity_id=1775815609617" target="_blank" rel="noreferrer" style={{ display: 'flex', gap: '12px', alignItems: 'center', color: '#adb5bd', textDecoration: 'none' }}>
+              <a href="https://app.bxjddjt.com/referral/earn-together/invite/UFEWVFpY?ref=UFEWVFpY&ref_type=103&utm_cmp=rXJBDjtJ&activity_id=1775815609617" target="_blank" rel="noreferrer" style={{ display: 'flex', gap: '12px', alignItems: 'center', color: 'var(--text-muted)', textDecoration: 'none' }}>
                 <LinkIcon size={20} color="var(--primary)" /> Gate.io
               </a>
-              <a href="https://interlinklabs.ai/referral?refCode=08174139994" target="_blank" rel="noreferrer" style={{ display: 'flex', gap: '12px', alignItems: 'center', color: '#adb5bd', textDecoration: 'none' }}>
+              <a href="https://interlinklabs.ai/referral?refCode=08174139994" target="_blank" rel="noreferrer" style={{ display: 'flex', gap: '12px', alignItems: 'center', color: 'var(--text-muted)', textDecoration: 'none' }}>
                 <LinkIcon size={20} color="var(--primary)" /> Interlinklabs
               </a>
-              <div style={{ borderTop: '1px solid #495057', marginTop: '8px', paddingTop: '16px' }}>
-                <a href="https://minepi.com/sultanbantam" target="_blank" rel="noreferrer" style={{ display: 'flex', gap: '12px', alignItems: 'center', color: '#adb5bd', textDecoration: 'none' }}>
+              <div style={{ borderTop: '1px solid var(--border-color)', marginTop: '8px', paddingTop: '16px' }}>
+                <a href="https://minepi.com/sultanbantam" target="_blank" rel="noreferrer" style={{ display: 'flex', gap: '12px', alignItems: 'center', color: 'var(--text-muted)', textDecoration: 'none' }}>
                   <LinkIcon size={20} color="#fcc419" /> Join Pi Network
                 </a>
               </div>
@@ -113,13 +113,13 @@ const Footer = () => {
           
         </div>
 
-        <div style={{ borderTop: '1px solid #495057', paddingTop: '32px', textAlign: 'center', color: '#6c757d' }}>
+        <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '32px', textAlign: 'center', color: 'var(--text-muted)' }}>
           <p>{t('foot_copyright')}</p>
           <div style={{ marginTop: '12px', fontSize: '0.85rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
             <p>Smart Contract BMC jaringan BEP20 : <code>0x812d9709f0A53982606b823Ee61d5CA216F7F9c0</code></p>
             <img src={getAssetUrl('bmc-bep20.jpeg')} alt="Smart Contract BMC BEP20" style={{ width: '150px', borderRadius: '8px' }} />
             
-            <p style={{ marginTop: '16px', borderTop: '1px dashed #495057', paddingTop: '16px', maxWidth: '600px', margin: '0 auto' }}>
+            <p style={{ marginTop: '16px', borderTop: '1px dashed var(--border-color)', paddingTop: '16px', maxWidth: '600px', margin: '0 auto' }}>
               Informasi di website ini bersifat edukasi dan bukan merupakan ajakan atau rekomendasi investasi. 
               <span onClick={() => handleNav('/faq')} style={{ color: 'var(--primary)', textDecoration: 'underline', marginRight: '10px', cursor: 'pointer' }}>Pusat Bantuan (FAQ)</span> | 
               <span onClick={() => handleNav('/disclaimer')} style={{ color: 'var(--primary)', textDecoration: 'underline', marginRight: '10px', cursor: 'pointer' }}>Baca Disclaimer Selengkapnya</span> | 

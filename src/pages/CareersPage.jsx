@@ -273,12 +273,12 @@ const CareersPage = () => {
             { id: 'akademik', title: "Riset & Magang", icon: <GraduationCap size={32} color="#845ef7" />, color: "#845ef7", desc: "Jalur riset skripsi/tesis khusus mahasiswa tingkat akhir dari kampus mitra global.", link: "#akademik", action: "Info Program" },
             { id: 'bounty', title: "Web3 Bounties", icon: <Target size={32} color="#f59f00" />, color: "#f59f00", desc: "Kerjakan misi lepas (bounty) dari mana saja dan dapatkan reward token BMC.", link: "#bounty", action: "Lihat Misi" }
           ].map((card) => (
-            <div key={card.id} className="premium-card" style={{ background: 'white', padding: '40px', borderRadius: '32px', border: '1px solid #f1f3f5', transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)', position: 'relative' }}>
+            <div key={card.id} className="premium-card" style={{ background: 'var(--bg-card)', padding: '40px', borderRadius: '32px', border: '1px solid var(--border-color)', transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)', position: 'relative' }}>
               <div style={{ background: `${card.color}10`, width: '70px', height: '70px', borderRadius: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '24px' }}>
                 {card.icon}
               </div>
-              <h3 style={{ fontSize: '1.5rem', fontWeight: '800', marginBottom: '16px', color: '#1a1a1a' }}>{card.title}</h3>
-              <p style={{ color: '#666', fontSize: '0.95rem', lineHeight: '1.6', marginBottom: '30px' }}>{card.desc}</p>
+              <h3 style={{ fontSize: '1.5rem', fontWeight: '800', marginBottom: '16px', color: 'var(--text-main)' }}>{card.title}</h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: '1.6', marginBottom: '30px' }}>{card.desc}</p>
               <button 
                 onClick={() => card.link.startsWith('#') ? document.getElementById(card.link.substring(1))?.scrollIntoView({ behavior: 'smooth' }) : navigate(card.link)}
                 style={{ background: card.color, color: 'white', border: 'none', padding: '12px 24px', borderRadius: '16px', fontWeight: 'bold', fontSize: '0.9rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -612,8 +612,8 @@ const CareersPage = () => {
           padding-top: 150px;
           padding-bottom: 100px;
           min-height: 100vh;
-          background: #fdfdfd;
-          color: #1a1a1a;
+          background: var(--bg-color);
+          color: var(--text-main);
         }
         .activity-ticker {
           background: #1a1a1a;
@@ -633,7 +633,7 @@ const CareersPage = () => {
         .careers-main-title {
           font-size: clamp(2.5rem, 6vw, 4rem);
           font-weight: 900;
-          color: #1a1a1a;
+          color: var(--text-main);
           margin-bottom: 20px;
           line-height: 1.1;
           letter-spacing: -1px;
@@ -677,10 +677,10 @@ const CareersPage = () => {
         
         /* Sections */
         .profesional-section {
-          background: white;
+          background: var(--bg-card);
           border-radius: 40px;
           padding: 60px;
-          border: 1px solid #f1f3f5;
+          border: 1px solid var(--border-color);
           margin-bottom: 80px;
           box-shadow: 0 30px 60px rgba(0,0,0,0.02);
         }
@@ -709,12 +709,12 @@ const CareersPage = () => {
         /* Job Rows */
         .job-row {
           padding: 30px;
-          border: 1px solid #f1f3f5;
+          border: 1px solid var(--border-color);
           border-radius: 24px;
           display: flex;
           justify-content: space-between;
           align-items: center;
-          background: #fcfcfc;
+          background: var(--bg-secondary);
           transition: all 0.3s;
           flex-wrap: wrap;
           gap: 20px;

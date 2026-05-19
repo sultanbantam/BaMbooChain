@@ -161,7 +161,7 @@ const DataAnalyticsPage = () => {
   const isMobile = windowWidth <= 768;
 
   return (
-    <div style={{ paddingTop: isMobile ? '80px' : 'var(--navbar-height)', paddingBottom: '80px', minHeight: '100vh', background: '#f8f9fa' }}>
+    <div style={{ paddingTop: isMobile ? '80px' : 'var(--navbar-height)', paddingBottom: '80px', minHeight: '100vh', background: 'var(--bg-color)' }}>
       
       {/* HEADER SECTION */}
       <div className="container" style={{ textAlign: 'center', marginBottom: isMobile ? '40px' : '60px', padding: isMobile ? '0 20px' : '0' }}>
@@ -184,7 +184,7 @@ const DataAnalyticsPage = () => {
       <div className="container" style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '20px' : '40px', padding: isMobile ? '0 15px' : '0' }}>
         
         {/* ANALYTICS DASHBOARD */}
-        <div style={{ background: 'white', borderRadius: isMobile ? '20px' : '24px', padding: isMobile ? '20px' : '32px', boxShadow: '0 10px 40px rgba(0,0,0,0.06)' }}>
+        <div style={{ background: 'var(--bg-card)', borderRadius: isMobile ? '20px' : '24px', padding: isMobile ? '20px' : '32px', border: '1px solid var(--border-color)' }}>
           <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', marginBottom: '32px', gap: '20px' }}>
             <h2 style={{ fontSize: isMobile ? '1.2rem' : '1.5rem', color: 'var(--text-main)', margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
               <PieChart size={isMobile ? 20 : 24} color="#339af0" /> Analytics Dashboard
@@ -210,7 +210,7 @@ const DataAnalyticsPage = () => {
               { label: "Proyek Aktif (On-Chain)", val: loading ? "..." : `${metrics.totalProjects} Transaksi`, change: "Smart Contract", up: true },
               { label: "Partisipasi Tata Kelola", val: "84.2%", change: "DAO Voting", up: true }
             ].map((stat, idx) => (
-              <div key={idx} style={{ padding: '20px', background: '#f8f9fa', borderRadius: '16px', border: '1px solid #f1f3f5', position: 'relative' }}>
+              <div key={idx} style={{ padding: '20px', background: 'var(--bg-secondary)', borderRadius: '16px', border: '1px solid var(--border-color)', position: 'relative' }}>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '8px', fontWeight: 'bold' }}>{stat.label}</div>
                 <div style={{ fontSize: isMobile ? '1.5rem' : '1.8rem', fontWeight: '900', color: 'var(--text-main)', marginBottom: '8px' }}>{stat.val}</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', fontWeight: 'bold', color: stat.up ? 'var(--primary)' : '#e03131' }}>
@@ -222,7 +222,7 @@ const DataAnalyticsPage = () => {
           </div>
 
           {/* Recharts Container */}
-          <div style={{ position: 'relative', height: isMobile ? '350px' : '450px', background: '#f8f9fa', borderRadius: '16px', border: '1px solid #f1f3f5', padding: isMobile ? '15px' : '24px', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ position: 'relative', height: isMobile ? '350px' : '450px', background: 'var(--bg-secondary)', borderRadius: '16px', border: '1px solid var(--border-color)', padding: isMobile ? '15px' : '24px', display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', marginBottom: '24px', gap: '10px' }}>
               <div style={{ fontWeight: 'bold', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: isMobile ? '0.8rem' : '1rem' }}>
                 Tren Pertumbuhan Harga BMC vs Karbon
@@ -282,7 +282,7 @@ const DataAnalyticsPage = () => {
             <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '32px', position: 'relative', zIndex: 1 }}>Prediksi biomassa bambu dan suplai *carbon offset* berbasis *Machine Learning*.</p>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', position: 'relative', zIndex: 1 }}>
-              <div style={{ background: 'white', padding: '15px', borderRadius: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
+              <div style={{ background: 'var(--bg-card)', padding: '15px', borderRadius: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid var(--border-color)' }}>
                 <div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>Proyeksi Panen (Q4 2026)</div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-main)', fontSize: '1rem', fontWeight: 'bold' }}>
@@ -292,7 +292,7 @@ const DataAnalyticsPage = () => {
                 <div style={{ background: '#eebefa', color: '#845ef7', padding: '3px 8px', borderRadius: '12px', fontSize: '0.65rem', fontWeight: 'bold' }}>+{aiData.accuracy}% AKURASI</div>
               </div>
 
-              <div style={{ background: 'white', padding: '15px', borderRadius: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
+              <div style={{ background: 'var(--bg-card)', padding: '15px', borderRadius: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid var(--border-color)' }}>
                 <div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>Spot Price Karbon</div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-main)', fontSize: '1rem', fontWeight: 'bold' }}>
@@ -309,7 +309,7 @@ const DataAnalyticsPage = () => {
           </div>
 
           {/* GIS MAPPING */}
-          <div style={{ background: 'white', borderRadius: isMobile ? '20px' : '24px', padding: isMobile ? '20px' : '32px', boxShadow: '0 10px 40px rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ background: 'var(--bg-card)', borderRadius: isMobile ? '20px' : '24px', padding: isMobile ? '20px' : '32px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
               <div style={{ background: 'rgba(12,166,120,0.1)', padding: '10px', borderRadius: '12px', color: 'var(--primary)' }}>
                 <Globe size={isMobile ? 20 : 24} />

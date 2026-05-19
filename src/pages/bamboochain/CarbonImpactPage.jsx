@@ -24,7 +24,7 @@ const CarbonImpactPage = () => {
   };
 
   return (
-    <div style={{ paddingTop: 'var(--navbar-height)', paddingBottom: '80px', minHeight: '100vh', background: '#f8f9fa' }}>
+    <div style={{ paddingTop: 'var(--navbar-height)', paddingBottom: '80px', minHeight: '100vh', background: 'var(--bg-color)' }}>
       
       {/* Back Navigation */}
       <div className="container" style={{ marginBottom: '32px' }}>
@@ -51,7 +51,7 @@ const CarbonImpactPage = () => {
         {/* STATS (CO2, Air, Lahan) */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px' }}>
           
-          <div style={{ background: 'white', borderRadius: '24px', padding: '32px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', borderBottom: '4px solid #339af0' }}>
+          <div style={{ background: 'var(--bg-card)', borderRadius: '24px', padding: '32px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', borderBottom: '4px solid #339af0' }}>
             <div style={{ background: 'rgba(51,154,240,0.1)', padding: '20px', borderRadius: '50%', marginBottom: '20px', color: '#339af0' }}>
               <Wind size={40} />
             </div>
@@ -60,7 +60,7 @@ const CarbonImpactPage = () => {
             <div style={{ fontSize: '1.1rem', color: '#339af0', fontWeight: 'bold' }}>Ton Metrik</div>
           </div>
 
-          <div style={{ background: 'white', borderRadius: '24px', padding: '32px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', borderBottom: '4px solid #fcc419' }}>
+          <div style={{ background: 'var(--bg-card)', borderRadius: '24px', padding: '32px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', borderBottom: '4px solid #fcc419' }}>
             <div style={{ background: 'rgba(252,196,25,0.1)', padding: '20px', borderRadius: '50%', marginBottom: '20px', color: '#fcc419' }}>
               <Droplets size={40} />
             </div>
@@ -69,7 +69,7 @@ const CarbonImpactPage = () => {
             <div style={{ fontSize: '1.1rem', color: '#fcc419', fontWeight: 'bold' }}>Liter Konservasi</div>
           </div>
 
-          <div style={{ background: 'white', borderRadius: '24px', padding: '32px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', borderBottom: '4px solid var(--primary)' }}>
+          <div style={{ background: 'var(--bg-card)', borderRadius: '24px', padding: '32px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', borderBottom: '4px solid var(--primary)' }}>
             <div style={{ background: 'rgba(12,166,120,0.1)', padding: '20px', borderRadius: '50%', marginBottom: '20px', color: 'var(--primary)' }}>
               <Map size={40} />
             </div>
@@ -84,9 +84,9 @@ const CarbonImpactPage = () => {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px' }}>
           
           {/* IMPACT REPORT */}
-          <div style={{ background: 'white', borderRadius: '24px', padding: '40px', boxShadow: '0 10px 40px rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <div style={{ background: 'var(--bg-card)', borderRadius: '24px', padding: '40px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
-              <div style={{ background: '#f8f9fa', padding: '16px', borderRadius: '16px', color: 'var(--text-main)' }}>
+              <div style={{ background: 'var(--bg-secondary)', padding: '16px', borderRadius: '16px', color: 'var(--text-main)' }}>
                 <FileText size={32} />
               </div>
               <div>

@@ -35,10 +35,10 @@ const OverviewPage = () => {
   };
 
   return (
-    <div style={{ paddingTop: 'var(--navbar-height)', minHeight: '100vh', background: '#f8f9fa' }}>
+    <div style={{ paddingTop: 'var(--navbar-height)', minHeight: '100vh', background: 'var(--bg-color)' }}>
       
       {/* Dashboard Header */}
-      <div style={{ background: 'white', borderBottom: '1px solid #e9ecef', padding: '40px 0' }}>
+      <div style={{ background: 'var(--bg-card)', borderBottom: '1px solid var(--border-color)', padding: '40px 0' }}>
         <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
           <div style={{ marginBottom: '20px', width: '100%' }}>
             <BackButton to="/" />
@@ -79,7 +79,7 @@ const OverviewPage = () => {
         
         {/* STATISTIK */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '24px' }}>
-          <div style={{ background: 'white', padding: '24px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div style={{ background: 'var(--bg-card)', padding: '24px', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '16px' }}>
             <div style={{ background: 'rgba(12, 166, 120, 0.1)', padding: '16px', borderRadius: '12px', color: 'var(--primary)' }}>
               <Leaf size={28} />
             </div>
@@ -89,7 +89,7 @@ const OverviewPage = () => {
             </div>
           </div>
 
-          <div style={{ background: 'white', padding: '24px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div style={{ background: 'var(--bg-card)', padding: '24px', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '16px' }}>
             <div style={{ background: 'rgba(51, 154, 240, 0.1)', padding: '16px', borderRadius: '12px', color: '#339af0' }}>
               <Wind size={28} />
             </div>
@@ -99,7 +99,7 @@ const OverviewPage = () => {
             </div>
           </div>
 
-          <div style={{ background: 'white', padding: '24px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div style={{ background: 'var(--bg-card)', padding: '24px', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '16px' }}>
             <div style={{ background: 'rgba(245, 159, 0, 0.1)', padding: '16px', borderRadius: '12px', color: '#f59f00' }}>
               <Wallet size={28} />
             </div>
@@ -109,7 +109,7 @@ const OverviewPage = () => {
             </div>
           </div>
 
-          <div style={{ background: 'white', padding: '24px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div style={{ background: 'var(--bg-card)', padding: '24px', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '16px' }}>
             <div style={{ background: 'rgba(132, 94, 247, 0.1)', padding: '16px', borderRadius: '12px', color: '#845ef7' }}>
               <TrendingUp size={28} />
             </div>
@@ -125,7 +125,7 @@ const OverviewPage = () => {
 
         {/* Farmer Missions Section (Visible if user is farmer) */}
         {user?.farmerStatus === 'verified' && (
-          <div style={{ background: 'white', borderRadius: '16px', padding: '32px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', animation: 'slideUp 0.5s ease-out' }}>
+          <div style={{ background: 'var(--bg-card)', borderRadius: '16px', padding: '32px', border: '1px solid var(--border-color)', animation: 'slideUp 0.5s ease-out' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
               <h3 style={{ fontSize: '1.25rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
                 <CheckCircle size={20} color="var(--primary)" /> Misi Penanaman Anda
@@ -135,7 +135,7 @@ const OverviewPage = () => {
             
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
               {mockMissions.map(mission => (
-                <div key={mission.id} style={{ border: '1px solid #f1f3f5', borderRadius: '16px', padding: '20px', background: '#f8f9fa' }}>
+                <div key={mission.id} style={{ border: '1px solid var(--border-color)', borderRadius: '16px', padding: '20px', background: 'var(--bg-secondary)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
                     <span style={{ padding: '4px 10px', borderRadius: '20px', background: 'rgba(12, 166, 120, 0.1)', color: 'var(--primary)', fontSize: '0.75rem', fontWeight: 'bold' }}>{mission.type}</span>
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={12} /> {mission.deadline}</span>
@@ -156,7 +156,7 @@ const OverviewPage = () => {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px' }}>
           
           {/* MAP PLANTATION */}
-          <div style={{ background: 'white', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ background: 'var(--bg-card)', borderRadius: '16px', border: '1px solid var(--border-color)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
             <div style={{ padding: '20px 24px', borderBottom: '1px solid #f1f3f5', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h3 style={{ fontSize: '1.25rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <MapPin size={20} color="var(--primary)" /> Live Plantation Map
@@ -192,7 +192,7 @@ const OverviewPage = () => {
           </div>
 
           {/* RECENT ACTIVITY */}
-          <div style={{ background: 'white', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+          <div style={{ background: 'var(--bg-card)', borderRadius: '16px', border: '1px solid var(--border-color)' }}>
             <div style={{ padding: '20px 24px', borderBottom: '1px solid #f1f3f5' }}>
               <h3 style={{ fontSize: '1.25rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Activity size={20} color="var(--primary)" /> Aktivitas Terbaru
@@ -230,7 +230,7 @@ const OverviewPage = () => {
       {/* MISSION REPORT MODAL */}
       {showReportModal && reportingMission && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100000, padding: '20px' }}>
-          <div style={{ background: 'white', width: '100%', maxWidth: '500px', borderRadius: '32px', overflow: 'hidden', animation: 'fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)', position: 'relative' }}>
+          <div style={{ background: 'var(--bg-card)', width: '100%', maxWidth: '500px', borderRadius: '32px', overflow: 'hidden', animation: 'fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)', position: 'relative', border: '1px solid var(--border-color)' }}>
             <button onClick={() => setShowReportModal(false)} style={{ position: 'absolute', top: '20px', right: '20px', background: 'rgba(0,0,0,0.05)', border: 'none', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
               <X size={20} />
             </button>

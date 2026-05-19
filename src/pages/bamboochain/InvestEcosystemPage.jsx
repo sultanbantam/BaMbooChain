@@ -45,7 +45,7 @@ const InvestEcosystemPage = () => {
   ];
 
   return (
-    <div style={{ paddingTop: 'var(--navbar-height)', paddingBottom: '80px', minHeight: '100vh', background: '#f8f9fa' }}>
+    <div style={{ paddingTop: 'var(--navbar-height)', paddingBottom: '80px', minHeight: '100vh', background: 'var(--bg-color)' }}>
       
       {/* Back Navigation */}
       <div className="container" style={{ marginBottom: '32px' }}>
@@ -66,7 +66,7 @@ const InvestEcosystemPage = () => {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px' }}>
           
           {/* ROI CALCULATOR */}
-          <div style={{ background: 'white', borderRadius: '24px', padding: '32px', boxShadow: '0 10px 40px rgba(0,0,0,0.06)', border: '1px solid #f1f3f5' }}>
+          <div style={{ background: 'var(--bg-card)', borderRadius: '24px', padding: '32px', border: '1px solid var(--border-color)' }}>
             <h3 style={{ fontSize: '1.4rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '24px' }}>
               <Calculator size={24} color="var(--primary)" /> ROI Calculator
             </h3>
@@ -88,7 +88,7 @@ const InvestEcosystemPage = () => {
                 <input type="range" min="12" max="60" step="12" value={investTerm} onChange={(e) => setInvestTerm(Number(e.target.value))} style={{ width: '100%', accentColor: 'var(--primary)' }} />
               </div>
 
-              <div style={{ background: '#f8f9fa', borderRadius: '16px', padding: '24px', marginTop: '16px', border: '1px solid #e9ecef' }}>
+              <div style={{ background: 'var(--bg-secondary)', borderRadius: '16px', padding: '24px', marginTop: '16px', border: '1px solid var(--border-color)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', borderBottom: '1px dashed #ced4da', paddingBottom: '8px' }}>
                   <span style={{ color: 'var(--text-muted)' }}>Estimated APY</span>
                   <span style={{ fontWeight: 'bold', color: '#f59f00' }}>{totalApy}% / tahun</span>
@@ -112,7 +112,7 @@ const InvestEcosystemPage = () => {
           </div>
 
           {/* MY INVESTMENT (Portfolio) */}
-          <div style={{ background: 'white', borderRadius: '24px', padding: '32px', boxShadow: '0 10px 40px rgba(0,0,0,0.06)', border: '1px solid #f1f3f5', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ background: 'var(--bg-card)', borderRadius: '24px', padding: '32px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column' }}>
             <h3 style={{ fontSize: '1.4rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '24px' }}>
               <PieChart size={24} color="var(--primary)" /> Portfolio Investasi
             </h3>
@@ -128,7 +128,7 @@ const InvestEcosystemPage = () => {
 
             <h4 style={{ fontSize: '1rem', color: 'var(--text-main)', marginBottom: '16px' }}>Proyek Berjalan</h4>
             <div style={{ overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', border: '1px solid #f1f3f5', borderRadius: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', border: '1px solid var(--border-color)', borderRadius: '12px' }}>
                 <div>
                   <div style={{ fontWeight: 'bold', color: 'var(--text-main)', fontSize: '0.95rem' }}>Green Gold Cibarani</div>
                   <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '4px' }}>Lock: 24 Bulan • Berjalan: 6 Bln</div>
@@ -138,7 +138,7 @@ const InvestEcosystemPage = () => {
                   <div style={{ fontSize: '0.8rem', color: '#f59f00', fontWeight: 'bold' }}>+12% APY</div>
                 </div>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', border: '1px solid #f1f3f5', borderRadius: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', border: '1px solid var(--border-color)', borderRadius: '12px' }}>
                 <div>
                   <div style={{ fontWeight: 'bold', color: 'var(--text-main)', fontSize: '0.95rem' }}>Bamboo Pellet Factory</div>
                   <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '4px' }}>Lock: 36 Bulan • Berjalan: 1 Bln</div>
@@ -171,7 +171,7 @@ const InvestEcosystemPage = () => {
               const progress = progressRaw > 100 ? 100 : progressRaw.toFixed(1);
 
               return (
-                <div key={idx} style={{ background: 'white', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 8px 30px rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column' }}>
+                <div key={idx} style={{ background: 'var(--bg-card)', borderRadius: '20px', overflow: 'hidden', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column' }}>
                   <div style={{ height: '180px', position: 'relative' }}>
                     <img src={proj.img} alt={proj.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     <div style={{ position: 'absolute', top: '16px', left: '16px', background: 'rgba(0,0,0,0.6)', color: 'white', padding: '6px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 'bold', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -183,13 +183,13 @@ const InvestEcosystemPage = () => {
                     <h3 style={{ fontSize: '1.25rem', color: 'var(--text-main)', margin: '0 0 16px 0', lineHeight: '1.4' }}>{proj.title}</h3>
                     
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
-                      <div style={{ background: '#f8f9fa', padding: '10px', borderRadius: '8px' }}>
+                      <div style={{ background: 'var(--bg-secondary)', padding: '10px', borderRadius: '8px' }}>
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                           <TrendingUp size={12} /> Est. APY
                         </div>
                         <div style={{ fontSize: '1rem', fontWeight: 'bold', color: '#f59f00' }}>{proj.apy}</div>
                       </div>
-                      <div style={{ background: '#f8f9fa', padding: '10px', borderRadius: '8px' }}>
+                      <div style={{ background: 'var(--bg-secondary)', padding: '10px', borderRadius: '8px' }}>
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                           <Calendar size={12} /> Durasi Kunci
                         </div>
@@ -202,7 +202,7 @@ const InvestEcosystemPage = () => {
                         <span style={{ color: 'var(--text-muted)' }}>Terkumpul: <span style={{ fontWeight: 'bold', color: 'var(--text-main)' }}>${proj.raised}</span></span>
                         <span style={{ color: 'var(--text-muted)' }}>Target: ${proj.target}</span>
                       </div>
-                      <div style={{ width: '100%', height: '8px', background: '#e9ecef', borderRadius: '4px', overflow: 'hidden' }}>
+                      <div style={{ width: '100%', height: '8px', background: 'var(--bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
                         <div style={{ width: `${progress}%`, height: '100%', background: 'var(--primary)' }}></div>
                       </div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--primary)', fontWeight: 'bold', textAlign: 'right', marginTop: '6px' }}>
@@ -224,7 +224,7 @@ const InvestEcosystemPage = () => {
 
         {/* AI MARKET PREDICTOR (MACRO INTELLIGENCE) - REDESIGN */}
         <div style={{ marginTop: '40px' }}>
-          <div style={{ background: 'white', borderRadius: '32px', padding: '48px', boxShadow: '0 20px 60px rgba(0,0,0,0.08)', border: '1px solid #f1f3f5' }}>
+          <div style={{ background: 'var(--bg-card)', borderRadius: '32px', padding: '48px', border: '1px solid var(--border-color)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '40px' }}>
               <div>
                 <div style={{ display: 'inline-flex', padding: '6px 12px', background: 'rgba(12,166,120,0.1)', color: 'var(--primary)', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '16px', alignItems: 'center', gap: '6px' }}>
@@ -233,7 +233,7 @@ const InvestEcosystemPage = () => {
                 <h2 style={{ fontSize: '2.5rem', color: 'var(--text-main)', margin: 0, fontWeight: '900', letterSpacing: '-0.5px' }}>Market Intelligence</h2>
                 <p style={{ color: 'var(--text-muted)', marginTop: '8px', fontSize: '1.1rem' }}>Sinyal prediksi akurat dengan analisis 15+ indikator ekonomi global.</p>
               </div>
-              <div style={{ textAlign: 'right', background: '#f8f9fa', padding: '16px 24px', borderRadius: '20px', border: '1px solid #e9ecef' }}>
+              <div style={{ textAlign: 'right', background: 'var(--bg-secondary)', padding: '16px 24px', borderRadius: '20px', border: '1px solid var(--border-color)' }}>
                 <div style={{ fontSize: '0.8rem', color: '#adb5bd', marginBottom: '4px', textTransform: 'uppercase', fontWeight: 'bold' }}>Market Consensus</div>
                 <div style={{ color: '#12b886', fontWeight: '800', fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <TrendingUp size={20} /> BULLISH TREND
@@ -242,7 +242,7 @@ const InvestEcosystemPage = () => {
             </div>
 
             {/* TAB SWITCHER */}
-            <div style={{ display: 'flex', gap: '12px', marginBottom: '32px', padding: '6px', background: '#f1f3f5', borderRadius: '16px', width: 'fit-content' }}>
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '32px', padding: '6px', background: 'var(--bg-secondary)', borderRadius: '16px', width: 'fit-content' }}>
               {[
                 { id: 'macro', label: 'Global Macro', icon: <TrendingUp size={16}/> },
                 { id: 'stocks', label: 'Equity Markets', icon: <BarChart size={16}/> },
@@ -253,7 +253,7 @@ const InvestEcosystemPage = () => {
                   onClick={() => setActivePredictorTab(tab.id)}
                   style={{ 
                     display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 24px', borderRadius: '12px', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.9rem',
-                    background: activePredictorTab === tab.id ? 'white' : 'transparent',
+                    background: activePredictorTab === tab.id ? 'var(--bg-card)' : 'transparent',
                     color: activePredictorTab === tab.id ? 'var(--primary)' : '#868e96',
                     boxShadow: activePredictorTab === tab.id ? '0 4px 12px rgba(0,0,0,0.05)' : 'none',
                     transition: 'all 0.2s'
@@ -267,7 +267,7 @@ const InvestEcosystemPage = () => {
             {/* ACTIVE TAB CONTENT */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '24px', marginBottom: '48px' }}>
                {indicatorData[activePredictorTab].map((ind, idx) => (
-                  <div key={idx} style={{ background: '#ffffff', borderRadius: '20px', padding: '24px', border: '1px solid #f1f3f5', boxShadow: '0 4px 20px rgba(0,0,0,0.02)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div key={idx} style={{ background: 'var(--bg-secondary)', borderRadius: '20px', padding: '24px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span style={{ fontSize: '0.9rem', color: '#868e96', fontWeight: '500' }}>{ind.label}</span>
                         <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: ind.sentiment === 'bullish' ? '#12b886' : ind.sentiment === 'bearish' ? '#fa5252' : '#fcc419', boxShadow: `0 0 10px ${ind.sentiment === 'bullish' ? '#12b886' : '#fcc419'}` }}></div>

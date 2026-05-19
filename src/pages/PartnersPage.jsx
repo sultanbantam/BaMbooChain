@@ -241,6 +241,41 @@ const PartnersPage = () => {
                 <li>Mulai Kolaborasi: Januari 2024</li>
                 <li>Fokus Area: Pemberdayaan & Teknologi</li>
               </ul>
+
+              {selectedPartner.name.includes('Cibarani') && (
+                <div style={{ marginTop: '24px', padding: '18px', background: 'rgba(12, 166, 120, 0.05)', borderRadius: '16px', border: '1px dashed var(--primary)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div style={{ fontSize: '0.88rem', fontWeight: 'bold', color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <ShieldCheck size={16} /> Dokumen Resmi MoU Adat
+                  </div>
+                  <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
+                    Nota Kesepahaman (MoU) kemitraan adat perkebunan emas hijau Kasepuhan Cibarani seluas ±490 Hektar.
+                  </p>
+                  <a 
+                    href="./assets/pedoman/moucibarani.pdf" 
+                    download="moucibarani.pdf"
+                    style={{ 
+                      display: 'inline-flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      gap: '8px', 
+                      background: 'var(--primary)', 
+                      color: 'white', 
+                      padding: '12px 16px', 
+                      borderRadius: '10px', 
+                      textDecoration: 'none', 
+                      fontWeight: 'bold', 
+                      fontSize: '0.88rem',
+                      textAlign: 'center',
+                      boxShadow: '0 4px 12px rgba(12,166,120,0.15)',
+                      transition: 'background 0.2s'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = '#0b8a63'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'var(--primary)'}
+                  >
+                    Unduh Dokumen MoU (PDF)
+                  </a>
+                </div>
+              )}
             </div>
             <button 
               onClick={() => setSelectedPartner(null)}

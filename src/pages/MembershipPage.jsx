@@ -74,7 +74,7 @@ const MembershipPage = () => {
   const bmcNum = getBMCNumber(bmcBalance);
 
   return (
-    <div style={{ paddingTop: 'var(--navbar-height)', minHeight: '100vh', background: '#f8f9fa' }}>
+    <div style={{ paddingTop: 'var(--navbar-height)', minHeight: '100vh', background: 'var(--bg-color)' }}>
       <div className="container" style={{ padding: '40px 24px' }}>
 
         {/* Header */}
@@ -91,7 +91,7 @@ const MembershipPage = () => {
 
         {/* Status Wallet */}
         {isConnected && (
-          <div style={{ background: 'white', borderRadius: '16px', padding: '24px', marginBottom: '40px', border: '2px solid var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
+          <div style={{ background: 'var(--bg-card)', borderRadius: '16px', padding: '24px', marginBottom: '40px', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
             <div>
               <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '4px' }}>Saldo BMC Anda saat ini</div>
               <div style={{ fontSize: '2rem', fontWeight: '800', color: 'var(--primary)' }}>{bmcBalance ?? '0'} BMC</div>
@@ -115,7 +115,7 @@ const MembershipPage = () => {
         )}
 
         {!isConnected && (
-          <div style={{ textAlign: 'center', padding: '40px', background: 'white', borderRadius: '16px', marginBottom: '40px', border: '2px dashed #dee2e6' }}>
+          <div style={{ textAlign: 'center', padding: '40px', background: 'var(--bg-card)', borderRadius: '16px', marginBottom: '40px', border: '2px dashed var(--border-color)' }}>
             <p style={{ color: 'var(--text-muted)', marginBottom: '20px', fontSize: '1.05rem' }}>Hubungkan wallet untuk melihat status keanggotaan Anda</p>
             <button onClick={openWalletModal} className="btn btn-primary" style={{ padding: '14px 32px', fontSize: '1rem' }}>
               🔗 Hubungkan Wallet
@@ -130,11 +130,11 @@ const MembershipPage = () => {
             const isUnlocked = isConnected && bmcNum >= tier.minBMC;
             return (
               <div key={tier.id} style={{
-                background: 'white',
+                background: 'var(--bg-card)',
                 borderRadius: '20px',
                 overflow: 'hidden',
-                border: isActive ? `3px solid ${tier.color}` : '1px solid #eee',
-                boxShadow: isActive ? `0 8px 30px ${tier.color}30` : '0 2px 8px rgba(0,0,0,0.06)',
+                border: isActive ? `3px solid ${tier.color}` : '1px solid var(--border-color)',
+                boxShadow: isActive ? `0 8px 30px ${tier.color}30` : '0 2px 8px rgba(0,0,0,0.02)',
                 transition: 'all 0.3s',
                 position: 'relative',
               }}>
