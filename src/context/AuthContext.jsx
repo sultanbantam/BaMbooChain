@@ -929,9 +929,42 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const getJakartaCheckinDay = () => {
+    const now = new Date();
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'Asia/Jakarta',
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      second: 'numeric',
+      hour12: false
+    });
+    
+    const parts = formatter.formatToParts(now);
+    const partMap = {};
+    parts.forEach(p => { partMap[p.type] = p.value; });
+    
+    const year = parseInt(partMap.year);
+    const month = parseInt(partMap.month);
+    const day = parseInt(partMap.day);
+    const hour = parseInt(partMap.hour);
+    
+    let checkinDate = new Date(year, month - 1, day);
+    if (hour < 7) {
+      checkinDate.setDate(checkinDate.getDate() - 1);
+    }
+    
+    const y = checkinDate.getFullYear();
+    const m = String(checkinDate.getMonth() + 1).padStart(2, '0');
+    const d = String(checkinDate.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  };
+
   const processCheckin = async () => {
     if (!user) return null;
-    const currentUTC = new Intl.DateTimeFormat('fr-CA', { timeZone: 'Asia/Jakarta' }).format(new Date());
+    const currentWibDay = getJakartaCheckinDay();
     const prevStreak = user.checkinStreak || 0;
     const nextStreak = prevStreak === 7 ? 1 : prevStreak + 1;
     const rewardAmounts = { 1: 0.001, 2: 0.002, 3: 0.003, 4: 0.004, 5: 0.005, 6: 0.006, 7: 0.010 };
@@ -941,14 +974,14 @@ export const AuthProvider = ({ children }) => {
       id: 'tx_chk_' + Math.random().toString(36).substr(2, 9),
       type: 'Earn',
       amount: `+${amount}`,
-      date: currentUTC,
+      date: currentWibDay,
       status: 'Selesai',
       description: `Daily Check-in Reward (Day ${nextStreak})`
     };
 
     const updatedUser = { 
       ...user, 
-      lastCheckinDate: currentUTC,
+      lastCheckinDate: currentWibDay,
       checkinStreak: nextStreak,
       bmcBalance: (user.bmcBalance || 0) + amount,
       transactions: [newTx, ...(user.transactions || [])]
@@ -959,7 +992,7 @@ export const AuthProvider = ({ children }) => {
     
     try {
       await updateDoc(doc(db, "users", user.id), {
-        lastCheckinDate: currentUTC,
+        lastCheckinDate: currentWibDay,
         checkinStreak: nextStreak,
         bmcBalance: increment(amount),
         transactions: arrayUnion(newTx)
@@ -1006,6 +1039,7 @@ export const AuthProvider = ({ children }) => {
       submitLocationProposal,
       approveLocation,
       processCheckin,
+      getJakartaCheckinDay,
       calculateLockedBalance,
       getAvailableBalance,
       articles,

@@ -744,7 +744,7 @@ const BuyBMC = () => {
 };
 
 const EarnBMC = () => {
-  const { user, addReward, addPendingValidation, processCheckin } = useAuth();
+  const { user, addReward, addPendingValidation, processCheckin, getJakartaCheckinDay } = useAuth();
   const [tasks, setTasks] = useState({ social: false, crypto: false, pi: false, watch: false });
   const [activeTask, setActiveTask] = useState(null);
   const [taskInput, setTaskInput] = useState('');
@@ -757,10 +757,10 @@ const EarnBMC = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const currentUTC = new Intl.DateTimeFormat('fr-CA', { timeZone: 'Asia/Jakarta' }).format(new Date());
+  const currentWibDay = getJakartaCheckinDay ? getJakartaCheckinDay() : new Intl.DateTimeFormat('fr-CA', { timeZone: 'Asia/Jakarta' }).format(new Date());
   const lastCheckin = user?.lastCheckinDate || null;
   const streak = user?.checkinStreak || 0;
-  const canCheckinToday = lastCheckin !== currentUTC;
+  const canCheckinToday = lastCheckin !== currentWibDay;
 
   const handleDaily = async () => {
     if (!canCheckinToday) return;
