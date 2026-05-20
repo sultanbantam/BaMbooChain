@@ -493,6 +493,22 @@ const PublicPortfolioPage = () => {
                     "{targetUser.statusText || 'Mari bersama melestarikan lingkungan demi bumi yang lebih sehat! 🌿'}"
                   </p>
 
+                  {/* Render Status Media */}
+                  {targetUser.statusPhotos && targetUser.statusPhotos.length > 0 && (
+                    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(targetUser.statusPhotos.length, 3)}, 1fr)`, gap: '8px', marginBottom: '12px' }}>
+                      {targetUser.statusPhotos.map((photo, idx) => (
+                        <div key={idx} style={{ borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-color)', aspectRatio: '1/1' }}>
+                          <img src={photo} alt={`status ${idx+1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {targetUser.statusVideo && (
+                    <div style={{ marginBottom: '12px', borderRadius: '10px', overflow: 'hidden', border: '1px solid var(--border-color)' }}>
+                      <video src={targetUser.statusVideo} controls muted style={{ width: '100%', display: 'block', maxHeight: '300px', objectFit: 'contain', background: '#000' }} />
+                    </div>
+                  )}
+
                   {/* Status Interactions Panel */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '15px', borderTop: '1px solid var(--border-color)', paddingTop: '15px', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
                     <button 

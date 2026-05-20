@@ -361,94 +361,7 @@ const ProfilePage = () => {
               <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap', marginBottom: '30px' }}>
                 <div style={{ position: 'relative' }}>
                   <div style={{ width: '100px', height: '100px', borderRadius: '50%', background: 'var(--bg-color)', overflow: 'hidden', border: '3px solid var(--primary)' }}>
-                    {isEditingStatus ? (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        <div>
-                          <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '5px', fontWeight: 'bold' }}>Bio Singkat (Misi/Portofolio)</label>
-                          <textarea 
-                            name="bioText" 
-                            value={formData.bioText} 
-                            onChange={handleChange}
-                            placeholder="Tulis bio singkat Anda, misal: Peneliti taksonomi bambu, pegiat hutan lestari..."
-                            rows={2}
-                            style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-card)', color: 'var(--text-main)', fontSize: '0.85rem', resize: 'vertical' }}
-                          />
-                        </div>
-                        <div>
-                          <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '5px', fontWeight: 'bold' }}>Status Hari Ini ("Apa yang Anda pikirkan tentang ekosistem hijau?")</label>
-                          <textarea 
-                            name="statusText" 
-                            value={formData.statusText} 
-                            onChange={handleChange}
-                            placeholder="Bagikan pemikiran, aktivitas menanam, atau ide hijau Anda hari ini..."
-                            rows={2}
-                            style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-card)', color: 'var(--text-main)', fontSize: '0.85rem', resize: 'vertical' }}
-                          />
-                        </div>
-
-                        {/* ── MEDIA UPLOAD SECTION ── */}
-                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                          <button
-                            type="button"
-                            onClick={() => document.getElementById('status-photos-input').click()}
-                            style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'rgba(12,166,120,0.08)', color: 'var(--primary)', border: '1px dashed var(--primary)', borderRadius: '8px', padding: '7px 14px', fontSize: '0.8rem', fontWeight: 'bold', cursor: 'pointer' }}
-                          >
-                            <UploadCloud size={14} /> Tambah Foto
-                          </button>
-                          <input id="status-photos-input" type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={handleStatusPhotosChange} />
-                          <button
-                            type="button"
-                            onClick={() => document.getElementById('status-video-input').click()}
-                            style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'rgba(34,139,230,0.08)', color: '#228be6', border: '1px dashed #228be6', borderRadius: '8px', padding: '7px 14px', fontSize: '0.8rem', fontWeight: 'bold', cursor: 'pointer' }}
-                          >
-                            <PlayCircle size={14} /> Tambah Video
-                          </button>
-                          <input id="status-video-input" type="file" accept="video/*" style={{ display: 'none' }} onChange={handleStatusVideoChange} />
-                        </div>
-
-                        {isUploadingMedia && (
-                          <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--primary)' }}>⏳ Memproses media...</p>
-                        )}
-
-                        {formData.statusPhotos && formData.statusPhotos.length > 0 && (
-                          <div>
-                            <label style={{ display: 'block', fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '6px', fontWeight: 'bold' }}>PRATONTON FOTO ({formData.statusPhotos.length})</label>
-                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                              {formData.statusPhotos.map((photo, idx) => (
-                                <div key={idx} style={{ position: 'relative', width: '80px', height: '80px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-color)', flexShrink: 0 }}>
-                                  <img src={photo} alt={`foto ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                  <button type="button" onClick={() => removeStatusPhoto(idx)} style={{ position: 'absolute', top: '2px', right: '2px', width: '20px', height: '20px', background: 'rgba(220,53,69,0.9)', border: 'none', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'white' }}>
-                                    <X size={11} />
-                                  </button>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {formData.statusVideo && (
-                          <div>
-                            <label style={{ display: 'block', fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '6px', fontWeight: 'bold' }}>PRATONTON VIDEO</label>
-                            <div style={{ position: 'relative', display: 'inline-block' }}>
-                              <video src={formData.statusVideo} controls muted style={{ maxWidth: '100%', maxHeight: '160px', borderRadius: '10px', border: '1px solid var(--border-color)', display: 'block' }} />
-                              <button type="button" onClick={removeStatusVideo} style={{ position: 'absolute', top: '6px', right: '6px', background: 'rgba(220,53,69,0.9)', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'white' }}>
-                                <X size={13} />
-                              </button>
-                            </div>
-                          </div>
-                        )}
-
-                        <button 
-                          onClick={handleSaveStatus}
-                          disabled={isUploadingMedia}
-                          style={{ background: isUploadingMedia ? '#aaa' : 'var(--primary)', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', fontWeight: 'bold', fontSize: '0.85rem', cursor: isUploadingMedia ? 'not-allowed' : 'pointer', alignSelf: 'flex-end' }}
-                        >
-                          {isUploadingMedia ? 'Memproses...' : 'Simpan Status'}
-                        </button>
-                      </div>
-                    ) : (
-                      <img src={formData.avatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    )}
+                    <img src={formData.avatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   </div>
                   <button 
                     onClick={handleAvatarChange}
@@ -694,11 +607,65 @@ const ProfilePage = () => {
                         style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-card)', color: 'var(--text-main)', fontSize: '0.85rem', resize: 'vertical' }}
                       />
                     </div>
+
+                    {/* ── MEDIA UPLOAD SECTION ── */}
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        onClick={() => document.getElementById('status-photos-input').click()}
+                        style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'rgba(12,166,120,0.08)', color: 'var(--primary)', border: '1px dashed var(--primary)', borderRadius: '8px', padding: '7px 14px', fontSize: '0.8rem', fontWeight: 'bold', cursor: 'pointer' }}
+                      >
+                        <UploadCloud size={14} /> Tambah Foto
+                      </button>
+                      <input id="status-photos-input" type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={handleStatusPhotosChange} />
+                      <button
+                        type="button"
+                        onClick={() => document.getElementById('status-video-input').click()}
+                        style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'rgba(34,139,230,0.08)', color: '#228be6', border: '1px dashed #228be6', borderRadius: '8px', padding: '7px 14px', fontSize: '0.8rem', fontWeight: 'bold', cursor: 'pointer' }}
+                      >
+                        <PlayCircle size={14} /> Video Pendek
+                      </button>
+                      <input id="status-video-input" type="file" accept="video/*" style={{ display: 'none' }} onChange={handleStatusVideoChange} />
+                    </div>
+
+                    {isUploadingMedia && (
+                      <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--primary)' }}>⏳ Memproses media...</p>
+                    )}
+
+                    {formData.statusPhotos && formData.statusPhotos.length > 0 && (
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '6px', fontWeight: 'bold' }}>PRATONTON FOTO ({formData.statusPhotos.length})</label>
+                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                          {formData.statusPhotos.map((photo, idx) => (
+                            <div key={idx} style={{ position: 'relative', width: '80px', height: '80px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-color)', flexShrink: 0 }}>
+                              <img src={photo} alt={`foto ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                              <button type="button" onClick={() => removeStatusPhoto(idx)} style={{ position: 'absolute', top: '2px', right: '2px', width: '20px', height: '20px', background: 'rgba(220,53,69,0.9)', border: 'none', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'white' }}>
+                                <X size={11} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {formData.statusVideo && (
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '6px', fontWeight: 'bold' }}>PRATONTON VIDEO</label>
+                        <div style={{ position: 'relative', display: 'inline-block' }}>
+                          <video src={formData.statusVideo} controls muted style={{ maxWidth: '100%', maxHeight: '160px', borderRadius: '10px', border: '1px solid var(--border-color)', display: 'block' }} />
+                          <button type="button" onClick={removeStatusVideo} style={{ position: 'absolute', top: '6px', right: '6px', background: 'rgba(220,53,69,0.9)', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'white' }}>
+                            <X size={13} />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
                     <button 
                       onClick={handleSaveStatus}
-                      style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', fontWeight: 'bold', fontSize: '0.85rem', cursor: 'pointer', alignSelf: 'flex-end' }}
+                      disabled={isUploadingMedia}
+                      style={{ background: isUploadingMedia ? '#aaa' : 'var(--primary)', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', fontWeight: 'bold', fontSize: '0.85rem', cursor: isUploadingMedia ? 'not-allowed' : 'pointer', alignSelf: 'flex-end' }}
                     >
-                      Simpan Status
+                      {isUploadingMedia ? 'Memproses...' : 'Simpan Status'}
                     </button>
                   </div>
                 ) : (
@@ -715,6 +682,22 @@ const ProfilePage = () => {
                       <p style={{ margin: '6px 0 12px 0', fontSize: '0.95rem', color: 'var(--text-main)', fontWeight: '500', lineHeight: '1.4' }}>
                         "{formData.statusText || "Mari bersama menjaga kelestarian bambu Nusantara! 🌿"}"
                       </p>
+
+                      {/* Render Status Media */}
+                      {formData.statusPhotos && formData.statusPhotos.length > 0 && (
+                        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(formData.statusPhotos.length, 3)}, 1fr)`, gap: '8px', marginBottom: '12px' }}>
+                          {formData.statusPhotos.map((photo, idx) => (
+                            <div key={idx} style={{ borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-color)', aspectRatio: '1/1' }}>
+                              <img src={photo} alt={`status ${idx+1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {formData.statusVideo && (
+                        <div style={{ marginBottom: '12px', borderRadius: '10px', overflow: 'hidden', border: '1px solid var(--border-color)' }}>
+                          <video src={formData.statusVideo} controls muted style={{ width: '100%', display: 'block', maxHeight: '300px', objectFit: 'contain', background: '#000' }} />
+                        </div>
+                      )}
 
                       {/* Status Interactions Panel */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '20px', borderTop: '1px solid var(--border-color)', paddingTop: '10px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
