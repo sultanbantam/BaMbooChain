@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { BookOpen, GraduationCap, Award, PlayCircle, Clock, ShieldCheck, DownloadCloud, Lock, User, FileText, X, Sparkles, Calendar, ChevronLeft, ChevronRight, Heart, Share2, Send, MessageSquare, Gift } from 'lucide-react';
+import { BookOpen, GraduationCap, Award, PlayCircle, Clock, ShieldCheck, DownloadCloud, Lock, User, FileText, X, Sparkles, Calendar, ChevronLeft, ChevronRight, Heart, Share2, Send, MessageSquare, Gift, UploadCloud, Edit3, Trash2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { db } from '../../firebase/config';
+import { collection, onSnapshot, doc, addDoc, updateDoc, setDoc, query, orderBy, serverTimestamp, arrayUnion, arrayRemove, increment, getDoc, getDocs, where } from 'firebase/firestore';
 
 const compressImage = (base64Str, maxWidth = 800, maxHeight = 800, quality = 0.6) => {
   return new Promise((resolve) => {
@@ -32,7 +34,394 @@ const compressImage = (base64Str, maxWidth = 800, maxHeight = 800, quality = 0.6
 };
 
 const AcademyPage = () => {
-  const { user, setIsAuthModalOpen, setAuthModalInitialTab, articles, submitArticle, updateArticle } = useAuth();
+  const { user, setIsAuthModalOpen, setAuthModalInitialTab, articles, submitArticle, updateArticle, giftBmc } = useAuth();
+  
+  // Premium Materials States
+  const [premiumMaterials, setPremiumMaterials] = useState([]);
+  const [isUploadMatModalOpen, setIsUploadMatModalOpen] = useState(false);
+  const [isEditMatModalOpen, setIsEditMatModalOpen] = useState(false);
+  const [newMatForm, setNewMatForm] = useState({
+    title: '',
+    tag: 'Pustaka Relawan Hijau',
+    desc: '',
+    cover: '',
+    pdf: '',
+    downloadName: ''
+  });
+  const [editMatForm, setEditMatForm] = useState({
+    id: '',
+    title: '',
+    tag: 'Pustaka Relawan Hijau',
+    desc: '',
+    cover: '',
+    pdf: '',
+    downloadName: ''
+  });
+
+  const [customTagNew, setCustomTagNew] = useState('');
+  const [customTagEdit, setCustomTagEdit] = useState('');
+
+  // Premium Material Interactions
+  const [expandedComments, setExpandedComments] = useState({});
+  const [commentInputs, setCommentInputs] = useState({});
+  const [giftMatId, setGiftMatId] = useState(null);
+  const [giftAmounts, setGiftAmounts] = useState({});
+  const [giftingMatIds, setGiftingMatIds] = useState({});
+
+  // Sync Premium Materials from Firestore
+  useEffect(() => {
+    const q = query(collection(db, "premium_materials"), orderBy("timestamp", "desc"));
+    const unsub = onSnapshot(q, (snap) => {
+      const mats = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setPremiumMaterials(mats);
+      
+      if (snap.empty) {
+        initializeDefaultPremiumMaterials();
+      }
+    }, (err) => console.error("Error syncing premium materials:", err));
+    
+    return () => unsub();
+  }, []);
+
+  const initializeDefaultPremiumMaterials = async () => {
+    let adminUid = "admin_default_id";
+    let adminName = "Admin";
+    let adminUsername = "albantani";
+    try {
+      const usersRef = collection(db, "users");
+      const q1 = query(usersRef, where("username", "==", "albantani"));
+      const snap1 = await getDocs(q1);
+      if (!snap1.empty) {
+        adminUid = snap1.docs[0].id;
+        adminName = snap1.docs[0].data().name || "Admin";
+        adminUsername = "albantani";
+      } else {
+        const q2 = query(usersRef, where("username", "==", "admin_yayasan"));
+        const snap2 = await getDocs(q2);
+        if (!snap2.empty) {
+          adminUid = snap2.docs[0].id;
+          adminName = snap2.docs[0].data().name || "Admin";
+          adminUsername = "admin_yayasan";
+        }
+      }
+    } catch (err) {
+      console.error("Error searching admin:", err);
+    }
+
+    const defaultMaterials = [
+      {
+        title: "Pedoman Konstruksi Bambu untuk Relawan",
+        tag: "Pustaka Relawan Hijau",
+        cover: "/assets/pedoman/cbsr.jpg",
+        pdf: "/assets/pedoman/bsr.pdf",
+        downloadName: "Pedoman_Konstruksi_Bambu_Relawan.pdf",
+        desc: "Buku panduan praktis terlengkap yang dirancang khusus bagi para relawan, pembangun, dan pegiat lingkungan untuk memahami dasar-dasar kekuatan bambu, metode penyambungan, perawatan bahan, hingga teknik perakitan struktur modular ramah lingkungan di lapangan. Dapatkan wawasan aplikatif langsung dari para master konstruksi bambu Nusantara.",
+        userId: adminUid,
+        author: adminName,
+        username: adminUsername,
+        likes: [],
+        sharesCount: 0,
+        comments: [],
+        gifts: [],
+        timestamp: new Date().getTime()
+      },
+      {
+        title: "Rencana Bisnis Industri Bambu Terintegrasi",
+        tag: "Panduan Strategis Bisnis",
+        cover: "/assets/pedoman/ibt.jpeg",
+        pdf: "/assets/pedoman/ibt.pdf",
+        downloadName: "Rencana_Bisnis_Industri_Bambu_Terintegrasi.pdf",
+        desc: "Materi Rencana Bisnis Industri Bambu Terintegrasi menjelaskan konsep pengembangan ekosistem bambu dari hulu hingga hilir, mulai dari pembibitan, penanaman, pengolahan bahan baku, hingga produk bernilai tinggi seperti bambu laminasi, strand woven bamboo, konstruksi, energi, pangan, dan tekstil. Materi ini menekankan bahwa bambu adalah “emas hijau” masa depan yang mampu mendukung ekonomi berkelanjutan, pelestarian lingkungan, serta pencapaian SDGs melalui industri berbasis masyarakat dan teknologi.\n\nKonsep ini juga memperlihatkan peluang pasar bambu dunia, inovasi produk, proses pengawetan dan manufaktur bambu modern, hingga model bisnis industri bambu terintegrasi yang menghubungkan pelestarian alam, pemberdayaan masyarakat, dan industri hijau berkelanjutan.",
+        userId: adminUid,
+        author: adminName,
+        username: adminUsername,
+        likes: [],
+        sharesCount: 0,
+        comments: [],
+        gifts: [],
+        timestamp: new Date().getTime() - 1000
+      },
+      {
+        title: "Pitchdeck Bamboo 4.0",
+        tag: "Transformasi Digital & Investasi",
+        cover: "/assets/pedoman/bamboo4.0.jpeg",
+        pdf: "/assets/pedoman/bamboo 4.0.pdf",
+        downloadName: "Pitchdeck_Bamboo_4.0.pdf",
+        desc: "Materi Pitchdeck Bamboo 4.0 menjelaskan konsep transformasi industri bambu berbasis teknologi digital untuk restorasi lingkungan, pemberdayaan masyarakat adat, dan pembangunan ekonomi hijau berkelanjutan. Proyek ini mengintegrasikan bambu, teknologi 4.0, big data, IoT, drone, dan sistem digital untuk menciptakan ekosistem agroforestri bambu yang transparan, modern, dan bernilai ekonomi tinggi.\n\nPitchdeck ini juga menjelaskan masalah besar seperti deforestasi, krisis air, dan kemiskinan masyarakat adat, lalu menawarkan solusi melalui penanaman bambu digital di lahan adat Kasepuhan Cibarani seluas ±490 hektar, dengan target restorasi lingkungan, carbon credit, industri bambu terintegrasi, dan pemberdayaan petani milenial.\n\nSelain itu, materi ini memaparkan peluang pasar ekonomi hijau global, roadmap proyek 4 tahun, tim ahli, model bisnis sirkular, kebutuhan investasi Rp 8,84 miliar, hingga visi besar membangun peradaban Nusantara yang hijau, mandiri, dan berkelanjutan melalui bambu.\n\nKonsep Bamboo 4.0 sendiri sejalan dengan perkembangan Agriculture 4.0 dan smart farming yang memanfaatkan IoT, big data, drone, dan teknologi digital untuk meningkatkan efisiensi, keberlanjutan, serta transparansi rantai pasok pertanian modern.",
+        userId: adminUid,
+        author: adminName,
+        username: adminUsername,
+        likes: [],
+        sharesCount: 0,
+        comments: [],
+        gifts: [],
+        timestamp: new Date().getTime() - 2000
+      }
+    ];
+
+    for (const mat of defaultMaterials) {
+      try {
+        await addDoc(collection(db, "premium_materials"), mat);
+      } catch (err) {
+        console.error("Error inserting default premium material:", err);
+      }
+    }
+  };
+
+  const handleUploadPdfChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 1 * 1024 * 1024) {
+      alert("⚠️ Ukuran file PDF maksimal adalah 1MB!");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setNewMatForm(prev => ({
+        ...prev,
+        pdf: event.target.result,
+        downloadName: file.name
+      }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleUploadCoverChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const compressed = await compressImage(event.target.result, 400, 300, 0.7);
+      setNewMatForm(prev => ({
+        ...prev,
+        cover: compressed
+      }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleEditPdfChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 1 * 1024 * 1024) {
+      alert("⚠️ Ukuran file PDF maksimal adalah 1MB!");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setEditMatForm(prev => ({
+        ...prev,
+        pdf: event.target.result,
+        downloadName: file.name
+      }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleEditCoverChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const compressed = await compressImage(event.target.result, 400, 300, 0.7);
+      setEditMatForm(prev => ({
+        ...prev,
+        cover: compressed
+      }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleUploadMatSubmit = async (e) => {
+    e.preventDefault();
+    if (!user || user.kycStatus !== 'verified') {
+      alert("⚠️ Hanya kontributor terverifikasi KYC yang dapat mengunggah materi!");
+      return;
+    }
+    if (!newMatForm.title || !newMatForm.desc || !newMatForm.pdf || !newMatForm.cover) {
+      alert("⚠️ Harap lengkapi semua field, termasuk Cover dan PDF!");
+      return;
+    }
+
+    const finalTag = newMatForm.tag === 'Lainnya' ? (customTagNew.trim() || 'Lainnya') : newMatForm.tag;
+
+    try {
+      const newMat = {
+        title: newMatForm.title,
+        tag: finalTag,
+        desc: newMatForm.desc,
+        cover: newMatForm.cover,
+        pdf: newMatForm.pdf,
+        downloadName: newMatForm.downloadName,
+        userId: user.id,
+        author: user.name || user.username || "Anonim",
+        username: user.username || "user",
+        likes: [],
+        sharesCount: 0,
+        comments: [],
+        gifts: [],
+        timestamp: new Date().getTime()
+      };
+
+      await addDoc(collection(db, "premium_materials"), newMat);
+      alert("✅ Berhasil mengunggah materi riset premium!");
+      setNewMatForm({
+        title: '',
+        tag: 'Pustaka Relawan Hijau',
+        desc: '',
+        cover: '',
+        pdf: '',
+        downloadName: ''
+      });
+      setCustomTagNew('');
+      setIsUploadMatModalOpen(false);
+    } catch (err) {
+      console.error("Error uploading material:", err);
+      alert("❌ Gagal mengunggah materi.");
+    }
+  };
+
+  const handleEditMatSubmit = async (e) => {
+    e.preventDefault();
+    if (!editMatForm.id) return;
+    const finalTag = editMatForm.tag === 'Lainnya' ? (customTagEdit.trim() || 'Lainnya') : editMatForm.tag;
+    try {
+      const matRef = doc(db, "premium_materials", editMatForm.id);
+      await updateDoc(matRef, {
+        title: editMatForm.title,
+        tag: finalTag,
+        desc: editMatForm.desc,
+        cover: editMatForm.cover,
+        pdf: editMatForm.pdf,
+        downloadName: editMatForm.downloadName
+      });
+      alert("✅ Berhasil memperbarui materi riset premium!");
+      setCustomTagEdit('');
+      setIsEditMatModalOpen(false);
+    } catch (err) {
+      console.error("Error editing material:", err);
+      alert("❌ Gagal memperbarui materi.");
+    }
+  };
+
+  const handleEditMatClick = (mat) => {
+    const defaults = ["Pustaka Relawan Hijau", "Panduan Strategis Bisnis", "Transformasi Digital & Investasi", "Sains Konstruksi", "Kebijakan & Karbon"];
+    const isCustom = !defaults.includes(mat.tag);
+    setEditMatForm({
+      id: mat.id,
+      title: mat.title || '',
+      tag: isCustom ? 'Lainnya' : (mat.tag || 'Pustaka Relawan Hijau'),
+      desc: mat.desc || '',
+      cover: mat.cover || '',
+      pdf: mat.pdf || '',
+      downloadName: mat.downloadName || ''
+    });
+    if (isCustom) {
+      setCustomTagEdit(mat.tag || '');
+    } else {
+      setCustomTagEdit('');
+    }
+    setIsEditMatModalOpen(true);
+  };
+
+  const handleLikeMat = async (mat) => {
+    if (!user) {
+      alert("⚠️ Harap login terlebih dahulu untuk memberikan Suka!");
+      return;
+    }
+    const matRef = doc(db, "premium_materials", mat.id);
+    const hasLiked = mat.likes?.includes(user.id);
+    try {
+      await updateDoc(matRef, {
+        likes: hasLiked ? arrayRemove(user.id) : arrayUnion(user.id)
+      });
+    } catch (err) {
+      console.error("Error liking material:", err);
+    }
+  };
+
+  const handleShareMat = async (mat) => {
+    navigator.clipboard.writeText(`${window.location.origin}/#/academy`);
+    alert("🔗 Tautan Academy telah disalin ke clipboard!");
+    const matRef = doc(db, "premium_materials", mat.id);
+    try {
+      await updateDoc(matRef, {
+        sharesCount: increment(1)
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleAddCommentMat = async (e, matId) => {
+    e.preventDefault();
+    if (!user) {
+      alert("⚠️ Harap login terlebih dahulu untuk berkomentar!");
+      return;
+    }
+    const text = commentInputs[matId]?.trim();
+    if (!text) return;
+
+    const newComment = {
+      id: 'comment_' + Date.now(),
+      userId: user.id,
+      username: user.username || user.name || "Anonim",
+      text,
+      timestamp: Date.now()
+    };
+
+    const matRef = doc(db, "premium_materials", matId);
+    try {
+      await updateDoc(matRef, {
+        comments: arrayUnion(newComment)
+      });
+      setCommentInputs(prev => ({ ...prev, [matId]: '' }));
+    } catch (err) {
+      console.error("Error adding comment:", err);
+    }
+  };
+
+  const handleSendGiftMat = async (mat) => {
+    if (!user) {
+      alert("⚠️ Harap login untuk mengirimkan Gift!");
+      return;
+    }
+    const amt = parseFloat(giftAmounts[mat.id] || '1');
+    if (isNaN(amt) || amt <= 0) {
+      alert("⚠️ Harap masukkan jumlah BMC yang valid.");
+      return;
+    }
+    if (user.id === mat.userId) {
+      alert("⚠️ Anda tidak bisa mengirimkan Gift ke diri sendiri!");
+      return;
+    }
+
+    setGiftingMatIds(prev => ({ ...prev, [mat.id]: true }));
+    const success = await giftBmc(
+      mat.userId,
+      mat.username,
+      amt,
+      `Tipping Riset Premium: ${mat.title}`
+    );
+    setGiftingMatIds(prev => ({ ...prev, [mat.id]: false }));
+
+    if (success) {
+      const giftItem = {
+        id: 'gift_' + Date.now(),
+        senderId: user.id,
+        senderUsername: user.username,
+        amount: amt,
+        timestamp: Date.now()
+      };
+      const matRef = doc(db, "premium_materials", mat.id);
+      await updateDoc(matRef, {
+        gifts: arrayUnion(giftItem)
+      });
+      setGiftAmounts(prev => ({ ...prev, [mat.id]: '' }));
+      setGiftMatId(null);
+    }
+  };
+
   const [selectedArticle, setSelectedArticle] = useState(null);
   const [isEditingArticle, setIsEditingArticle] = useState(false);
   const [editArticleForm, setEditArticleForm] = useState({
@@ -460,114 +849,217 @@ const AcademyPage = () => {
 
         {/* PREMIUM RESOURCES SECTION */}
         <div style={{ marginTop: '80px', marginBottom: '40px' }}>
-          <h2 style={{ fontSize: '2rem', color: 'var(--text-main)', marginBottom: '32px', display: 'flex', alignItems: 'center', gap: '12px', fontWeight: '900', letterSpacing: '-0.5px' }}>
-            <BookOpen size={28} color="var(--primary)" /> Perpustakaan & Materi Riset Premium
-          </h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', flexWrap: 'wrap', gap: '20px' }}>
+            <h2 style={{ fontSize: '2rem', color: 'var(--text-main)', margin: 0, display: 'flex', alignItems: 'center', gap: '12px', fontWeight: '900', letterSpacing: '-0.5px' }}>
+              <BookOpen size={28} color="var(--primary)" /> Perpustakaan & Materi Riset Premium
+            </h2>
+            {user?.kycStatus === 'verified' && (
+              <button 
+                onClick={() => setIsUploadMatModalOpen(true)}
+                style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '12px', fontWeight: 'bold', fontSize: '0.9rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 15px rgba(12,166,120,0.15)' }}
+              >
+                <UploadCloud size={16} /> Unggah Ebook/Riset
+              </button>
+            )}
+          </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
-            {[
-              {
-                title: "Pedoman Konstruksi Bambu untuk Relawan",
-                tag: "Pustaka Relawan Hijau",
-                cover: "/assets/pedoman/cbsr.jpg",
-                pdf: "/assets/pedoman/bsr.pdf",
-                downloadName: "Pedoman_Konstruksi_Bambu_Relawan.pdf",
-                desc: "Buku panduan praktis terlengkap yang dirancang khusus bagi para relawan, pembangun, dan pegiat lingkungan untuk memahami dasar-dasar kekuatan bambu, metode penyambungan, perawatan bahan, hingga teknik perakitan struktur modular ramah lingkungan di lapangan. Dapatkan wawasan aplikatif langsung dari para master konstruksi bambu Nusantara."
-              },
-              {
-                title: "Rencana Bisnis Industri Bambu Terintegrasi",
-                tag: "Panduan Strategis Bisnis",
-                cover: "/assets/pedoman/ibt.jpeg",
-                pdf: "/assets/pedoman/ibt.pdf",
-                downloadName: "Rencana_Bisnis_Industri_Bambu_Terintegrasi.pdf",
-                desc: "Materi Rencana Bisnis Industri Bambu Terintegrasi menjelaskan konsep pengembangan ekosistem bambu dari hulu hingga hilir, mulai dari pembibitan, penanaman, pengolahan bahan baku, hingga produk bernilai tinggi seperti bambu laminasi, strand woven bamboo, konstruksi, energi, pangan, dan tekstil. Materi ini menekankan bahwa bambu adalah “emas hijau” masa depan yang mampu mendukung ekonomi berkelanjutan, pelestarian lingkungan, serta pencapaian SDGs melalui industri berbasis masyarakat dan teknologi.\n\nKonsep ini juga memperlihatkan peluang pasar bambu dunia, inovasi produk, proses pengawetan dan manufaktur bambu modern, hingga model bisnis industri bambu terintegrasi yang menghubungkan pelestarian alam, pemberdayaan masyarakat, dan industri hijau berkelanjutan."
-              },
-              {
-                title: "Pitchdeck Bamboo 4.0",
-                tag: "Transformasi Digital & Investasi",
-                cover: "/assets/pedoman/bamboo4.0.jpeg",
-                pdf: "/assets/pedoman/bamboo 4.0.pdf",
-                downloadName: "Pitchdeck_Bamboo_4.0.pdf",
-                desc: "Materi Pitchdeck Bamboo 4.0 menjelaskan konsep transformasi industri bambu berbasis teknologi digital untuk restorasi lingkungan, pemberdayaan masyarakat adat, dan pembangunan ekonomi hijau berkelanjutan. Proyek ini mengintegrasikan bambu, teknologi 4.0, big data, IoT, drone, dan sistem digital untuk menciptakan ekosistem agroforestri bambu yang transparan, modern, dan bernilai ekonomi tinggi.\n\nPitchdeck ini juga menjelaskan masalah besar seperti deforestasi, krisis air, dan kemiskinan masyarakat adat, lalu menawarkan solusi melalui penanaman bambu digital di lahan adat Kasepuhan Cibarani seluas ±490 hektar, dengan target restorasi lingkungan, carbon credit, industri bambu terintegrasi, dan pemberdayaan petani milenial.\n\nSelain itu, materi ini memaparkan peluang pasar ekonomi hijau global, roadmap proyek 4 tahun, tim ahli, model bisnis sirkular, kebutuhan investasi Rp 8,84 miliar, hingga visi besar membangun peradaban Nusantara yang hijau, mandiri, dan berkelanjutan melalui bambu.\n\nKonsep Bamboo 4.0 sendiri sejalan dengan perkembangan Agriculture 4.0 dan smart farming yang memanfaatkan IoT, big data, drone, dan teknologi digital untuk meningkatkan efisiensi, keberlanjutan, serta transparansi rantai pasok pertanian modern."
-              }
-            ].map((ebook, idx) => (
-              <div key={idx} style={{ 
-                background: 'var(--bg-card)', 
-                border: '1px solid var(--border-color)', 
-                borderRadius: '24px', 
-                padding: '40px 30px', 
-                boxShadow: '0 10px 45px rgba(0,0,0,0.05)',
-                display: 'flex',
-                flexDirection: 'row',
-                flexWrap: 'wrap',
-                gap: '40px',
-                alignItems: 'center'
-              }}>
-                {/* Ebook Cover Mockup */}
-                <div style={{ flexShrink: 0, position: 'relative', width: '320px', height: '210px', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 15px 35px rgba(0,0,0,0.15)', border: '1px solid var(--border-color)', background: '#ffffff' }}>
-                  <img src={ebook.cover} alt={ebook.title} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                  <div style={{ position: 'absolute', top: '12px', right: '12px', background: '#fa5252', color: 'white', padding: '4px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 'bold' }}>
-                    FREE EBOOK
-                  </div>
-                </div>
-
-                {/* Description & Action */}
-                <div style={{ flex: '1 1 300px' }}>
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', color: 'var(--primary)', backgroundColor: 'rgba(12,166,120,0.08)', padding: '6px 14px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '16px' }}>
-                    <BookOpen size={14} /> {ebook.tag}
-                  </div>
-                  <h2 style={{ fontSize: '1.8rem', fontWeight: '900', color: 'var(--text-main)', margin: '0 0 12px 0', lineHeight: 1.25 }}>{ebook.title}</h2>
-                  <p style={{ color: 'var(--text-muted)', lineHeight: 1.7, fontSize: '0.95rem', marginBottom: '24px', whiteSpace: 'pre-line' }}>
-                    {ebook.desc}
-                  </p>
-
-                  <div style={{ background: '#f8f9fa', padding: '16px 20px', borderRadius: '16px', border: '1px solid #e9ecef', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '16px', marginBottom: '12px' }}>
-                    <div>
-                      <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Status Akses Unduhan:</div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
-                        {user?.kycStatus === 'verified' ? (
-                          <span style={{ color: '#12b886', fontWeight: 'bold', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}><ShieldCheck size={16} /> Akun Terverifikasi (Akses Terbuka)</span>
-                        ) : (
-                          <span style={{ color: '#fa5252', fontWeight: 'bold', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}><Lock size={16} /> Perlu KYC Terverifikasi</span>
-                        )}
-                      </div>
+            {premiumMaterials.map((ebook, idx) => {
+              const alreadyLiked = user && ebook.likes?.includes(user.id);
+              const isOwner = user && user.id === ebook.userId;
+              
+              return (
+                <div key={ebook.id || idx} style={{ 
+                  background: 'var(--bg-card)', 
+                  border: '1px solid var(--border-color)', 
+                  borderRadius: '24px', 
+                  padding: '40px 30px', 
+                  boxShadow: '0 10px 45px rgba(0,0,0,0.05)',
+                  display: 'flex',
+                  flexDirection: 'row',
+                  flexWrap: 'wrap',
+                  gap: '40px',
+                  alignItems: 'flex-start'
+                }}>
+                  {/* Ebook Cover Mockup */}
+                  <div style={{ flexShrink: 0, position: 'relative', width: '320px', height: '210px', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 15px 35px rgba(0,0,0,0.15)', border: '1px solid var(--border-color)', background: '#ffffff' }}>
+                    <img src={ebook.cover} alt={ebook.title} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                    <div style={{ position: 'absolute', top: '12px', right: '12px', background: '#fa5252', color: 'white', padding: '4px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 'bold' }}>
+                      PREMIUM EBOOK
                     </div>
-                    <button 
-                      onClick={() => {
-                        if (!user) {
-                          if (setAuthModalInitialTab) setAuthModalInitialTab('login');
-                          if (setIsAuthModalOpen) setIsAuthModalOpen(true);
-                        } else if (user.kycStatus !== 'verified') {
-                          alert(`⚠️ Akses Terkunci!\n\nUntuk mendownload Ebook '${ebook.title}' secara gratis, Anda harus berstatus KYC TERVERIFIKASI di sistem. Silakan selesaikan pengajuan KYC Anda di menu KYC Center pada halaman Wallet Dashboard.`);
-                          window.location.hash = "/bamboochain/token-wallet"; // Redirect to wallet/KYC page
-                        } else {
-                          const link = document.createElement('a');
-                          link.href = ebook.pdf;
-                          link.download = ebook.downloadName;
-                          link.click();
-                        }
-                      }}
-                      style={{
-                        background: user?.kycStatus === 'verified' ? 'var(--primary)' : 'var(--text-muted)',
-                        color: 'white',
-                        border: 'none',
-                        padding: '14px 28px',
-                        borderRadius: '12px',
-                        fontWeight: 'bold',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        boxShadow: user?.kycStatus === 'verified' ? '0 4px 15px rgba(12,166,120,0.25)' : 'none',
-                        transition: 'background 0.2s'
-                      }}
-                    >
-                      <DownloadCloud size={18} /> {user?.kycStatus === 'verified' ? 'Unduh PDF Gratis' : 'Verifikasi KYC & Unduh'}
-                    </button>
+                  </div>
+
+                  {/* Description & Action */}
+                  <div style={{ flex: '1 1 300px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', color: 'var(--primary)', backgroundColor: 'rgba(12,166,120,0.08)', padding: '6px 14px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                        <BookOpen size={14} /> {ebook.tag}
+                      </div>
+                      
+                      {isOwner && (
+                        <button 
+                          onClick={() => handleEditMatClick(ebook)}
+                          style={{ background: 'rgba(12,166,120,0.1)', color: 'var(--primary)', border: 'none', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                        >
+                          <Edit3 size={14} /> Edit
+                        </button>
+                      )}
+                    </div>
+                    
+                    <h2 style={{ fontSize: '1.8rem', fontWeight: '900', color: 'var(--text-main)', margin: '0 0 4px 0', lineHeight: 1.25 }}>{ebook.title}</h2>
+                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0 0 12px 0' }}>
+                      Dipublikasikan oleh: <strong style={{ color: 'var(--primary)' }}>@{ebook.username}</strong> ({ebook.author})
+                    </p>
+                    <p style={{ color: 'var(--text-muted)', lineHeight: 1.7, fontSize: '0.95rem', marginBottom: '24px', whiteSpace: 'pre-line' }}>
+                      {ebook.desc}
+                    </p>
+
+                    <div style={{ background: 'var(--bg-color)', padding: '16px 20px', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '16px', marginBottom: '20px' }}>
+                      <div>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Status Akses Unduhan:</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
+                          {user?.kycStatus === 'verified' ? (
+                            <span style={{ color: '#12b886', fontWeight: 'bold', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}><ShieldCheck size={16} /> Akun Terverifikasi (Akses Terbuka)</span>
+                          ) : (
+                            <span style={{ color: '#fa5252', fontWeight: 'bold', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}><Lock size={16} /> Perlu KYC Terverifikasi</span>
+                          )}
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => {
+                          if (!user) {
+                            if (setAuthModalInitialTab) setAuthModalInitialTab('login');
+                            if (setIsAuthModalOpen) setIsAuthModalOpen(true);
+                          } else if (user.kycStatus !== 'verified') {
+                            alert(`⚠️ Akses Terkunci!\n\nUntuk mendownload Ebook '${ebook.title}' secara gratis, Anda harus berstatus KYC TERVERIFIKASI di sistem. Silakan selesaikan pengajuan KYC Anda di menu KYC Center pada halaman Wallet Dashboard.`);
+                            window.location.hash = "/bamboochain/token-wallet";
+                          } else {
+                            const link = document.createElement('a');
+                            link.href = ebook.pdf;
+                            link.download = ebook.downloadName;
+                            link.click();
+                          }
+                        }}
+                        style={{
+                          background: user?.kycStatus === 'verified' ? 'var(--primary)' : 'var(--text-muted)',
+                          color: 'white',
+                          border: 'none',
+                          padding: '14px 28px',
+                          borderRadius: '12px',
+                          fontWeight: 'bold',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          boxShadow: user?.kycStatus === 'verified' ? '0 4px 15px rgba(12,166,120,0.25)' : 'none',
+                          transition: 'background 0.2s'
+                        }}
+                      >
+                        <DownloadCloud size={18} /> {user?.kycStatus === 'verified' ? 'Unduh PDF Gratis' : 'Verifikasi KYC & Unduh'}
+                      </button>
+                    </div>
+
+                    {/* Social Interactions Footer */}
+                    <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '20px', borderTop: '1px solid var(--border-color)', paddingTop: '15px', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                      <button 
+                        onClick={() => handleLikeMat(ebook)}
+                        style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '5px', color: alreadyLiked ? '#e03131' : 'var(--text-muted)', cursor: 'pointer', fontWeight: 'bold', padding: 0 }}
+                      >
+                        <Heart size={16} fill={alreadyLiked ? '#e03131' : 'none'} color={alreadyLiked ? '#e03131' : 'var(--text-muted)'} />
+                        <span>{ebook.likes?.length || 0} Suka</span>
+                      </button>
+
+                      <button 
+                        onClick={() => setExpandedComments(prev => ({ ...prev, [ebook.id]: !prev[ebook.id] }))}
+                        style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--text-muted)', cursor: 'pointer', fontWeight: 'bold', padding: 0 }}
+                      >
+                        <MessageSquare size={16} color="var(--primary)" />
+                        <span>{ebook.comments?.length || 0} Komentar</span>
+                      </button>
+
+                      <button 
+                        onClick={() => handleShareMat(ebook)}
+                        style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--text-muted)', cursor: 'pointer', fontWeight: 'bold', padding: 0 }}
+                      >
+                        <Share2 size={16} color="#228be6" />
+                        <span>{ebook.sharesCount || 0} Bagikan</span>
+                      </button>
+
+                      <button 
+                        onClick={() => setGiftMatId(giftMatId === ebook.id ? null : ebook.id)}
+                        style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--text-muted)', cursor: 'pointer', fontWeight: 'bold', padding: 0 }}
+                      >
+                        <Gift size={16} color="#f59f00" />
+                        <span>{ebook.gifts?.length || 0} Gift</span>
+                      </button>
+                    </div>
+
+                    {/* Collapsible Tipping/Gift Form */}
+                    {giftMatId === ebook.id && (
+                      <div style={{ marginTop: '15px', background: 'var(--bg-color)', padding: '15px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                        <p style={{ margin: '0 0 10px 0', fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-main)' }}>🎁 Kirim Insentif BMC Ke Penulis Ebook</p>
+                        <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
+                          {['1', '5', '10', '25'].map(amt => (
+                            <button 
+                              key={amt} 
+                              onClick={() => setGiftAmounts(prev => ({ ...prev, [ebook.id]: amt }))}
+                              style={{ flex: 1, padding: '6px 0', borderRadius: '6px', border: (giftAmounts[ebook.id] || '1') === amt ? '2px solid #f59f00' : '1px solid var(--border-color)', background: (giftAmounts[ebook.id] || '1') === amt ? 'rgba(245,159,0,0.1)' : 'var(--bg-card)', color: (giftAmounts[ebook.id] || '1') === amt ? '#f59f00' : 'var(--text-main)', fontWeight: 'bold', fontSize: '0.8rem', cursor: 'pointer' }}
+                            >
+                              {amt} BMC
+                            </button>
+                          ))}
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <input 
+                            type="number" 
+                            value={giftAmounts[ebook.id] || '1'} 
+                            onChange={(e) => setGiftAmounts(prev => ({ ...prev, [ebook.id]: e.target.value }))}
+                            placeholder="Jumlah kustom..."
+                            style={{ flex: 1, padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-card)', color: 'var(--text-main)', fontSize: '0.85rem' }}
+                          />
+                          <button 
+                            onClick={() => handleSendGiftMat(ebook)}
+                            disabled={giftingMatIds[ebook.id]}
+                            style={{ background: '#f59f00', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 'bold', cursor: 'pointer' }}
+                          >
+                            {giftingMatIds[ebook.id] ? 'Mengirim...' : 'Kirim Gift'}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Collapsible Comments Section */}
+                    {expandedComments[ebook.id] && (
+                      <div style={{ marginTop: '15px', borderTop: '1px solid var(--border-color)', paddingTop: '15px' }}>
+                        <form onSubmit={(e) => handleAddCommentMat(e, ebook.id)} style={{ display: 'flex', gap: '8px', marginBottom: '15px' }}>
+                          <input 
+                            type="text" 
+                            value={commentInputs[ebook.id] || ''} 
+                            onChange={(e) => setCommentInputs(prev => ({ ...prev, [ebook.id]: e.target.value }))}
+                            placeholder="Tulis komentar untuk materi ini..."
+                            style={{ flex: 1, padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-color)', color: 'var(--text-main)', fontSize: '0.85rem' }}
+                          />
+                          <button type="submit" style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 'bold', cursor: 'pointer' }}>Kirim</button>
+                        </form>
+
+                        <div style={{ maxHeight: '180px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          {ebook.comments?.length === 0 ? (
+                            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'center', margin: '10px 0' }}>Belum ada komentar.</p>
+                          ) : (
+                            ebook.comments?.map(comment => (
+                              <div key={comment.id} style={{ fontSize: '0.85rem', borderBottom: '1px solid rgba(0,0,0,0.03)', paddingBottom: '6px' }}>
+                                <strong style={{ color: 'var(--primary)' }}>@{comment.username}</strong>: <span style={{ color: 'var(--text-main)' }}>{comment.text}</span>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    )}
+
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -1535,6 +2027,356 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
                   </p>
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* UPLOAD PREMIUM MATERIAL MODAL OVERLAY */}
+        {isUploadMatModalOpen && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.6)',
+            backdropFilter: 'blur(8px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 100005,
+            padding: '20px'
+          }}
+          onClick={() => setIsUploadMatModalOpen(false)}
+          >
+            <div style={{
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border-color)',
+              borderRadius: '28px',
+              maxWidth: '650px',
+              width: '100%',
+              maxHeight: '85vh',
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '0 25px 50px rgba(0,0,0,0.25)',
+              overflow: 'hidden',
+              position: 'relative'
+            }}
+            onClick={(e) => e.stopPropagation()}
+            >
+              <button 
+                onClick={() => setIsUploadMatModalOpen(false)}
+                style={{ position: 'absolute', top: '20px', right: '20px', border: 'none', background: 'rgba(0,0,0,0.05)', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-main)' }}
+              >
+                <X size={18} />
+              </button>
+
+              <div style={{ padding: '30px 40px 20px 40px', borderBottom: '1px solid var(--border-color)', background: 'linear-gradient(180deg, rgba(12,166,120,0.03), transparent)' }}>
+                <h3 style={{ fontSize: '1.4rem', fontWeight: '900', color: 'var(--text-main)', margin: '0 0 8px 0', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <UploadCloud size={22} color="var(--primary)" /> Unggah Materi Riset & Ebook Premium
+                </h3>
+                <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', margin: 0 }}>
+                  Publikasikan pedoman konstruksi, analisis pasar, pitchdeck, atau jurnal riset Anda secara langsung.
+                </p>
+              </div>
+
+              <form onSubmit={handleUploadMatSubmit} style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+                <div style={{ overflowY: 'auto', padding: '30px 40px', display: 'flex', flexDirection: 'column', gap: '20px', flex: 1 }}>
+                  <div>
+                    <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)', display: 'block', marginBottom: '8px' }}>Judul Ebook/Materi:</label>
+                    <input 
+                      type="text" 
+                      value={newMatForm.title} 
+                      onChange={(e) => setNewMatForm({...newMatForm, title: e.target.value})}
+                      placeholder="Contoh: Pedoman Desain Bambu Seismik..."
+                      style={{ width: '100%', padding: '12px', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.9rem', outline: 'none', background: 'var(--bg-card)', color: 'var(--text-main)' }}
+                      required
+                    />
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px' }}>
+                    <div>
+                      <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)', display: 'block', marginBottom: '8px' }}>Kategori / Tag:</label>
+                      <select 
+                        value={newMatForm.tag} 
+                        onChange={(e) => setNewMatForm({...newMatForm, tag: e.target.value})}
+                        style={{ width: '100%', padding: '12px', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.9rem', outline: 'none', background: 'var(--bg-card)', color: 'var(--text-main)' }}
+                      >
+                        <option value="Pustaka Relawan Hijau">Pustaka Relawan Hijau</option>
+                        <option value="Panduan Strategis Bisnis">Panduan Strategis Bisnis</option>
+                        <option value="Transformasi Digital & Investasi">Transformasi Digital & Investasi</option>
+                        <option value="Sains Konstruksi">Sains Konstruksi</option>
+                        <option value="Kebijakan & Karbon">Kebijakan & Karbon</option>
+                        <option value="Lainnya">Lainnya (Kategori Kustom)</option>
+                      </select>
+
+                      {newMatForm.tag === 'Lainnya' && (
+                        <div style={{ marginTop: '12px' }}>
+                          <label style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>Kategori Baru / Kustom:</label>
+                          <input 
+                            type="text"
+                            value={customTagNew}
+                            onChange={(e) => setCustomTagNew(e.target.value)}
+                            placeholder="Contoh: Arsitektur Tradisional..."
+                            style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--border-color)', borderRadius: '10px', fontSize: '0.85rem', outline: 'none', background: 'var(--bg-card)', color: 'var(--text-main)' }}
+                            required
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)', display: 'block', marginBottom: '8px' }}>Deskripsi Lengkap:</label>
+                    <textarea 
+                      value={newMatForm.desc} 
+                      onChange={(e) => setNewMatForm({...newMatForm, desc: e.target.value})}
+                      placeholder="Tuliskan rangkuman dan apa yang dipelajari dari materi ini..."
+                      style={{ width: '100%', minHeight: '120px', padding: '14px', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.9rem', outline: 'none', background: 'var(--bg-card)', color: 'var(--text-main)', fontFamily: 'inherit', resize: 'vertical' }}
+                      required
+                    />
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div>
+                      <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)', display: 'block', marginBottom: '8px' }}>Cover Ebook (Gambar):</label>
+                      <button
+                        type="button"
+                        onClick={() => document.getElementById('new-mat-cover-input').click()}
+                        style={{ width: '100%', background: 'rgba(12,166,120,0.05)', color: 'var(--primary)', border: '1px dashed var(--primary)', borderRadius: '12px', padding: '10px 14px', fontWeight: 'bold', fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                      >
+                        <UploadCloud size={16} /> {newMatForm.cover ? "Ubah Cover" : "Pilih Cover"}
+                      </button>
+                      <input 
+                        id="new-mat-cover-input"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleUploadCoverChange}
+                        style={{ display: 'none' }}
+                      />
+                      {newMatForm.cover && (
+                        <div style={{ marginTop: '8px', position: 'relative', width: '100px', height: '70px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-color)' }}>
+                          <img src={newMatForm.cover} alt="Cover Preview" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
+                      <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)', display: 'block', marginBottom: '8px' }}>Dokumen PDF (Maks 1MB):</label>
+                      <button
+                        type="button"
+                        onClick={() => document.getElementById('new-mat-pdf-input').click()}
+                        style={{ width: '100%', background: 'rgba(12,166,120,0.05)', color: 'var(--primary)', border: '1px dashed var(--primary)', borderRadius: '12px', padding: '10px 14px', fontWeight: 'bold', fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                      >
+                        <FileText size={16} /> {newMatForm.downloadName ? "Ubah PDF" : "Pilih PDF"}
+                      </button>
+                      <input 
+                        id="new-mat-pdf-input"
+                        type="file"
+                        accept=".pdf"
+                        onChange={handleUploadPdfChange}
+                        style={{ display: 'none' }}
+                      />
+                      {newMatForm.downloadName && (
+                        <p style={{ margin: '8px 0 0 0', fontSize: '0.75rem', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          📄 {newMatForm.downloadName}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ padding: '20px 40px', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'flex-end', gap: '12px', background: 'var(--bg-card)' }}>
+                  <button 
+                    type="button"
+                    onClick={() => setIsUploadMatModalOpen(false)}
+                    style={{ background: 'rgba(0,0,0,0.05)', color: 'var(--text-main)', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}
+                  >
+                    Batal
+                  </button>
+                  <button 
+                    type="submit"
+                    style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 15px rgba(12,166,120,0.2)' }}
+                  >
+                    Unggah Sekarang
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* EDIT PREMIUM MATERIAL MODAL OVERLAY */}
+        {isEditMatModalOpen && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.6)',
+            backdropFilter: 'blur(8px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 100005,
+            padding: '20px'
+          }}
+          onClick={() => setIsEditMatModalOpen(false)}
+          >
+            <div style={{
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border-color)',
+              borderRadius: '28px',
+              maxWidth: '650px',
+              width: '100%',
+              maxHeight: '85vh',
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '0 25px 50px rgba(0,0,0,0.25)',
+              overflow: 'hidden',
+              position: 'relative'
+            }}
+            onClick={(e) => e.stopPropagation()}
+            >
+              <button 
+                onClick={() => setIsEditMatModalOpen(false)}
+                style={{ position: 'absolute', top: '20px', right: '20px', border: 'none', background: 'rgba(0,0,0,0.05)', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-main)' }}
+              >
+                <X size={18} />
+              </button>
+
+              <div style={{ padding: '30px 40px 20px 40px', borderBottom: '1px solid var(--border-color)', background: 'linear-gradient(180deg, rgba(12,166,120,0.03), transparent)' }}>
+                <h3 style={{ fontSize: '1.4rem', fontWeight: '900', color: 'var(--text-main)', margin: '0 0 8px 0', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <Edit3 size={22} color="var(--primary)" /> Edit Materi Riset & Ebook Premium
+                </h3>
+                <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', margin: 0 }}>
+                  Perbarui isi materi, cover, atau file PDF riset premium Anda.
+                </p>
+              </div>
+
+              <form onSubmit={handleEditMatSubmit} style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+                <div style={{ overflowY: 'auto', padding: '30px 40px', display: 'flex', flexDirection: 'column', gap: '20px', flex: 1 }}>
+                  <div>
+                    <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)', display: 'block', marginBottom: '8px' }}>Judul Ebook/Materi:</label>
+                    <input 
+                      type="text" 
+                      value={editMatForm.title} 
+                      onChange={(e) => setEditMatForm({...editMatForm, title: e.target.value})}
+                      placeholder="Judul Ebook..."
+                      style={{ width: '100%', padding: '12px', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.9rem', outline: 'none', background: 'var(--bg-card)', color: 'var(--text-main)' }}
+                      required
+                    />
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px' }}>
+                    <div>
+                      <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)', display: 'block', marginBottom: '8px' }}>Kategori / Tag:</label>
+                      <select 
+                        value={editMatForm.tag} 
+                        onChange={(e) => setEditMatForm({...editMatForm, tag: e.target.value})}
+                        style={{ width: '100%', padding: '12px', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.9rem', outline: 'none', background: 'var(--bg-card)', color: 'var(--text-main)' }}
+                      >
+                        <option value="Pustaka Relawan Hijau">Pustaka Relawan Hijau</option>
+                        <option value="Panduan Strategis Bisnis">Panduan Strategis Bisnis</option>
+                        <option value="Transformasi Digital & Investasi">Transformasi Digital & Investasi</option>
+                        <option value="Sains Konstruksi">Sains Konstruksi</option>
+                        <option value="Kebijakan & Karbon">Kebijakan & Karbon</option>
+                        <option value="Lainnya">Lainnya (Kategori Kustom)</option>
+                      </select>
+
+                      {editMatForm.tag === 'Lainnya' && (
+                        <div style={{ marginTop: '12px' }}>
+                          <label style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>Kategori Baru / Kustom:</label>
+                          <input 
+                            type="text"
+                            value={customTagEdit}
+                            onChange={(e) => setCustomTagEdit(e.target.value)}
+                            placeholder="Contoh: Arsitektur Tradisional..."
+                            style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--border-color)', borderRadius: '10px', fontSize: '0.85rem', outline: 'none', background: 'var(--bg-card)', color: 'var(--text-main)' }}
+                            required
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)', display: 'block', marginBottom: '8px' }}>Deskripsi Lengkap:</label>
+                    <textarea 
+                      value={editMatForm.desc} 
+                      onChange={(e) => setEditMatForm({...editMatForm, desc: e.target.value})}
+                      placeholder="Tuliskan deskripsi..."
+                      style={{ width: '100%', minHeight: '120px', padding: '14px', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.9rem', outline: 'none', background: 'var(--bg-card)', color: 'var(--text-main)', fontFamily: 'inherit', resize: 'vertical' }}
+                      required
+                    />
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div>
+                      <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)', display: 'block', marginBottom: '8px' }}>Cover Ebook (Gambar):</label>
+                      <button
+                        type="button"
+                        onClick={() => document.getElementById('edit-mat-cover-input').click()}
+                        style={{ width: '100%', background: 'rgba(12,166,120,0.05)', color: 'var(--primary)', border: '1px dashed var(--primary)', borderRadius: '12px', padding: '10px 14px', fontWeight: 'bold', fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                      >
+                        <UploadCloud size={16} /> Ubah Cover
+                      </button>
+                      <input 
+                        id="edit-mat-cover-input"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleEditCoverChange}
+                        style={{ display: 'none' }}
+                      />
+                      {editMatForm.cover && (
+                        <div style={{ marginTop: '8px', position: 'relative', width: '100px', height: '70px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-color)' }}>
+                          <img src={editMatForm.cover} alt="Cover Preview" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
+                      <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)', display: 'block', marginBottom: '8px' }}>Dokumen PDF (Maks 1MB):</label>
+                      <button
+                        type="button"
+                        onClick={() => document.getElementById('edit-mat-pdf-input').click()}
+                        style={{ width: '100%', background: 'rgba(12,166,120,0.05)', color: 'var(--primary)', border: '1px dashed var(--primary)', borderRadius: '12px', padding: '10px 14px', fontWeight: 'bold', fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                      >
+                        <FileText size={16} /> Ubah PDF
+                      </button>
+                      <input 
+                        id="edit-mat-pdf-input"
+                        type="file"
+                        accept=".pdf"
+                        onChange={handleEditPdfChange}
+                        style={{ display: 'none' }}
+                      />
+                      {editMatForm.downloadName && (
+                        <p style={{ margin: '8px 0 0 0', fontSize: '0.75rem', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          📄 {editMatForm.downloadName}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ padding: '20px 40px', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'flex-end', gap: '12px', background: 'var(--bg-card)' }}>
+                  <button 
+                    type="button"
+                    onClick={() => setIsEditMatModalOpen(false)}
+                    style={{ background: 'rgba(0,0,0,0.05)', color: 'var(--text-main)', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}
+                  >
+                    Batal
+                  </button>
+                  <button 
+                    type="submit"
+                    style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 15px rgba(12,166,120,0.2)' }}
+                  >
+                    Simpan Perubahan
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}

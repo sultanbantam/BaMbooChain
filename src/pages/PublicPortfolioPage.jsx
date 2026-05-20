@@ -4,12 +4,34 @@ import { useAuth } from '../context/AuthContext';
 import { db } from '../firebase/config';
 import { 
   collection, query, where, getDocs, doc, getDoc, updateDoc, 
-  setDoc, arrayUnion, arrayRemove, increment, onSnapshot 
+  setDoc, arrayUnion, arrayRemove, increment, onSnapshot, addDoc 
 } from 'firebase/firestore';
 import { 
   User, Calendar, MapPin, Heart, MessageSquare, Share2, Gift, 
-  TreeDeciduous, GraduationCap, Shield, Award, Sparkles, X, ChevronRight
+  TreeDeciduous, GraduationCap, Shield, Award, Sparkles, X, ChevronRight,
+  DownloadCloud, Lock, FileText, CheckCircle, Send
 } from 'lucide-react';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+const defaultIcon = L.icon({
+  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+const parseCoords = (locStr) => {
+  if (!locStr) return null;
+  const match = locStr.match(/\((-?\d+\.\d+),\s*(-?\d+\.\d+)\)/);
+  if (match) {
+    return [parseFloat(match[1]), parseFloat(match[2])];
+  }
+  return null;
+};
 
 const PublicPortfolioPage = () => {
   const { username } = useParams();
@@ -21,8 +43,10 @@ const PublicPortfolioPage = () => {
   
   // Stats states
   const [plantCount, setPlantCount] = useState(0);
+  const [plantingsList, setPlantingsList] = useState([]);
   const [maintenanceCount, setMaintenanceCount] = useState(0);
   const [articlesList, setArticlesList] = useState([]);
+  const [matsList, setMatsList] = useState([]);
   
   // Status interactions
   const [interactions, setInteractions] = useState({
@@ -40,6 +64,11 @@ const PublicPortfolioPage = () => {
   const [giftingInProgress, setGiftingInProgress] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   
+  // Direct private messaging states
+  const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
+  const [messageText, setMessageText] = useState('');
+  const [isSendingMessage, setIsSendingMessage] = useState(false);
+
   // Selected Article Modal
   const [selectedArticle, setSelectedArticle] = useState(null);
 
@@ -87,6 +116,8 @@ const PublicPortfolioPage = () => {
         const plantingsQuery = query(collection(db, "plantings"), where("userId", "==", targetUser.id));
         const plantingsSnap = await getDocs(plantingsQuery);
         setPlantCount(plantingsSnap.size);
+        const plantingsData = plantingsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setPlantingsList(plantingsData);
         
         // Maintenances
         const maintQuery = query(collection(db, "maintenances"), where("userId", "==", targetUser.id));
@@ -98,6 +129,12 @@ const PublicPortfolioPage = () => {
         const articlesSnap = await getDocs(articlesQuery);
         const articlesData = articlesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setArticlesList(articlesData);
+
+        // Premium Materials / Ebooks
+        const matsQuery = query(collection(db, "premium_materials"), where("userId", "==", targetUser.id));
+        const matsSnap = await getDocs(matsQuery);
+        const matsData = matsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setMatsList(matsData);
       } catch (err) {
         console.error("Error loading ecosystem stats:", err);
       }
@@ -259,6 +296,35 @@ const PublicPortfolioPage = () => {
     }
   };
 
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if (!currentUser) {
+      alert("⚠️ Harap login untuk mengirim pesan privat!");
+      return;
+    }
+    if (!messageText.trim()) return;
+    setIsSendingMessage(true);
+    try {
+      await addDoc(collection(db, "direct_messages"), {
+        senderId: currentUser.id,
+        senderUsername: currentUser.username || "Anonim",
+        receiverId: targetUser.id,
+        receiverUsername: targetUser.username || "user",
+        messageText: messageText.trim(),
+        timestamp: Date.now(),
+        read: false
+      });
+      alert("✅ Pesan privat berhasil dikirim!");
+      setMessageText('');
+      setIsMessageModalOpen(false);
+    } catch (err) {
+      console.error("Error sending private message:", err);
+      alert("❌ Gagal mengirim pesan privat.");
+    } finally {
+      setIsSendingMessage(false);
+    }
+  };
+
   // Badge Levels
   const totalEcoActions = plantCount + maintenanceCount + articlesList.length;
   let ecoLevel = "Eco-Beginner";
@@ -273,8 +339,11 @@ const PublicPortfolioPage = () => {
 
   const alreadyLiked = currentUser && interactions.likes.includes(currentUser.id);
 
+  const coordsList = (plantingsList || []).map(p => parseCoords(p.location)).filter(Boolean);
+  const mapCenter = coordsList.length > 0 ? coordsList[0] : [-6.5888, 106.3144];
+
   return (
-    <div style={{ paddingTop: '130px', paddingBottom: '100px', minHeight: '100vh', background: 'var(--bg-color)', transition: 'background 0.3s ease' }}>
+    <div style={{ paddingTop: '190px', paddingBottom: '100px', minHeight: '100vh', background: 'var(--bg-color)', transition: 'background 0.3s ease' }}>
       <div className="container" style={{ maxWidth: '1000px', margin: '0 auto', padding: '0 20px' }}>
         
         {/* Back Button */}
@@ -313,6 +382,16 @@ const PublicPortfolioPage = () => {
                     <Sparkles size={12} /> {ecoLevel}
                   </span>
                 </div>
+                {currentUser?.id !== targetUser.id && (
+                  <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '12px' }}>
+                    <button 
+                      onClick={() => setIsMessageModalOpen(true)}
+                      style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', boxShadow: '0 4px 15px rgba(0,0,0,0.15)' }}
+                    >
+                      <Send size={14} /> Kirim Pesan Privat
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -327,6 +406,81 @@ const PublicPortfolioPage = () => {
                 <p style={{ margin: '0 0 25px 0', fontSize: '1rem', color: 'var(--text-main)', lineHeight: '1.6', fontStyle: targetUser.bioText ? 'normal' : 'italic' }}>
                   {targetUser.bioText || `Pegiat peduli lingkungan yang aktif berpartisipasi dalam program reboisasi dan konservasi bambu Indonesia.`}
                 </p>
+
+                {/* CV / Portofolio Lengkap Section */}
+                <div style={{ marginBottom: '25px', background: 'var(--bg-color)', border: '1px solid var(--border-color)', borderRadius: '20px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Shield size={18} color="var(--primary)" />
+                    <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--text-main)' }}>Dokumen CV / Portofolio</span>
+                  </div>
+                  {targetUser.cvFile ? (
+                    <div>
+                      <p style={{ margin: '0 0 10px 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                        File: <strong>{targetUser.cvFile.name}</strong>
+                      </p>
+                      {currentUser?.kycStatus === 'verified' ? (
+                        <button 
+                          onClick={() => {
+                            const link = document.createElement('a');
+                            link.href = targetUser.cvFile.data;
+                            link.download = targetUser.cvFile.name;
+                            link.click();
+                          }}
+                          style={{
+                            width: '100%',
+                            background: 'var(--primary)',
+                            color: 'white',
+                            border: 'none',
+                            padding: '12px',
+                            borderRadius: '12px',
+                            fontWeight: 'bold',
+                            fontSize: '0.85rem',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '6px',
+                            boxShadow: '0 4px 15px rgba(12,166,120,0.15)'
+                          }}
+                        >
+                          📄 Unduh CV / Portofolio Lengkap
+                        </button>
+                      ) : (
+                        <button 
+                          onClick={() => {
+                            if (!currentUser) {
+                              alert("⚠️ Akses Terkunci!\n\nSilakan login terlebih dahulu.");
+                            } else {
+                              alert(`⚠️ Akses Terkunci!\n\nUntuk mengunduh dokumen CV/Portofolio dari @${targetUser.username}, akun Anda harus berstatus KYC TERVERIFIKASI. Silakan selesaikan pengajuan KYC Anda di menu KYC Center pada halaman Wallet Dashboard.`);
+                              window.location.hash = "/bamboochain/token-wallet";
+                            }
+                          }}
+                          style={{
+                            width: '100%',
+                            background: 'var(--text-muted)',
+                            color: 'white',
+                            border: 'none',
+                            padding: '12px',
+                            borderRadius: '12px',
+                            fontWeight: 'bold',
+                            fontSize: '0.85rem',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '6px'
+                          }}
+                        >
+                          🔒 Unduh CV / Portofolio (Hanya KYC Verified)
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                      Belum mengunggah dokumen CV / Portofolio lengkap.
+                    </p>
+                  )}
+                </div>
 
                 {/* Status Box */}
                 <div style={{ background: 'var(--bg-color)', border: '1px solid var(--border-color)', borderRadius: '20px', padding: '24px', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
@@ -462,7 +616,7 @@ const PublicPortfolioPage = () => {
 
                   <div style={{ background: 'rgba(12, 166, 120, 0.04)', border: '1px solid rgba(12, 166, 120, 0.08)', padding: '20px', borderRadius: '20px' }}>
                     <Award size={24} color="var(--primary)" style={{ marginBottom: '10px' }} />
-                    <div style={{ fontSize: '1.8rem', fontWeight: 'bold', color: 'var(--text-main)', margin: '0 0 4px 0' }}>{targetUser.bmcBalance || 0}</div>
+                    <div style={{ fontSize: '1.8rem', fontWeight: 'bold', color: 'var(--text-main)', margin: '0 0 4px 0' }}>{Number(targetUser.bmcBalance || 0).toFixed(2)}</div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: '600' }}>BMC Reward</div>
                   </div>
 
@@ -477,6 +631,70 @@ const PublicPortfolioPage = () => {
                       : 'Maret 2026'
                     }
                   </p>
+                </div>
+
+                {/* 🗺️ INTERACTIVE MAP WIDGET */}
+                <div style={{ background: 'var(--bg-card)', borderRadius: '20px', padding: '24px', border: '1px solid var(--border-color)', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
+                  <p style={{ margin: '0 0 12px 0', fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    🗺️ Peta Lokasi Aktivitas Hijau
+                  </p>
+                  <div style={{ height: '240px', width: '100%', borderRadius: '16px', overflow: 'hidden', border: '1px solid var(--border-color)', marginBottom: '15px', zIndex: 1 }}>
+                    <MapContainer center={mapCenter} zoom={10} style={{ height: '100%', width: '100%' }}>
+                      <TileLayer
+                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      />
+                      {(plantingsList || []).map((p, idx) => {
+                        const coords = parseCoords(p.location);
+                        if (!coords) return null;
+                        return (
+                          <Marker key={p.id || idx} position={coords} icon={defaultIcon}>
+                            <Popup>
+                              <div style={{ fontSize: '0.8rem', color: '#333' }}>
+                                <strong style={{ color: 'var(--primary)' }}>{p.species || 'Bambu'}</strong><br/>
+                                <span>Jumlah: {p.count || 0} rumpun</span><br/>
+                                <span>Status: {p.status || 'Planted'}</span>
+                              </div>
+                            </Popup>
+                          </Marker>
+                        );
+                      })}
+                      {coordsList.length === 0 && (
+                        <Marker position={mapCenter} icon={defaultIcon}>
+                          <Popup>
+                            <div style={{ fontSize: '0.8rem', color: '#333' }}>
+                              <strong>Area Konservasi Cibarani</strong><br/>
+                              <span>Lokasi demonstrasi penanaman bambu lestari.</span>
+                            </div>
+                          </Popup>
+                        </Marker>
+                      )}
+                    </MapContainer>
+                  </div>
+                  {/* Green Action Navigation Links */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: '500' }}>Aksi Hijau Cepat:</div>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      <button 
+                        onClick={() => window.location.hash = "/bambupedia/tracker"}
+                        style={{ flex: 1, minWidth: '100px', background: 'var(--primary)', color: 'white', border: 'none', padding: '8px 10px', borderRadius: '10px', fontSize: '0.72rem', fontWeight: 'bold', cursor: 'pointer', textAlign: 'center' }}
+                      >
+                        Buka Tracker Bambu
+                      </button>
+                      <button 
+                        onClick={() => window.location.hash = "/bamboochain/invest"}
+                        style={{ flex: 1, minWidth: '100px', background: 'var(--bg-color)', border: '1px solid var(--border-color)', color: 'var(--text-main)', padding: '8px 10px', borderRadius: '10px', fontSize: '0.72rem', fontWeight: 'bold', cursor: 'pointer', textAlign: 'center' }}
+                      >
+                        Dukung Penanaman
+                      </button>
+                      <button 
+                        onClick={() => window.location.hash = "/bambupedia/tracker"}
+                        style={{ flex: 1, minWidth: '100px', background: 'var(--bg-color)', border: '1px solid var(--border-color)', color: 'var(--text-main)', padding: '8px 10px', borderRadius: '10px', fontSize: '0.72rem', fontWeight: 'bold', cursor: 'pointer', textAlign: 'center' }}
+                      >
+                        Contribute Data
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -524,6 +742,87 @@ const PublicPortfolioPage = () => {
                     <span style={{ color: 'var(--primary)', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '3px' }}>
                       Baca Selengkapnya <ChevronRight size={12} />
                     </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ────────── DYNAMIC PREMIUM MATERIALS LIST ────────── */}
+        <h3 style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)', marginTop: '40px', marginBottom: '20px' }}>
+          Materi Riset & Ebook Premium Kontribusi
+        </h3>
+        
+        {matsList.length === 0 ? (
+          <div style={{ background: 'var(--bg-card)', padding: '40px', borderRadius: '24px', textAlign: 'center', border: '1px solid var(--border-color)', color: 'var(--text-muted)', marginBottom: '40px' }}>
+            Belum ada materi riset premium atau ebook yang diunggah oleh kontributor ini.
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '25px', marginBottom: '40px' }}>
+            {matsList.map(mat => (
+              <div 
+                key={mat.id}
+                style={{ background: 'var(--bg-card)', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 8px 25px rgba(0,0,0,0.03)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', height: '100%' }}
+              >
+                {mat.cover && (
+                  <div style={{ height: '180px', overflow: 'hidden', background: '#f8f9fa', display: 'flex', alignItems: 'center', justifyContent: 'center', borderBottom: '1px solid var(--border-color)' }}>
+                    <img src={mat.cover} alt={mat.title} style={{ height: '100%', maxWidth: '100%', objectFit: 'contain' }} />
+                  </div>
+                )}
+                <div style={{ padding: '24px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--primary)', textTransform: 'uppercase', marginBottom: '8px', display: 'block' }}>
+                    {mat.tag || 'Riset Premium'}
+                  </span>
+                  <h4 style={{ fontSize: '1.15rem', margin: '0 0 10px 0', color: 'var(--text-main)', fontWeight: 'bold', lineHeight: '1.3' }}>
+                    {mat.title}
+                  </h4>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: '0 0 20px 0', flex: 1, lineHeight: '1.5', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                    {mat.desc}
+                  </p>
+                  
+                  <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '15px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.75rem' }}>
+                      <span style={{ color: 'var(--text-muted)' }}>Akses Unduh:</span>
+                      {currentUser?.kycStatus === 'verified' ? (
+                        <span style={{ color: '#12b886', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '3px' }}><CheckCircle size={12} /> Terbuka</span>
+                      ) : (
+                        <span style={{ color: '#fa5252', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '3px' }}><Lock size={12} /> Terkunci KYC</span>
+                      )}
+                    </div>
+                    
+                    <button 
+                      onClick={() => {
+                        if (!currentUser) {
+                          alert("⚠️ Silakan login terlebih dahulu untuk mengakses unduhan!");
+                        } else if (currentUser.kycStatus !== 'verified') {
+                          alert(`⚠️ Akses Terkunci!\n\nUntuk mendownload Ebook '${mat.title}' secara gratis, Anda harus berstatus KYC TERVERIFIKASI. Silakan selesaikan pengajuan KYC Anda di menu KYC Center pada halaman Wallet Dashboard.`);
+                          window.location.hash = "/bamboochain/token-wallet";
+                        } else {
+                          const link = document.createElement('a');
+                          link.href = mat.pdf;
+                          link.download = mat.downloadName;
+                          link.click();
+                        }
+                      }}
+                      style={{
+                        background: currentUser?.kycStatus === 'verified' ? 'var(--primary)' : 'var(--text-muted)',
+                        color: 'white',
+                        border: 'none',
+                        padding: '10px 20px',
+                        borderRadius: '10px',
+                        fontWeight: 'bold',
+                        fontSize: '0.85rem',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                        transition: 'background 0.2s'
+                      }}
+                    >
+                      <DownloadCloud size={14} /> {currentUser?.kycStatus === 'verified' ? 'Unduh PDF' : 'Verifikasi KYC & Unduh'}
+                    </button>
                   </div>
                 </div>
               </div>
@@ -589,7 +888,62 @@ const PublicPortfolioPage = () => {
           </div>
         </div>
       )}
-
+      {/* ────────── PRIVATE MESSAGE MODAL ────────── */}
+      {isMessageModalOpen && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', zIndex: 11000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+          <div style={{ background: 'var(--bg-card)', width: '100%', maxWidth: '500px', borderRadius: '24px', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 50px rgba(0,0,0,0.2)', border: '1px solid var(--border-color)' }}>
+            
+            {/* Header */}
+            <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Send size={18} color="var(--primary)" />
+                <span style={{ fontSize: '1rem', fontWeight: 'bold', color: 'var(--text-main)' }}>Kirim Pesan Privat</span>
+              </div>
+              <button 
+                onClick={() => setIsMessageModalOpen(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
+              >
+                <X size={22} />
+              </button>
+            </div>
+            
+            {/* Body */}
+            <form onSubmit={handleSendMessage} style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div>
+                <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>Penerima:</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px', background: 'var(--bg-color)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                  <div style={{ width: '24px', height: '24px', borderRadius: '50%', overflow: 'hidden' }}>
+                    <img src={targetUser.avatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </div>
+                  <span style={{ fontWeight: 'bold', fontSize: '0.9rem', color: 'var(--text-main)' }}>{targetUser.name || 'Member'}</span>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>@{targetUser.username}</span>
+                </div>
+              </div>
+              
+              <div>
+                <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>Pesan Anda:</label>
+                <textarea 
+                  value={messageText}
+                  onChange={(e) => setMessageText(e.target.value)}
+                  placeholder="Tulis pesan privat Anda di sini..."
+                  rows={4}
+                  required
+                  style={{ width: '100%', padding: '12px', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.9rem', outline: 'none', background: 'var(--bg-card)', color: 'var(--text-main)', fontFamily: 'inherit', resize: 'vertical' }}
+                />
+              </div>
+              
+              <button 
+                type="submit" 
+                disabled={isSendingMessage}
+                style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '12px', borderRadius: '12px', fontWeight: 'bold', fontSize: '0.9rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+              >
+                <Send size={16} /> {isSendingMessage ? 'Mengirim...' : 'Kirim Pesan'}
+              </button>
+            </form>
+            
+          </div>
+        </div>
+      )}
     </div>
   );
 };
