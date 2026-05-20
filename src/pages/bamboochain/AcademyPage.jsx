@@ -112,8 +112,8 @@ const AcademyPage = () => {
       {
         title: "Pedoman Konstruksi Bambu untuk Relawan",
         tag: "Pustaka Relawan Hijau",
-        cover: "/assets/pedoman/cbsr.jpg",
-        pdf: "/assets/pedoman/bsr.pdf",
+        cover: "./assets/pedoman/cbsr.jpg",
+        pdf: "./assets/pedoman/bsr.pdf",
         downloadName: "Pedoman_Konstruksi_Bambu_Relawan.pdf",
         desc: "Buku panduan praktis terlengkap yang dirancang khusus bagi para relawan, pembangun, dan pegiat lingkungan untuk memahami dasar-dasar kekuatan bambu, metode penyambungan, perawatan bahan, hingga teknik perakitan struktur modular ramah lingkungan di lapangan. Dapatkan wawasan aplikatif langsung dari para master konstruksi bambu Nusantara.",
         userId: adminUid,
@@ -128,8 +128,8 @@ const AcademyPage = () => {
       {
         title: "Rencana Bisnis Industri Bambu Terintegrasi",
         tag: "Panduan Strategis Bisnis",
-        cover: "/assets/pedoman/ibt.jpeg",
-        pdf: "/assets/pedoman/ibt.pdf",
+        cover: "./assets/pedoman/ibt.jpeg",
+        pdf: "./assets/pedoman/ibt.pdf",
         downloadName: "Rencana_Bisnis_Industri_Bambu_Terintegrasi.pdf",
         desc: "Materi Rencana Bisnis Industri Bambu Terintegrasi menjelaskan konsep pengembangan ekosistem bambu dari hulu hingga hilir, mulai dari pembibitan, penanaman, pengolahan bahan baku, hingga produk bernilai tinggi seperti bambu laminasi, strand woven bamboo, konstruksi, energi, pangan, dan tekstil. Materi ini menekankan bahwa bambu adalah “emas hijau” masa depan yang mampu mendukung ekonomi berkelanjutan, pelestarian lingkungan, serta pencapaian SDGs melalui industri berbasis masyarakat dan teknologi.\n\nKonsep ini juga memperlihatkan peluang pasar bambu dunia, inovasi produk, proses pengawetan dan manufaktur bambu modern, hingga model bisnis industri bambu terintegrasi yang menghubungkan pelestarian alam, pemberdayaan masyarakat, dan industri hijau berkelanjutan.",
         userId: adminUid,
@@ -144,10 +144,10 @@ const AcademyPage = () => {
       {
         title: "Pitchdeck Bamboo 4.0",
         tag: "Transformasi Digital & Investasi",
-        cover: "/assets/pedoman/bamboo4.0.jpeg",
-        pdf: "/assets/pedoman/bamboo 4.0.pdf",
+        cover: "./assets/pedoman/bamboo4.0.jpeg",
+        pdf: "./assets/pedoman/bamboo 4.0.pdf",
         downloadName: "Pitchdeck_Bamboo_4.0.pdf",
-        desc: "Materi Pitchdeck Bamboo 4.0 menjelaskan konsep transformasi industri bambu berbasis teknologi digital untuk restorasi lingkungan, pemberdayaan masyarakat adat, dan pembangunan ekonomi hijau berkelanjutan. Proyek ini mengintegrasikan bambu, teknologi 4.0, big data, IoT, drone, dan sistem digital untuk menciptakan ekosistem agroforestri bambu yang transparan, modern, dan bernilai ekonomi tinggi.\n\nPitchdeck ini juga menjelaskan masalah besar seperti deforestasi, krisis air, dan kemiskinan masyarakat adat, lalu menawarkan solusi melalui penanaman bambu digital di lahan adat Kasepuhan Cibarani seluas ±490 hektar, dengan target restorasi lingkungan, carbon credit, industri bambu terintegrasi, dan pemberdayaan petani milenial.\n\nSelain itu, materi ini memaparkan peluang pasar ekonomi hijau global, roadmap proyek 4 tahun, tim ahli, model bisnis sirkular, kebutuhan investasi Rp 8,84 miliar, hingga visi besar membangun peradaban Nusantara yang hijau, mandiri, dan berkelanjutan melalui bambu.\n\nKonsep Bamboo 4.0 sendiri sejalan dengan perkembangan Agriculture 4.0 dan smart farming yang memanfaatkan IoT, big data, drone, dan teknologi digital untuk meningkatkan efisiensi, keberlanjutan, serta transparansi rantai pasok pertanian modern.",
+        desc: "Materi Pitchdeck Bamboo 4.0 menjelaskan konsep transformasi industri bambu berbasis teknologi digital untuk restorasi lingkungan, pemberdayaan masyarakat adat, dan pembangunan ekonomi hijau berkelanjutan. Proyek ini mengintegrasikan bambu, teknologi 4.0, big data, IoT, drone, dan sistem digital untuk menciptakan ekosistem agroforestri bambu yang transparan, modern, dan bernilai ekonomi tinggi.\n\nPitchdeck ini juga menjelaskan masalah besar seperti deforestasi, krisis air, dan kemiskinan masyarakat adat, lalu menawarkan solusi melalui penanaman bambu digital di lahan adat Kasepuhan Cibarani seluas ±490 hektar, dengan target restorasi lingkungan, carbon credit, industri bambu terintegrasi, dan pemberdayaan petani milenial.\n\nSelain itu, materi ini memaparkan peluang pasar ekonomi hijau global, roadmap proyek 4 tahun, tim ahli, model bisnis sirkular, kebutuhan investasi Rp 8,84 miliar, hingga visi besar membangun peradaban Nusantara yang hijau, mandiri, dan berkelanjutan melalui bambu.\n\nKonsep Bamboo 4.0 sendiri sejalan dengan perkembangan Agriculture 4.0 and smart farming yang memanfaatkan IoT, big data, drone, dan teknologi digital untuk meningkatkan efisiensi, keberlanjutan, serta transparansi rantai pasok pertanian modern.",
         userId: adminUid,
         author: adminName,
         username: adminUsername,
@@ -883,7 +883,7 @@ const AcademyPage = () => {
                 }}>
                   {/* Ebook Cover Mockup */}
                   <div style={{ flexShrink: 0, position: 'relative', width: '320px', height: '210px', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 15px 35px rgba(0,0,0,0.15)', border: '1px solid var(--border-color)', background: '#ffffff' }}>
-                    <img src={ebook.cover} alt={ebook.title} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                    <img src={ebook.cover && ebook.cover.startsWith('/assets/') ? '.' + ebook.cover : ebook.cover} alt={ebook.title} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                     <div style={{ position: 'absolute', top: '12px', right: '12px', background: '#fa5252', color: 'white', padding: '4px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 'bold' }}>
                       PREMIUM EBOOK
                     </div>
@@ -933,9 +933,8 @@ const AcademyPage = () => {
                           } else if (user.kycStatus !== 'verified') {
                             alert(`⚠️ Akses Terkunci!\n\nUntuk mendownload Ebook '${ebook.title}' secara gratis, Anda harus berstatus KYC TERVERIFIKASI di sistem. Silakan selesaikan pengajuan KYC Anda di menu KYC Center pada halaman Wallet Dashboard.`);
                             window.location.hash = "/bamboochain/token-wallet";
-                          } else {
                             const link = document.createElement('a');
-                            link.href = ebook.pdf;
+                            link.href = ebook.pdf && ebook.pdf.startsWith('/assets/') ? '.' + ebook.pdf : ebook.pdf;
                             link.download = ebook.downloadName;
                             link.click();
                           }

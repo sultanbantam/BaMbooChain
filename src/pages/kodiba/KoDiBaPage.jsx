@@ -497,7 +497,7 @@ const KoDiBaPage = () => {
               <p style={{ margin: '0 0 12px 0', color: '#adb5bd', fontSize: '0.85rem' }}>Dokumen Anggaran Dasar dan Anggaran Rumah Tangga (AD/ART) resmi tersedia dalam format PDF untuk diunduh.</p>
             </div>
             <a 
-              href="/assets/pedoman/adart.pdf" 
+              href="./assets/pedoman/adart.pdf" 
               download="AD_ART_KODIBA.pdf"
               style={{
                 display: 'inline-flex',
