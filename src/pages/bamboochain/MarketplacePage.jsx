@@ -151,7 +151,7 @@ const MarketplacePage = () => {
     },
     { 
       id: 2, name: "Jam Tangan Bambu Virageawie", category: "Kerajinan", priceIdr: 500000, vendor: "Virageawie Bandung", rating: 4.9, reviews: 92, verified: true,
-      img: "/gambar/produk/jam.jpg", 
+      img: "./gambar/produk/jam.jpg", 
       status: 'Approved',
       unit: "Pieces", 
       description: "Dibuat dengan ketelitian tinggi oleh para master muda kreatif dari komunitas Virageawie Bandung Barat, jam tangan bambu ini menghadirkan perpaduan antara kerajinan tradisional, desain modern, dan semangat keberlanjutan. Menggunakan material pilihan dari bambu gombong, setiap detailnya diproses dengan presisi sehingga menghasilkan karakter yang ringan, kuat, sekaligus eksotik alami. Serat dan warna alami bambu menjadikan setiap jam memiliki pola yang unik—tidak ada yang benar-benar sama. Dipadukan dengan desain minimalis dan elegan, jam ini bukan sekadar penunjuk waktu, tetapi juga simbol gaya hidup ramah lingkungan dan kebanggaan terhadap karya anak bangsa.",
