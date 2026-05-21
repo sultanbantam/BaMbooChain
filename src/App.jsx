@@ -29,6 +29,9 @@ import BambupediaUtilize from './pages/bambupedia/Utilize';
 import BambupediaCultivate from './pages/bambupedia/Cultivate';
 import BambupediaTaxonomy from './pages/bambupedia/TaxonomyAnalysis';
 import BambupediaHistory from './pages/bambupedia/History';
+import BambupediaKnowledge from './pages/bambupedia/KnowledgePage';
+import BambooBotPage from './pages/bambupedia/BambooBotPage';
+import KnowledgeAdminPage from './pages/bambupedia/KnowledgeAdminPage';
 import CareersPage from './pages/CareersPage';
 
 // BambooChain Modules
@@ -103,6 +106,8 @@ function App() {
           <Route path="/bambupedia/cultivate" element={<ProtectedRoute><BambupediaCultivate /></ProtectedRoute>} />
           <Route path="/bambupedia/taxonomy" element={<ProtectedRoute><BambupediaTaxonomy /></ProtectedRoute>} />
           <Route path="/bambupedia/history" element={<ProtectedRoute><BambupediaHistory /></ProtectedRoute>} />
+          <Route path="/bambupedia/knowledge" element={<ProtectedRoute><BambupediaKnowledge /></ProtectedRoute>} />
+          <Route path="/bambupedia/bambubot" element={<ProtectedRoute><BambooBotPage /></ProtectedRoute>} />
           
           {/* BambooChain Protected Routes */}
           <Route path="/bamboochain" element={<ProtectedRoute><BcOverviewPage /></ProtectedRoute>} />
@@ -128,6 +133,7 @@ function App() {
           <Route path="/bambunusa/join-farmer" element={<JoinFarmerPage />} />
           <Route path="/bambunusa/join-validator" element={<JoinValidatorPage />} />
           <Route path="/admin-portal" element={<ProtectedRoute><AdminPortalPage /></ProtectedRoute>} />
+          <Route path="/admin-portal/knowledge" element={<ProtectedRoute><KnowledgeAdminPage /></ProtectedRoute>} />
           
           <Route path="/faq" element={<FAQPage />} />
         </Routes>

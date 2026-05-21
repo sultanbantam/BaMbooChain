@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Send, BookOpen, Leaf, ChevronRight, Mic, Landmark, Wallet, ArrowRight, CheckCircle, MessageSquare, Sprout } from 'lucide-react';
+import { Search, Send, BookOpen, Leaf, ChevronRight, Mic, Landmark, Wallet, ArrowRight, CheckCircle, MessageSquare, Sprout, UploadCloud, Bot } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 // ─── BASIS PENGETAHUAN BAMBU ─────────────────────────────────────────────────
@@ -334,7 +334,7 @@ const BambupediaPage = () => {
               }, 100);
             }}
             style={{ 
-              display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 30px', borderRadius: '24px', border: 'none', cursor: 'pointer', fontWeight: '800', fontSize: '1rem', transition: 'all 0.3s',
+              display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 30px', borderRadius: '24px', cursor: 'pointer', fontWeight: '800', fontSize: '1rem', transition: 'all 0.3s',
               background: activeTab === 'chat' ? 'var(--primary)' : 'var(--bg-card)',
               color: activeTab === 'chat' ? 'white' : 'var(--text-main)',
               boxShadow: activeTab === 'chat' ? '0 10px 20px rgba(12,166,120,0.2)' : '0 4px 12px rgba(0,0,0,0.05)',
@@ -346,7 +346,7 @@ const BambupediaPage = () => {
           <button 
             onClick={() => setActiveTab('library')}
             style={{ 
-              display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 30px', borderRadius: '24px', border: 'none', cursor: 'pointer', fontWeight: '800', fontSize: '1rem', transition: 'all 0.3s',
+              display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 30px', borderRadius: '24px', cursor: 'pointer', fontWeight: '800', fontSize: '1rem', transition: 'all 0.3s',
               background: activeTab === 'library' ? 'var(--primary)' : 'var(--bg-card)',
               color: activeTab === 'library' ? 'white' : 'var(--text-main)',
               boxShadow: activeTab === 'library' ? '0 10px 20px rgba(12,166,120,0.2)' : '0 4px 12px rgba(0,0,0,0.05)',
@@ -359,7 +359,7 @@ const BambupediaPage = () => {
           <button 
             onClick={() => navigate('/bambupedia/tracker')}
             style={{ 
-              display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 30px', borderRadius: '24px', border: 'none', cursor: 'pointer', fontWeight: '800', fontSize: '1rem', transition: 'all 0.3s',
+              display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 30px', borderRadius: '24px', cursor: 'pointer', fontWeight: '800', fontSize: '1rem', transition: 'all 0.3s',
               background: 'var(--bg-card)',
               color: 'var(--text-main)',
               boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
@@ -367,6 +367,30 @@ const BambupediaPage = () => {
               border: '1px solid var(--border-color)'
             }}>
             <Sprout size={20} color="var(--primary)" /> Tracker Bambu
+          </button>
+
+          <button 
+            onClick={() => navigate('/bambupedia/knowledge')}
+            style={{ 
+              display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 30px', borderRadius: '24px', border: '1px solid var(--border-color)', cursor: 'pointer', fontWeight: '800', fontSize: '1rem', transition: 'all 0.3s',
+              background: 'var(--bg-card)',
+              color: 'var(--text-main)',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+              minWidth: '220px', justifyContent: 'center'
+            }}>
+            <UploadCloud size={20} color="var(--primary)" /> Upload Knowledge
+          </button>
+
+          <button 
+            onClick={() => navigate('/bambupedia/bambubot')}
+            style={{ 
+              display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 30px', borderRadius: '24px', border: '1px solid var(--border-color)', cursor: 'pointer', fontWeight: '800', fontSize: '1rem', transition: 'all 0.3s',
+              background: 'var(--bg-card)',
+              color: 'var(--text-main)',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+              minWidth: '220px', justifyContent: 'center'
+            }}>
+            <Bot size={20} color="var(--primary)" /> BambuBot RAG
           </button>
         </div>
 

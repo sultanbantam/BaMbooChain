@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
-import { Shield, Users, MapPin, CheckCircle, XCircle, Clock, Eye, Filter, Download, Search } from 'lucide-react';
+import { Shield, Users, MapPin, CheckCircle, XCircle, Clock, Eye, Filter, Download, Search, BookOpen } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import BackButton from '../components/BackButton';
 
@@ -67,6 +67,12 @@ const AdminPortalPage = () => {
               <div style={{ fontSize: '0.8rem', opacity: 0.8 }}>{t('admin_portal_logged_as')}</div>
               <div style={{ fontWeight: 'bold' }}>{t('admin_portal_role')}</div>
             </div>
+            <button
+              onClick={() => navigate('/admin-portal/knowledge')}
+              style={{ background: 'white', color: '#087f5b', border: 'none', padding: '12px 18px', borderRadius: '14px', fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+            >
+              <BookOpen size={18} /> Review Knowledge
+            </button>
           </div>
         </div>
 
