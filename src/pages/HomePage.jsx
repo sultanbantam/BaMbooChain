@@ -482,7 +482,7 @@ const HomePage = () => {
               
               {welcomeStep === 1 ? (
                 <img
-                  src="/logos/bmc3.png"
+                  src={getAssetUrl('logos/bmc3.png')}
                   alt="BaMbooChain"
                   style={{
                     width: '92px',
@@ -495,7 +495,7 @@ const HomePage = () => {
                 />
               ) : (
                 <img
-                  src="/logos/bmc5.png"
+                  src={getAssetUrl('logos/bmc5.png')}
                   alt="BaMbooChain"
                   style={{
                     width: '126px',
