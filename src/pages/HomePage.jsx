@@ -480,13 +480,33 @@ const HomePage = () => {
                 alignItems: 'center', justifyContent: 'center', color: 'white', cursor: 'pointer'
               }}><X size={18} /></button>
               
-              <div style={{ 
-                width: '50px', height: '50px', background: 'rgba(255,255,255,0.2)', 
-                borderRadius: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                margin: '0 auto 15px', backdropFilter: 'blur(10px)'
-              }}>
-                <Sparkles size={28} fill="white" />
-              </div>
+              {welcomeStep === 1 ? (
+                <img
+                  src="/logos/bmc3.png"
+                  alt="BaMbooChain"
+                  style={{
+                    width: '92px',
+                    height: '66px',
+                    objectFit: 'contain',
+                    display: 'block',
+                    margin: '0 auto 12px',
+                    filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.18))'
+                  }}
+                />
+              ) : (
+                <img
+                  src="/logos/bmc5.png"
+                  alt="BaMbooChain"
+                  style={{
+                    width: '126px',
+                    height: '55px',
+                    objectFit: 'contain',
+                    display: 'block',
+                    margin: '0 auto 12px',
+                    filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.18))'
+                  }}
+                />
+              )}
               <h2 style={{ fontSize: '1.5rem', fontWeight: '800', marginBottom: '6px' }}>
                 {welcomeStep === 1 ? t('welcome_greeting') : t('guide_title')}
               </h2>
