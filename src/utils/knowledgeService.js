@@ -16,7 +16,7 @@ import {
   arrayUnion,
   where
 } from 'firebase/firestore';
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { getDownloadURL, ref, uploadBytes, uploadBytesResumable } from 'firebase/storage';
 
 export const KNOWLEDGE_COLLECTION = 'knowledge_items';
 
@@ -53,7 +53,29 @@ export const extractSearchText = (item) => {
   return cleanText(parts.filter(Boolean).join(' ')).toLowerCase();
 };
 
-export const createKnowledgeItem = async ({ form, file, user }) => {
+const uploadFileHelper = (fileRef, file, onProgress) => {
+  return new Promise((resolve, reject) => {
+    const uploadTask = uploadBytesResumable(fileRef, file);
+    uploadTask.on(
+      'state_changed',
+      (snapshot) => {
+        const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+        if (onProgress) onProgress(progress);
+      },
+      (error) => reject(error),
+      async () => {
+        try {
+          const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
+          resolve(downloadUrl);
+        } catch (error) {
+          reject(error);
+        }
+      }
+    );
+  });
+};
+
+export const createKnowledgeItem = async ({ form, file, user, onProgress }) => {
   let fileUrl = '';
   let filePath = '';
   let fileName = '';
@@ -66,8 +88,12 @@ export const createKnowledgeItem = async ({ form, file, user }) => {
     fileSize = file.size;
     filePath = `knowledge/${user?.id || 'guest'}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
     const fileRef = ref(storage, filePath);
-    await uploadBytes(fileRef, file);
-    fileUrl = await getDownloadURL(fileRef);
+    if (onProgress) {
+      fileUrl = await uploadFileHelper(fileRef, file, onProgress);
+    } else {
+      await uploadBytes(fileRef, file);
+      fileUrl = await getDownloadURL(fileRef);
+    }
   }
 
   const payload = {
@@ -122,7 +148,7 @@ export const createKnowledgeItem = async ({ form, file, user }) => {
   return docRef;
 };
 
-export const updateKnowledgeItem = async ({ itemId, form, file, user }) => {
+export const updateKnowledgeItem = async ({ itemId, form, file, user, onProgress }) => {
   let fileUrl = form.fileUrl || '';
   let filePath = form.filePath || '';
   let fileName = form.fileName || '';
@@ -135,8 +161,12 @@ export const updateKnowledgeItem = async ({ itemId, form, file, user }) => {
     fileSize = file.size;
     filePath = `knowledge/${user?.id || 'guest'}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
     const fileRef = ref(storage, filePath);
-    await uploadBytes(fileRef, file);
-    fileUrl = await getDownloadURL(fileRef);
+    if (onProgress) {
+      fileUrl = await uploadFileHelper(fileRef, file, onProgress);
+    } else {
+      await uploadBytes(fileRef, file);
+      fileUrl = await getDownloadURL(fileRef);
+    }
   }
 
   const payload = {

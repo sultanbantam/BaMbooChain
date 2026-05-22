@@ -13,6 +13,8 @@
   --text-main: #212529;
   --text-muted: #6c757d;
   --border-color: #dee2e6;
+  --bg-claimed: #e6fcf5;
+  --bg-locked: #f8f9fa;
 
   --navbar-height: 210px;
   --navbar-height-mobile: 80px;
@@ -28,6 +30,8 @@
   --text-main: #e9ecef;
   --text-muted: #868e96;
   --border-color: #2d3040;
+  --bg-claimed: rgba(12, 166, 120, 0.2);
+  --bg-locked: #1a1d27;
   --glass-bg: rgba(30, 33, 48, 0.85);
   --glass-border: rgba(255, 255, 255, 0.08);
   --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);

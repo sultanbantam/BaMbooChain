@@ -46,6 +46,7 @@ const KnowledgePage = () => {
   const [editingId, setEditingId] = useState(null);
   const [queryText, setQueryText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [message, setMessage] = useState('');
 
   useEffect(() => {
@@ -155,13 +156,14 @@ const KnowledgePage = () => {
     }
 
     setIsSubmitting(true);
+    setUploadProgress(0);
     setMessage('');
     try {
       if (editingId) {
-        await updateKnowledgeItem({ itemId: editingId, form, file, user });
+        await updateKnowledgeItem({ itemId: editingId, form, file, user, onProgress: setUploadProgress });
         setMessage('Sumber berhasil diperbarui dan dikirim kembali ke antrean verifikasi.');
       } else {
-        await createKnowledgeItem({ form, file, user });
+        await createKnowledgeItem({ form, file, user, onProgress: setUploadProgress });
         setMessage('Sumber berhasil dikirim. Statusnya pending sampai validator memverifikasi.');
       }
       handleCancel();
@@ -170,6 +172,7 @@ const KnowledgePage = () => {
       setMessage(`Gagal mengirim sumber: ${error.message}`);
     } finally {
       setIsSubmitting(false);
+      setUploadProgress(0);
     }
   };
 
@@ -217,7 +220,7 @@ const KnowledgePage = () => {
                 
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <button disabled={isSubmitting} type="submit" style={{ ...primaryButtonStyle, flex: 1, opacity: isSubmitting ? 0.7 : 1 }}>
-                    {isSubmitting ? 'Mengirim...' : (editingId ? 'Simpan Perubahan' : 'Kirim ke Validator')}
+                    {isSubmitting ? (uploadProgress > 0 ? `Mengirim (${uploadProgress}%)...` : 'Mengirim...') : (editingId ? 'Simpan Perubahan' : 'Kirim ke Validator')}
                   </button>
                   {editingId && (
                     <button 

@@ -828,7 +828,7 @@ const EarnBMC = () => {
       )}
 
       {/* Daily Check-in */}
-      <div style={{ background: 'white', borderRadius: '20px', padding: isMobile ? '20px' : '24px', border: '1px solid #e9ecef', marginBottom: '20px' }}>
+      <div style={{ background: 'var(--bg-card)', borderRadius: '20px', padding: isMobile ? '20px' : '24px', border: '1px solid var(--border-color)', marginBottom: '20px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
           <CalendarDays size={24} color="var(--primary)" />
           <h4 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 'bold' }}>Daily Check-in</h4>
@@ -851,7 +851,7 @@ const EarnBMC = () => {
             else if(dayNum === streak + 1 && !canCheckinToday) status = 'locked';
 
             return (
-            <div key={d.day} style={{ minWidth: '70px', background: status === 'claimed' ? '#e6fcf5' : status === 'today' ? 'var(--primary)' : '#f8f9fa', color: status === 'today' ? 'white' : 'var(--text-main)', border: d.special ? '2px solid #fcc419' : 'none', borderRadius: '12px', padding: '12px', textAlign: 'center', opacity: status === 'locked' ? 0.6 : 1 }}>
+            <div key={d.day} style={{ minWidth: '70px', background: status === 'claimed' ? 'var(--bg-claimed)' : status === 'today' ? 'var(--primary)' : 'var(--bg-locked)', color: status === 'today' ? 'white' : 'var(--text-main)', border: d.special ? '2px solid #fcc419' : 'none', borderRadius: '12px', padding: '12px', textAlign: 'center', opacity: status === 'locked' ? 0.6 : 1 }}>
               <div style={{ fontSize: '0.7rem', marginBottom: '4px' }}>Day {d.day}</div>
               <div style={{ fontWeight: 'bold', fontSize: '0.85rem' }}>{d.rwd}</div>
               {status === 'today' && <button onClick={handleDaily} style={{ marginTop: '8px', background: 'white', color: 'var(--primary)', border: 'none', padding: '4px 8px', borderRadius: '8px', fontSize: '0.65rem', fontWeight: 'bold', cursor: 'pointer' }}>Claim</button>}
@@ -870,12 +870,12 @@ const EarnBMC = () => {
           { key: 'pi', title: 'Join Pi Network', reward: 0.01, desc: 'Integrasi Future Web3 Ecosystem. Daftar menggunakan referral founder.', input: 'username' },
           { key: 'watch', title: 'Watch & Support', reward: 0.005, rewardLabel: '0.005 / view', desc: 'Nonton YouTube @bambupedia & like konten resmi (Reward per tontonan).', input: 'username' },
         ].map((t) => (
-          <div key={t.key} style={{ background: 'white', borderRadius: '20px', padding: '20px', border: '1px solid #e9ecef', display: 'flex', flexDirection: 'column' }}>
+          <div key={t.key} style={{ background: 'var(--bg-card)', borderRadius: '20px', padding: '20px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column' }}>
             <h4 style={{ margin: '0 0 8px 0', fontSize: '1rem', fontWeight: 'bold' }}>{t.title}</h4>
             <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '16px', lineHeight: 1.4, flex: 1 }}>{t.desc}</div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
               <span style={{ fontWeight: 'bold', color: 'var(--primary)', fontSize: '0.9rem' }}>+{t.rewardLabel || t.reward} BMC</span>
-              <button onClick={() => setActiveTask({key: t.key, title: t.title, reward: t.reward, rewardLabel: t.rewardLabel, inputType: t.input})} disabled={tasks[t.key]} style={{ padding: '6px 16px', borderRadius: '20px', border: tasks[t.key] ? '1px solid #adb5bd' : '1px solid var(--primary)', background: tasks[t.key] ? '#f8f9fa' : 'transparent', color: tasks[t.key] ? '#adb5bd' : 'var(--primary)', cursor: tasks[t.key] ? 'not-allowed' : 'pointer', fontWeight: 'bold', fontSize: '0.75rem' }}>{tasks[t.key] ? 'Pending' : 'Kirim Bukti'}</button>
+              <button onClick={() => setActiveTask({key: t.key, title: t.title, reward: t.reward, rewardLabel: t.rewardLabel, inputType: t.input})} disabled={tasks[t.key]} style={{ padding: '6px 16px', borderRadius: '20px', border: tasks[t.key] ? '1px solid var(--border-color)' : '1px solid var(--primary)', background: tasks[t.key] ? 'var(--bg-secondary)' : 'transparent', color: tasks[t.key] ? 'var(--text-muted)' : 'var(--primary)', cursor: tasks[t.key] ? 'not-allowed' : 'pointer', fontWeight: 'bold', fontSize: '0.75rem' }}>{tasks[t.key] ? 'Pending' : 'Kirim Bukti'}</button>
             </div>
           </div>
         ))}
@@ -1131,6 +1131,7 @@ const ValidatorBMC = () => {
   };
 
   const filteredValidations = (pendingValidations || []).filter(task => {
+    if (task.status !== 'pending') return false;
     const isFiat = task.tags?.includes('Fiat') || task.tags?.includes('Pembelian');
     const isKyc = task.tags?.includes('KYC') || task.tags?.includes('Identity');
     const isGamification = task.tags?.includes('Gamification');

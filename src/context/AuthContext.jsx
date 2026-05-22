@@ -233,6 +233,61 @@ export const AuthProvider = ({ children }) => {
     };
   }, [user?.id, user?.username]);
 
+  // Sync older knowledge items that don't have validation entries
+  useEffect(() => {
+    if (!db || !user) return;
+    
+    const syncPendingKnowledgeItems = async () => {
+      try {
+        const knowledgeRef = collection(db, "knowledge_items");
+        const qKnowledge = query(knowledgeRef, where("status", "==", "pending"));
+        const knowledgeSnap = await getDocs(qKnowledge);
+        
+        if (knowledgeSnap.empty) return;
+
+        const validationsRef = collection(db, "validations");
+        const validationsSnap = await getDocs(validationsRef);
+        const existingKnowledgeIds = new Set(
+          validationsSnap.docs
+            .map(d => d.data().details?.knowledgeId)
+            .filter(Boolean)
+        );
+
+        for (const itemDoc of knowledgeSnap.docs) {
+          const itemData = itemDoc.data();
+          const itemId = itemDoc.id;
+
+          if (!existingKnowledgeIds.has(itemId)) {
+            const validationId = 'val_k_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+            const validationItem = {
+              id: validationId,
+              title: `Verifikasi Knowledge: ${itemData.title || 'Tanpa Judul'}`,
+              tags: `Knowledge, ${itemData.type || 'Lainnya'}`,
+              gps: itemData.location || 'Online',
+              date: itemData.createdAt ? (itemData.createdAt.toDate ? itemData.createdAt.toDate().toISOString() : new Date().toISOString()) : new Date().toISOString(),
+              status: 'pending',
+              rewardAmount: 25.0,
+              userId: itemData.createdBy || 'guest',
+              plantingId: null,
+              uploadedFiles: itemData.fileUrl ? { [itemData.fileName || 'Berkas']: itemData.fileUrl } : {},
+              details: {
+                name: itemData.createdByName || 'Kontributor',
+                knowledgeId: itemId,
+                pemilik: itemData.createdByName || 'Kontributor'
+              }
+            };
+            await setDoc(doc(db, "validations", validationId), validationItem);
+            console.log(`Synced validation for older knowledge item: ${itemId}`);
+          }
+        }
+      } catch (err) {
+        console.error("Error syncing pending knowledge items:", err);
+      }
+    };
+
+    syncPendingKnowledgeItems();
+  }, [db, user]);
+
   const addNotification = async (text, type = 'info', targetUser = user) => {
     if (!targetUser) return null;
     const newNotif = {
@@ -790,6 +845,7 @@ export const AuthProvider = ({ children }) => {
   };
   const approveValidation = async (validationId, submitterReward = 0, plantingId = null, submitterId = null) => {
     // First, let's check if the validation is a KYC task or an Article task, and update accordingly
+    const isApproved = submitterReward > 0;
     try {
       const valDoc = await getDoc(doc(db, "validations", validationId));
       if (valDoc.exists()) {
@@ -798,9 +854,9 @@ export const AuthProvider = ({ children }) => {
         // Handle KYC task
         if (valData.isKyc && submitterId) {
           await updateDoc(doc(db, "users", submitterId), {
-            kycStatus: 'verified'
+            kycStatus: isApproved ? 'verified' : 'rejected'
           });
-          console.log(`✅ User ${submitterId} KYC verified successfully!`);
+          console.log(`✅ User ${submitterId} KYC processed! Approved: ${isApproved}`);
         }
         
         // Handle Article validation task
@@ -887,7 +943,7 @@ export const AuthProvider = ({ children }) => {
     }
 
     try {
-      await updateDoc(doc(db, "validations", validationId), { status: 'approved' });
+      await updateDoc(doc(db, "validations", validationId), { status: isApproved ? 'approved' : 'rejected' });
     } catch (err) { console.error(err); }
   };
 
