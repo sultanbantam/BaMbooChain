@@ -316,10 +316,6 @@ const BambupediaPage = () => {
 
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(12,166,120,0.1)', padding: '6px 16px', borderRadius: '20px', marginBottom: '20px' }}>
-            <BookOpen size={16} color="var(--primary)" />
-            <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--primary)' }}>AI-Powered Bamboo Encyclopedia</span>
-          </div>
           <h1 style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '12px', fontSize: '2.8rem', color: 'var(--text-main)', marginBottom: '12px' }}>
             <img src={getAssetUrl('logos/bmc2.png')} alt="Logo" style={{ height: '45px', objectFit: 'contain' }} />
             Bambupedia
@@ -331,7 +327,7 @@ const BambupediaPage = () => {
         </div>
 
         {/* Tab Switcher - HERO BUTTONS STYLE */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px', justifyContent: 'center', marginBottom: '40px' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'center', marginBottom: '40px' }}>
           <button 
             onClick={() => {
               setActiveTab('chat');
@@ -340,63 +336,64 @@ const BambupediaPage = () => {
               }, 100);
             }}
             style={{ 
-              display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 30px', borderRadius: '24px', cursor: 'pointer', fontWeight: '800', fontSize: '1rem', transition: 'all 0.3s',
+              display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 20px', borderRadius: '24px', cursor: 'pointer', fontWeight: '800', fontSize: '0.95rem', transition: 'all 0.3s',
               background: activeTab === 'chat' ? 'var(--primary)' : 'var(--bg-card)',
               color: activeTab === 'chat' ? 'white' : 'var(--text-main)',
               boxShadow: activeTab === 'chat' ? '0 10px 20px rgba(12,166,120,0.2)' : '0 4px 12px rgba(0,0,0,0.05)',
-              minWidth: '220px', justifyContent: 'center'
+              minWidth: '180px', justifyContent: 'center',
+              border: activeTab === 'chat' ? 'none' : '1px solid var(--border-color)'
             }}>
-            <MessageSquare size={20} /> Tanya BambuBot
+            <MessageSquare size={18} /> Tanya BambuBot
           </button>
           
           <button 
             onClick={() => setActiveTab('library')}
             style={{ 
-              display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 30px', borderRadius: '24px', cursor: 'pointer', fontWeight: '800', fontSize: '1rem', transition: 'all 0.3s',
+              display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 20px', borderRadius: '24px', cursor: 'pointer', fontWeight: '800', fontSize: '0.95rem', transition: 'all 0.3s',
               background: activeTab === 'library' ? 'var(--primary)' : 'var(--bg-card)',
               color: activeTab === 'library' ? 'white' : 'var(--text-main)',
               boxShadow: activeTab === 'library' ? '0 10px 20px rgba(12,166,120,0.2)' : '0 4px 12px rgba(0,0,0,0.05)',
-              minWidth: '220px', justifyContent: 'center',
+              minWidth: '180px', justifyContent: 'center',
               border: activeTab === 'library' ? 'none' : '1px solid var(--border-color)'
             }}>
-            <BookOpen size={20} /> Pustaka Bambu
+            <BookOpen size={18} /> Pustaka Bambu
           </button>
 
           <button 
             onClick={() => navigate('/bambupedia/tracker')}
             style={{ 
-              display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 30px', borderRadius: '24px', cursor: 'pointer', fontWeight: '800', fontSize: '1rem', transition: 'all 0.3s',
+              display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 20px', borderRadius: '24px', cursor: 'pointer', fontWeight: '800', fontSize: '0.95rem', transition: 'all 0.3s',
               background: 'var(--bg-card)',
               color: 'var(--text-main)',
               boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-              minWidth: '220px', justifyContent: 'center',
+              minWidth: '180px', justifyContent: 'center',
               border: '1px solid var(--border-color)'
             }}>
-            <Sprout size={20} color="var(--primary)" /> Tracker Bambu
+            <Sprout size={18} color="var(--primary)" /> Tracker Bambu
           </button>
 
           <button 
             onClick={() => navigate('/bambupedia/knowledge')}
             style={{ 
-              display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 30px', borderRadius: '24px', border: '1px solid var(--border-color)', cursor: 'pointer', fontWeight: '800', fontSize: '1rem', transition: 'all 0.3s',
+              display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 20px', borderRadius: '24px', border: '1px solid var(--border-color)', cursor: 'pointer', fontWeight: '800', fontSize: '0.95rem', transition: 'all 0.3s',
               background: 'var(--bg-card)',
               color: 'var(--text-main)',
               boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-              minWidth: '220px', justifyContent: 'center'
+              minWidth: '180px', justifyContent: 'center'
             }}>
-            <UploadCloud size={20} color="var(--primary)" /> Upload Knowledge
+            <UploadCloud size={18} color="var(--primary)" /> Upload Knowledge
           </button>
 
           <button 
             onClick={() => navigate('/bambupedia/bambubot')}
             style={{ 
-              display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 30px', borderRadius: '24px', border: '1px solid var(--border-color)', cursor: 'pointer', fontWeight: '800', fontSize: '1rem', transition: 'all 0.3s',
+              display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 20px', borderRadius: '24px', border: '1px solid var(--border-color)', cursor: 'pointer', fontWeight: '800', fontSize: '0.95rem', transition: 'all 0.3s',
               background: 'var(--bg-card)',
               color: 'var(--text-main)',
               boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-              minWidth: '220px', justifyContent: 'center'
+              minWidth: '180px', justifyContent: 'center'
             }}>
-            <Bot size={20} color="var(--primary)" /> BambuBot RAG
+            <Bot size={18} color="var(--primary)" /> BambuBot RAG
           </button>
         </div>
 
