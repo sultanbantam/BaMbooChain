@@ -3,6 +3,7 @@ import {
   addDoc,
   collection,
   doc,
+  getDoc,
   getDocs,
   limit,
   onSnapshot,
@@ -10,6 +11,10 @@ import {
   query,
   serverTimestamp,
   updateDoc,
+  setDoc,
+  increment,
+  arrayUnion,
+  where
 } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 
@@ -91,7 +96,109 @@ export const createKnowledgeItem = async ({ form, file, user }) => {
   };
 
   payload.searchText = extractSearchText(payload);
-  return addDoc(collection(db, KNOWLEDGE_COLLECTION), payload);
+  const docRef = await addDoc(collection(db, KNOWLEDGE_COLLECTION), payload);
+
+  // Buat dokumen validasi baru di koleksi validations
+  const validationId = 'val_k_' + Date.now();
+  const validationItem = {
+    id: validationId,
+    title: `Verifikasi Knowledge: ${payload.title}`,
+    tags: `Knowledge, ${payload.type}`,
+    gps: payload.location || 'Online',
+    date: new Date().toISOString(),
+    status: 'pending',
+    rewardAmount: 25.0, // Insentif token BMC yang layak
+    userId: user?.id || 'guest',
+    plantingId: null,
+    uploadedFiles: fileUrl ? { [fileName || 'Berkas']: fileUrl } : {},
+    details: {
+      name: payload.createdByName,
+      knowledgeId: docRef.id,
+      pemilik: payload.createdByName
+    }
+  };
+
+  await setDoc(doc(db, "validations", validationId), validationItem);
+  return docRef;
+};
+
+export const updateKnowledgeItem = async ({ itemId, form, file, user }) => {
+  let fileUrl = form.fileUrl || '';
+  let filePath = form.filePath || '';
+  let fileName = form.fileName || '';
+  let fileType = form.fileType || '';
+  let fileSize = form.fileSize || 0;
+
+  if (file) {
+    fileName = file.name;
+    fileType = file.type || 'application/octet-stream';
+    fileSize = file.size;
+    filePath = `knowledge/${user?.id || 'guest'}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+    const fileRef = ref(storage, filePath);
+    await uploadBytes(fileRef, file);
+    fileUrl = await getDownloadURL(fileRef);
+  }
+
+  const payload = {
+    ...form,
+    title: cleanText(form.title),
+    summary: cleanText(form.summary),
+    extractedText: cleanText(form.extractedText),
+    tags: cleanText(form.tags),
+    status: 'pending', // Reset status ke pending saat diedit
+    sourceTrust: 'unverified',
+    fileUrl,
+    filePath,
+    fileName,
+    fileType,
+    fileSize,
+    updatedAt: serverTimestamp()
+  };
+
+  payload.searchText = extractSearchText(payload);
+  await updateDoc(doc(db, KNOWLEDGE_COLLECTION, itemId), payload);
+
+  // Sinkronkan ke koleksi validations
+  const validationsRef = collection(db, 'validations');
+  const q = query(validationsRef);
+  const snapshot = await getDocs(q);
+  const valDoc = snapshot.docs.find(d => d.data().details?.knowledgeId === itemId);
+
+  if (valDoc) {
+    const valData = valDoc.data();
+    await updateDoc(doc(db, 'validations', valDoc.id), {
+      title: `Verifikasi Knowledge: ${payload.title}`,
+      tags: `Knowledge, ${payload.type}`,
+      gps: payload.location || 'Online',
+      status: 'pending', // Reset status di validations juga
+      uploadedFiles: fileUrl ? { [fileName || 'Berkas']: fileUrl } : {},
+      details: {
+        ...valData.details,
+        name: payload.createdByName || valData.details.name,
+        pemilik: payload.createdByName || valData.details.pemilik
+      }
+    });
+  } else {
+    const validationId = 'val_k_' + Date.now();
+    const validationItem = {
+      id: validationId,
+      title: `Verifikasi Knowledge: ${payload.title}`,
+      tags: `Knowledge, ${payload.type}`,
+      gps: payload.location || 'Online',
+      date: new Date().toISOString(),
+      status: 'pending',
+      rewardAmount: 25.0,
+      userId: user?.id || 'guest',
+      plantingId: null,
+      uploadedFiles: fileUrl ? { [fileName || 'Berkas']: fileUrl } : {},
+      details: {
+        name: user?.name || user?.username || 'Kontributor',
+        knowledgeId: itemId,
+        pemilik: user?.name || user?.username || 'Kontributor'
+      }
+    };
+    await setDoc(doc(db, 'validations', validationId), validationItem);
+  }
 };
 
 export const subscribeKnowledgeItems = ({ status = 'approved', callback, onError }) => {
@@ -135,12 +242,54 @@ export const updateKnowledgeStatus = async ({ itemId, status, admin, adminNotes 
           sourceTrust: 'rejected'
         };
 
-  return updateDoc(doc(db, KNOWLEDGE_COLLECTION, itemId), {
+  await updateDoc(doc(db, KNOWLEDGE_COLLECTION, itemId), {
     status,
     adminNotes: cleanText(adminNotes),
     updatedAt: serverTimestamp(),
     ...statusFields
   });
+
+  // Sinkronkan status ke validations
+  const validationsRef = collection(db, 'validations');
+  const q = query(validationsRef);
+  const snapshot = await getDocs(q);
+  const valDoc = snapshot.docs.find(d => d.data().details?.knowledgeId === itemId);
+
+  if (valDoc) {
+    await updateDoc(doc(db, 'validations', valDoc.id), {
+      status: status === 'approved' ? 'approved' : 'rejected',
+      updatedAt: serverTimestamp()
+    });
+  }
+
+  // Berikan reward ke user/kontributor jika disetujui
+  if (status === 'approved') {
+    const itemDoc = await getDoc(doc(db, KNOWLEDGE_COLLECTION, itemId));
+    if (itemDoc.exists()) {
+      const itemData = itemDoc.data();
+      const contributorId = itemData.createdBy;
+      
+      if (contributorId && contributorId !== 'guest') {
+        const rewardAmount = 25.0;
+        const newTx = {
+          id: 'tx_' + Math.random().toString(36).substr(2, 9),
+          type: 'Earn',
+          amount: `+${rewardAmount}`,
+          date: new Intl.DateTimeFormat('fr-CA', { timeZone: 'Asia/Jakarta' }).format(new Date()),
+          status: 'Selesai',
+          description: `Reward Kontribusi Pengetahuan (Bambupedia)`
+        };
+        try {
+          await updateDoc(doc(db, "users", contributorId), {
+            bmcBalance: increment(rewardAmount),
+            transactions: arrayUnion(newTx)
+          });
+        } catch (err) {
+          console.error("Gagal mengirim reward ke kontributor:", err);
+        }
+      }
+    }
+  }
 };
 
 const tokenize = (text = '') =>

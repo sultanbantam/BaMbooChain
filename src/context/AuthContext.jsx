@@ -820,6 +820,40 @@ export const AuthProvider = ({ children }) => {
             );
           }
         }
+
+        // Handle Knowledge validation task
+        if (valData.tags?.includes('Knowledge') && valData.details?.knowledgeId) {
+          const isApproved = submitterReward > 0;
+          const status = isApproved ? 'approved' : 'rejected';
+          const statusFields = isApproved
+            ? {
+                approvedAt: serverTimestamp(),
+                approvedBy: user?.username || user?.name || 'validator',
+                sourceTrust: 'verified'
+              }
+            : {
+                rejectedAt: serverTimestamp(),
+                rejectedBy: user?.username || user?.name || 'validator',
+                sourceTrust: 'rejected'
+              };
+          
+          await updateDoc(doc(db, "knowledge_items", valData.details.knowledgeId), {
+            status,
+            updatedAt: serverTimestamp(),
+            ...statusFields
+          });
+          
+          console.log(`✅ Knowledge ${valData.details.knowledgeId} consensus processed! Approved: ${isApproved}`);
+          
+          if (valData.userId) {
+            addNotification(
+              isApproved 
+                ? `Selamat! Kontribusi sumber pengetahuan Anda "${valData.title.replace('Verifikasi Knowledge: ', '')}" telah disahkan oleh Validator dan mendapatkan 25.0 BMC!`
+                : `Maaf, kontribusi sumber pengetahuan Anda "${valData.title.replace('Verifikasi Knowledge: ', '')}" ditolak oleh Validator.`,
+              isApproved ? 'success' : 'info'
+            );
+          }
+        }
       }
     } catch (err) {
       console.error("Error in validation consensus processing:", err);

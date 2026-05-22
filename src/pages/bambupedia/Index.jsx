@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Search, Send, BookOpen, Leaf, ChevronRight, Mic, Landmark, Wallet, ArrowRight, CheckCircle, MessageSquare, Sprout, UploadCloud, Bot } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { getAssetUrl } from '../../utils/assets';
+
 
 // ─── BASIS PENGETAHUAN BAMBU ─────────────────────────────────────────────────
 const BAMBOO_KB = [
@@ -38,7 +40,7 @@ const BAMBOO_KB = [
   },
   {
     keywords: ['spesies', 'jenis', 'varietas', 'macam'],
-    answer: `**Mengenal Jenis-Jenis Bambu Utama di Indonesia:**\n\n🌿 **1. Bambu Petung** *(Dendrocalamus asper)* — Terbesar, untuk konstruksi\n🌿 **2. Bambu Moso** *(Phyllostachys edulis)* — Paling komersial di dunia\n🌿 **3. Bambu Apus** *(Gigantochloa apus)* — Terbaik untuk kerajinan\n🌿 **4. Bambu Tali** *(Gigantochloa psendoarundinacea)* — Serbaguna\n🌿 **5. Bambu Cendani** *(Bambusa vulgaris)* — Paling mudah tumbuh\n🌿 **6. Bambu Betung** *(Dendrocalamus giganteus)* — Tertinggi, bisa 30m+\n🌿 **7. Bambu Hitam** *(Gigantochloa atroviolacea)* — Warna unik, nilai tinggi\n🌿 **8. Bambu Kuning** *(Bambusa vulgaris vittata)* — Ornamen & turis\n\n🇮🇩 Indonesia memiliki 157+ spesies bambu asli dari total 1.400 spesies global.`,
+    answer: `**Mengenal Jenis-Jenis Bambu Utama di Indonesia:**\n\n🌿 **1. Bambu Petung** *(Dendrocalamus asper)* — Terbesar, untuk konstruksi\n🌿 **2. Bambu Moso** *(Phyllostachys edulis)* — Paling komersial di dunia\n🌿 **3. Bambu Apus** *(Gigantochloa apus)* — Terbaik untuk kerajinan\n🌿 **4. Bambu Tali** *(Gigantochloa psendoarundinacea)* — Serbaguna\n🌿 **5. Bambu Cendani** *(Bambusa vulgaris)* — Paling mudah tumbuh\n🌿 **6. Bambu Betung** *(Dendrocalamus giganteus)* — Tertinggi, bisa 30m+\n🌿 **7. Bambu Hitam** *(Gigantochloa atroviolacea)* — Warna unik, nilai tinggi\n🌿 **8. Bambu Kuning** *(Bambusa vulgaris vittata)* — Ornamen & turis\n\n🇮🇩 Indonesia memiliki 176 spesies bambu Indonesia (Widjaja 2019) dari total 1.400 spesies global.`,
   },
   {
     keywords: ['tekstil', 'kain', 'serat', 'fiber', 'baju', 'pakaian'],
@@ -70,10 +72,10 @@ const QUICK_QUESTIONS = [
 // ─── PUSTAKA BAMBU (NFT GATED CONTENT) ──────────────────────────────────────
 const PUSTAKA_ITEMS = [
   { 
-    id: 'pustaka_1', icon: '🌿', title: 'Spesies Bambu Endemik Indonesia', desc: 'Analisis 157+ spesies asli dari Sabang sampai Merauke', tag: 'Botani',
+    id: 'pustaka_1', icon: '🌿', title: 'Spesies Bambu Endemik Indonesia', desc: 'Analisis 176 spesies bambu Indonesia (Widjaja 2019) dari Sabang sampai Merauke', tag: 'Botani',
     tier: 'Basic', priceRp: 3000, priceBmc: 0.3,
-    preview: `Bambu bergenus Gigantochloa dan Dendrocalamus adalah spesies dominan yang membentuk tulang punggung ekosistem bambu di Indonesia. Secara botanis, persebarannya merepresentasikan keanekaragaman hayati yang sangat adaptif terhadap cuaca ekstrem. Eksekutif Ringkas: Terdapat lebih dari 157 spesies yang tersebar, dengan Bambu Petung dan Pring Tali memegang peran kultural tertinggi.`,
-    fullContent: `Bambu bergenus Gigantochloa dan Dendrocalamus adalah spesies dominan yang membentuk tulang punggung ekosistem bambu di Indonesia. Secara botanis, persebarannya merepresentasikan keanekaragaman hayati yang sangat adaptif terhadap cuaca ekstrem. Eksekutif Ringkas: Terdapat lebih dari 157 spesies yang tersebar, dengan Bambu Petung dan Pring Tali memegang peran kultural tertinggi.
+    preview: `Bambu bergenus Gigantochloa dan Dendrocalamus adalah spesies dominan yang membentuk tulang punggung ekosistem bambu di Indonesia. Secara botanis, persebarannya merepresentasikan keanekaragaman hayati yang sangat adaptif terhadap cuaca ekstrem. Eksekutif Ringkas: Terdapat lebih dari 176 spesies yang tersebar, dengan Bambu Petung dan Pring Tali memegang peran kultural tertinggi.`,
+    fullContent: `Bambu bergenus Gigantochloa dan Dendrocalamus adalah spesies dominan yang membentuk tulang punggung ekosistem bambu di Indonesia. Secara botanis, persebarannya merepresentasikan keanekaragaman hayati yang sangat adaptif terhadap cuaca ekstrem. Eksekutif Ringkas: Terdapat lebih dari 176 spesies yang tersebar, dengan Bambu Petung dan Pring Tali memegang peran kultural tertinggi.
     
 **Analisis Persebaran Spesies Khusus**
 Jawa Barat secara eksklusif menjadi rumah bagi bambu hitam (Gigantochloa atroviolacea) yang hanya mampu memproduksi pigmen gelapnya secara sempurna di atas tanah ber-ph 5.5 hingga 6.0 dengan curah hujan stabil. Karakteristik ini membuat bambu hitam menjadi bahan bernilai tinggi untuk instrumen kesenian dan furnitur. 
@@ -147,7 +149,7 @@ KONTEKS YSNJ:
 - Mengintegrasikan teknologi Web3 (token BMC BEP-20) untuk ekosistem bambu
 
 DATA PENTING:
-- Indonesia: 157+ spesies bambu dari 1.400 spesies global
+- Indonesia: 176 spesies bambu Indonesia (Widjaja 2019) dari 1.400 spesies global
 - Bambu Petung: tinggi 20-30m, diameter hingga 20cm, panen 3-5 tahun
 - Harga ekspor: bambu laminasi USD 800-1.500/m³, flooring USD 15-30/m²
 - Serapan karbon: 1 ha bambu = 17 ton CO₂/tahun
@@ -198,7 +200,7 @@ const generateAnswerLocal = (question) => {
     return `**Yayasan Sabumi Nusantara Jaya (YSNJ)** adalah yayasan yang berfokus pada pengembangan industri bambu Indonesia dari hulu ke hilir.\n\n🎯 **Fokus Utama:**\n- Riset & pengembangan spesies bambu unggul\n- Pendampingan petani & koperasi bambu\n- Koneksi ke pasar ekspor internasional\n- Tokenisasi aset bambu melalui Web3 (Token BMC)\n\n📍 **Lokasi:** Serang, Banten — percontohan di Cibarani & Cisadane`;
   }
   if (q.includes('halo') || q.includes('hai') || q.includes('hello')) {
-    return `Halo! 👋 Saya **BambuBot** — asisten AI Bambupedia YSNJ.\n\nSilakan tanyakan apa saja tentang bambu: spesies, cara tanam, harga pasar, konstruksi, tekstil, atau peluang investasi!`;
+    return `Halo! 👋 Saya **BambuBot** — asisten AI Bambupedia.\n\nSilakan tanyakan apa saja tentang bambu: spesies, cara tanam, harga pasar, konstruksi, tekstil, atau peluang investasi!`;
   }
   return `Pertanyaan menarik! 🌿 Coba tanyakan tentang:\n- Spesies bambu (petung, moso, apus, hitam)\n- Cara menanam atau memanen bambu\n- Harga dan pasar ekspor bambu\n- Bambu untuk konstruksi atau tekstil\n- Manfaat bambu untuk lingkungan & karbon`;
 };
@@ -318,10 +320,14 @@ const BambupediaPage = () => {
             <BookOpen size={16} color="var(--primary)" />
             <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--primary)' }}>AI-Powered Bamboo Encyclopedia</span>
           </div>
-          <h1 style={{ fontSize: '2.8rem', color: 'var(--text-main)', marginBottom: '12px' }}>🎋 Bambupedia</h1>
-          <p style={{ color: 'var(--text-muted)', maxWidth: '600px', margin: '0 auto', fontSize: '1.05rem' }}>
-            Perpustakaan digital bambu terlengkap di Indonesia. Tanya apa saja tentang bambu kepada asisten AI kami.
+          <h1 style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '12px', fontSize: '2.8rem', color: 'var(--text-main)', marginBottom: '12px' }}>
+            <img src={getAssetUrl('logos/bmc2.png')} alt="Logo" style={{ height: '45px', objectFit: 'contain' }} />
+            Bambupedia
+          </h1>
+          <p style={{ color: 'var(--text-muted)', maxWidth: '800px', margin: '0 auto', fontSize: '1.05rem', lineHeight: '1.6' }}>
+            Platform pengetahuan dan ekosistem digital bambu untuk mendukung lingkungan, ekonomi hijau, budaya, teknologi, dan pembangunan berkelanjutan melalui edukasi, inovasi, dan kolaborasi.
           </p>
+
         </div>
 
         {/* Tab Switcher - HERO BUTTONS STYLE */}
@@ -407,10 +413,12 @@ const BambupediaPage = () => {
             <div id="bambubot-chat-area" style={{ background: 'var(--bg-card)', borderRadius: '20px', border: '1px solid var(--border-color)', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.06)', order: window.innerWidth < 768 ? 1 : 1 }}>
               {/* Chat Header */}
               <div style={{ background: 'linear-gradient(135deg, #0ca678, #2b8a3e)', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ width: '42px', height: '42px', background: 'rgba(255,255,255,0.2)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem' }}>🤖</div>
+                <div style={{ width: '42px', height: '42px', background: 'rgba(255,255,255,0.2)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                  <img src={getAssetUrl('logos/bmc10.png')} alt="BambuBot" style={{ width: '28px', height: '28px', objectFit: 'contain' }} />
+                </div>
                 <div>
                   <div style={{ fontWeight: '700', color: 'white', fontSize: '1rem' }}>BambuBot</div>
-                  <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.8)' }}>Asisten AI Bambupedia YSNJ • Online</div>
+                  <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.8)' }}>Asisten AI Bambupedia • Online</div>
                 </div>
                 <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <div style={{ background: 'rgba(255,255,255,0.2)', padding: '4px 10px', borderRadius: '12px', fontSize: '0.75rem', color: 'white', fontWeight: '600' }}>
@@ -428,7 +436,9 @@ const BambupediaPage = () => {
                 {messages.map((msg, i) => (
                   <div key={i} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', flexDirection: msg.role === 'user' ? 'row-reverse' : 'row' }}>
                     {msg.role === 'assistant' && (
-                      <div style={{ width: '32px', height: '32px', background: 'linear-gradient(135deg, #0ca678, #2b8a3e)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', flexShrink: 0 }}>🤖</div>
+                      <div style={{ width: '32px', height: '32px', background: 'linear-gradient(135deg, #0ca678, #2b8a3e)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
+                        <img src={getAssetUrl('logos/bmc10.png')} alt="BambuBot" style={{ width: '20px', height: '20px', objectFit: 'contain' }} />
+                      </div>
                     )}
                     <div style={{
                       maxWidth: '75%', padding: '12px 16px', borderRadius: msg.role === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
@@ -443,7 +453,9 @@ const BambupediaPage = () => {
 
                 {isTyping && (
                   <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                    <div style={{ width: '32px', height: '32px', background: 'linear-gradient(135deg, #0ca678, #2b8a3e)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem' }}>🤖</div>
+                    <div style={{ width: '32px', height: '32px', background: 'linear-gradient(135deg, #0ca678, #2b8a3e)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                      <img src={getAssetUrl('logos/bmc10.png')} alt="BambuBot" style={{ width: '20px', height: '20px', objectFit: 'contain' }} />
+                    </div>
                     <div style={{ background: '#f1f3f5', padding: '12px 16px', borderRadius: '18px 18px 18px 4px', display: 'flex', gap: '4px', alignItems: 'center' }}>
                       {[0, 1, 2].map(j => (
                         <div key={j} style={{ width: '7px', height: '7px', background: '#adb5bd', borderRadius: '50%', animation: `bounce 1s ${j * 0.2}s infinite` }} />
@@ -495,7 +507,7 @@ const BambupediaPage = () => {
 
               <div style={{ background: 'linear-gradient(135deg, #0ca678, #2b8a3e)', borderRadius: '16px', padding: '20px', color: 'white', textAlign: 'center' }}>
                 <div style={{ fontSize: '2rem', marginBottom: '8px' }}>🌿</div>
-                <div style={{ fontWeight: '700', marginBottom: '6px' }}>157+ Spesies Bambu</div>
+                <div style={{ fontWeight: '700', marginBottom: '6px' }}>176 Spesies Bambu Indonesia (Widjaja 2019)</div>
                 <div style={{ fontSize: '0.82rem', opacity: 0.85 }}>Database botani bambu Indonesia terlengkap</div>
               </div>
             </div>
