@@ -42,7 +42,7 @@ const Navbar = () => {
     { label: t('feature_carbon_impact'), path: '/bamboochain/carbon-impact', icon: <Leaf size={16} /> },
     { label: t('feature_marketplace'), path: '/bamboochain/marketplace', icon: <ShoppingCart size={16} /> },
     { label: t('feature_dao'), path: '/bamboochain/dao', icon: <Users size={16} /> },
-    { label: t('feature_academy'), path: '/bamboochain/academy', icon: <GraduationCap size={16} /> },
+    { label: t('nav_academy'), path: '/academy', icon: <GraduationCap size={16} /> },
     { label: t('feature_data_analytics'), path: '/bamboochain/data-analytics', icon: <BarChart3 size={16} /> },
     { label: t('feature_invest'), path: '/bamboochain/invest', icon: <TrendingUp size={16} /> },
     { label: t('feature_kodiba'), path: '/bamboochain/kodiba', icon: <Wallet size={16} /> },
@@ -57,7 +57,7 @@ const Navbar = () => {
     { label: t('nav_about'), path: '/about' },
     { label: t('nav_contact'), path: '/contact' },
     { label: t('nav_bambupedia'), path: '/bambupedia' },
-    { label: t('nav_academy'), path: '/academy' },
+    { label: t('feature_academy'), path: '/bamboochain/academy' },
     { label: t('nav_datatools'), path: '/data-tools' },
     { label: t('nav_marketplace'), path: '/bamboochain/marketplace' },
     { label: t('nav_community'), path: '/community' },
@@ -143,7 +143,7 @@ const Navbar = () => {
           {/* Row 2: Top Menu Bar */}
           <div style={{ background: 'var(--bg-card)', height: '45px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '25px', padding: '0 32px', borderBottom: '1px solid var(--border-color)' }}>
             <Link to="/bambupedia" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('nav_bambupedia')}</Link>
-            <Link to="/academy" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('nav_academy')}</Link>
+            <Link to="/bamboochain/academy" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('feature_academy')}</Link>
             <Link to="/data-tools" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('nav_datatools')}</Link>
             <Link to="/bamboochain/marketplace" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('nav_marketplace')}</Link>
             <Link to="/community" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('nav_community')}</Link>

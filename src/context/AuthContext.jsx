@@ -966,11 +966,43 @@ export const AuthProvider = ({ children }) => {
     return `${y}-${m}-${d}`;
   };
 
+  const isConsecutiveDay = (lastDateStr, currentDateStr) => {
+    if (!lastDateStr || !currentDateStr) return false;
+    const lastParts = lastDateStr.split('-');
+    const currentParts = currentDateStr.split('-');
+    if (lastParts.length !== 3 || currentParts.length !== 3) return false;
+    
+    const lastDate = Date.UTC(parseInt(lastParts[0]), parseInt(lastParts[1]) - 1, parseInt(lastParts[2]));
+    const currentDate = Date.UTC(parseInt(currentParts[0]), parseInt(currentParts[1]) - 1, parseInt(currentParts[2]));
+    
+    const diffTime = currentDate - lastDate;
+    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays === 1;
+  };
+
+  const getActiveStreak = () => {
+    if (!user) return 0;
+    const currentWibDay = getJakartaCheckinDay();
+    const lastCheckin = user.lastCheckinDate || null;
+    const isToday = lastCheckin === currentWibDay;
+    const isYesterday = isConsecutiveDay(lastCheckin, currentWibDay);
+    return (isToday || isYesterday) ? (user.checkinStreak || 0) : 0;
+  };
+
   const processCheckin = async () => {
     if (!user) return null;
     const currentWibDay = getJakartaCheckinDay();
-    const prevStreak = user.checkinStreak || 0;
+    const prevCheckin = user.lastCheckinDate || null;
+    
+    // Guard: Prevent checking in twice in the same day
+    if (prevCheckin === currentWibDay) {
+      return null;
+    }
+    
+    const isYesterday = isConsecutiveDay(prevCheckin, currentWibDay);
+    const prevStreak = isYesterday ? (user.checkinStreak || 0) : 0;
     const nextStreak = prevStreak === 7 ? 1 : prevStreak + 1;
+    
     const rewardAmounts = { 1: 0.001, 2: 0.002, 3: 0.003, 4: 0.004, 5: 0.005, 6: 0.006, 7: 0.010 };
     const amount = rewardAmounts[nextStreak];
 
@@ -1043,6 +1075,7 @@ export const AuthProvider = ({ children }) => {
       submitLocationProposal,
       approveLocation,
       processCheckin,
+      getActiveStreak,
       getJakartaCheckinDay,
       calculateLockedBalance,
       getAvailableBalance,
