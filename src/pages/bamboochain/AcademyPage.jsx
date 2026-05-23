@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { BookOpen, GraduationCap, Award, PlayCircle, Clock, ShieldCheck, DownloadCloud, Lock, User, FileText, X, Sparkles, Calendar, ChevronLeft, ChevronRight, Heart, Share2, Send, MessageSquare, Gift, UploadCloud, Edit3, Trash2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { db } from '../../firebase/config';
 import { collection, onSnapshot, doc, addDoc, updateDoc, setDoc, query, orderBy, serverTimestamp, arrayUnion, arrayRemove, increment, getDoc, getDocs, where } from 'firebase/firestore';
+import ShareModal from '../../components/ShareModal';
+import { useArticles } from '../../hooks/useFirestoreQueries';
 
 const compressImage = (base64Str, maxWidth = 800, maxHeight = 800, quality = 0.6) => {
   return new Promise((resolve) => {
@@ -34,7 +37,9 @@ const compressImage = (base64Str, maxWidth = 800, maxHeight = 800, quality = 0.6
 };
 
 const AcademyPage = () => {
-  const { user, setIsAuthModalOpen, setAuthModalInitialTab, articles, submitArticle, updateArticle, giftBmc } = useAuth();
+  const navigate = useNavigate();
+  const { user, setIsAuthModalOpen, setAuthModalInitialTab, submitArticle, updateArticle, giftBmc } = useAuth();
+  const { data: articles = [] } = useArticles();
   
   // Premium Materials States
   const [premiumMaterials, setPremiumMaterials] = useState([]);
@@ -341,8 +346,11 @@ const AcademyPage = () => {
   };
 
   const handleShareMat = async (mat) => {
-    navigator.clipboard.writeText(`${window.location.origin}/#/academy`);
-    alert("🔗 Tautan Academy telah disalin ke clipboard!");
+    setShareModalData({
+      isOpen: true,
+      url: `${window.location.origin}/#/bamboochain/academy?ebook=${mat.id}`,
+      title: `Unduh & baca riset premium "${mat.title}" di BaMbooChain Academy!`
+    });
     const matRef = doc(db, "premium_materials", mat.id);
     try {
       await updateDoc(matRef, {
@@ -423,6 +431,7 @@ const AcademyPage = () => {
   };
 
   const [selectedArticle, setSelectedArticle] = useState(null);
+  const [shareModalData, setShareModalData] = useState({ isOpen: false, url: '', title: '' });
   const [isEditingArticle, setIsEditingArticle] = useState(false);
   const [editArticleForm, setEditArticleForm] = useState({
     title: '',
@@ -441,6 +450,46 @@ const AcademyPage = () => {
   const [isGiftModalOpen, setIsGiftModalOpen] = useState(null);
   const [giftAmount, setGiftAmount] = useState("10");
   const [giftStatus, setGiftStatus] = useState("idle");
+  const [adminRecipient, setAdminRecipient] = useState(null);
+
+  // Resolve Admin Recipient once on mount
+  useEffect(() => {
+    const fetchAdmin = async () => {
+      try {
+        const usersRef = collection(db, "users");
+        const q1 = query(usersRef, where("username", "==", "albantani"));
+        const snap1 = await getDocs(q1);
+        if (!snap1.empty) {
+          setAdminRecipient({
+            uid: snap1.docs[0].id,
+            name: snap1.docs[0].data().name || "albantani",
+            username: "albantani"
+          });
+          return;
+        }
+        const q2 = query(usersRef, where("username", "==", "admin_yayasan"));
+        const snap2 = await getDocs(q2);
+        if (!snap2.empty) {
+          setAdminRecipient({
+            uid: snap2.docs[0].id,
+            name: snap2.docs[0].data().name || "Yayasan",
+            username: "admin_yayasan"
+          });
+          return;
+        }
+        // Fallback
+        setAdminRecipient({
+          uid: "admin_default_id",
+          name: "Yayasan",
+          username: "admin_yayasan"
+        });
+      } catch (err) {
+        console.error("Error fetching admin for AcademyPage:", err);
+      }
+    };
+    fetchAdmin();
+  }, []);
+
   const [isWriterModalOpen, setIsWriterModalOpen] = useState(false);
   const [newArticleForm, setNewArticleForm] = useState({
     title: '',
@@ -500,6 +549,38 @@ const AcademyPage = () => {
     scrollToArticleImage(newIdx);
   };
 
+  const getArticleLikesCount = (art) => {
+    if (!art) return 0;
+    if (typeof art.id === 'string' && art.id.startsWith('art_')) {
+      return art.likes?.length || 0;
+    }
+    return interactions[art.id]?.likes || 0;
+  };
+
+  const isArticleLiked = (art) => {
+    if (!art || !user) return false;
+    if (typeof art.id === 'string' && art.id.startsWith('art_')) {
+      return !!art.likes?.includes(user.id);
+    }
+    return !!interactions[art.id]?.liked;
+  };
+
+  const getArticleComments = (art) => {
+    if (!art) return [];
+    if (typeof art.id === 'string' && art.id.startsWith('art_')) {
+      return art.comments || [];
+    }
+    return interactions[art.id]?.comments || [];
+  };
+
+  const getArticleSharesCount = (art) => {
+    if (!art) return 0;
+    if (typeof art.id === 'string' && art.id.startsWith('art_')) {
+      return art.sharesCount || 0;
+    }
+    return interactions[art.id]?.shares || 0;
+  };
+
   const [interactions, setInteractions] = useState({
     1: { likes: 42, liked: false, shares: 12, comments: [
       { user: "Budi Santoso", text: "Ulasan yang sangat mendalam! Ternyata kerapatan kapiler bambu berpengaruh besar pada kekuatan tarik.", date: "15 Mei 2026" },
@@ -516,84 +597,293 @@ const AcademyPage = () => {
     ]}
   });
 
-  const handleLike = (articleId, e) => {
+  const handleLike = async (articleId, e) => {
     if (e) e.stopPropagation();
-    setInteractions(prev => {
-      const current = prev[articleId] || { likes: 0, liked: false, shares: 0, comments: [] };
-      return {
-        ...prev,
-        [articleId]: {
-          ...current,
-          liked: !current.liked,
-          likes: current.liked ? current.likes - 1 : current.likes + 1
-        }
-      };
-    });
-  };
+    if (!user) {
+      alert("⚠️ Harap login terlebih dahulu untuk memberikan Suka!");
+      if (setAuthModalInitialTab) setAuthModalInitialTab('login');
+      if (setIsAuthModalOpen) setIsAuthModalOpen(true);
+      return;
+    }
 
-  const handleShare = (articleId, title, e) => {
-    if (e) e.stopPropagation();
-    navigator.clipboard.writeText(`${window.location.origin}/#/bamboochain/academy?article=${articleId}`);
-    setInteractions(prev => {
-      const current = prev[articleId] || { likes: 0, liked: false, shares: 0, comments: [] };
-      return {
-        ...prev,
-        [articleId]: {
-          ...current,
-          shares: current.shares + 1
-        }
-      };
-    });
-    setShareAlert(articleId);
-    setTimeout(() => setShareAlert(null), 2000);
-  };
+    const isDb = typeof articleId === 'string' && articleId.startsWith('art_');
 
-  const handleAddComment = (articleId) => {
-    if (!newCommentText.trim()) return;
-    const authorName = user?.displayName || user?.email?.split('@')[0] || "Pegiat Bambu Hijau";
-    
-    setInteractions(prev => {
-      const current = prev[articleId] || { likes: 0, liked: false, shares: 0, comments: [] };
-      return {
-        ...prev,
-        [articleId]: {
-          ...current,
-          comments: [
-            ...current.comments,
-            {
-              user: authorName,
-              text: newCommentText.trim(),
-              date: "Baru saja"
-            }
-          ]
-        }
-      };
-    });
-    setNewCommentText("");
-  };
-
-  const handleSendGift = () => {
-    setGiftStatus('processing');
-    setTimeout(() => {
-      setGiftStatus('success');
-      if (isGiftModalOpen) {
-        setInteractions(prev => {
-          const current = prev[isGiftModalOpen] || { likes: 0, liked: false, shares: 0, comments: [] };
-          return {
-            ...prev,
-            [isGiftModalOpen]: {
-              ...current,
-              shares: current.shares + 1 // increment as shared activity
-            }
-          };
+    if (isDb) {
+      try {
+        const articleRef = doc(db, "articles", articleId);
+        const art = (articles || []).find(a => a.id === articleId);
+        if (!art) return;
+        const hasLiked = art.likes?.includes(user.id);
+        await updateDoc(articleRef, {
+          likes: hasLiked ? arrayRemove(user.id) : arrayUnion(user.id)
         });
+      } catch (err) {
+        console.error("Error liking article in AcademyPage:", err);
       }
-      setTimeout(() => {
-        setIsGiftModalOpen(null);
+    } else {
+      setInteractions(prev => {
+        const current = prev[articleId] || { likes: 0, liked: false, shares: 0, comments: [] };
+        return {
+          ...prev,
+          [articleId]: {
+            ...current,
+            liked: !current.liked,
+            likes: current.liked ? current.likes - 1 : current.likes + 1
+          }
+        };
+      });
+    }
+  };
+
+  const handleShare = async (articleId, title, e) => {
+    if (e) e.stopPropagation();
+    const shareUrl = `${window.location.origin}/#/bamboochain/academy?article=${articleId}`;
+    setShareModalData({
+      isOpen: true,
+      url: shareUrl,
+      title: `Baca artikel menarik "${title}" di BaMbooChain Academy!`
+    });
+
+    const isDb = typeof articleId === 'string' && articleId.startsWith('art_');
+
+    if (isDb) {
+      try {
+        const articleRef = doc(db, "articles", articleId);
+        await updateDoc(articleRef, {
+          sharesCount: increment(1)
+        });
+      } catch (err) {
+        console.error("Error incrementing share count in AcademyPage:", err);
+      }
+    } else {
+      setInteractions(prev => {
+        const current = prev[articleId] || { likes: 0, liked: false, shares: 0, comments: [] };
+        return {
+          ...prev,
+          [articleId]: {
+            ...current,
+            shares: current.shares + 1
+          }
+        };
+      });
+    }
+  };
+
+  const handleAddComment = async (articleId) => {
+    if (!user) {
+      alert("⚠️ Harap login terlebih dahulu untuk berkomentar!");
+      if (setAuthModalInitialTab) setAuthModalInitialTab('login');
+      if (setIsAuthModalOpen) setIsAuthModalOpen(true);
+      return;
+    }
+    if (!newCommentText.trim()) return;
+
+    const isDb = typeof articleId === 'string' && articleId.startsWith('art_');
+    const authorName = user?.displayName || user?.username || user?.email?.split('@')[0] || "Pegiat Bambu Hijau";
+
+    if (isDb) {
+      const newComment = {
+        id: 'comment_' + Date.now(),
+        userId: user.id,
+        username: user.username || authorName,
+        user: authorName,
+        text: newCommentText.trim(),
+        date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
+        timestamp: Date.now()
+      };
+      try {
+        const articleRef = doc(db, "articles", articleId);
+        await updateDoc(articleRef, {
+          comments: arrayUnion(newComment)
+        });
+        setNewCommentText("");
+      } catch (err) {
+        console.error("Error adding comment in AcademyPage:", err);
+      }
+    } else {
+      setInteractions(prev => {
+        const current = prev[articleId] || { likes: 0, liked: false, shares: 0, comments: [] };
+        return {
+          ...prev,
+          [articleId]: {
+            ...current,
+            comments: [
+              ...current.comments,
+              {
+                user: authorName,
+                text: newCommentText.trim(),
+                date: "Baru saja"
+              }
+            ]
+          }
+        };
+      });
+      setNewCommentText("");
+    }
+  };
+
+  const handleSendGift = async () => {
+    if (!user) {
+      alert("⚠️ Harap login terlebih dahulu untuk mengirimkan Gift!");
+      if (setAuthModalInitialTab) setAuthModalInitialTab('login');
+      if (setIsAuthModalOpen) setIsAuthModalOpen(true);
+      return;
+    }
+
+    const amt = parseFloat(giftAmount);
+    if (isNaN(amt) || amt <= 0) {
+      alert("⚠️ Harap masukkan jumlah BMC yang valid.");
+      return;
+    }
+
+    const allArticles = [
+      {
+        id: 1,
+        title: "Fisiologi Aliran Air dan Struktur Pembuluh Kapiler Bambu Petung",
+        author: "Prof. Dr. Ir. Hariadi Kusuma",
+        role: "Pakar Silvikultur & Peneliti Utama Sabumi",
+        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=hariadi",
+        excerpt: "Studi mendalam mengenai efisiensi transportasi air mikroskopis pada serat bambu Dendrocalamus asper dan implikasinya terhadap kekuatan lentur alami.",
+        content: `Bambu Petung (Dendrocalamus asper) merupakan salah satu jenis bambu terbesar di dunia yang memiliki kekuatan struktural luar biasa. Secara biologis, keunggulan ini didukung oleh struktur anatomi berkas pengangkut kapiler (vascular bundles) yang sangat rapat di bagian kulit luar (cortex) dan merenggang di bagian dalam.
+
+Aliran air (getah) kapiler pada bambu hidup bergerak sangat dinamis melalui pembuluh kayu (xylem). Ketika bambu ditebang, kelembapan kapiler ini meninggalkan rongga mikro yang sangat banyak. Jika proses pengeringan dilakukan dengan benar, rongga kapiler kosong ini bertindak sebagai peredam tekanan elastis alami yang sangat kuat.
+
+Dari sudut pandang mekanika material, rasio kekuatan tarik terhadap berat jenis (tensile strength-to-weight ratio) dari jaringan kapiler luar bambu petung bahkan mengungguli baja struktural biasa. Pengetahuan mengenai anatomi pembuluh ini sangat krusial dalam menentukan arah pemotongan serat untuk menjaga elastisitas alami bambu saat menerima beban struktural bentang lebar.`,
+        readTime: "5 Menit Baca",
+        date: "12 Mei 2026",
+        approved: true
+      },
+      {
+        id: 2,
+        title: "Kearifan Lokal Pengawetan Bambu Alami via Perendaman Air Mengalir",
+        author: "Abah Ujang Winata",
+        role: "Master Pengrajin Tradisional Kasepuhan Cibarani",
+        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=ujang",
+        excerpt: "Metode tradisional warisan leluhur Sunda dalam menetralkan kadar glukosa dan pati bambu demi mencegah serangan bubuk kayu secara permanen.",
+        content: `Sejak berabad-abad lalu, leluhur kami di Kasepuhan Cibarani telah menggunakan hukum alam untuk mengawetkan bambu tanpa bahan kimia beracun. Metode ini disebut 'Kemiri' or perendaman air lumpur mengalir.
+
+Bambu segar yang baru ditebang memiliki kadar pati dan gula alami yang sangat disukai oleh kumbang bubuk (Dinoderus minutus). Jika pati ini dibiarkan, bambu akan hancur menjadi bubuk dalam waktu kurang dari dua tahun. 
+
+Dengan merendam bambu di air lumpur pesawahan atau sungai berarus lambat selama 3 hingga 6 bulan, terjadi proses fermentasi anaerobik alami. Mikroorganisme air memakan habis kadar pati dan glukosa di dalam pori-pori bambu dan mengubahnya menjadi asam organik. Setelah masa perendaman selesai, serat bambu menjadi hambar, keras, dan tidak akan pernah lagi disentuh oleh serangga perusak selamanya.`,
+        readTime: "4 Menit Baca",
+        date: "08 Mei 2026",
+        approved: true
+      },
+      {
+        id: 3,
+        title: "Laju Penyerapan Karbon Spesifik Rumpun Gigantochloa apus (Bambu Tali)",
+        author: "Dr. Elizabeth Wong",
+        role: "Pakar Ekologi Karbon Global & Konsultan ESG",
+        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=elizabeth",
+        excerpt: "Kuantifikasi matematis biomassa bambu tali dalam menyerap karbon dioksida atmosfer dan kontribusinya terhadap pasar karbon internasional.",
+        content: `Bambu Tali (Gigantochloa apus) bukan sekadar tanaman biasa, ia adalah mesin penyerap karbon alami tercepat di daratan. Melalui penelitian empiris tim ekologi kami di area konservasi Jawa Barat, satu hektar tanaman bambu tali mampu mengunci hingga 35-40 ton karbon dioksida (CO2) per tahun.
+
+Kecepatan penyerapan ini didorong oleh pertumbuhan sistem rimpang (rhizome) simpodial yang eksponensial. Ketika rebung baru muncul, tanaman menyerap karbon atmosfer dengan laju luar biasa untuk membangun dinding selulosa dalam 120 hari pertama masa hidupnya.
+
+Di pasar karbon sukarela (Voluntary Carbon Market), penanaman terkelola bambu tali menghasilkan sertifikasi kredit karbon bernilai tinggi. Investasi pada penanaman rumpun bambu ini tidak hanya merestorasi lingkungan kritis lokal, tetapi juga menghasilkan dampak finansial nyata bagi masyarakat adat mitra melalui monetisasi emisi hijau secara on-chain.`,
+        readTime: "6 Menit Baca",
+        date: "02 Mei 2026",
+        approved: true
+      },
+      {
+        id: 4,
+        title: "Integrasi Sambungan Baut Ganda pada Konstruksi Kuda-Kuda Bambu",
+        author: "Rian Hidayat, S.Ars.",
+        role: "Arsitek Hijau & Pelopor Blockbamboo",
+        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=rian",
+        excerpt: "Rekayasa mekanika sambungan modern untuk mengatasi kelemahan retak pecah ujung serat bambu pada konstruksi bangunan.",
+        content: `Tantangan terbesar menggunakan bambu bulat dalam arsitektur modern adalah titik sambungan. Bambu memiliki kekuatan sejajar serat yang sangat tinggi, namun kekuatan tegak lurus seratnya sangat lemah, sehingga rentan pecah jika dibor dan dipasang baut secara langsung.
+
+Solusi rekayasa modern yang kami kembangkan adalah metode 'Sambungan Mortar Pengisi'. Pada bagian ujung bambu yang akan disatukan dengan baut baja, rongga bambu diisi dengan adukan semen non-susut (non-shrink grout) berkualitas tinggi atau resin epoksi yang dicampur serat bambu halus.
+
+Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat konstruksi menerima beban geser, baut baja akan menekan dinding semen pengisi, bukan dinding serat bambu secara langsung. Teknik ini meningkatkan kekuatan geser sambungan hingga 400% dan memungkinkan arsitek mendesain kuda-kuda bentang lebar modern hingga 25 meter secara aman dan estetis.`,
+        readTime: "5 Menit Baca",
+        date: "28 April 2026",
+        approved: true
+      },
+      ...(articles || []).filter(art => art.approved !== 'rejected')
+    ];
+
+    const targetArticle = allArticles.find(art => String(art.id) === String(isGiftModalOpen));
+    if (!targetArticle) {
+      alert("⚠️ Artikel tidak ditemukan!");
+      return;
+    }
+
+    const isDb = typeof targetArticle.id === 'string' && targetArticle.id.startsWith('art_');
+    const recipientId = isDb ? targetArticle.userId : adminRecipient?.uid;
+    const recipientUsername = isDb ? targetArticle.username : adminRecipient?.username;
+
+    if (!recipientId || !recipientUsername) {
+      alert("⚠️ Penerima tidak ditemukan, silakan coba lagi.");
+      return;
+    }
+
+    if (user.id === recipientId) {
+      alert("⚠️ Anda tidak bisa mengirimkan Gift ke diri sendiri!");
+      return;
+    }
+
+    setGiftStatus('processing');
+    try {
+      const success = await giftBmc(
+        recipientId,
+        recipientUsername,
+        amt,
+        `Tipping Artikel: ${targetArticle.title}`
+      );
+
+      if (success) {
+        setGiftStatus('success');
+
+        if (isDb) {
+          const giftItem = {
+            id: 'gift_' + Date.now(),
+            senderId: user.id,
+            senderUsername: user.username || user.displayName || "Pegiat Bambu Hijau",
+            amount: amt,
+            timestamp: Date.now()
+          };
+          const articleRef = doc(db, "articles", targetArticle.id);
+          await updateDoc(articleRef, {
+            gifts: arrayUnion(giftItem)
+          });
+        } else {
+          setInteractions(prev => {
+            const current = prev[targetArticle.id] || { likes: 0, liked: false, shares: 0, comments: [] };
+            const currentGifts = current.gifts || [];
+            return {
+              ...prev,
+              [targetArticle.id]: {
+                ...current,
+                gifts: [
+                  ...currentGifts,
+                  {
+                    id: 'gift_' + Date.now(),
+                    senderId: user.id,
+                    senderUsername: user.username,
+                    amount: amt,
+                    timestamp: Date.now()
+                  }
+                ]
+              }
+            };
+          });
+        }
+
+        setTimeout(() => {
+          setIsGiftModalOpen(null);
+          setGiftStatus('idle');
+          setGiftAmount("10");
+        }, 2000);
+      } else {
         setGiftStatus('idle');
-        setGiftAmount("10");
-      }, 2500);
-    }, 1500);
+      }
+    } catch (err) {
+      console.error("Error tipping article:", err);
+      alert("❌ Terjadi kesalahan saat mengirimkan gift.");
+      setGiftStatus('idle');
+    }
   };
 
   const handleNewArticleSubmit = async () => {
@@ -908,7 +1198,18 @@ const AcademyPage = () => {
                     
                     <h2 style={{ fontSize: '1.8rem', fontWeight: '900', color: 'var(--text-main)', margin: '0 0 4px 0', lineHeight: 1.25 }}>{ebook.title}</h2>
                     <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0 0 12px 0' }}>
-                      Dipublikasikan oleh: <strong style={{ color: 'var(--primary)' }}>@{ebook.username}</strong> ({ebook.author})
+                      Dipublikasikan oleh:{' '}
+                      {ebook.username ? (
+                        <strong 
+                          onClick={() => navigate(`/portfolio/${ebook.username.toLowerCase()}`)}
+                          style={{ color: 'var(--primary)', cursor: 'pointer', textDecoration: 'underline' }}
+                        >
+                          @{ebook.username}
+                        </strong>
+                      ) : (
+                        <strong style={{ color: 'var(--primary)' }}>Guest</strong>
+                      )}{' '}
+                      ({ebook.author})
                     </p>
                     <p style={{ color: 'var(--text-muted)', lineHeight: 1.7, fontSize: '0.95rem', marginBottom: '24px', whiteSpace: 'pre-line' }}>
                       {ebook.desc}
@@ -1235,24 +1536,21 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
                   <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                     <button 
                       onClick={(e) => handleLike(article.id, e)} 
-                      style={{ background: 'none', border: 'none', color: interactions[article.id]?.liked ? '#fa5252' : 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer', fontWeight: 'bold', padding: 0 }}
+                      style={{ background: 'none', border: 'none', color: isArticleLiked(article) ? '#fa5252' : 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer', fontWeight: 'bold', padding: 0 }}
                     >
-                      <Heart size={15} fill={interactions[article.id]?.liked ? '#fa5252' : 'none'} /> {interactions[article.id]?.likes || 0}
+                      <Heart size={15} fill={isArticleLiked(article) ? '#fa5252' : 'none'} /> {getArticleLikesCount(article)}
                     </button>
                     <button 
                       onClick={() => { if (article.approved !== false) setSelectedArticle(article); }} 
                       style={{ background: 'none', border: 'none', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer', fontWeight: 'bold', padding: 0 }}
                     >
-                      <MessageSquare size={15} /> {interactions[article.id]?.comments?.length || 0}
+                      <MessageSquare size={15} /> {getArticleComments(article).length}
                     </button>
                     <button 
                       onClick={(e) => handleShare(article.id, article.title, e)} 
                       style={{ background: 'none', border: 'none', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer', padding: 0, position: 'relative' }}
                     >
-                      <Share2 size={15} /> {interactions[article.id]?.shares || 0}
-                      {shareAlert === article.id && (
-                        <span style={{ position: 'absolute', bottom: '24px', left: '50%', transform: 'translateX(-50%)', background: '#37b24d', color: 'white', padding: '4px 8px', borderRadius: '8px', fontSize: '0.65rem', whiteSpace: 'nowrap', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}>Tersalin!</span>
-                      )}
+                      <Share2 size={15} /> {getArticleSharesCount(article)}
                     </button>
                   </div>
                   <button 
@@ -1266,10 +1564,56 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
                 </div>
 
                 <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '16px', display: 'flex', alignItems: 'center', gap: '12px', marginTop: 'auto' }}>
-                  <img src={article.avatar} alt={article.author} style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#f1f3f5', border: '1px solid var(--border-color)' }} />
+                  <img 
+                    src={article.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${article.username || 'user'}`} 
+                    alt={article.author} 
+                    style={{ 
+                      width: '40px', 
+                      height: '40px', 
+                      borderRadius: '50%', 
+                      background: '#f1f3f5', 
+                      border: '1px solid var(--border-color)',
+                      cursor: article.username ? 'pointer' : 'default' 
+                    }} 
+                    onClick={(e) => {
+                      if (article.username) {
+                        e.stopPropagation();
+                        navigate(`/portfolio/${article.username.toLowerCase()}`);
+                      }
+                    }}
+                  />
                   <div>
-                    <div style={{ fontSize: '0.88rem', fontWeight: 'bold', color: 'var(--text-main)' }}>{article.author}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{article.role}</div>
+                    <div 
+                      style={{ 
+                        fontSize: '0.88rem', 
+                        fontWeight: 'bold', 
+                        color: 'var(--text-main)',
+                        cursor: article.username ? 'pointer' : 'default'
+                      }}
+                      onClick={(e) => {
+                        if (article.username) {
+                          e.stopPropagation();
+                          navigate(`/portfolio/${article.username.toLowerCase()}`);
+                        }
+                      }}
+                      onMouseEnter={(e) => { if (article.username) e.currentTarget.style.color = 'var(--primary)'; }}
+                      onMouseLeave={(e) => { if (article.username) e.currentTarget.style.color = 'var(--text-main)'; }}
+                    >
+                      {article.author}
+                    </div>
+                    {article.username ? (
+                      <span 
+                        style={{ fontSize: '0.75rem', color: 'var(--primary)', fontWeight: 'bold', cursor: 'pointer' }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/portfolio/${article.username.toLowerCase()}`);
+                        }}
+                      >
+                        @{article.username}
+                      </span>
+                    ) : (
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{article.role}</div>
+                    )}
                   </div>
                 </div>
 
@@ -1609,10 +1953,56 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
                 </h2>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <img src={selectedArticle.avatar} alt={selectedArticle.author} style={{ width: '44px', height: '44px', borderRadius: '50%', background: '#f1f3f5', border: '1px solid var(--border-color)' }} />
+                    <img 
+                      src={selectedArticle.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedArticle.username || 'user'}`} 
+                      alt={selectedArticle.author} 
+                      style={{ 
+                        width: '44px', 
+                        height: '44px', 
+                        borderRadius: '50%', 
+                        background: '#f1f3f5', 
+                        border: '1px solid var(--border-color)',
+                        cursor: selectedArticle.username ? 'pointer' : 'default'
+                      }} 
+                      onClick={() => {
+                        if (selectedArticle.username) {
+                          setSelectedArticle(null);
+                          navigate(`/portfolio/${selectedArticle.username.toLowerCase()}`);
+                        }
+                      }}
+                    />
                     <div>
-                      <div style={{ fontSize: '0.95rem', fontWeight: 'bold', color: 'var(--text-main)' }}>{selectedArticle.author}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{selectedArticle.role}</div>
+                      <div 
+                        style={{ 
+                          fontSize: '0.95rem', 
+                          fontWeight: 'bold', 
+                          color: 'var(--text-main)',
+                          cursor: selectedArticle.username ? 'pointer' : 'default'
+                        }}
+                        onClick={() => {
+                          if (selectedArticle.username) {
+                            setSelectedArticle(null);
+                            navigate(`/portfolio/${selectedArticle.username.toLowerCase()}`);
+                          }
+                        }}
+                        onMouseEnter={(e) => { if (selectedArticle.username) e.currentTarget.style.color = 'var(--primary)'; }}
+                        onMouseLeave={(e) => { if (selectedArticle.username) e.currentTarget.style.color = 'var(--text-main)'; }}
+                      >
+                        {selectedArticle.author}
+                      </div>
+                      {selectedArticle.username ? (
+                        <span 
+                          style={{ fontSize: '0.78rem', color: 'var(--primary)', fontWeight: 'bold', cursor: 'pointer' }}
+                          onClick={() => {
+                            setSelectedArticle(null);
+                            navigate(`/portfolio/${selectedArticle.username.toLowerCase()}`);
+                          }}
+                        >
+                          @{selectedArticle.username}
+                        </span>
+                      ) : (
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{selectedArticle.role}</div>
+                      )}
                     </div>
                   </div>
                   <div style={{ marginLeft: 'auto', display: 'flex', gap: '16px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
@@ -1626,21 +2016,18 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
                   <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
                     <button 
                       onClick={(e) => handleLike(selectedArticle.id, e)} 
-                      style={{ background: 'none', border: 'none', color: interactions[selectedArticle.id]?.liked ? '#fa5252' : 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.95rem' }}
+                      style={{ background: 'none', border: 'none', color: isArticleLiked(selectedArticle) ? '#fa5252' : 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.95rem' }}
                     >
-                      <Heart size={20} fill={interactions[selectedArticle.id]?.liked ? '#fa5252' : 'none'} /> {interactions[selectedArticle.id]?.likes || 0} Suka
+                      <Heart size={20} fill={isArticleLiked(selectedArticle) ? '#fa5252' : 'none'} /> {getArticleLikesCount(selectedArticle)} Suka
                     </button>
                     <span style={{ color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.95rem' }}>
-                      <MessageSquare size={20} /> {interactions[selectedArticle.id]?.comments?.length || 0} Komentar
+                      <MessageSquare size={20} /> {getArticleComments(selectedArticle).length} Komentar
                     </span>
                     <button 
                       onClick={(e) => handleShare(selectedArticle.id, selectedArticle.title, e)} 
                       style={{ background: 'none', border: 'none', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.95rem', position: 'relative' }}
                     >
-                      <Share2 size={20} /> {interactions[selectedArticle.id]?.shares || 0} Bagikan
-                      {shareAlert === selectedArticle.id && (
-                        <span style={{ position: 'absolute', bottom: '28px', left: '50%', transform: 'translateX(-50%)', background: '#37b24d', color: 'white', padding: '4px 10px', borderRadius: '8px', fontSize: '0.7rem', whiteSpace: 'nowrap', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>Tautan disalin!</span>
-                      )}
+                      <Share2 size={20} /> {getArticleSharesCount(selectedArticle)} Bagikan
                     </button>
                   </div>
                   <button 
@@ -1797,12 +2184,12 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
                 {/* Comments Section */}
                 <div style={{ marginTop: '40px', borderTop: '2px solid var(--border-color)', paddingTop: '30px' }}>
                   <h3 style={{ fontSize: '1.25rem', fontWeight: '900', color: 'var(--text-main)', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <MessageSquare size={20} color="var(--primary)" /> Diskusi & Komentar ({interactions[selectedArticle.id]?.comments.length})
+                    <MessageSquare size={20} color="var(--primary)" /> Diskusi & Komentar ({getArticleComments(selectedArticle).length})
                   </h3>
 
                   {/* Comments List */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '30px' }}>
-                    {interactions[selectedArticle.id]?.comments.map((comm, idx) => (
+                    {getArticleComments(selectedArticle).map((comm, idx) => (
                       <div key={idx} style={{ background: '#f8f9fa', borderRadius: '16px', padding: '16px 20px', border: '1px solid #e9ecef' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1945,7 +2332,7 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
                 <div>
                   <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)', display: 'block', marginBottom: '10px' }}>Pilih Jumlah Gift (BMC):</label>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '20px' }}>
-                    {["5", "10", "20", "50"].map((amt) => (
+                    {["1", "5", "10", "25"].map((amt) => (
                       <button
                         key={amt}
                         onClick={() => setGiftAmount(amt)}
@@ -2648,6 +3035,12 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
           </div>
         )}
 
+        <ShareModal 
+          isOpen={shareModalData.isOpen} 
+          onClose={() => setShareModalData(prev => ({ ...prev, isOpen: false }))} 
+          shareUrl={shareModalData.url} 
+          shareTitle={shareModalData.title} 
+        />
       </div>
     </div>
   );

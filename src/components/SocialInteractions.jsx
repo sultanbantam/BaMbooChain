@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Heart, MessageSquare, Share2, Send, X } from 'lucide-react';
+import { Heart, MessageSquare, Share2, Send, X, Gift } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useLocation } from 'react-router-dom';
 import { 
@@ -16,9 +16,10 @@ import {
   increment
 } from 'firebase/firestore';
 import { db } from '../firebase/config';
+import ShareModal from './ShareModal';
 
 const SocialInteractions = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, openLoginModal, giftBmc } = useAuth();
   const location = useLocation();
   const pageId = location.pathname.replace(/\//g, '_') || 'home';
   
@@ -29,17 +30,66 @@ const SocialInteractions = () => {
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Load Likes and Comments
+  // New States for Tipping and Sharing
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isGiftFormActive, setIsGiftFormActive] = useState(false);
+  const [giftAmount, setGiftAmount] = useState('5');
+  const [giftsCount, setGiftsCount] = useState(0);
+  const [giftingInProgress, setGiftingInProgress] = useState(false);
+  const [adminRecipient, setAdminRecipient] = useState(null);
+
+  // Resolve Admin Recipient once on mount
+  useEffect(() => {
+    const fetchAdmin = async () => {
+      try {
+        const usersRef = collection(db, "users");
+        const q1 = query(usersRef, where("username", "==", "albantani"));
+        const snap1 = await getDocs(q1);
+        if (!snap1.empty) {
+          setAdminRecipient({
+            uid: snap1.docs[0].id,
+            name: snap1.docs[0].data().name || "albantani",
+            username: "albantani"
+          });
+          return;
+        }
+        const q2 = query(usersRef, where("username", "==", "admin_yayasan"));
+        const snap2 = await getDocs(q2);
+        if (!snap2.empty) {
+          setAdminRecipient({
+            uid: snap2.docs[0].id,
+            name: snap2.docs[0].data().name || "Yayasan",
+            username: "admin_yayasan"
+          });
+          return;
+        }
+        // Fallback
+        setAdminRecipient({
+          uid: "admin_default_id",
+          name: "Yayasan",
+          username: "admin_yayasan"
+        });
+      } catch (err) {
+        console.error("Error fetching admin for SocialInteractions:", err);
+      }
+    };
+    fetchAdmin();
+  }, []);
+
+  // Load Likes, Comments, and Gifts Count
   useEffect(() => {
     if (!pageId) return;
 
-    // Listen to likes count
+    // Listen to page stats (likes, gifts)
     const statsRef = doc(db, 'page_stats', pageId);
     const unsubStats = onSnapshot(statsRef, (docSnap) => {
       if (docSnap.exists()) {
-        setLikes(docSnap.data().likes || 0);
+        const data = docSnap.data();
+        setLikes(data.likes || 0);
+        setGiftsCount(data.gifts || 0);
       } else {
         setLikes(0);
+        setGiftsCount(0);
       }
     });
 
@@ -56,11 +106,12 @@ const SocialInteractions = () => {
     // Check if user has liked
     if (user) {
       const checkLike = async () => {
-        const likeRef = doc(db, 'page_likes', `${user.uid}_${pageId}`);
         const likeSnap = await getDocs(query(collection(db, 'page_likes'), where('userId', '==', user.uid), where('pageId', '==', pageId)));
         setHasLiked(!likeSnap.empty);
       };
       checkLike();
+    } else {
+      setHasLiked(false);
     }
 
     return () => {
@@ -70,7 +121,11 @@ const SocialInteractions = () => {
   }, [pageId, user]);
 
   const handleLike = async () => {
-    if (!isAuthenticated || !user) return;
+    if (!isAuthenticated || !user) {
+      alert("⚠️ Harap login terlebih dahulu untuk memberikan Suka!");
+      openLoginModal();
+      return;
+    }
     
     const likeId = `${user.uid}_${pageId}`;
     const statsRef = doc(db, 'page_stats', pageId);
@@ -95,14 +150,19 @@ const SocialInteractions = () => {
 
   const handleAddComment = async (e) => {
     e.preventDefault();
-    if (!newComment.trim() || !user) return;
+    if (!isAuthenticated || !user) {
+      alert("⚠️ Harap login terlebih dahulu untuk menulis komentar!");
+      openLoginModal();
+      return;
+    }
+    if (!newComment.trim()) return;
     
     setLoading(true);
     try {
       await addDoc(collection(db, 'page_comments'), {
         pageId,
         userId: user.uid,
-        userName: user.displayName || 'User',
+        userName: user.displayName || user.username || 'User',
         userAvatar: user.photoURL || null,
         text: newComment,
         timestamp: serverTimestamp()
@@ -115,24 +175,63 @@ const SocialInteractions = () => {
     }
   };
 
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: 'BaMbooChain',
-        text: 'Lihat halaman menarik ini di BaMbooChain!',
-        url: window.location.href,
-      }).catch(console.error);
-    } else {
-      // Fallback
-      navigator.clipboard.writeText(window.location.href);
-      alert("Link disalin ke clipboard!");
+  const handleSendGift = async (amount) => {
+    if (!isAuthenticated || !user) {
+      alert("⚠️ Harap login terlebih dahulu untuk mengirimkan Gift!");
+      openLoginModal();
+      return;
+    }
+    const val = parseFloat(amount);
+    if (isNaN(val) || val <= 0) {
+      alert("⚠️ Jumlah gift tidak valid!");
+      return;
+    }
+    if (!adminRecipient) {
+      alert("⚠️ Gagal menemukan penerima gift. Silakan coba lagi.");
+      return;
+    }
+    if (user.uid === adminRecipient.uid) {
+      alert("⚠️ Anda tidak bisa mengirimkan Gift ke diri sendiri!");
+      return;
+    }
+
+    setGiftingInProgress(true);
+    try {
+      const success = await giftBmc(
+        adminRecipient.uid,
+        adminRecipient.username,
+        val,
+        `Gift Halaman: ${pageId}`
+      );
+
+      if (success) {
+        // Increment gifts count in page_stats
+        const statsRef = doc(db, 'page_stats', pageId);
+        await setDoc(statsRef, { gifts: increment(1) }, { merge: true });
+
+        // Add a doc in page_gifts to log the gift details
+        await addDoc(collection(db, 'page_gifts'), {
+          pageId,
+          senderId: user.uid,
+          senderName: user.displayName || user.username || 'User',
+          amount: val,
+          timestamp: serverTimestamp()
+        });
+
+        setIsGiftFormActive(false);
+      }
+    } catch (err) {
+      console.error("Gift error in SocialInteractions:", err);
+    } finally {
+      setGiftingInProgress(false);
     }
   };
 
-  // Don't show on admin or login-related technical paths if needed, 
-  // but user said "every page".
-  if (!isAuthenticated) return null;
+  const handleShare = () => {
+    setIsShareModalOpen(true);
+  };
 
+  // We show it to all users (unauthenticated too) to make it interactive globally
   return (
     <div style={{
       padding: '40px 20px',
@@ -162,7 +261,79 @@ const SocialInteractions = () => {
           }}>
             <Share2 size={24} /> Bagikan
           </button>
+
+          <button onClick={() => setIsGiftFormActive(!isGiftFormActive)} style={{
+            display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: 'none',
+            color: 'var(--text-muted)', cursor: 'pointer', fontSize: '1rem', fontWeight: 'bold'
+          }}>
+            <Gift size={24} color="#f59f00" /> {giftsCount} Gift
+          </button>
         </div>
+
+        {/* Collapsible Tipping/Gift Form */}
+        {isGiftFormActive && (
+          <div style={{
+            background: 'var(--bg-card)', padding: '25px', borderRadius: '24px', 
+            border: '1px solid var(--border-color)', boxShadow: '0 10px 30px rgba(0,0,0,0.05)',
+            marginBottom: '20px'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h4 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Gift size={20} color="#f59f00" /> Kirim Apresiasi Token (Gift)
+              </h4>
+              <button onClick={() => setIsGiftFormActive(false)} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer' }}><X size={20} /></button>
+            </div>
+            
+            <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', marginBottom: '15px' }}>
+              Pilih jumlah BMC Token yang ingin dikirimkan sebagai bentuk apresiasi untuk halaman ini:
+            </p>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '20px' }}>
+              {["1", "5", "10", "25"].map((amt) => (
+                <button
+                  key={amt}
+                  onClick={() => setGiftAmount(amt)}
+                  style={{
+                    background: giftAmount === amt ? 'var(--primary)' : 'rgba(0,0,0,0.02)',
+                    color: giftAmount === amt ? 'white' : 'var(--text-main)',
+                    border: giftAmount === amt ? 'none' : '1px solid var(--border-color)',
+                    borderRadius: '10px',
+                    padding: '10px 0',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  {amt} BMC
+                </button>
+              ))}
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+              <input
+                type="number"
+                value={giftAmount}
+                onChange={(e) => setGiftAmount(e.target.value)}
+                placeholder="Jumlah kustom..."
+                style={{
+                  flex: 1, padding: '12px 20px', borderRadius: '15px', border: '1px solid var(--border-color)',
+                  background: 'var(--bg-secondary)', color: 'var(--text-main)', outline: 'none'
+                }}
+              />
+              <button
+                disabled={giftingInProgress}
+                onClick={() => handleSendGift(giftAmount)}
+                style={{
+                  padding: '12px 25px', borderRadius: '15px', border: 'none',
+                  background: '#f59f00', color: 'white', cursor: 'pointer',
+                  fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px'
+                }}
+              >
+                {giftingInProgress ? 'Mengirim...' : 'Kirim Gift'}
+              </button>
+            </div>
+          </div>
+        )}
 
         {showComments && (
           <div style={{ 
@@ -177,7 +348,7 @@ const SocialInteractions = () => {
             <form onSubmit={handleAddComment} style={{ display: 'flex', gap: '10px', marginBottom: '25px' }}>
               <input 
                 type="text" 
-                placeholder="Tulis pendapat Anda..." 
+                placeholder={isAuthenticated ? "Tulis pendapat Anda..." : "Login untuk berkomentar..."} 
                 value={newComment}
                 onChange={e => setNewComment(e.target.value)}
                 style={{ 
@@ -220,6 +391,13 @@ const SocialInteractions = () => {
           </div>
         )}
       </div>
+
+      <ShareModal 
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        shareUrl={window.location.href}
+        shareTitle="Lihat halaman menarik ini di BaMbooChain!"
+      />
     </div>
   );
 };

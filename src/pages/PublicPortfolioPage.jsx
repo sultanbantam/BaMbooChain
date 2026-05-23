@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import ShareModal from '../components/ShareModal';
 import { db } from '../firebase/config';
 import { 
   collection, query, where, getDocs, doc, getDoc, updateDoc, 
@@ -58,11 +59,17 @@ const PublicPortfolioPage = () => {
   
   // Interactive forms state
   const [commentText, setCommentText] = useState('');
-  const [showCommentForm, setShowCommentForm] = useState(false);
   const [giftAmount, setGiftAmount] = useState('1');
-  const [showGiftForm, setShowGiftForm] = useState(false);
   const [giftingInProgress, setGiftingInProgress] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [shareModalData, setShareModalData] = useState({ isOpen: false, url: '', title: '' });
+
+  // Status Feed States
+  const [statuses, setStatuses] = useState([]);
+  const [activeCommentStatusId, setActiveCommentStatusId] = useState(null);
+  const [activeGiftStatusId, setActiveGiftStatusId] = useState(null);
+  const [expandedCommentsStatusId, setExpandedCommentsStatusId] = useState(null);
+  const [expandedGiftsStatusId, setExpandedGiftsStatusId] = useState(null);
   
   // Direct private messaging states
   const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
@@ -71,6 +78,7 @@ const PublicPortfolioPage = () => {
 
   // Selected Article Modal
   const [selectedArticle, setSelectedArticle] = useState(null);
+  const [lightboxImage, setLightboxImage] = useState(null);
 
   // 1. Fetch Target User Data
   useEffect(() => {
@@ -161,6 +169,19 @@ const PublicPortfolioPage = () => {
 
   }, [targetUser]);
 
+  // 3. Sync statuses from Firestore in real-time
+  useEffect(() => {
+    if (targetUser && targetUser.id) {
+      const q = query(collection(db, "statuses"), where("userId", "==", targetUser.id));
+      const unsub = onSnapshot(q, (snapshot) => {
+        const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        list.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+        setStatuses(list);
+      }, (err) => console.error("Statuses sync error in public portfolio:", err));
+      return () => unsub();
+    }
+  }, [targetUser]);
+
   if (loading) {
     return (
       <div style={{ paddingTop: '150px', minHeight: '80vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '15px' }}>
@@ -183,60 +204,81 @@ const PublicPortfolioPage = () => {
     );
   }
 
+  // On-demand migration helper for virtual legacy status
+  const ensureRealStatus = async (status) => {
+    if (!status.isLegacy) return status.id;
+
+    try {
+      const docRef = await addDoc(collection(db, "statuses"), {
+        userId: status.userId,
+        username: status.username,
+        name: status.name,
+        avatarUrl: status.avatarUrl,
+        statusText: status.statusText,
+        statusPhotos: status.statusPhotos || [],
+        statusVideo: status.statusVideo || '',
+        timestamp: status.timestamp || Date.now(),
+        likes: status.likes || [],
+        comments: status.comments || [],
+        gifts: status.gifts || [],
+        shares: status.shares || 0
+      });
+
+      // Clear legacy status fields from user profile in users collection
+      const userRef = doc(db, "users", status.userId);
+      await updateDoc(userRef, {
+        statusText: '',
+        statusPhotos: [],
+        statusVideo: ''
+      });
+
+      return docRef.id;
+    } catch (err) {
+      console.error("Error migrating legacy status on-demand:", err);
+      throw err;
+    }
+  };
+
   // Interactivity Actions
-  const handleLike = async () => {
+  const handleLike = async (status) => {
     if (!currentUser) {
       alert("⚠️ Harap login untuk memberikan Suka!");
       return;
     }
-    
-    const interRef = doc(db, "status_interactions", targetUser.id);
-    const hasLiked = interactions.likes.includes(currentUser.id);
-    
+
     try {
-      const snap = await getDoc(interRef);
-      if (snap.exists()) {
-        await updateDoc(interRef, {
-          likes: hasLiked ? arrayRemove(currentUser.id) : arrayUnion(currentUser.id)
-        });
-      } else {
-        await setDoc(interRef, {
-          likes: [currentUser.id],
-          shares: 0,
-          comments: [],
-          gifts: []
-        });
-      }
+      const realStatusId = await ensureRealStatus(status);
+      const statusRef = doc(db, "statuses", realStatusId);
+      
+      const currentLikes = status.isLegacy ? (interactions.likes || []) : (status.likes || []);
+      const hasLiked = currentLikes.includes(currentUser.id);
+
+      await updateDoc(statusRef, {
+        likes: hasLiked ? arrayRemove(currentUser.id) : arrayUnion(currentUser.id)
+      });
     } catch (err) {
-      console.error(err);
+      console.error("Error liking status:", err);
     }
   };
 
-  const handleShare = async () => {
-    const shareUrl = window.location.href;
-    navigator.clipboard.writeText(shareUrl);
-    setCopiedLink(true);
-    setTimeout(() => setCopiedLink(false), 2000);
+  const handleShare = async (status) => {
+    const shareUrl = `${window.location.origin}/#/portfolio/${targetUser?.username || username}`;
+    setShareModalData({
+      isOpen: true,
+      url: shareUrl,
+      title: `Lihat status terkini dari @${targetUser?.username || username} di BaMbooChain!`
+    });
 
-    const interRef = doc(db, "status_interactions", targetUser.id);
     try {
-      const snap = await getDoc(interRef);
-      if (snap.exists()) {
-        await updateDoc(interRef, { shares: increment(1) });
-      } else {
-        await setDoc(interRef, {
-          likes: [],
-          shares: 1,
-          comments: [],
-          gifts: []
-        });
-      }
+      const realStatusId = await ensureRealStatus(status);
+      const statusRef = doc(db, "statuses", realStatusId);
+      await updateDoc(statusRef, { shares: increment(1) });
     } catch (err) {
-      console.error(err);
+      console.error("Error sharing status:", err);
     }
   };
 
-  const handleAddComment = async (e) => {
+  const handleAddComment = async (e, status) => {
     e.preventDefault();
     if (!currentUser) {
       alert("⚠️ Harap login untuk menulis komentar!");
@@ -252,27 +294,18 @@ const PublicPortfolioPage = () => {
       timestamp: Date.now()
     };
 
-    const interRef = doc(db, "status_interactions", targetUser.id);
     try {
-      const snap = await getDoc(interRef);
-      if (snap.exists()) {
-        await updateDoc(interRef, { comments: arrayUnion(newComment) });
-      } else {
-        await setDoc(interRef, {
-          likes: [],
-          shares: 0,
-          comments: [newComment],
-          gifts: []
-        });
-      }
+      const realStatusId = await ensureRealStatus(status);
+      const statusRef = doc(db, "statuses", realStatusId);
+      await updateDoc(statusRef, { comments: arrayUnion(newComment) });
       setCommentText('');
-      setShowCommentForm(false);
+      setActiveCommentStatusId(null);
     } catch (err) {
-      console.error(err);
+      console.error("Error commenting on status:", err);
     }
   };
 
-  const handleSendGift = async () => {
+  const handleSendGift = async (status) => {
     if (!currentUser) {
       alert("⚠️ Harap login untuk mengirimkan Gift!");
       return;
@@ -284,15 +317,22 @@ const PublicPortfolioPage = () => {
     }
 
     setGiftingInProgress(true);
-    const success = await giftBmc(
-      targetUser.id, 
-      targetUser.username, 
-      val, 
-      `Tipping Status Ecoportfolio via @${currentUser.username}`
-    );
-    setGiftingInProgress(false);
-    if (success) {
-      setShowGiftForm(false);
+    try {
+      const realStatusId = await ensureRealStatus(status);
+      const success = await giftBmc(
+        targetUser.id, 
+        targetUser.username, 
+        val, 
+        `Tipping Status Ecoportfolio via @${currentUser.username}`,
+        realStatusId
+      );
+      if (success) {
+        setActiveGiftStatusId(null);
+      }
+    } catch (err) {
+      console.error("Error sending gift:", err);
+    } finally {
+      setGiftingInProgress(false);
     }
   };
 
@@ -335,6 +375,26 @@ const PublicPortfolioPage = () => {
   } else if (totalEcoActions >= 5) {
     ecoLevel = "Bamboo Pioneer";
     badgeColor = "#0d6efd";
+  }
+
+  const displayStatuses = [...statuses];
+  if (displayStatuses.length === 0 && (targetUser?.statusText || (targetUser?.statusPhotos && targetUser?.statusPhotos.length > 0) || targetUser?.statusVideo)) {
+    displayStatuses.push({
+      id: "legacy_" + targetUser.id,
+      userId: targetUser.id,
+      username: targetUser.username || targetUser.name || "user",
+      name: targetUser.name || "User",
+      avatarUrl: targetUser.avatarUrl || '',
+      statusText: targetUser.statusText || '',
+      statusPhotos: targetUser.statusPhotos || [],
+      statusVideo: targetUser.statusVideo || '',
+      timestamp: targetUser.joinedAt || Date.now(),
+      isLegacy: true,
+      likes: interactions.likes || [],
+      comments: interactions.comments || [],
+      gifts: interactions.gifts || [],
+      shares: interactions.shares || 0
+    });
   }
 
   const alreadyLiked = currentUser && interactions.likes.includes(currentUser.id);
@@ -477,132 +537,242 @@ const PublicPortfolioPage = () => {
                     </div>
                   ) : (
                     <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                      Belum mengunggah dokumen CV / Portofolio lengkap.
+                      Belum mengunggah dokumen CV / Portofolio
                     </p>
                   )}
                 </div>
 
-                {/* Status Box */}
-                <div style={{ background: 'var(--bg-color)', border: '1px solid var(--border-color)', borderRadius: '20px', padding: '24px', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
-                    <span style={{ background: 'rgba(12,166,120,0.1)', color: 'var(--primary)', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '6px', textTransform: 'uppercase' }}>
-                      Status Terkini
-                    </span>
-                  </div>
-                  <p style={{ margin: '0 0 18px 0', fontSize: '1.05rem', color: 'var(--text-main)', fontWeight: '500', lineHeight: '1.5' }}>
-                    "{targetUser.statusText || 'Mari bersama melestarikan lingkungan demi bumi yang lebih sehat! 🌿'}"
-                  </p>
-
-                  {/* Render Status Media */}
-                  {targetUser.statusPhotos && targetUser.statusPhotos.length > 0 && (
-                    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(targetUser.statusPhotos.length, 3)}, 1fr)`, gap: '8px', marginBottom: '12px' }}>
-                      {targetUser.statusPhotos.map((photo, idx) => (
-                        <div key={idx} style={{ borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-color)', aspectRatio: '1/1' }}>
-                          <img src={photo} alt={`status ${idx+1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        </div>
-                      ))}
+                {/* Status Feed */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
+                  <h4 style={{ margin: '0 0 5px 0', fontSize: '1rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Riwayat Status ({displayStatuses.length})</h4>
+                  
+                  {displayStatuses.length === 0 ? (
+                    <div style={{ background: 'var(--bg-color)', border: '1px solid var(--border-color)', borderRadius: '20px', padding: '24px', textAlign: 'center' }}>
+                      <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.9rem', fontStyle: 'italic' }}>
+                        Mari bersama melestarikan lingkungan demi bumi yang lebih sehat! 🌿
+                      </p>
                     </div>
-                  )}
-                  {targetUser.statusVideo && (
-                    <div style={{ marginBottom: '12px', borderRadius: '10px', overflow: 'hidden', border: '1px solid var(--border-color)' }}>
-                      <video src={targetUser.statusVideo} controls muted style={{ width: '100%', display: 'block', maxHeight: '300px', objectFit: 'contain', background: '#000' }} />
-                    </div>
-                  )}
-
-                  {/* Status Interactions Panel */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '15px', borderTop: '1px solid var(--border-color)', paddingTop: '15px', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
-                    <button 
-                      onClick={handleLike} 
-                      style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '4px', color: alreadyLiked ? '#e03131' : 'var(--text-muted)', cursor: 'pointer', fontWeight: 'bold', padding: 0 }}
-                    >
-                      <Heart size={16} fill={alreadyLiked ? '#e03131' : 'none'} />
-                      <span>{interactions.likes.length} Likes</span>
-                    </button>
-                    <button 
-                      onClick={() => setShowCommentForm(!showCommentForm)} 
-                      style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--text-muted)', cursor: 'pointer', fontWeight: 'bold', padding: 0 }}
-                    >
-                      <MessageSquare size={16} color="var(--primary)" />
-                      <span>{interactions.comments.length} Comments</span>
-                    </button>
-                    <button 
-                      onClick={handleShare} 
-                      style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--text-muted)', cursor: 'pointer', fontWeight: 'bold', padding: 0 }}
-                    >
-                      <Share2 size={16} color="#228be6" />
-                      <span>{copiedLink ? 'Copied!' : `${interactions.shares} Share`}</span>
-                    </button>
-                    <button 
-                      onClick={() => setShowGiftForm(!showGiftForm)} 
-                      style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--text-muted)', cursor: 'pointer', fontWeight: 'bold', padding: 0 }}
-                    >
-                      <Gift size={16} color="#f59f00" />
-                      <span>{interactions.gifts.length} Gift</span>
-                    </button>
-                  </div>
-
-                  {/* Comment input form */}
-                  {showCommentForm && (
-                    <form onSubmit={handleAddComment} style={{ marginTop: '15px', display: 'flex', gap: '8px' }}>
-                      <input 
-                        type="text" 
-                        value={commentText} 
-                        onChange={(e) => setCommentText(e.target.value)}
-                        placeholder="Tulis komentar..."
-                        style={{ flex: 1, padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-card)', color: 'var(--text-main)', fontSize: '0.85rem' }}
-                      />
-                      <button type="submit" style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 'bold', cursor: 'pointer' }}>Kirim</button>
-                    </form>
-                  )}
-
-                  {/* Gift (tipping) form */}
-                  {showGiftForm && (
-                    <div style={{ marginTop: '15px', background: 'var(--bg-card)', padding: '15px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-                      <p style={{ margin: '0 0 10px 0', fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-main)' }}>🎁 Kirim Insentif BMC Ke Kontributor</p>
-                      <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
-                        {['1', '5', '10', '25'].map(amt => (
-                          <button 
-                            key={amt} 
-                            onClick={() => setGiftAmount(amt)}
-                            style={{ flex: 1, padding: '6px 0', borderRadius: '6px', border: giftAmount === amt ? '2px solid #f59f00' : '1px solid var(--border-color)', background: giftAmount === amt ? 'rgba(245,159,0,0.1)' : 'var(--bg-color)', color: giftAmount === amt ? '#f59f00' : 'var(--text-main)', fontWeight: 'bold', fontSize: '0.8rem', cursor: 'pointer' }}
-                          >
-                            {amt} BMC
-                          </button>
-                        ))}
-                      </div>
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        <input 
-                          type="number" 
-                          value={giftAmount} 
-                          onChange={(e) => setGiftAmount(e.target.value)}
-                          placeholder="Jumlah kustom..."
-                          style={{ flex: 1, padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-color)', color: 'var(--text-main)', fontSize: '0.85rem' }}
-                        />
-                        <button 
-                          onClick={handleSendGift}
-                          disabled={giftingInProgress}
-                          style={{ background: '#f59f00', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 'bold', cursor: 'pointer' }}
+                  ) : (
+                    displayStatuses.map(status => {
+                      const isCommentsExpanded = expandedCommentsStatusId === status.id;
+                      const isGiftsExpanded = expandedGiftsStatusId === status.id;
+                      const isCommentFormActive = activeCommentStatusId === status.id;
+                      const isGiftFormActive = activeGiftStatusId === status.id;
+                      
+                      return (
+                        <div 
+                          key={status.id} 
+                          style={{ 
+                            background: 'var(--bg-color)', 
+                            border: '1px solid var(--border-color)', 
+                            borderRadius: '20px', 
+                            padding: '24px', 
+                            boxShadow: '0 4px 15px rgba(0,0,0,0.02)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '12px'
+                          }}
                         >
-                          {giftingInProgress ? 'Mengirim...' : 'Kirim Gift'}
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* List of comments */}
-                  {interactions.comments.length > 0 && (
-                    <div style={{ marginTop: '20px', borderTop: '1px solid var(--border-color)', paddingTop: '15px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      <p style={{ margin: 0, fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-muted)' }}>KOMENTAR ({interactions.comments.length})</p>
-                      <div style={{ maxHeight: '180px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', paddingRight: '5px' }}>
-                        {interactions.comments.map(comment => (
-                          <div key={comment.id} style={{ fontSize: '0.8rem', lineHeight: '1.4' }}>
-                            <strong style={{ color: 'var(--primary)' }}>@{comment.username}</strong>: <span style={{ color: 'var(--text-main)' }}>{comment.text}</span>
+                          {/* Header */}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ background: 'rgba(12,166,120,0.1)', color: 'var(--primary)', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '6px', textTransform: 'uppercase' }}>
+                              Status Terkini {status.isLegacy && "(Legacy)"}
+                            </span>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                              {status.timestamp ? new Date(status.timestamp).toLocaleString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''}
+                            </span>
                           </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
 
+                          {/* Status Text */}
+                          <p style={{ margin: '0 0 6px 0', fontSize: '1.05rem', color: 'var(--text-main)', fontWeight: '500', lineHeight: '1.5' }}>
+                            "{status.statusText}"
+                          </p>
+
+                          {/* Render Status Media */}
+                          {status.statusPhotos && status.statusPhotos.length > 0 && (
+                            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(status.statusPhotos.length, 3)}, 1fr)`, gap: '8px', marginBottom: '6px' }}>
+                              {status.statusPhotos.map((photo, idx) => (
+                                <div 
+                                  key={idx} 
+                                  onClick={() => setLightboxImage(photo)}
+                                  style={{ borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-color)', aspectRatio: '1/1', cursor: 'pointer', transition: 'transform 0.2s' }}
+                                  onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+                                  onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                                >
+                                  <img src={photo} alt={`status ${idx+1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          {status.statusVideo && (
+                            <div style={{ marginBottom: '6px', borderRadius: '10px', overflow: 'hidden', border: '1px solid var(--border-color)' }}>
+                              <video src={status.statusVideo} controls muted style={{ width: '100%', display: 'block', maxHeight: '300px', objectFit: 'contain', background: '#000' }} />
+                            </div>
+                          )}
+
+                          {/* Status Interactions Panel */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '15px', borderTop: '1px solid var(--border-color)', paddingTop: '12px', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+                            <button 
+                              onClick={() => handleLike(status)} 
+                              style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '4px', color: (currentUser && (status.isLegacy ? (interactions.likes || []) : (status.likes || [])).includes(currentUser.id)) ? '#e03131' : 'var(--text-muted)', cursor: 'pointer', fontWeight: 'bold', padding: 0 }}
+                            >
+                              <Heart size={16} fill={(currentUser && (status.isLegacy ? (interactions.likes || []) : (status.likes || [])).includes(currentUser.id)) ? '#e03131' : 'none'} />
+                              <span>{status.isLegacy ? (interactions.likes?.length || 0) : (status.likes?.length || 0)} Likes</span>
+                            </button>
+                            <button 
+                              onClick={() => {
+                                setExpandedCommentsStatusId(isCommentsExpanded ? null : status.id);
+                                setExpandedGiftsStatusId(null);
+                              }} 
+                              style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--text-muted)', cursor: 'pointer', fontWeight: 'bold', padding: 0 }}
+                            >
+                              <MessageSquare size={16} color="var(--primary)" />
+                              <span style={{ textDecoration: 'underline' }}>{status.isLegacy ? (interactions.comments?.length || 0) : (status.comments?.length || 0)} Comments</span>
+                            </button>
+                            <button 
+                              onClick={() => handleShare(status)} 
+                              style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--text-muted)', cursor: 'pointer', fontWeight: 'bold', padding: 0 }}
+                            >
+                              <Share2 size={16} color="#228be6" />
+                              <span>{status.isLegacy ? (interactions.shares || 0) : (status.shares || 0)} Bagikan</span>
+                            </button>
+                            <button 
+                              onClick={() => {
+                                setExpandedGiftsStatusId(isGiftsExpanded ? null : status.id);
+                                setExpandedCommentsStatusId(null);
+                              }} 
+                              style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--text-muted)', cursor: 'pointer', fontWeight: 'bold', padding: 0 }}
+                            >
+                              <Gift size={16} color="#f59f00" />
+                              <span style={{ textDecoration: 'underline' }}>{status.isLegacy ? (interactions.gifts?.length || 0) : (status.gifts?.length || 0)} Gift</span>
+                            </button>
+                          </div>
+
+                          {/* Quick Action buttons */}
+                          <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
+                            <button 
+                              onClick={() => {
+                                setActiveCommentStatusId(isCommentFormActive ? null : status.id);
+                                setActiveGiftStatusId(null);
+                                setCommentText('');
+                              }}
+                              style={{ flex: 1, background: 'rgba(12,166,120,0.05)', color: 'var(--primary)', border: 'none', padding: '6px 12px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer' }}
+                            >
+                              💬 Tulis Komentar
+                            </button>
+                            <button 
+                              onClick={() => {
+                                setActiveGiftStatusId(isGiftFormActive ? null : status.id);
+                                setActiveCommentStatusId(null);
+                                setGiftAmount('1');
+                              }}
+                              style={{ flex: 1, background: 'rgba(245,159,0,0.05)', color: '#f59f00', border: 'none', padding: '6px 12px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer' }}
+                            >
+                              🎁 Kirim Gift
+                            </button>
+                          </div>
+
+                          {/* Collapsible comments list */}
+                          {isCommentsExpanded && (
+                            <div style={{ background: 'var(--bg-card)', borderRadius: '12px', padding: '15px', border: '1px solid var(--border-color)', marginTop: '8px', maxHeight: '200px', overflowY: 'auto' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', borderBottom: '1px solid var(--border-color)', paddingBottom: '6px' }}>
+                                <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--text-main)' }}>💬 Komentar Status ({status.isLegacy ? (interactions.comments?.length || 0) : (status.comments?.length || 0)})</span>
+                                <button onClick={() => setExpandedCommentsStatusId(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}><X size={14} /></button>
+                              </div>
+                              {(!status.isLegacy ? (!status.comments || status.comments.length === 0) : (!interactions.comments || interactions.comments.length === 0)) ? (
+                                <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', textAlign: 'center', margin: '10px 0' }}>Belum ada komentar.</p>
+                              ) : (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                  {(status.isLegacy ? interactions.comments : status.comments).map((comment, index) => (
+                                    <div key={comment.id || index} style={{ borderBottom: '1px solid rgba(0,0,0,0.03)', paddingBottom: '4px' }}>
+                                      <span style={{ fontWeight: 'bold', fontSize: '0.78rem', color: 'var(--primary)' }}>@{comment.username}</span>
+                                      <p style={{ margin: '2px 0 0 0', fontSize: '0.82rem', color: 'var(--text-main)' }}>{comment.text}</p>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Collapsible gifts list */}
+                          {isGiftsExpanded && (
+                            <div style={{ background: 'var(--bg-card)', borderRadius: '12px', padding: '15px', border: '1px solid var(--border-color)', marginTop: '8px', maxHeight: '200px', overflowY: 'auto' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', borderBottom: '1px solid var(--border-color)', paddingBottom: '6px' }}>
+                                <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--text-main)' }}>🎁 Daftar Gift Diterima ({status.isLegacy ? (interactions.gifts?.length || 0) : (status.gifts?.length || 0)})</span>
+                                <button onClick={() => setExpandedGiftsStatusId(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}><X size={14} /></button>
+                              </div>
+                              {(!status.isLegacy ? (!status.gifts || status.gifts.length === 0) : (!interactions.gifts || interactions.gifts.length === 0)) ? (
+                                <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', textAlign: 'center', margin: '10px 0' }}>Belum menerima gift.</p>
+                              ) : (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                  {(status.isLegacy ? interactions.gifts : status.gifts).map((gift, index) => (
+                                    <div key={gift.id || index} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(0,0,0,0.03)', paddingBottom: '4px' }}>
+                                      <div>
+                                        <span style={{ fontWeight: 'bold', fontSize: '0.78rem', color: 'var(--text-main)' }}>@{gift.senderUsername}</span>
+                                        <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginLeft: '6px' }}>
+                                          {new Date(gift.timestamp).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
+                                        </span>
+                                      </div>
+                                      <span style={{ color: '#f59f00', fontWeight: 'bold', fontSize: '0.8rem' }}>+{gift.amount} BMC</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Comment input form */}
+                          {isCommentFormActive && (
+                            <form onSubmit={(e) => handleAddComment(e, status)} style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
+                              <input 
+                                type="text" 
+                                value={commentText} 
+                                onChange={(e) => setCommentText(e.target.value)}
+                                placeholder="Tulis komentar..."
+                                style={{ flex: 1, padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-card)', color: 'var(--text-main)', fontSize: '0.85rem' }}
+                              />
+                              <button type="submit" style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 'bold', cursor: 'pointer' }}>Kirim</button>
+                            </form>
+                          )}
+
+                          {/* Gift form */}
+                          {isGiftFormActive && (
+                            <div style={{ marginTop: '12px', background: 'var(--bg-card)', padding: '15px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                              <p style={{ margin: '0 0 10px 0', fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-main)' }}>🎁 Kirim Insentif BMC Ke Kontributor</p>
+                              <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
+                                {['1', '5', '10', '25'].map(amt => (
+                                  <button 
+                                    key={amt} 
+                                    onClick={() => setGiftAmount(amt)}
+                                    style={{ flex: 1, padding: '6px 0', borderRadius: '6px', border: giftAmount === amt ? '2px solid #f59f00' : '1px solid var(--border-color)', background: giftAmount === amt ? 'rgba(245,159,0,0.1)' : 'var(--bg-color)', color: giftAmount === amt ? '#f59f00' : 'var(--text-main)', fontWeight: 'bold', fontSize: '0.8rem', cursor: 'pointer' }}
+                                  >
+                                    {amt} BMC
+                                  </button>
+                                ))}
+                              </div>
+                              <div style={{ display: 'flex', gap: '8px' }}>
+                                <input 
+                                  type="number" 
+                                  value={giftAmount} 
+                                  onChange={(e) => setGiftAmount(e.target.value)}
+                                  placeholder="Jumlah kustom..."
+                                  style={{ flex: 1, padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-color)', color: 'var(--text-main)', fontSize: '0.85rem' }}
+                                />
+                                <button 
+                                  onClick={() => handleSendGift(status)}
+                                  disabled={giftingInProgress}
+                                  style={{ background: '#f59f00', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 'bold', cursor: 'pointer' }}
+                                >
+                                  {giftingInProgress ? 'Mengirim...' : 'Kirim Gift'}
+                                </button>
+                              </div>
+                            </div>
+                          )}
+
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
               </div>
 
@@ -960,6 +1130,74 @@ const PublicPortfolioPage = () => {
           </div>
         </div>
       )}
+
+      {/* Lightbox Modal */}
+      {lightboxImage && (
+        <div 
+          onClick={() => setLightboxImage(null)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.9)',
+            backdropFilter: 'blur(10px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 999999,
+            padding: '20px',
+            cursor: 'zoom-out',
+            animation: 'fadeIn 0.25s ease'
+          }}
+        >
+          <button
+            onClick={() => setLightboxImage(null)}
+            style={{
+              position: 'absolute',
+              top: '20px',
+              right: '20px',
+              background: 'rgba(255,255,255,0.1)',
+              border: 'none',
+              borderRadius: '50%',
+              width: '40px',
+              height: '40px',
+              color: 'white',
+              fontSize: '20px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'background 0.2s'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+          >
+            <X size={20} />
+          </button>
+          <img 
+            src={lightboxImage} 
+            alt="Status Foto Besar" 
+            style={{ 
+              maxWidth: '90%', 
+              maxHeight: '90vh', 
+              objectFit: 'contain', 
+              borderRadius: '12px', 
+              boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
+              cursor: 'default'
+            }} 
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
+
+      <ShareModal
+        isOpen={shareModalData.isOpen}
+        onClose={() => setShareModalData(prev => ({ ...prev, isOpen: false }))}
+        shareUrl={shareModalData.url}
+        shareTitle={shareModalData.title}
+      />
     </div>
   );
 };

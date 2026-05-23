@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useBambupedia } from '../context/BambupediaContext';
 import { db } from '../firebase/config';
-import { doc, onSnapshot, updateDoc, collection, query, where } from 'firebase/firestore';
+import { useArticles } from '../hooks/useFirestoreQueries';
+import { doc, onSnapshot, updateDoc, collection, query, where, getDoc, addDoc, arrayUnion, arrayRemove, increment } from 'firebase/firestore';
+import ShareModal from '../components/ShareModal';
 import { 
   User, Camera, Save, Copy, Share2, Award, Shield, CheckCircle, 
   TreeDeciduous, GraduationCap, Heart, MessageSquare, Gift, Edit3, X, Eye,
-  UploadCloud, FileText, Trash2, Send, ChevronRight
+  UploadCloud, FileText, Trash2, Send, ChevronRight, PlayCircle
 } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
@@ -61,7 +63,8 @@ const parseCoords = (locStr) => {
 };
 
 const ProfilePage = () => {
-  const { user, updateProfile, articles } = useAuth();
+  const { user, updateProfile } = useAuth();
+  const { data: articles = [] } = useArticles();
   const { plantings, maintenances, harvests } = useBambupedia();
   
   const [formData, setFormData] = useState({
@@ -80,17 +83,20 @@ const ProfilePage = () => {
   const [isEditingStatus, setIsEditingStatus] = useState(false);
   const [copied, setCopied] = useState(false);
   const [copiedPassport, setCopiedPassport] = useState(false);
+  const [lightboxImage, setLightboxImage] = useState(null);
   
-  // Real-time status interactions state
-  const [interactions, setInteractions] = useState({
-    likes: [],
-    shares: 0,
-    comments: [],
-    gifts: []
-  });
+  // Real-time statuses list state
+  const [statuses, setStatuses] = useState([]);
   
-  // Tab for showing comments or gifts lists
-  const [activeListTab, setActiveListTab] = useState(null); // 'comments' | 'gifts' | 'messages' | null
+  // Track expanded comments or gifts per status
+  const [expandedCommentsStatusId, setExpandedCommentsStatusId] = useState(null);
+  const [expandedGiftsStatusId, setExpandedGiftsStatusId] = useState(null);
+  const [showInbox, setShowInbox] = useState(false);
+
+  const [shareModalData, setShareModalData] = useState({ isOpen: false, url: '', title: '' });
+  const [commentText, setCommentText] = useState('');
+  const [activeCommentStatusId, setActiveCommentStatusId] = useState(null);
+
   const [myMatsCount, setMyMatsCount] = useState(0);
   const [directMessages, setDirectMessages] = useState([]);
 
@@ -127,32 +133,65 @@ const ProfilePage = () => {
         phone: user.phone || '',
         avatarUrl: user.avatarUrl || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + (user.username || 'default'),
         bioText: user.bioText || '',
-        statusText: user.statusText || '',
-        statusPhotos: user.statusPhotos || [],
-        statusVideo: user.statusVideo || ''
+        statusText: '',
+        statusPhotos: [],
+        statusVideo: ''
       });
     }
   }, [user]);
 
-  // Sync interactions from Firestore
+  // Sync statuses from Firestore
   useEffect(() => {
     if (user && user.id) {
-      const docRef = doc(db, "status_interactions", user.id);
-      const unsub = onSnapshot(docRef, (docSnap) => {
-        if (docSnap.exists()) {
-          setInteractions(docSnap.data());
-        } else {
-          setInteractions({
-            likes: [],
-            shares: 0,
-            comments: [],
-            gifts: []
-          });
-        }
-      }, (err) => console.error("Interactions sync error:", err));
+      const q = query(collection(db, "statuses"), where("userId", "==", user.id));
+      const unsub = onSnapshot(q, (snapshot) => {
+        const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        list.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+        setStatuses(list);
+      }, (err) => console.error("Statuses sync error:", err));
       return () => unsub();
     }
   }, [user]);
+
+  // Auto-migrate legacy status from user document and status_interactions document
+  useEffect(() => {
+    if (user && user.id && statuses.length === 0 && (user.statusText || (user.statusPhotos && user.statusPhotos.length > 0) || user.statusVideo)) {
+      const migrate = async () => {
+        try {
+          const docRef = doc(db, "status_interactions", user.id);
+          const docSnap = await getDoc(docRef);
+          let oldInteractions = { likes: [], comments: [], gifts: [], shares: 0 };
+          if (docSnap.exists()) {
+            oldInteractions = docSnap.data();
+          }
+          
+          await addDoc(collection(db, "statuses"), {
+            userId: user.id,
+            username: user.username || user.name || "user",
+            name: user.name || "User",
+            avatarUrl: user.avatarUrl || '',
+            statusText: user.statusText || '',
+            statusPhotos: user.statusPhotos || [],
+            statusVideo: user.statusVideo || '',
+            timestamp: Date.now() - 3600000,
+            likes: oldInteractions.likes || [],
+            comments: oldInteractions.comments || [],
+            gifts: oldInteractions.gifts || [],
+            shares: oldInteractions.shares || 0
+          });
+          
+          await updateDoc(doc(db, "users", user.id), {
+            statusText: '',
+            statusPhotos: [],
+            statusVideo: ''
+          });
+        } catch (err) {
+          console.error("Error migrating legacy status in profile:", err);
+        }
+      };
+      migrate();
+    }
+  }, [user, statuses]);
 
   if (!user) {
     return (
@@ -229,14 +268,93 @@ const ProfilePage = () => {
 
   const handleSaveStatus = async () => {
     setIsUploadingMedia(true);
+    // Update bio in user profile
     await updateProfile({
-      bioText: formData.bioText,
-      statusText: formData.statusText,
-      statusPhotos: formData.statusPhotos || [],
-      statusVideo: formData.statusVideo || ''
+      bioText: formData.bioText
     });
+
+    // Create new status document if there is content
+    if (formData.statusText.trim() || (formData.statusPhotos && formData.statusPhotos.length > 0) || formData.statusVideo) {
+      try {
+        await addDoc(collection(db, "statuses"), {
+          userId: user.id,
+          username: user.username || user.name || "user",
+          name: user.name || "User",
+          avatarUrl: user.avatarUrl || '',
+          statusText: formData.statusText,
+          statusPhotos: formData.statusPhotos || [],
+          statusVideo: formData.statusVideo || '',
+          timestamp: Date.now(),
+          likes: [],
+          comments: [],
+          gifts: [],
+          shares: 0
+        });
+
+        // Reset the status inputs in formData
+        setFormData(prev => ({
+          ...prev,
+          statusText: '',
+          statusPhotos: [],
+          statusVideo: ''
+        }));
+      } catch (err) {
+        console.error("Error creating status document:", err);
+        alert("❌ Gagal menyimpan status baru.");
+      }
+    }
+    
     setIsUploadingMedia(false);
     setIsEditingStatus(false);
+  };
+
+  const handleLike = async (status) => {
+    try {
+      const statusRef = doc(db, "statuses", status.id);
+      const hasLiked = (status.likes || []).includes(user.id);
+      await updateDoc(statusRef, {
+        likes: hasLiked ? arrayRemove(user.id) : arrayUnion(user.id)
+      });
+    } catch (err) {
+      console.error("Error liking status:", err);
+    }
+  };
+
+  const handleShare = async (status) => {
+    const shareUrl = `${window.location.origin}/#/portfolio/${user.username || user.id}`;
+    setShareModalData({
+      isOpen: true,
+      url: shareUrl,
+      title: `Lihat status terkini dari @${user.username || user.name} di BaMbooChain!`
+    });
+    try {
+      const statusRef = doc(db, "statuses", status.id);
+      await updateDoc(statusRef, { shares: increment(1) });
+    } catch (err) {
+      console.error("Error sharing status:", err);
+    }
+  };
+
+  const handleAddComment = async (e, status) => {
+    e.preventDefault();
+    if (!commentText.trim()) return;
+
+    const newComment = {
+      id: 'comment_' + Date.now(),
+      userId: user.id,
+      username: user.username || user.name || "Anonim",
+      text: commentText.trim(),
+      timestamp: Date.now()
+    };
+
+    try {
+      const statusRef = doc(db, "statuses", status.id);
+      await updateDoc(statusRef, { comments: arrayUnion(newComment) });
+      setCommentText('');
+      setActiveCommentStatusId(null);
+    } catch (err) {
+      console.error("Error commenting on status:", err);
+    }
   };
 
   const handleAvatarFileChange = (e) => {
@@ -575,12 +693,22 @@ const ProfilePage = () => {
                   <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <Edit3 size={14} color="var(--primary)" /> Deskripsi & Status Terkini
                   </span>
-                  <button 
-                    onClick={() => setIsEditingStatus(!isEditingStatus)}
-                    style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}
-                  >
-                    {isEditingStatus ? <><X size={14} /> Batal</> : <><Edit3 size={14} /> Update</>}
-                  </button>
+                  <div style={{ display: 'flex', gap: '15px' }}>
+                    {!isEditingStatus && (
+                      <button 
+                        onClick={() => setShowInbox(!showInbox)}
+                        style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}
+                      >
+                        <Send size={14} color="var(--primary)" /> Inbox ({directMessages.length})
+                      </button>
+                    )}
+                    <button 
+                      onClick={() => setIsEditingStatus(!isEditingStatus)}
+                      style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}
+                    >
+                      {isEditingStatus ? <><X size={14} /> Batal</> : <><Edit3 size={14} /> Update</>}
+                    </button>
+                  </div>
                 </div>
 
                 {isEditingStatus ? (
@@ -670,160 +798,251 @@ const ProfilePage = () => {
                   </div>
                 ) : (
                   <div>
-                    <div style={{ marginBottom: '15px' }}>
+                    <div style={{ marginBottom: '0px' }}>
                       <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 'bold', textTransform: 'uppercase' }}>Bio Kontributor</p>
                       <p style={{ margin: '4px 0 0 0', fontSize: '0.9rem', color: 'var(--text-main)', fontStyle: formData.bioText ? 'normal' : 'italic' }}>
                         {formData.bioText || "Belum ada bio diri yang ditambahkan."}
                       </p>
                     </div>
-                    
-                    <div style={{ background: 'var(--bg-card)', padding: '15px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-                      <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 'bold', textTransform: 'uppercase' }}>Status Terbaru</p>
-                      <p style={{ margin: '6px 0 12px 0', fontSize: '0.95rem', color: 'var(--text-main)', fontWeight: '500', lineHeight: '1.4' }}>
-                        "{formData.statusText || "Mari bersama menjaga kelestarian bambu Nusantara! 🌿"}"
-                      </p>
 
-                      {/* Render Status Media */}
-                      {formData.statusPhotos && formData.statusPhotos.length > 0 && (
-                        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(formData.statusPhotos.length, 3)}, 1fr)`, gap: '8px', marginBottom: '12px' }}>
-                          {formData.statusPhotos.map((photo, idx) => (
-                            <div key={idx} style={{ borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-color)', aspectRatio: '1/1' }}>
-                              <img src={photo} alt={`status ${idx+1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                            </div>
-                          ))}
+                    {showInbox && (
+                      <div style={{ marginTop: '20px', background: 'var(--bg-card)', borderRadius: '12px', padding: '15px', border: '1px solid var(--border-color)', maxHeight: '300px', overflowY: 'auto' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px' }}>
+                          <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--text-main)' }}>✉️ Pesan Masuk Privat ({directMessages.length})</span>
+                          <button onClick={() => setShowInbox(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}><X size={14} /></button>
                         </div>
-                      )}
-                      {formData.statusVideo && (
-                        <div style={{ marginBottom: '12px', borderRadius: '10px', overflow: 'hidden', border: '1px solid var(--border-color)' }}>
-                          <video src={formData.statusVideo} controls muted style={{ width: '100%', display: 'block', maxHeight: '300px', objectFit: 'contain', background: '#000' }} />
-                        </div>
-                      )}
-
-                      {/* Status Interactions Panel */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '20px', borderTop: '1px solid var(--border-color)', paddingTop: '10px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                          <Heart size={15} color={interactions.likes.length > 0 ? '#e03131' : 'var(--text-muted)'} fill={interactions.likes.length > 0 ? '#e03131' : 'none'} />
-                          <span><strong>{interactions.likes.length}</strong> Suka</span>
-                        </div>
-                        <div 
-                          onClick={() => setActiveListTab(activeListTab === 'comments' ? null : 'comments')}
-                          style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer' }}
-                        >
-                          <MessageSquare size={15} color="var(--primary)" />
-                          <span style={{ textDecoration: 'underline' }}><strong>{interactions.comments.length}</strong> Komentar</span>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                          <Share2 size={15} color="#228be6" />
-                          <span><strong>{interactions.shares}</strong> Bagikan</span>
-                        </div>
-                        <div 
-                          onClick={() => setActiveListTab(activeListTab === 'gifts' ? null : 'gifts')}
-                          style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer' }}
-                        >
-                          <Gift size={15} color="#f59f00" />
-                          <span style={{ textDecoration: 'underline' }}><strong>{interactions.gifts.length}</strong> Gift</span>
-                        </div>
-                        <div 
-                          onClick={() => setActiveListTab(activeListTab === 'messages' ? null : 'messages')}
-                          style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer' }}
-                        >
-                          <Send size={15} color="var(--primary)" />
-                          <span style={{ textDecoration: 'underline' }}><strong>{directMessages.length}</strong> Inbox</span>
-                        </div>
+                        {directMessages.length === 0 ? (
+                          <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', textAlign: 'center', margin: '15px 0' }}>Tidak ada pesan masuk.</p>
+                        ) : (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            {directMessages.map((msg, index) => (
+                              <div key={msg.id || index} style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '10px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <a 
+                                    href={`#/portfolio/${msg.senderUsername}`} 
+                                    style={{ fontWeight: 'bold', fontSize: '0.8rem', color: 'var(--primary)', textDecoration: 'none' }}
+                                  >
+                                    @{msg.senderUsername}
+                                  </a>
+                                  <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>
+                                    {new Date(msg.timestamp).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                  </span>
+                                </div>
+                                <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-main)', background: 'var(--bg-color)', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
+                                  {msg.messageText}
+                                </p>
+                                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                  <a 
+                                    href={`#/portfolio/${msg.senderUsername}`} 
+                                    style={{ fontSize: '0.7rem', color: 'var(--primary)', fontWeight: 'bold', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '2px' }}
+                                  >
+                                    Balas <ChevronRight size={10} />
+                                  </a>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                    </div>
+                    )}
                   </div>
                 )}
               </div>
 
-              {/* Collapsible Details Lists (Comments / Gifts) */}
-              {activeListTab === 'comments' && (
-                <div style={{ background: 'var(--bg-color)', borderRadius: '16px', padding: '20px', border: '1px solid var(--border-color)', marginBottom: '25px', maxHeight: '250px', overflowY: 'auto' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px' }}>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)' }}>💬 Komentar Status ({interactions.comments.length})</span>
-                    <button onClick={() => setActiveListTab(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}><X size={16} /></button>
+              {/* Status Feed */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '25px' }}>
+                <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  Riwayat Status ({statuses.length})
+                </p>
+                {statuses.length === 0 ? (
+                  <div style={{ background: 'var(--bg-card)', padding: '30px', borderRadius: '20px', border: '1px solid var(--border-color)', textAlign: 'center' }}>
+                    <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.9rem', fontStyle: 'italic' }}>
+                      Belum ada status yang dibagikan. Klik "Update" untuk membagikan pemikiran hijau Anda! 🌿
+                    </p>
                   </div>
-                  {interactions.comments.length === 0 ? (
-                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'center', margin: '20px 0' }}>Belum ada komentar.</p>
-                  ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                      {interactions.comments.map((comment, index) => (
-                        <div key={index} style={{ borderBottom: '1px solid rgba(0,0,0,0.03)', paddingBottom: '6px' }}>
-                          <span style={{ fontWeight: 'bold', fontSize: '0.8rem', color: 'var(--primary)' }}>@{comment.username}</span>
-                          <p style={{ margin: '2px 0 0 0', fontSize: '0.85rem', color: 'var(--text-main)' }}>{comment.text}</p>
+                ) : (
+                  statuses.map((status) => {
+                    const isCommentsExpanded = expandedCommentsStatusId === status.id;
+                    const isGiftsExpanded = expandedGiftsStatusId === status.id;
+                    
+                    return (
+                      <div 
+                        key={status.id} 
+                        style={{ 
+                          background: 'var(--bg-card)', 
+                          padding: '24px', 
+                          borderRadius: '20px', 
+                          border: '1px solid var(--border-color)',
+                          boxShadow: '0 4px 15px rgba(0,0,0,0.02)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '12px'
+                        }}
+                      >
+                        {/* Status Header */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ background: 'rgba(12,166,120,0.1)', color: 'var(--primary)', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '6px', textTransform: 'uppercase' }}>
+                            Status Terkini
+                          </span>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                            {status.timestamp ? new Date(status.timestamp).toLocaleString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''}
+                          </span>
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
 
-              {activeListTab === 'gifts' && (
-                <div style={{ background: 'var(--bg-color)', borderRadius: '16px', padding: '20px', border: '1px solid var(--border-color)', marginBottom: '25px', maxHeight: '250px', overflowY: 'auto' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px' }}>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)' }}>🎁 Daftar Gift Diterima ({interactions.gifts.length})</span>
-                    <button onClick={() => setActiveListTab(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}><X size={16} /></button>
-                  </div>
-                  {interactions.gifts.length === 0 ? (
-                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'center', margin: '20px 0' }}>Belum menerima gift.</p>
-                  ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                      {interactions.gifts.map((gift, index) => (
-                        <div key={index} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(0,0,0,0.03)', paddingBottom: '6px' }}>
-                          <div>
-                            <span style={{ fontWeight: 'bold', fontSize: '0.8rem', color: 'var(--text-main)' }}>@{gift.senderUsername}</span>
-                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginLeft: '8px' }}>
-                              {new Date(gift.timestamp).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
-                            </span>
-                          </div>
-                          <span style={{ color: '#f59f00', fontWeight: 'bold', fontSize: '0.85rem' }}>+{gift.amount} BMC</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
+                        {/* Status Text */}
+                        <p style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text-main)', fontWeight: '500', lineHeight: '1.5' }}>
+                          "{status.statusText}"
+                        </p>
 
-              {activeListTab === 'messages' && (
-                <div style={{ background: 'var(--bg-color)', borderRadius: '16px', padding: '20px', border: '1px solid var(--border-color)', marginBottom: '25px', maxHeight: '350px', overflowY: 'auto' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px' }}>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)' }}>✉️ Pesan Masuk Privat ({directMessages.length})</span>
-                    <button onClick={() => setActiveListTab(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}><X size={16} /></button>
-                  </div>
-                  {directMessages.length === 0 ? (
-                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'center', margin: '20px 0' }}>Tidak ada pesan masuk.</p>
-                  ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      {directMessages.map((msg, index) => (
-                        <div key={msg.id || index} style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '10px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <a 
-                              href={`#/portfolio/${msg.senderUsername}`} 
-                              style={{ fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--primary)', textDecoration: 'none' }}
-                            >
-                              @{msg.senderUsername}
-                            </a>
-                            <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-                              {new Date(msg.timestamp).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                        {/* Status Photos */}
+                        {status.statusPhotos && status.statusPhotos.length > 0 && (
+                          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(status.statusPhotos.length, 3)}, 1fr)`, gap: '8px' }}>
+                            {status.statusPhotos.map((photo, idx) => (
+                              <div 
+                                key={idx} 
+                                onClick={() => setLightboxImage(photo)}
+                                style={{ borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-color)', aspectRatio: '1/1', cursor: 'pointer', transition: 'transform 0.2s' }}
+                                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+                                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                              >
+                                <img src={photo} alt={`status ${idx+1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Status Video */}
+                        {status.statusVideo && (
+                          <div style={{ borderRadius: '10px', overflow: 'hidden', border: '1px solid var(--border-color)' }}>
+                            <video src={status.statusVideo} controls muted style={{ width: '100%', display: 'block', maxHeight: '300px', objectFit: 'contain', background: '#000' }} />
+                          </div>
+                        )}
+
+                        {/* Status Interactions Panel */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', borderTop: '1px solid var(--border-color)', paddingTop: '12px', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+                          <button 
+                            onClick={() => handleLike(status)} 
+                            style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '4px', color: (status.likes || []).includes(user.id) ? '#e03131' : 'var(--text-muted)', cursor: 'pointer', fontWeight: 'bold', padding: 0 }}
+                          >
+                            <Heart size={16} fill={(status.likes || []).includes(user.id) ? '#e03131' : 'none'} color={(status.likes || []).includes(user.id) ? '#e03131' : 'var(--text-muted)'} />
+                            <span><strong>{(status.likes || []).length}</strong> Suka</span>
+                          </button>
+                          
+                          <button 
+                            onClick={() => {
+                              setExpandedCommentsStatusId(isCommentsExpanded ? null : status.id);
+                              setExpandedGiftsStatusId(null);
+                            }}
+                            style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--text-muted)', cursor: 'pointer', fontWeight: 'bold', padding: 0 }}
+                          >
+                            <MessageSquare size={16} color="var(--primary)" />
+                            <span style={{ textDecoration: 'underline' }}>
+                              <strong>{(status.comments || []).length}</strong> Komentar
                             </span>
-                          </div>
-                          <p style={{ margin: 0, fontSize: '0.88rem', color: 'var(--text-main)', background: 'var(--bg-card)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                            {msg.messageText}
-                          </p>
-                          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                            <a 
-                              href={`#/portfolio/${msg.senderUsername}`} 
-                              style={{ fontSize: '0.75rem', color: 'var(--primary)', fontWeight: 'bold', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '2px' }}
-                            >
-                              Balas <ChevronRight size={12} />
-                            </a>
-                          </div>
+                          </button>
+
+                          <button 
+                            onClick={() => handleShare(status)} 
+                            style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--text-muted)', cursor: 'pointer', fontWeight: 'bold', padding: 0 }}
+                          >
+                            <Share2 size={16} color="#228be6" />
+                            <span><strong>{status.shares || 0}</strong> Bagikan</span>
+                          </button>
+
+                          <button 
+                            onClick={() => {
+                              setExpandedGiftsStatusId(isGiftsExpanded ? null : status.id);
+                              setExpandedCommentsStatusId(null);
+                            }}
+                            style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--text-muted)', cursor: 'pointer', fontWeight: 'bold', padding: 0 }}
+                          >
+                            <Gift size={16} color="#f59f00" />
+                            <span style={{ textDecoration: 'underline' }}>
+                              <strong>{(status.gifts || []).length}</strong> Gift
+                            </span>
+                          </button>
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
+
+                        {/* Quick Action buttons */}
+                        <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
+                          <button 
+                            onClick={() => {
+                              setActiveCommentStatusId(activeCommentStatusId === status.id ? null : status.id);
+                              setCommentText('');
+                            }}
+                            style={{ flex: 1, background: 'rgba(12,166,120,0.05)', color: 'var(--primary)', border: 'none', padding: '6px 12px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer' }}
+                          >
+                            💬 Tulis Balasan / Komentar
+                          </button>
+                        </div>
+
+                        {/* Comment input form */}
+                        {activeCommentStatusId === status.id && (
+                          <form onSubmit={(e) => handleAddComment(e, status)} style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
+                            <input 
+                              type="text" 
+                              value={commentText} 
+                              onChange={(e) => setCommentText(e.target.value)}
+                              placeholder="Tulis balasan..."
+                              style={{ flex: 1, padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-card)', color: 'var(--text-main)', fontSize: '0.85rem' }}
+                            />
+                            <button type="submit" style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 'bold', cursor: 'pointer' }}>Kirim</button>
+                          </form>
+                        )}
+
+                        {/* Collapsible Comments List for this Status */}
+                        {isCommentsExpanded && (
+                          <div style={{ background: 'var(--bg-color)', borderRadius: '12px', padding: '15px', border: '1px solid var(--border-color)', marginTop: '8px', maxHeight: '200px', overflowY: 'auto' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', borderBottom: '1px solid var(--border-color)', paddingBottom: '6px' }}>
+                              <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--text-main)' }}>💬 Komentar Status ({status.comments ? status.comments.length : 0})</span>
+                              <button onClick={() => setExpandedCommentsStatusId(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}><X size={14} /></button>
+                            </div>
+                            {(!status.comments || status.comments.length === 0) ? (
+                              <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', textAlign: 'center', margin: '10px 0' }}>Belum ada komentar.</p>
+                            ) : (
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                {status.comments.map((comment, index) => (
+                                  <div key={index} style={{ borderBottom: '1px solid rgba(0,0,0,0.03)', paddingBottom: '4px' }}>
+                                    <span style={{ fontWeight: 'bold', fontSize: '0.78rem', color: 'var(--primary)' }}>@{comment.username}</span>
+                                    <p style={{ margin: '2px 0 0 0', fontSize: '0.82rem', color: 'var(--text-main)' }}>{comment.text}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Collapsible Gifts List for this Status */}
+                        {isGiftsExpanded && (
+                          <div style={{ background: 'var(--bg-color)', borderRadius: '12px', padding: '15px', border: '1px solid var(--border-color)', marginTop: '8px', maxHeight: '200px', overflowY: 'auto' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', borderBottom: '1px solid var(--border-color)', paddingBottom: '6px' }}>
+                              <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--text-main)' }}>🎁 Daftar Gift Diterima ({status.gifts ? status.gifts.length : 0})</span>
+                              <button onClick={() => setExpandedGiftsStatusId(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}><X size={14} /></button>
+                            </div>
+                            {(!status.gifts || status.gifts.length === 0) ? (
+                              <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', textAlign: 'center', margin: '10px 0' }}>Belum menerima gift.</p>
+                            ) : (
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                {status.gifts.map((gift, index) => (
+                                  <div key={index} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(0,0,0,0.03)', paddingBottom: '4px' }}>
+                                    <div>
+                                      <span style={{ fontWeight: 'bold', fontSize: '0.78rem', color: 'var(--text-main)' }}>@{gift.senderUsername}</span>
+                                      <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginLeft: '6px' }}>
+                                        {new Date(gift.timestamp).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
+                                      </span>
+                                    </div>
+                                    <span style={{ color: '#f59f00', fontWeight: 'bold', fontSize: '0.8rem' }}>+{gift.amount} BMC</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
+                )}
+              </div>
 
               {/* Eco Metrics Grid */}
               <div style={{ marginBottom: '25px' }}>
@@ -982,6 +1201,77 @@ const ProfilePage = () => {
         </div>
 
       </div>
+
+      {/* Lightbox Modal */}
+      {lightboxImage && (
+        <div 
+          onClick={() => setLightboxImage(null)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.9)',
+            backdropFilter: 'blur(10px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 999999,
+            padding: '20px',
+            cursor: 'zoom-out',
+            animation: 'fadeIn 0.25s ease'
+          }}
+        >
+          <button
+            onClick={() => setLightboxImage(null)}
+            style={{
+              position: 'absolute',
+              top: '20px',
+              right: '20px',
+              background: 'rgba(255,255,255,0.1)',
+              border: 'none',
+              borderRadius: '50%',
+              width: '40px',
+              height: '40px',
+              color: 'white',
+              fontSize: '20px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'background 0.2s'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+          >
+            <X size={20} />
+          </button>
+          <img 
+            src={lightboxImage} 
+            alt="Status Foto Besar" 
+            style={{ 
+              maxWidth: '90%', 
+              maxHeight: '90vh', 
+              objectFit: 'contain', 
+              borderRadius: '12px', 
+              boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
+              cursor: 'default'
+            }} 
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
+
+      {/* Share Modal */}
+      {shareModalData.isOpen && (
+        <ShareModal 
+          isOpen={shareModalData.isOpen}
+          onClose={() => setShareModalData(prev => ({ ...prev, isOpen: false }))}
+          url={shareModalData.url}
+          title={shareModalData.title}
+        />
+      )}
     </div>
   );
 };
