@@ -282,7 +282,7 @@ const AcademyPage = () => {
       setIsUploadMatModalOpen(false);
     } catch (err) {
       console.error("Error uploading material:", err);
-      alert("❌ Gagal mengunggah materi.");
+      alert("❌ Gagal mengunggah materi: " + err.message);
     }
   };
 
@@ -305,7 +305,7 @@ const AcademyPage = () => {
       setIsEditMatModalOpen(false);
     } catch (err) {
       console.error("Error editing material:", err);
-      alert("❌ Gagal memperbarui materi.");
+      alert("❌ Gagal memperbarui materi: " + err.message);
     }
   };
 
