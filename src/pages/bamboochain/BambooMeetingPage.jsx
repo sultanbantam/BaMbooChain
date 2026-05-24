@@ -1124,28 +1124,6 @@ Mari berdiskusi bersama untuk membangun ekosistem bambu berkelanjutan! 🌱`;
 
                   <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     <button 
-                      type="submit" 
-                      className="btn btn-primary"
-                      disabled={!jitsiLoaded}
-                      style={{ 
-                        width: '100%', 
-                        padding: '14px', 
-                        borderRadius: '12px', 
-                        fontWeight: '800', 
-                        fontSize: '0.95rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '8px',
-                        opacity: jitsiLoaded ? 1 : 0.6,
-                        cursor: jitsiLoaded ? 'pointer' : 'not-allowed'
-                      }}
-                    >
-                      <Video size={18} />
-                      <span>{jitsiLoaded ? 'Gabung Rapat Sekarang' : 'Memuat Modul Video...'}</span>
-                    </button>
-
-                    <button 
                       type="button" 
                       onClick={() => {
                         if (!roomName.trim()) {
@@ -1179,7 +1157,29 @@ Mari berdiskusi bersama untuk membangun ekosistem bambu berkelanjutan! 🌱`;
                       }}
                     >
                       <Share2 size={16} />
-                      <span>Buka di Tab Baru / Aplikasi Jitsi (Durasi Tanpa Batas)</span>
+                      <span>Gabung Rapat Sekarang (Durasi Tanpa Batas)</span>
+                    </button>
+
+                    <button 
+                      type="submit" 
+                      className="btn btn-primary"
+                      disabled={!jitsiLoaded}
+                      style={{ 
+                        width: '100%', 
+                        padding: '14px', 
+                        borderRadius: '12px', 
+                        fontWeight: '800', 
+                        fontSize: '0.95rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        opacity: jitsiLoaded ? 1 : 0.6,
+                        cursor: jitsiLoaded ? 'pointer' : 'not-allowed'
+                      }}
+                    >
+                      <Video size={18} />
+                      <span>{jitsiLoaded ? 'Gabung Rapat Sekarang (Durasi 5 Menit)' : 'Memuat Modul Video...'}</span>
                     </button>
                   </div>
                 </form>
