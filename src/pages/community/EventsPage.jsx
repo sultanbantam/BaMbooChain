@@ -93,12 +93,6 @@ const EventsPage = () => {
       objectPosition: 'top',
       zIndex: 0
     },
-    featuredOverlay: {
-      position: 'absolute',
-      inset: 0,
-      background: 'linear-gradient(transparent, rgba(0,0,0,0.9))',
-      zIndex: 1
-    },
     featuredContent: {
       position: 'relative',
       zIndex: 2,
@@ -198,7 +192,7 @@ const EventsPage = () => {
             style={styles.featuredImg}
             alt="Seren Taun Kasepuhan Cibarani"
           />
-          <div style={styles.featuredOverlay}></div>
+          <div className="featured-event-overlay"></div>
           <div style={styles.featuredContent}>
             <div style={styles.badge}>Featured Event</div>
             <h2 style={{ fontSize: 'clamp(1.5rem, 5vw, 3rem)', fontWeight: 900, marginBottom: '20px' }}>

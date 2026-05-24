@@ -81,7 +81,7 @@ const TaxonomyAnalysis = () => {
   };
 
   return (
-    <div style={{ paddingTop: 'var(--navbar-height)', paddingBottom: '100px', minHeight: '100vh', background: 'linear-gradient(to bottom, #fdfdfd, #f4f7f4)' }}>
+    <div className="light-gradient-bg" style={{ paddingTop: 'var(--navbar-height)', paddingBottom: '100px', minHeight: '100vh' }}>
       <div className="container" style={{ maxWidth: '800px' }}>
         
         <div style={{ marginBottom: '30px' }}>

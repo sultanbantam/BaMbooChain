@@ -43,7 +43,6 @@
 /* Sections & Main Backgrounds */
 [data-theme="dark"] section,
 [data-theme="dark"] .section-bg-light,
-[data-theme="dark"] [style*="background: linear-gradient"],
 [data-theme="dark"] [style*="background: #f4f7f4"],
 [data-theme="dark"] [style*="background: #f8f9fa"] {
   background: #0f1117 !important;
@@ -627,4 +626,20 @@ section {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Light Gradient Page Background */
+.light-gradient-bg {
+  background: linear-gradient(to bottom, #fdfdfd, #f4f7f4);
+}
+[data-theme="dark"] .light-gradient-bg {
+  background: #0f1117 !important;
+}
+
+/* Featured Event Card Overlay */
+.featured-event-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(transparent, rgba(0,0,0,0.9));
+  z-index: 1;
 }
