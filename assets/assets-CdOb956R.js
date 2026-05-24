@@ -1,0 +1,1 @@
+var e=e=>{if(e.startsWith(`http`))return e;let t=`./`;if(t===`/`&&window.location.hostname.includes(`github.io`)){let e=window.location.pathname.split(`/`);e[1]&&(t=`/${e[1]}/`)}return`${t.endsWith(`/`)?t:`${t}/`}${e.startsWith(`/`)?e.slice(1):e}`};export{e as t};
