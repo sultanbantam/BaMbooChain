@@ -18,9 +18,13 @@ const AuthModal = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [name, setName] = useState('');
-  const [otp, setOtp] = useState('');
   const [captchaInput, setCaptchaInput] = useState('');
-  const [generatedCaptcha, setGeneratedCaptcha] = useState('');
+  const [generatedCaptcha, setGeneratedCaptcha] = useState(() => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let result = '';
+    for (let i = 0; i < 5; i++) result += chars.charAt(Math.floor(Math.random() * chars.length));
+    return result;
+  });
   const [referralCode, setReferralCode] = useState('');
 
   const generateCaptcha = () => {
@@ -31,7 +35,6 @@ const AuthModal = () => {
   };
 
   useEffect(() => {
-    generateCaptcha();
     // Auto-fill referral code from URL if present
     const urlParams = new URLSearchParams(window.location.search || window.location.hash.split('?')[1] || '');
     const refCode = urlParams.get('ref');
@@ -56,6 +59,7 @@ const AuthModal = () => {
 
   const strength = getPasswordStrength(password);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     if (isAuthModalOpen) {
       setActiveTab(authModalInitialTab || 'login');

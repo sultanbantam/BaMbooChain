@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Globe, Bell, ChevronDown, Menu, X, Shield, Layout, TreeDeciduous, Truck, Factory, Wallet, Leaf, ShoppingCart, Users, GraduationCap, BarChart3, TrendingUp, User, Sun, Moon } from 'lucide-react';
 import { getAssetUrl } from '../utils/assets';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import AdSpace from './AdSpace';
 import { useLanguage } from '../context/LanguageContext';
 import { useWeb3 } from '../context/Web3Context';
@@ -16,10 +16,9 @@ const Navbar = () => {
   const [showNotifMenu, setShowNotifMenu] = useState(false);
 
   const { language, toggleLanguage, t } = useLanguage();
-  const { walletAddress, isConnected, connectWallet, isConnecting, isWalletModalOpen, openWalletModal, closeWalletModal } = useWeb3();
+  const { walletAddress, connectWallet, isWalletModalOpen, closeWalletModal } = useWeb3();
   const { user, isAuthenticated, openLoginModal, logout, markAsRead, markAllAsRead, clearNotifications } = useAuth();
   const { isDark, toggleTheme } = useTheme();
-  const navigate = useNavigate();
 
   const userNotifications = user?.notifications || [];
   const unreadCount = userNotifications.filter(n => !n.isRead).length;
@@ -31,7 +30,6 @@ const Navbar = () => {
   }, []);
 
   const isMobile = windowWidth <= 1100;
-  const shortAddress = walletAddress ? `${walletAddress.substring(0, 6)}...${walletAddress.substring(38)}` : '';
 
   const bambooNusaFeatures = [
     { label: t('feature_overview'), path: '/bamboochain', icon: <Layout size={16} /> },
@@ -83,7 +81,8 @@ const Navbar = () => {
       closeWalletModal();
     } else if (wallet.deepLink) {
       const currentUrl = window.location.href;
-      window.location.href = wallet.deepLink + currentUrl;
+      const deepLinkUrl = wallet.deepLink + currentUrl;
+      window.open(deepLinkUrl, '_blank');
     } else {
       alert(`Silakan instal ${wallet.name} atau gunakan dApp Browser di dalam aplikasi dompet Anda.`);
     }

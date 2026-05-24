@@ -1,8 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useWeb3 } from '../context/Web3Context';
 import { getUserTier, getBMCNumber } from './MembershipPage';
-import { MessageSquare, Vote, Users, ExternalLink, Bell } from 'lucide-react';
+import { MessageSquare, Vote, Users, ExternalLink, Bell, Award, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { db } from '../firebase/config';
+import { collection, query, getDocs, limit } from 'firebase/firestore';
+
+const FALLBACK_PEGIAT = [
+  {
+    username: "albantani",
+    name: "Sultan Al-Bantani",
+    avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=albantani",
+    bmcBalance: "125000",
+    bioText: "Pegiat bambu Cibarani, fokus pada arsitektur berkelanjutan dan konservasi lahan adat."
+  },
+  {
+    username: "hariadi_k",
+    name: "Prof. Hariadi Kusuma",
+    avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=hariadi",
+    bmcBalance: "45000",
+    bioText: "Peneliti material bambu laminasi dan pemegang hak paten joint mortar pengisi."
+  },
+  {
+    username: "ujang_winata",
+    name: "Abah Ujang Winata",
+    avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=ujang",
+    bmcBalance: "15200",
+    bioText: "Pelopor pengawetan bambu metode Kemiri alami di Cisadane hulu."
+  },
+  {
+    username: "elizabeth_wong",
+    name: "Dr. Elizabeth Wong",
+    avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=elizabeth",
+    bmcBalance: "8500",
+    bioText: "Spesialis ekologi karbon dan reboisasi bambu untuk perdagangan kredit karbon."
+  },
+  {
+    username: "rian_h",
+    name: "Rian Hidayat, S.Ars.",
+    avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=rian",
+    bmcBalance: "1200",
+    bioText: "Arsitek hijau junior yang mendesain hunian vernakular modern berbasis bambu."
+  }
+];
 
 const PROPOSALS = [
   {
@@ -45,6 +85,41 @@ const CommunityPage = () => {
   const userTier = getUserTier(bmcBalance);
   const bmcNum = getBMCNumber(bmcBalance);
   const [voted, setVoted] = useState({});
+  const [pegiatList, setPegiatList] = useState([]);
+  const [loadingPegiat, setLoadingPegiat] = useState(true);
+
+  useEffect(() => {
+    const fetchPegiat = async () => {
+      try {
+        const usersRef = collection(db, "users");
+        const q = query(usersRef, limit(10));
+        const querySnapshot = await getDocs(q);
+        const list = [];
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          if (data.username) {
+            list.push({ id: doc.id, ...data });
+          }
+        });
+        
+        // Merge with fallback profiles to ensure complete view
+        const mergedList = [...list];
+        FALLBACK_PEGIAT.forEach(fallback => {
+          if (!mergedList.some(item => item.username.toLowerCase() === fallback.username.toLowerCase())) {
+            mergedList.push(fallback);
+          }
+        });
+        
+        setPegiatList(mergedList.slice(0, 5));
+      } catch (err) {
+        console.error("Error fetching pegiat:", err);
+        setPegiatList(FALLBACK_PEGIAT);
+      } finally {
+        setLoadingPegiat(false);
+      }
+    };
+    fetchPegiat();
+  }, []);
 
   const canVote = (minBMC) => isConnected && bmcNum >= minBMC;
 
@@ -145,6 +220,47 @@ const CommunityPage = () => {
                 );
               })}
             </div>
+
+            {/* Bamboo Meeting Promo Card */}
+            <div style={{
+              marginTop: '24px',
+              background: 'linear-gradient(135deg, rgba(12, 166, 120, 0.08) 0%, rgba(34, 139, 230, 0.08) 100%)',
+              border: '1px dashed var(--primary)',
+              borderRadius: '16px',
+              padding: '24px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '16px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span style={{ fontSize: '2rem' }}>🎥</span>
+                <div>
+                  <h3 style={{ fontSize: '1.2rem', margin: 0, color: 'var(--text-main)' }}>Bamboo Meeting</h3>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '2px 0 0 0' }}>Rapat & Diskusi Online Instan</p>
+                </div>
+              </div>
+              <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', lineHeight: '1.6', margin: 0 }}>
+                Ingin mendiskusikan proposal di atas secara langsung? Adakan rapat, diskusi, atau presentasi online instan bersama komunitas pegiat bambu.
+              </p>
+              <div>
+                <Link to="/bamboochain/meeting" style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  background: 'var(--primary)',
+                  color: 'white',
+                  padding: '10px 20px',
+                  borderRadius: '30px',
+                  textDecoration: 'none',
+                  fontSize: '0.88rem',
+                  fontWeight: '700',
+                  boxShadow: '0 4px 12px rgba(12, 166, 120, 0.25)',
+                  transition: 'all 0.2s'
+                }}>
+                  Mulai Rapat Online &rarr;
+                </Link>
+              </div>
+            </div>
           </div>
 
           {/* Kolom Kanan */}
@@ -174,6 +290,103 @@ const CommunityPage = () => {
                   🔗 Hubungkan Wallet
                 </button>
               )}
+            </div>
+
+            {/* Temukan Pegiat & Ecoportfolio */}
+            <div style={{ background: 'var(--bg-card)', borderRadius: '16px', padding: '20px', border: '1px solid var(--border-color)' }}>
+              <h3 style={{ fontSize: '1rem', marginBottom: '16px', display: 'flex', gap: '8px', alignItems: 'center', color: 'var(--text-main)' }}>
+                <Award size={18} color="var(--primary)" /> Temukan Pegiat & Ecoportfolio 🎋
+              </h3>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {pegiatList.map((u, i) => {
+                  const tier = getUserTier(String(u.bmcBalance || '0'));
+                  let tierLabel = 'Pegiat Bambu';
+                  let tierGradient = 'linear-gradient(135deg, #495057, #868e96)';
+                  
+                  if (tier === 'builder') {
+                    tierLabel = 'Ecosystem Builder';
+                    tierGradient = 'linear-gradient(135deg, #e67700, #fcc419)';
+                  } else if (tier === 'guardian') {
+                    tierLabel = 'Bamboo Guardian';
+                    tierGradient = 'linear-gradient(135deg, #1971c2, #339af0)';
+                  } else if (tier === 'seed') {
+                    tierLabel = 'Green Seed';
+                    tierGradient = 'linear-gradient(135deg, #2f9e44, #40c057)';
+                  }
+
+                  return (
+                    <div 
+                      key={u.username || i} 
+                      style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '12px', 
+                        padding: '10px', 
+                        borderRadius: '12px', 
+                        border: '1px solid transparent',
+                        transition: 'all 0.2s ease',
+                        background: 'rgba(255, 255, 255, 0.02)'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'var(--bg-secondary)';
+                        e.currentTarget.style.borderColor = 'rgba(12, 166, 120, 0.2)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.02)';
+                        e.currentTarget.style.borderColor = 'transparent';
+                      }}
+                    >
+                      <img 
+                        src={u.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.username}`} 
+                        alt={u.name || u.username}
+                        style={{ 
+                          width: '40px', 
+                          height: '40px', 
+                          borderRadius: '50%', 
+                          objectFit: 'cover', 
+                          border: '2px solid var(--primary)',
+                          background: 'var(--bg-secondary)'
+                        }} 
+                      />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontWeight: '700', fontSize: '0.85rem', color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {u.name || u.username}
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px', flexWrap: 'wrap' }}>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>@{u.username}</span>
+                          <span style={{
+                            fontSize: '0.62rem',
+                            fontWeight: 'bold',
+                            padding: '2px 6px',
+                            borderRadius: '8px',
+                            color: 'white',
+                            background: tierGradient,
+                            whiteSpace: 'nowrap'
+                          }}>
+                            {tierLabel}
+                          </span>
+                        </div>
+                      </div>
+                      <Link 
+                        to={`/portfolio/${u.username.toLowerCase()}`} 
+                        style={{ 
+                          fontSize: '0.8rem', 
+                          color: 'var(--primary)', 
+                          fontWeight: '700', 
+                          textDecoration: 'none', 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: '2px',
+                          flexShrink: 0
+                        }}
+                      >
+                        Lihat <ChevronRight size={14} />
+                      </Link>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Pengumuman */}

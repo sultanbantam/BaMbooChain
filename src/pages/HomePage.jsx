@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Target, TrendingUp, Handshake, Leaf, MapPin, CheckCircle, ArrowRight, Tag, Star, X, Sparkles, ShoppingBag, Globe, Users, 
-  Database, Briefcase, UploadCloud, HeartHandshake, BookOpen, Search, MessageSquare, Coins, GraduationCap 
+  Database, Briefcase, UploadCloud, HeartHandshake, BookOpen, Search, MessageSquare, Coins, GraduationCap, Video 
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getAssetUrl } from '../utils/assets';
@@ -38,13 +38,24 @@ const HomePage = () => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
     }, 5000); // Ganti slide otomatis setiap 5 detik
 
-    const timeout = setTimeout(() => setShowWelcome(true), 1500);
+    // Check if ?room is present in search or hash to suppress onboarding
+    const urlParams = new URLSearchParams(window.location.search);
+    let hasRoom = urlParams.has('room');
+    if (!hasRoom && window.location.hash.includes('?')) {
+      const hashQuery = window.location.hash.split('?')[1];
+      const hashParams = new URLSearchParams(hashQuery);
+      hasRoom = hashParams.has('room');
+    }
+
+    let timeout;
+    if (!hasRoom) {
+      timeout = setTimeout(() => setShowWelcome(true), 1500);
+    }
+
     return () => {
       clearInterval(timer);
-      clearTimeout(timeout);
+      if (timeout) clearTimeout(timeout);
     };
-
-    return () => clearInterval(timer);
   }, []);
 
   const closeWelcome = () => {
@@ -563,7 +574,8 @@ const HomePage = () => {
                     { id: 11, icon: <GraduationCap />, color: '#474747', bg: '#f1f3f5', label: t('guide_opt11'), path: '/bamboochain/academy' },
                     { id: 14, icon: <GraduationCap />, color: '#7950f2', bg: '#f3f0ff', label: t('guide_opt14'), path: '/academy' },
                     { id: 12, icon: <Users />, color: '#0ca678', bg: '#ebfbee', label: t('guide_opt12'), path: '/bamboochain/kodiba' },
-                    { id: 13, icon: <Sparkles />, color: '#228be6', bg: '#e7f5ff', label: t('guide_opt13'), path: '/events' }
+                    { id: 13, icon: <Sparkles />, color: '#228be6', bg: '#e7f5ff', label: t('guide_opt13'), path: '/events' },
+                    { id: 15, icon: <Video />, color: '#0ca678', bg: '#ebfbee', label: t('guide_opt15'), path: '/bamboochain/meeting' }
                   ].map(opt => (
                     <Link key={opt.id} to={opt.path} onClick={(e) => {
                       if (opt.id === 12) {

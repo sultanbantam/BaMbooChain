@@ -88,11 +88,25 @@ export const createKnowledgeItem = async ({ form, file, user, onProgress }) => {
     fileSize = file.size;
     filePath = `knowledge/${user?.id || 'guest'}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
     const fileRef = ref(storage, filePath);
-    if (onProgress) {
-      fileUrl = await uploadFileHelper(fileRef, file, onProgress);
-    } else {
-      await uploadBytes(fileRef, file);
-      fileUrl = await getDownloadURL(fileRef);
+    try {
+      if (onProgress) {
+        fileUrl = await uploadFileHelper(fileRef, file, onProgress);
+      } else {
+        await uploadBytes(fileRef, file);
+        fileUrl = await getDownloadURL(fileRef);
+      }
+    } catch (storageError) {
+      // Storage upload gagal (CORS, network, rules) — tetap lanjut simpan metadata
+      console.warn('[Knowledge] File upload ke Firebase Storage gagal, melanjutkan tanpa file:', storageError.message);
+      // Kembalikan pesan error ke caller melalui properti opsional
+      if (onProgress) onProgress(-1); // sinyal error upload
+      fileUrl = '';
+      filePath = '';
+      // Lempar error dengan flag khusus agar UI bisa membedakan
+      const err = new Error(`FILE_UPLOAD_FAILED: ${storageError.message}`);
+      err.code = storageError.code || 'storage/unknown';
+      err.fileUploadOnly = true;
+      throw err;
     }
   }
 
@@ -161,11 +175,26 @@ export const updateKnowledgeItem = async ({ itemId, form, file, user, onProgress
     fileSize = file.size;
     filePath = `knowledge/${user?.id || 'guest'}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
     const fileRef = ref(storage, filePath);
-    if (onProgress) {
-      fileUrl = await uploadFileHelper(fileRef, file, onProgress);
-    } else {
-      await uploadBytes(fileRef, file);
-      fileUrl = await getDownloadURL(fileRef);
+    try {
+      if (onProgress) {
+        fileUrl = await uploadFileHelper(fileRef, file, onProgress);
+      } else {
+        await uploadBytes(fileRef, file);
+        fileUrl = await getDownloadURL(fileRef);
+      }
+    } catch (storageError) {
+      console.warn('[Knowledge] File upload ke Firebase Storage gagal (update), melanjutkan tanpa file baru:', storageError.message);
+      if (onProgress) onProgress(-1);
+      // Pertahankan file lama jika ada
+      fileUrl = form.fileUrl || '';
+      filePath = form.filePath || '';
+      fileName = form.fileName || '';
+      fileType = form.fileType || '';
+      fileSize = form.fileSize || 0;
+      const err = new Error(`FILE_UPLOAD_FAILED: ${storageError.message}`);
+      err.code = storageError.code || 'storage/unknown';
+      err.fileUploadOnly = true;
+      throw err;
     }
   }
 
@@ -188,11 +217,11 @@ export const updateKnowledgeItem = async ({ itemId, form, file, user, onProgress
   payload.searchText = extractSearchText(payload);
   await updateDoc(doc(db, KNOWLEDGE_COLLECTION, itemId), payload);
 
-  // Sinkronkan ke koleksi validations
+  // Sinkronkan ke koleksi validations - gunakan query berfilter, bukan full scan
   const validationsRef = collection(db, 'validations');
-  const q = query(validationsRef);
+  const q = query(validationsRef, where('details.knowledgeId', '==', itemId));
   const snapshot = await getDocs(q);
-  const valDoc = snapshot.docs.find(d => d.data().details?.knowledgeId === itemId);
+  const valDoc = snapshot.docs[0]; // Ambil dokumen pertama yang cocok
 
   if (valDoc) {
     const valData = valDoc.data();
@@ -231,14 +260,48 @@ export const updateKnowledgeItem = async ({ itemId, form, file, user, onProgress
   }
 };
 
-export const subscribeKnowledgeItems = ({ status = 'approved', callback, onError }) => {
-  const q = query(collection(db, KNOWLEDGE_COLLECTION), orderBy('createdAt', 'desc'));
+export const subscribeApprovedKnowledgeItems = ({ callback, onError, limitCount = 30 }) => {
+  const q = query(
+    collection(db, KNOWLEDGE_COLLECTION),
+    where('status', '==', 'approved'),
+    orderBy('createdAt', 'desc'),
+    limit(limitCount)
+  );
   return onSnapshot(
     q,
     (snapshot) => {
-      const items = snapshot.docs
-        .map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }))
-        .filter((item) => status === 'all' || item.status === status);
+      const items = snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
+      callback(items);
+    },
+    onError
+  );
+};
+
+export const subscribeUserKnowledgeSubmissions = ({ userId, callback, onError }) => {
+  const q = query(
+    collection(db, KNOWLEDGE_COLLECTION),
+    where('createdBy', '==', userId),
+    orderBy('createdAt', 'desc')
+  );
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      const items = snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
+      callback(items);
+    },
+    onError
+  );
+};
+
+export const subscribeKnowledgeItems = ({ status = 'approved', callback, onError, limitCount = 50 }) => {
+  const q = status === 'all'
+    ? query(collection(db, KNOWLEDGE_COLLECTION), orderBy('createdAt', 'desc'), limit(limitCount))
+    : query(collection(db, KNOWLEDGE_COLLECTION), where('status', '==', status), orderBy('createdAt', 'desc'), limit(limitCount));
+    
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      const items = snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
       callback(items);
     },
     onError
@@ -248,14 +311,12 @@ export const subscribeKnowledgeItems = ({ status = 'approved', callback, onError
 export const getApprovedKnowledgeItems = async (maxItems = 80) => {
   const q = query(
     collection(db, KNOWLEDGE_COLLECTION),
+    where('status', '==', 'approved'),
     orderBy('createdAt', 'desc'),
-    limit(Math.max(maxItems, 120))
+    limit(maxItems)
   );
   const snapshot = await getDocs(q);
-  return snapshot.docs
-    .map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }))
-    .filter((item) => item.status === 'approved')
-    .slice(0, maxItems);
+  return snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
 };
 
 export const updateKnowledgeStatus = async ({ itemId, status, admin, adminNotes = '' }) => {
@@ -279,11 +340,11 @@ export const updateKnowledgeStatus = async ({ itemId, status, admin, adminNotes 
     ...statusFields
   });
 
-  // Sinkronkan status ke validations
+  // Sinkronkan status ke validations - query berfilter untuk efisiensi
   const validationsRef = collection(db, 'validations');
-  const q = query(validationsRef);
+  const q = query(validationsRef, where('details.knowledgeId', '==', itemId));
   const snapshot = await getDocs(q);
-  const valDoc = snapshot.docs.find(d => d.data().details?.knowledgeId === itemId);
+  const valDoc = snapshot.docs[0];
 
   if (valDoc) {
     await updateDoc(doc(db, 'validations', valDoc.id), {

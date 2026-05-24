@@ -8,6 +8,7 @@ import { useWeb3 } from '../../context/Web3Context';
 import { useAuth } from '../../context/AuthContext';
 import { Link, useLocation } from 'react-router-dom';
 import BackButton from '../../components/BackButton';
+import { useValidations } from '../../hooks/useFirestoreQueries';
 
 // ======================================
 // TAB COMPONENTS
@@ -1097,7 +1098,8 @@ const ContributeDataBMC = () => {
 };
 
 const ValidatorBMC = () => {
-  const { user, stakeBmc, pendingValidations, approveValidation } = useAuth();
+  const { user, stakeBmc, approveValidation } = useAuth();
+  const { data: pendingValidations = [] } = useValidations(user?.id);
   const staked = user?.stakedBalance || 0;
   
   let tierName = "Non-Validator";

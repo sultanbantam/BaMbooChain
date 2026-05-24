@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { UploadCloud, Library, FileText, Image, CheckCircle, Clock, Search, Link as LinkIcon } from 'lucide-react';
 import BackButton from '../../components/BackButton';
 import { useAuth } from '../../context/AuthContext';
-import { createKnowledgeItem, updateKnowledgeItem, KNOWLEDGE_TYPES, subscribeKnowledgeItems } from '../../utils/knowledgeService';
+import { createKnowledgeItem, updateKnowledgeItem, KNOWLEDGE_TYPES, subscribeApprovedKnowledgeItems, subscribeUserKnowledgeSubmissions } from '../../utils/knowledgeService';
 
 const initialForm = {
   title: '',
@@ -50,8 +50,7 @@ const KnowledgePage = () => {
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    const unsubscribe = subscribeKnowledgeItems({
-      status: 'approved',
+    const unsubscribe = subscribeApprovedKnowledgeItems({
       callback: setItems,
       onError: (error) => console.error('Knowledge library sync error:', error)
     });
@@ -60,12 +59,9 @@ const KnowledgePage = () => {
 
   useEffect(() => {
     if (!user?.id) return;
-    const unsubscribe = subscribeKnowledgeItems({
-      status: 'all',
-      callback: (allDocs) => {
-        const userDocs = allDocs.filter((doc) => doc.createdBy === user.id);
-        setMySubmissions(userDocs);
-      },
+    const unsubscribe = subscribeUserKnowledgeSubmissions({
+      userId: user.id,
+      callback: setMySubmissions,
       onError: (error) => console.error('My submissions sync error:', error)
     });
     return unsubscribe;
@@ -155,21 +151,77 @@ const KnowledgePage = () => {
       return;
     }
 
+    // Validasi user harus login
+    if (!user?.id || user.id === 'guest') {
+      setMessage('⚠️ Anda harus login terlebih dahulu untuk mengunggah sumber.');
+      return;
+    }
+
     setIsSubmitting(true);
     setUploadProgress(0);
     setMessage('');
+
+    const uploadTimeout = setTimeout(() => {
+      setMessage('⏱️ Upload memakan waktu terlalu lama.\n\n🔧 Solusi: Firebase Storage memerlukan konfigurasi CORS untuk domain sultanbantam.github.io. Jalankan perintah berikut di terminal:\n\nnpx firebase-tools storage:cors set cors.json --project bamboochain-official\n\nAtau kirim tanpa file dengan menghapus pilihan file terlebih dahulu.');
+      setIsSubmitting(false);
+      setUploadProgress(0);
+    }, 45000); 
+
     try {
       if (editingId) {
         await updateKnowledgeItem({ itemId: editingId, form, file, user, onProgress: setUploadProgress });
-        setMessage('Sumber berhasil diperbarui dan dikirim kembali ke antrean verifikasi.');
+        clearTimeout(uploadTimeout);
+        setMessage('✅ Sumber berhasil diperbarui dan dikirim kembali ke antrean verifikasi.');
       } else {
         await createKnowledgeItem({ form, file, user, onProgress: setUploadProgress });
-        setMessage('Sumber berhasil dikirim. Statusnya pending sampai validator memverifikasi.');
+        clearTimeout(uploadTimeout);
+        setMessage('✅ Sumber berhasil dikirim. Statusnya pending sampai validator memverifikasi.');
       }
       handleCancel();
     } catch (error) {
+      clearTimeout(uploadTimeout);
       console.error('Knowledge upload failed:', error);
-      setMessage(`Gagal mengirim sumber: ${error.message}`);
+
+      const isStorageCorsError = error.code === 'storage/retry-limit-exceeded' 
+        || error.code === 'storage/unknown'
+        || error.code === 'storage/canceled'
+        || error.message?.includes('retry-limit-exceeded')
+        || error.message?.includes('CORS')
+        || error.message?.includes('Max retry');
+
+      if (isStorageCorsError) {
+        const saveWithoutFile = window.confirm(
+          '⚠️ Upload file gagal karena Firebase Storage CORS belum dikonfigurasi untuk domain ini.\n\n' +
+          'Apakah Anda ingin menyimpan sumber ini TANPA file lampiran?\n' +
+          '(Metadata, ringkasan, dan teks tetap tersimpan — file bisa ditambahkan setelah CORS dikonfigurasi)'
+        );
+
+        if (saveWithoutFile) {
+          try {
+            if (editingId) {
+              await updateKnowledgeItem({ itemId: editingId, form, file: null, user, onProgress: null });
+              setMessage('✅ Sumber berhasil diperbarui tanpa lampiran file. Tambahkan file setelah CORS Storage dikonfigurasi.');
+            } else {
+              await createKnowledgeItem({ form, file: null, user, onProgress: null });
+              setMessage('✅ Sumber berhasil dikirim tanpa lampiran file. Status: pending verifikasi. File bisa ditambahkan nanti.');
+            }
+            handleCancel();
+          } catch (firestoreError) {
+            setMessage(`❌ Gagal menyimpan ke database: ${firestoreError.message}\n\nCek koneksi internet dan Firebase Firestore rules.`);
+          }
+        } else {
+          setMessage('🔧 Untuk memperbaiki upload file, jalankan di terminal:\n\nnpx firebase-tools@latest storage:cors set cors.json --project bamboochain-official\n\nLalu deploy ulang. File cors.json sudah dibuat di root project.');
+        }
+        return;
+      }
+
+      let errMsg = `❌ Gagal mengirim sumber: ${error.message}`;
+      if (error.code === 'storage/unauthorized' || error.message?.includes('unauthorized')) {
+        errMsg = '🔒 Akses ditolak Firebase Storage. Pastikan Anda sudah login dengan akun yang benar.';
+      } else if (error.message?.includes('permission-denied') || error.code === 'permission-denied') {
+        errMsg = '🔒 Izin Firestore ditolak. Hubungi admin untuk memeriksa security rules database.';
+      }
+      setMessage(errMsg);
     } finally {
       setIsSubmitting(false);
       setUploadProgress(0);
@@ -220,7 +272,12 @@ const KnowledgePage = () => {
                 
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <button disabled={isSubmitting} type="submit" style={{ ...primaryButtonStyle, flex: 1, opacity: isSubmitting ? 0.7 : 1 }}>
-                    {isSubmitting ? (uploadProgress > 0 ? `Mengirim (${uploadProgress}%)...` : 'Mengirim...') : (editingId ? 'Simpan Perubahan' : 'Kirim ke Validator')}
+                    {isSubmitting ? (
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
+                        <span style={{ width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)', borderTop: '2px solid white', borderRadius: '50%', animation: 'spin 0.8s linear infinite', display: 'inline-block' }} />
+                        {uploadProgress > 0 ? `Mengunggah file (${uploadProgress}%)...` : 'Memproses...'}
+                      </span>
+                    ) : (editingId ? 'Simpan Perubahan' : 'Kirim ke Validator')}
                   </button>
                   {editingId && (
                     <button 
@@ -240,7 +297,47 @@ const KnowledgePage = () => {
                     </button>
                   )}
                 </div>
-                {message && <div style={{ fontSize: '0.9rem', color: message.startsWith('Gagal') ? '#e03131' : 'var(--primary)', fontWeight: '700' }}>{message}</div>}
+
+                {/* Progress Bar */}
+                {isSubmitting && uploadProgress > 0 && (
+                  <div style={{ marginTop: '4px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '4px' }}>
+                      <span>Mengupload ke Firebase Storage...</span>
+                      <span>{uploadProgress}%</span>
+                    </div>
+                    <div style={{ width: '100%', height: '6px', background: 'var(--bg-secondary)', borderRadius: '3px', overflow: 'hidden' }}>
+                      <div style={{ width: `${uploadProgress}%`, height: '100%', background: 'var(--primary)', borderRadius: '3px', transition: 'width 0.3s ease' }} />
+                    </div>
+                  </div>
+                )}
+
+                {/* Status Message */}
+                {message && (
+                  <div style={{ 
+                    fontSize: '0.9rem', 
+                    padding: '12px 16px',
+                    borderRadius: '12px',
+                    fontWeight: '600',
+                    lineHeight: '1.6',
+                    whiteSpace: 'pre-line',
+                    color: message.startsWith('❌') || message.startsWith('🔒') || message.startsWith('🚫') || message.startsWith('⚠️') ? '#c92a2a' 
+                         : message.startsWith('⏱️') || message.startsWith('📡') ? '#e67700' 
+                         : 'var(--primary)',
+                    background: message.startsWith('❌') || message.startsWith('🔒') || message.startsWith('🚫') || message.startsWith('⚠️') ? '#fff5f5' 
+                               : message.startsWith('⏱️') || message.startsWith('📡') ? '#fff9db'
+                               : '#ebfbee',
+                    border: `1px solid ${message.startsWith('❌') || message.startsWith('🔒') || message.startsWith('🚫') || message.startsWith('⚠️') ? '#ffc9c9' : message.startsWith('⏱️') || message.startsWith('📡') ? '#ffd43b' : '#b2f2bb'}`
+                  }}>
+                    {message}
+                  </div>
+                )}
+
+                {/* Brave Private Mode Warning */}
+                {isSubmitting && (
+                  <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', padding: '8px 12px', borderRadius: '8px', background: 'var(--bg-secondary)', lineHeight: '1.5' }}>
+                    💡 Jika upload sangat lambat: Brave Private Window dapat memblokir Firebase Storage. Coba gunakan tab <strong>biasa (non-private)</strong>.
+                  </div>
+                )}
               </form>
             </section>
 

@@ -82,32 +82,72 @@ export const MarketplaceProvider = ({ children }) => {
   }, [user]);
 
   const addProduct = async (newProduct) => {
-    const productData = {
+    const productPayload = {
+      name: newProduct.name,
+      description: newProduct.description || '',
+      priceIdr: newProduct.priceIdr,
+      category: newProduct.category,
+      image: newProduct.image || '',
+      stock: newProduct.stock || 10,
+      vendor: user?.username || 'Unknown Vendor'
+    };
+
+    const firestoreData = {
       ...newProduct,
       vendor: user?.username || 'Unknown Vendor',
-      createdAt: serverTimestamp()
+      createdAt: serverTimestamp(),
+      isProduct: true
     };
+
     try {
-      // Validation
       if (!newProduct.name || !newProduct.priceIdr || !newProduct.category) {
         console.error("Missing required product fields");
         return null;
       }
 
-      const docRef = await addDoc(collection(db, "marketplace_products"), {
-        ...newProduct,
-        isProduct: true, // Tag as legitimate product
-        createdAt: serverTimestamp()
+      const response = await fetch('/api/v1/market/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(productPayload)
       });
-      return { id: docRef.id, ...newProduct };
+
+      if (response.ok) {
+        const savedProduct = await response.json();
+        console.log('[MarketplaceContext] Product saved via microservice API.');
+        try {
+          await setDoc(doc(db, "marketplace_products", savedProduct.id), {
+            ...firestoreData,
+            id: savedProduct.id
+          });
+        } catch (dbErr) {
+          console.warn('[MarketplaceContext] Failed to write fallback doc to Firestore:', dbErr);
+        }
+        return savedProduct;
+      }
+      throw new Error('Microservice returned non-OK status');
     } catch (err) {
-      console.error(err);
-      return null;
+      console.warn('[MarketplaceContext] Microservice offline or error. Falling back to direct Firestore write:', err);
+      try {
+        const docRef = await addDoc(collection(db, "marketplace_products"), firestoreData);
+        return { id: docRef.id, ...firestoreData };
+      } catch (firestoreErr) {
+        console.error('[MarketplaceContext] Direct Firestore fallback write failed:', firestoreErr);
+        return null;
+      }
     }
   };
 
   const createOrder = async (orderData) => {
-    const newOrder = {
+    const orderPayload = {
+      items: orderData.items,
+      totalIdr: orderData.totalIdr,
+      shippingAddress: orderData.shippingAddress || {},
+      paymentMethod: orderData.paymentMethod || 'bmc',
+      userId: user?.id || 'guest',
+      userName: user?.username || 'Guest'
+    };
+
+    const firestoreData = {
       ...orderData,
       userId: user?.id || 'guest',
       userName: user?.username || 'Guest',
@@ -116,42 +156,131 @@ export const MarketplaceProvider = ({ children }) => {
     };
 
     try {
-      const docRef = await addDoc(collection(db, "marketplace_orders"), newOrder);
-      setCart([]); // Clear cart after success
-      return { id: docRef.id, ...newOrder };
+      if (!orderData.items || !orderData.totalIdr) {
+        console.error("Missing required order fields");
+        return null;
+      }
+
+      const response = await fetch('/api/v1/market/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderPayload)
+      });
+
+      if (response.ok) {
+        const savedOrder = await response.json();
+        console.log('[MarketplaceContext] Order created via microservice API.');
+        try {
+          await setDoc(doc(db, "marketplace_orders", savedOrder.id), {
+            ...firestoreData,
+            id: savedOrder.id,
+            status: savedOrder.status || 'pending'
+          });
+        } catch (dbErr) {
+          console.warn('[MarketplaceContext] Failed to write fallback order to Firestore:', dbErr);
+        }
+        setCart([]); // Clear cart after success
+        return savedOrder;
+      }
+      throw new Error('Microservice returned non-OK status');
     } catch (err) {
-      console.error(err);
-      return null;
+      console.warn('[MarketplaceContext] Microservice offline or error. Falling back to direct Firestore write:', err);
+      try {
+        const docRef = await addDoc(collection(db, "marketplace_orders"), firestoreData);
+        setCart([]); // Clear cart after success
+        return { id: docRef.id, ...firestoreData };
+      } catch (firestoreErr) {
+        console.error('[MarketplaceContext] Direct Firestore fallback order write failed:', firestoreErr);
+        return null;
+      }
     }
   };
 
   const updateOrderStatus = async (orderId, status) => {
     try {
-      await updateDoc(doc(db, "marketplace_orders", orderId), { status });
-      return true;
+      const response = await fetch(`/api/v1/market/orders/${orderId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      });
+
+      if (response.ok) {
+        console.log('[MarketplaceContext] Order status updated via microservice API.');
+        try {
+          await updateDoc(doc(db, "marketplace_orders", orderId), { status });
+        } catch (dbErr) {
+          console.warn('[MarketplaceContext] Failed to update order status in Firestore fallback:', dbErr);
+        }
+        return true;
+      }
+      throw new Error('Microservice returned non-OK status');
     } catch (err) {
-      console.error(err);
-      return false;
+      console.warn('[MarketplaceContext] Microservice offline or error. Falling back to direct Firestore update:', err);
+      try {
+        await updateDoc(doc(db, "marketplace_orders", orderId), { status });
+        return true;
+      } catch (firestoreErr) {
+        console.error('[MarketplaceContext] Direct Firestore fallback status update failed:', firestoreErr);
+        return false;
+      }
     }
   };
 
   const deleteProduct = async (productId) => {
     try {
-      await deleteDoc(doc(db, "marketplace_products", productId));
-      return true;
+      const response = await fetch(`/api/v1/market/products/${productId}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        console.log('[MarketplaceContext] Product deleted via microservice API.');
+        try {
+          await deleteDoc(doc(db, "marketplace_products", productId));
+        } catch (dbErr) {
+          console.warn('[MarketplaceContext] Failed to delete product in Firestore fallback:', dbErr);
+        }
+        return true;
+      }
+      throw new Error('Microservice returned non-OK status');
     } catch (err) {
-      console.error("Delete Product Error:", err);
-      return false;
+      console.warn('[MarketplaceContext] Microservice offline or error. Falling back to direct Firestore delete:', err);
+      try {
+        await deleteDoc(doc(db, "marketplace_products", productId));
+        return true;
+      } catch (firestoreErr) {
+        console.error('[MarketplaceContext] Direct Firestore fallback delete failed:', firestoreErr);
+        return false;
+      }
     }
   };
 
   const updateProduct = async (productId, data) => {
     try {
-      await updateDoc(doc(db, "marketplace_products", productId), data);
-      return true;
+      const response = await fetch(`/api/v1/market/products/${productId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      if (response.ok) {
+        console.log('[MarketplaceContext] Product updated via microservice API.');
+        try {
+          await updateDoc(doc(db, "marketplace_products", productId), data);
+        } catch (dbErr) {
+          console.warn('[MarketplaceContext] Failed to update product in Firestore fallback:', dbErr);
+        }
+        return true;
+      }
+      throw new Error('Microservice returned non-OK status');
     } catch (err) {
-      console.error("Update Product Error:", err);
-      return false;
+      console.warn('[MarketplaceContext] Microservice offline or error. Falling back to direct Firestore update:', err);
+      try {
+        await updateDoc(doc(db, "marketplace_products", productId), data);
+        return true;
+      } catch (firestoreErr) {
+        console.error('[MarketplaceContext] Direct Firestore fallback update failed:', firestoreErr);
+        return false;
+      }
     }
   };
 

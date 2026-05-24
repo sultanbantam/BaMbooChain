@@ -49,7 +49,7 @@ function PlantPastPage() {
 
     if (addPendingValidation) {
       addPendingValidation({
-        title: `Riwayat Tanam: ${amount} Tunas`,
+        title: `Riwayat Tanam: ${amount} Bibit`,
         gps: location,
         tags: 'Riwayat, ' + type,
         details: { pemilik: 'Petani Lokal', tipe: type, status: status },
@@ -93,7 +93,7 @@ function PlantPastPage() {
           <form onSubmit={handleSubmit}>
             <div style={{ marginBottom: '20px' }}>
               <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: '700', color: 'var(--text-main)', marginBottom: '8px' }}>
-                Jumlah Tunas (Seeds)
+                Jumlah Bibit
               </label>
               <input 
                 type="number" 

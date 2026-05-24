@@ -6,9 +6,11 @@ import BackButton from '../../components/BackButton';
 
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { usePartnerApplications } from '../../hooks/useFirestoreQueries';
 
 const FarmerListPage = () => {
-  const { partnerApps } = useAuth();
+  const { user } = useAuth();
+  const { data: partnerApps = [] } = usePartnerApplications(user?.id, user?.username);
   const navigate = useNavigate();
 
   const staticFarmers = [

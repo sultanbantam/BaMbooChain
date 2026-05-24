@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
-import { BrowserProvider, Contract, formatUnits } from 'ethers';
+import { BrowserProvider, JsonRpcProvider, Contract, formatUnits } from 'ethers';
 
 const BMC_CONTRACT_ADDRESS = '0x812d9709f0A53982606b823Ee61d5CA216F7F9c0';
 
@@ -12,12 +12,32 @@ const BMC_ABI = [
   'function totalSupply() view returns (uint256)',
 ];
 
+const BSC_RPCS = [
+  'https://bsc-rpc.publicnode.com',
+  'https://bsc-dataseed.binance.org/',
+  'https://binance.llamarpc.com',
+  'https://1rpc.io/bsc'
+];
+
 const BSC_CHAIN = {
   chainId: '0x38',
   chainName: 'BNB Smart Chain',
   nativeCurrency: { name: 'BNB', symbol: 'BNB', decimals: 18 },
-  rpcUrls: ['https://bsc-dataseed.binance.org/'],
+  rpcUrls: BSC_RPCS,
   blockExplorerUrls: ['https://bscscan.com'],
+};
+
+const getReadOnlyProvider = async () => {
+  for (const rpcUrl of BSC_RPCS) {
+    try {
+      const provider = new JsonRpcProvider(rpcUrl, 56);
+      await provider.getBlockNumber();
+      return provider;
+    } catch (err) {
+      console.warn(`Fallback RPC failed: ${rpcUrl}. Trying next...`, err.message);
+    }
+  }
+  throw new Error('All fallback RPCs failed.');
 };
 
 const Web3Context = createContext();
@@ -37,9 +57,14 @@ export const Web3Provider = ({ children }) => {
 
   // Baca saldo BMC dari smart contract
   const fetchBMCBalance = useCallback(async (address) => {
-    if (!window.ethereum || !address) return;
+    if (!address) return;
     try {
-      const provider = new BrowserProvider(window.ethereum);
+      let provider;
+      if (window.ethereum) {
+        provider = new BrowserProvider(window.ethereum);
+      } else {
+        provider = await getReadOnlyProvider();
+      }
       const contract = new Contract(BMC_CONTRACT_ADDRESS, BMC_ABI, provider);
       const [balance, decimals] = await Promise.all([
         contract.balanceOf(address),
@@ -57,7 +82,12 @@ export const Web3Provider = ({ children }) => {
   // Baca info token (nama, symbol, total supply)
   const fetchTokenInfo = useCallback(async () => {
     try {
-      const provider = new BrowserProvider(window.ethereum);
+      let provider;
+      if (window.ethereum) {
+        provider = new BrowserProvider(window.ethereum);
+      } else {
+        provider = await getReadOnlyProvider();
+      }
       const contract = new Contract(BMC_CONTRACT_ADDRESS, BMC_ABI, provider);
       const [name, symbol, totalSupply, decimals] = await Promise.all([
         contract.name(),
@@ -78,8 +108,14 @@ export const Web3Provider = ({ children }) => {
 
   // Baca saldo BNB (native)
   const fetchBNBBalance = useCallback(async (address) => {
+    if (!address) return;
     try {
-      const provider = new BrowserProvider(window.ethereum);
+      let provider;
+      if (window.ethereum) {
+        provider = new BrowserProvider(window.ethereum);
+      } else {
+        provider = await getReadOnlyProvider();
+      }
       const balance = await provider.getBalance(address);
       setBnbBalance(parseFloat(formatUnits(balance, 18)).toFixed(4));
     } catch (err) {
@@ -134,7 +170,10 @@ export const Web3Provider = ({ children }) => {
 
   // Auto-reconnect + event listener
   useEffect(() => {
-    if (!window.ethereum) return;
+    if (!window.ethereum) {
+      fetchTokenInfo();
+      return;
+    }
 
     // Cek jika sebelumnya sudah terkoneksi
     window.ethereum.request({ method: 'eth_accounts' }).then(accounts => {
@@ -145,7 +184,12 @@ export const Web3Provider = ({ children }) => {
         fetchBMCBalance(address);
         fetchBNBBalance(address);
         fetchTokenInfo();
+      } else {
+        fetchTokenInfo();
       }
+    }).catch((err) => {
+      console.warn("Failed to check eth_accounts:", err);
+      fetchTokenInfo();
     });
 
     // Dengarkan perubahan akun

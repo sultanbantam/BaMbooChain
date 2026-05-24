@@ -40,10 +40,6 @@ export const translations = {
     nav_community: "Komunitas",
     nav_bamboochain: "bambuNUSA",
     nav_careers: "Karir",
-    nav_login: "Masuk",
-    nav_join: "Daftar",
-    nav_membership: "Keanggotaan",
-    nav_faq: "FAQ",
     nav_onchain: "On-Chain",
     nav_bc_overview: "Ringkasan",
     nav_bc_plantation: "Penanaman",
@@ -224,6 +220,7 @@ export const translations = {
     guide_opt12: "Mau jadi anggota Koperasi (KoDiBa)",
     guide_opt13: "Mau ikut event atau kegiatan bambu",
     guide_opt14: "Mau belajar tentang BMC",
+    guide_opt15: "Mau rapat atau diskusi online (Bamboo Meeting)",
 
     // Marketplace
     market_title: "bambuNUSA Marketplace",
@@ -374,10 +371,6 @@ export const translations = {
     nav_community: "Community",
     nav_bamboochain: "bambuNUSA",
     nav_careers: "Careers",
-    nav_login: "Login",
-    nav_join: "Join",
-    nav_membership: "Membership",
-    nav_faq: "FAQ",
     nav_onchain: "On-Chain",
     nav_bc_overview: "Overview",
     nav_bc_plantation: "Plantation",
@@ -542,6 +535,7 @@ export const translations = {
     guide_opt12: "Join Digital Cooperative (KoDiBa)",
     guide_opt13: "Join bamboo events or activities",
     guide_opt14: "Want to learn about BMC",
+    guide_opt15: "Want to host a meeting or online discussion (Bamboo Meeting)",
 
     // Marketplace
     market_title: "bambuNUSA Marketplace",

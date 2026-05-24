@@ -4,18 +4,20 @@ import { useLanguage } from '../context/LanguageContext';
 import { Shield, Users, MapPin, CheckCircle, XCircle, Clock, Eye, Filter, Download, Search, BookOpen } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import BackButton from '../components/BackButton';
+import { usePartnerApplications, useLocationProposals } from '../hooks/useFirestoreQueries';
 
 const AdminPortalPage = () => {
   const { t } = useLanguage();
   const { 
     user, 
     isAuthenticated, 
-    partnerApps, 
-    locationProposals, 
     approvePartnerApp, 
     rejectPartnerApp, 
     approveLocation 
   } = useAuth();
+  
+  const { data: partnerApps = [] } = usePartnerApplications(user?.id, user?.username);
+  const { data: locationProposals = [] } = useLocationProposals(user?.id, user?.username);
   
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('partners'); // 'partners' or 'locations'

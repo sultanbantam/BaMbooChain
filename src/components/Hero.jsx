@@ -1,6 +1,5 @@
 import { Leaf, Box } from 'lucide-react';
 import { getAssetUrl } from '../utils/assets';
-import { donateCrypto } from '../utils/web3';
 import { useLanguage } from '../context/LanguageContext';
 import { useNavigate } from 'react-router-dom';
 

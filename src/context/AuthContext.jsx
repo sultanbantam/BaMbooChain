@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+/* eslint-disable react-refresh/only-export-components */
+import React, { createContext, useContext, useEffect } from 'react';
 import { 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword, 
@@ -22,8 +23,10 @@ import {
   addDoc,
   serverTimestamp
 } from "firebase/firestore";
-import { auth, db } from "../firebase/config";
+import { auth, db, functions } from "../firebase/config";
 import { requestForToken } from "../utils/NotificationService";
+import { useAuthStore } from "../store/useAuthStore";
+import { httpsCallable } from "firebase/functions";
 
 const AuthContext = createContext();
 
@@ -36,15 +39,24 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [authModalInitialTab, setAuthModalInitialTab] = useState('login'); // 'login' or 'signup'
-  const [activeToast, setActiveToast] = useState(null);
-  const [pendingValidations, setPendingValidations] = useState([]);
-  const [partnerApps, setPartnerApps] = useState([]);
-  const [locationProposals, setLocationProposals] = useState([]);
-  const [articles, setArticles] = useState([]);
+  const {
+    user,
+    isAuthenticated,
+    isAuthModalOpen,
+    authModalInitialTab,
+    activeToast,
+    setUser,
+    setIsAuthenticated,
+    openLoginModal,
+    openSignupModal,
+    closeModal,
+    setActiveToast
+  } = useAuthStore();
+
+  const pendingValidations = [];
+  const partnerApps = [];
+  const locationProposals = [];
+  const articles = [];
 
   // Firebase Auth Observer
   useEffect(() => {
@@ -112,7 +124,7 @@ export const AuthProvider = ({ children }) => {
                   });
                 }
               });
-            } catch(fbErr) {
+            } catch {
                console.warn("Firebase referral query blocked. Falling back to local demo storage.");
             }
 
@@ -185,53 +197,7 @@ export const AuthProvider = ({ children }) => {
     };
   }, []);
 
-  // Firestore Sync: Global Data (Admins see all, Users see theirs)
-  useEffect(() => {
-    if (!db) return;
 
-    // 1. Partner Applications Sync
-    const partnerAppsRef = collection(db, "partner_applications");
-    const qPartner = user?.username === 'admin_yayasan' 
-      ? partnerAppsRef 
-      : query(partnerAppsRef, where("userId", "==", user?.id || "guest"));
-
-    const unsubscribePartners = onSnapshot(qPartner, (snapshot) => {
-      const apps = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setPartnerApps(apps);
-    }, (err) => console.error("PartnerApps Sync Error:", err));
-
-    // 2. Location Proposals Sync
-    const locationPropsRef = collection(db, "location_proposals");
-    const qLoc = user?.username === 'admin_yayasan'
-      ? locationPropsRef
-      : query(locationPropsRef, where("userId", "==", user?.id || "guest"));
-
-    const unsubscribeLocs = onSnapshot(qLoc, (snapshot) => {
-      const locs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setLocationProposals(locs);
-    }, (err) => console.error("LocationProps Sync Error:", err));
-
-    // 3. Pending Validations (Global for now)
-    const validationsRef = collection(db, "validations");
-    const unsubscribeValidations = onSnapshot(validationsRef, (snapshot) => {
-      const vals = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setPendingValidations(vals);
-    }, (err) => console.error("Validations Sync Error:", err));
-
-    // 4. Articles Sync (Global)
-    const articlesRef = collection(db, "articles");
-    const unsubscribeArticles = onSnapshot(articlesRef, (snapshot) => {
-      const arts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setArticles(arts);
-    }, (err) => console.error("Articles Sync Error:", err));
-
-    return () => {
-      unsubscribePartners();
-      unsubscribeLocs();
-      unsubscribeValidations();
-      unsubscribeArticles();
-    };
-  }, [user?.id, user?.username]);
 
   // Sync older knowledge items that don't have validation entries
   useEffect(() => {
@@ -388,7 +354,7 @@ export const AuthProvider = ({ children }) => {
         const fullData = userDoc.data();
         setUser(fullData);
         setIsAuthenticated(true);
-        setIsAuthModalOpen(false);
+        closeModal();
         addNotification(`Selamat datang kembali, ${fullData.username}!`, 'success');
         return true;
       }
@@ -475,7 +441,7 @@ export const AuthProvider = ({ children }) => {
       
       setUser(newUser);
       setIsAuthenticated(true);
-      setIsAuthModalOpen(false);
+      closeModal();
       addNotification(`Selamat bergabung di BaMbooChain! Akun Anda berhasil dibuat.`, 'success');
       return true;
     } catch (err) {
@@ -582,19 +548,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('yayasan_user');
   };
 
-  const openLoginModal = () => {
-    setAuthModalInitialTab('login');
-    setIsAuthModalOpen(true);
-  };
 
-  const openSignupModal = () => {
-    setAuthModalInitialTab('signup');
-    setIsAuthModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsAuthModalOpen(false);
-  };
 
   const addReward = async (amount, description, category = 'Earn') => {
     if (!user) return;
@@ -687,72 +641,13 @@ export const AuthProvider = ({ children }) => {
     }
 
     try {
-      // 1. Search for receiver user by walletAddress
-      const q = query(collection(db, "users"), where("walletAddress", "==", destinationAddress));
-      const querySnapshot = await getDocs(q);
-      
-      if (querySnapshot.empty) {
-        alert("❌ Transfer gagal. Alamat dompet tujuan tidak terdaftar di ekosistem BaMbooChain!");
-        return false;
-      }
-      
-      const receiverDoc = querySnapshot.docs[0];
-      const receiverId = receiverDoc.id;
-      
-      // Prevent transferring to self
-      if (receiverId === user.id) {
-        alert("❌ Transfer gagal. Anda tidak dapat mengirim token BMC ke alamat dompet Anda sendiri!");
-        return false;
-      }
-      
-      const shortAddr = destinationAddress.length > 10 ? `${destinationAddress.substring(0,6)}...${destinationAddress.substring(destinationAddress.length-4)}` : destinationAddress;
-      const senderShort = user.walletAddress.length > 10 ? `${user.walletAddress.substring(0,6)}...${user.walletAddress.substring(user.walletAddress.length-4)}` : user.walletAddress;
-      
-      // 2. Prepare transactions
-      const newTxSender = {
-        id: 'tx_trf_' + Math.random().toString(36).substr(2, 9),
-        type: 'Transfer',
-        amount: `-${amount}`,
-        date: new Date().toISOString().split('T')[0],
-        status: 'Selesai',
-        description: `Transfer BMC ke ${shortAddr}`
-      };
-      
-      const newTxReceiver = {
-        id: 'tx_rcv_' + Math.random().toString(36).substr(2, 9),
-        type: 'Receive',
-        amount: `+${amount}`,
-        date: new Date().toISOString().split('T')[0],
-        status: 'Selesai',
-        description: `Menerima BMC dari ${senderShort}`
-      };
-      
-      // 3. Update Sender local state (Receiver will be updated via real-time onSnapshot)
-      const updatedUser = { 
-        ...user, 
-        bmcBalance: user.bmcBalance - amount,
-        transactions: [newTxSender, ...(user.transactions || [])]
-      };
-      setUser(updatedUser);
-      localStorage.setItem('yayasan_user', JSON.stringify(updatedUser));
-      
-      // 4. Update Sender in Firestore
-      await updateDoc(doc(db, "users", user.id), {
-        bmcBalance: increment(-amount),
-        transactions: arrayUnion(newTxSender)
-      });
-      
-      // 5. Update Receiver in Firestore
-      await updateDoc(doc(db, "users", receiverId), {
-        bmcBalance: increment(amount),
-        transactions: arrayUnion(newTxReceiver)
-      });
-      
-      return true;
-    } catch (err) { 
-      console.error(err); 
-      alert("❌ Terjadi kesalahan saat memproses transfer: " + err.message);
-      return false; 
+      const transferBmcFn = httpsCallable(functions, 'transferBmcSecure');
+      const response = await transferBmcFn({ amount, destinationAddress });
+      return response.data.success;
+    } catch (err) {
+      console.error("Error in server-side P2P transfer:", err);
+      alert("❌ Transfer gagal: " + err.message);
+      return false;
     }
   };
 
@@ -844,107 +739,16 @@ export const AuthProvider = ({ children }) => {
     }
   };
   const approveValidation = async (validationId, submitterReward = 0, plantingId = null, submitterId = null) => {
-    // First, let's check if the validation is a KYC task or an Article task, and update accordingly
-    const isApproved = submitterReward > 0;
     try {
-      const valDoc = await getDoc(doc(db, "validations", validationId));
-      if (valDoc.exists()) {
-        const valData = valDoc.data();
-        
-        // Handle KYC task
-        if (valData.isKyc && submitterId) {
-          await updateDoc(doc(db, "users", submitterId), {
-            kycStatus: isApproved ? 'verified' : 'rejected'
-          });
-          console.log(`✅ User ${submitterId} KYC processed! Approved: ${isApproved}`);
-        }
-        
-        // Handle Article validation task
-        if (valData.tags?.includes('Artikel') && valData.details?.articleId) {
-          const isApproved = submitterReward > 0;
-          await updateDoc(doc(db, "articles", valData.details.articleId), {
-            approved: isApproved ? true : 'rejected'
-          });
-          console.log(`✅ Article ${valData.details.articleId} consensus processed! Approved: ${isApproved}`);
-          
-          if (valData.userId) {
-            addNotification(
-              isApproved 
-                ? `Selamat! Artikel Anda "${valData.title.replace('Verifikasi Artikel: ', '')}" telah disahkan oleh Validator dan dipublikasikan di Akademi BMC!`
-                : `Maaf, artikel Anda "${valData.title.replace('Verifikasi Artikel: ', '')}" belum disetujui oleh Validator karena orisinalitas ilmiah.`,
-              isApproved ? 'success' : 'info'
-            );
-          }
-        }
-
-        // Handle Knowledge validation task
-        if (valData.tags?.includes('Knowledge') && valData.details?.knowledgeId) {
-          const isApproved = submitterReward > 0;
-          const status = isApproved ? 'approved' : 'rejected';
-          const statusFields = isApproved
-            ? {
-                approvedAt: serverTimestamp(),
-                approvedBy: user?.username || user?.name || 'validator',
-                sourceTrust: 'verified'
-              }
-            : {
-                rejectedAt: serverTimestamp(),
-                rejectedBy: user?.username || user?.name || 'validator',
-                sourceTrust: 'rejected'
-              };
-          
-          await updateDoc(doc(db, "knowledge_items", valData.details.knowledgeId), {
-            status,
-            updatedAt: serverTimestamp(),
-            ...statusFields
-          });
-          
-          console.log(`✅ Knowledge ${valData.details.knowledgeId} consensus processed! Approved: ${isApproved}`);
-          
-          if (valData.userId) {
-            addNotification(
-              isApproved 
-                ? `Selamat! Kontribusi sumber pengetahuan Anda "${valData.title.replace('Verifikasi Knowledge: ', '')}" telah disahkan oleh Validator dan mendapatkan 25.0 BMC!`
-                : `Maaf, kontribusi sumber pengetahuan Anda "${valData.title.replace('Verifikasi Knowledge: ', '')}" ditolak oleh Validator.`,
-              isApproved ? 'success' : 'info'
-            );
-          }
-        }
-      }
+      const isApproved = submitterReward > 0;
+      const approveValFn = httpsCallable(functions, 'approveValidationSecure');
+      await approveValFn({ validationId, submitterReward, plantingId, submitterId, isApproved });
+      return true;
     } catch (err) {
-      console.error("Error in validation consensus processing:", err);
+      console.error("Error in server-side validation approval:", err);
+      alert("❌ Gagal memproses validasi: " + err.message);
+      return false;
     }
-
-    if (submitterReward > 0 && submitterId) {
-      try {
-        const newTx = {
-          id: 'tx_' + Math.random().toString(36).substr(2, 9),
-          type: 'Earn',
-          amount: `+${submitterReward}`,
-          date: new Intl.DateTimeFormat('fr-CA', { timeZone: 'Asia/Jakarta' }).format(new Date()),
-          status: 'Selesai',
-          description: `Reward Validasi (Data Disahkan)`
-        };
-        await updateDoc(doc(db, "users", submitterId), {
-          bmcBalance: increment(submitterReward),
-          transactions: arrayUnion(newTx)
-        });
-      } catch (err) {
-        console.error("Gagal mengirim reward ke submitter:", err);
-      }
-    }
-
-    if (plantingId) {
-      // We will handle this in BambupediaContext later, 
-      // but for now let's update Firestore if it exists
-      try {
-        await updateDoc(doc(db, "plantings", plantingId), { isVerified: true });
-      } catch (err) { console.error("Update planting error:", err); }
-    }
-
-    try {
-      await updateDoc(doc(db, "validations", validationId), { status: isApproved ? 'approved' : 'rejected' });
-    } catch (err) { console.error(err); }
   };
 
   // --- PARTNER & LOCATION MANAGEMENT ---
@@ -1005,21 +809,68 @@ export const AuthProvider = ({ children }) => {
     };
 
     try {
-      await addDoc(collection(db, "location_proposals"), newLoc);
-      return true;
+      const response = await fetch('/api/v1/agri/proposals', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: data.name,
+          size: data.size,
+          type: data.type,
+          vision: data.vision,
+          coordinates: data.coordinates,
+          owner: data.owner
+        })
+      });
+
+      if (response.ok) {
+        console.log('[AuthContext] Location proposal saved via microservice API.');
+        try {
+          await addDoc(collection(db, "location_proposals"), newLoc);
+        } catch (dbErr) {
+          console.warn('[AuthContext] Failed to write fallback doc to Firestore:', dbErr);
+        }
+        return true;
+      }
+      throw new Error('Microservice returned non-OK status');
     } catch (err) {
-      console.error(err);
-      return false;
+      console.warn('[AuthContext] Microservice offline or error. Falling back to direct Firestore write:', err);
+      try {
+        await addDoc(collection(db, "location_proposals"), newLoc);
+        return true;
+      } catch (firestoreErr) {
+        console.error('[AuthContext] Direct Firestore fallback write failed:', firestoreErr);
+        return false;
+      }
     }
   };
 
   const approveLocation = async (locId) => {
     try {
-      await updateDoc(doc(db, "location_proposals", locId), { status: 'verified' });
-      return true;
+      const response = await fetch(`/api/v1/agri/proposals/${locId}/verify`, {
+        method: 'PUT'
+      });
+
+      if (response.ok) {
+        console.log('[AuthContext] Location proposal verified via microservice API.');
+        try {
+          await updateDoc(doc(db, "location_proposals", locId), { status: 'verified' });
+        } catch (dbErr) {
+          console.warn('[AuthContext] Failed to update status in Firestore fallback:', dbErr);
+        }
+        return true;
+      }
+      throw new Error('Microservice returned non-OK status');
     } catch (err) {
-      console.error(err);
-      return false;
+      console.warn('[AuthContext] Microservice offline or error. Falling back to direct Firestore update:', err);
+      try {
+        await updateDoc(doc(db, "location_proposals", locId), { status: 'verified' });
+        return true;
+      } catch (firestoreErr) {
+        console.error('[AuthContext] Direct Firestore fallback update failed:', firestoreErr);
+        return false;
+      }
     }
   };
 
@@ -1081,51 +932,16 @@ export const AuthProvider = ({ children }) => {
 
   const processCheckin = async () => {
     if (!user) return null;
-    const currentWibDay = getJakartaCheckinDay();
-    const prevCheckin = user.lastCheckinDate || null;
-    
-    // Guard: Prevent checking in twice in the same day
-    if (prevCheckin === currentWibDay) {
+    try {
+      const claimCheckinFn = httpsCallable(functions, 'claimDailyCheckin');
+      const response = await claimCheckinFn();
+      const { amount, nextStreak } = response.data;
+      return { amount, nextStreak };
+    } catch (err) {
+      console.error("Error in server-side daily check-in:", err);
+      alert("❌ Gagal check-in: " + err.message);
       return null;
     }
-    
-    const isYesterday = isConsecutiveDay(prevCheckin, currentWibDay);
-    const prevStreak = isYesterday ? (user.checkinStreak || 0) : 0;
-    const nextStreak = prevStreak === 7 ? 1 : prevStreak + 1;
-    
-    const rewardAmounts = { 1: 0.001, 2: 0.002, 3: 0.003, 4: 0.004, 5: 0.005, 6: 0.006, 7: 0.010 };
-    const amount = rewardAmounts[nextStreak];
-
-    const newTx = {
-      id: 'tx_chk_' + Math.random().toString(36).substr(2, 9),
-      type: 'Earn',
-      amount: `+${amount}`,
-      date: currentWibDay,
-      status: 'Selesai',
-      description: `Daily Check-in Reward (Day ${nextStreak})`
-    };
-
-    const updatedUser = { 
-      ...user, 
-      lastCheckinDate: currentWibDay,
-      checkinStreak: nextStreak,
-      bmcBalance: (user.bmcBalance || 0) + amount,
-      transactions: [newTx, ...(user.transactions || [])]
-    };
-    
-    setUser(updatedUser);
-    localStorage.setItem('yayasan_user', JSON.stringify(updatedUser));
-    
-    try {
-      await updateDoc(doc(db, "users", user.id), {
-        lastCheckinDate: currentWibDay,
-        checkinStreak: nextStreak,
-        bmcBalance: increment(amount),
-        transactions: arrayUnion(newTx)
-      });
-    } catch (err) { console.error(err); }
-    
-    return { amount, nextStreak };
   };
 
   return (
@@ -1248,7 +1064,7 @@ export const AuthProvider = ({ children }) => {
           return false;
         }
       },
-      giftBmc: async (targetUserId, targetUserName, amount, description) => {
+      giftBmc: async (targetUserId, targetUserName, amount, description, statusId = null) => {
         if (!user) {
           alert("⚠️ Harap login terlebih dahulu untuk mengirimkan Gift!");
           return false;
@@ -1296,7 +1112,6 @@ export const AuthProvider = ({ children }) => {
           const receiverDocRef = doc(db, "users", targetUserId);
           const receiverSnap = await getDoc(receiverDocRef);
           if (receiverSnap.exists()) {
-            const receiverData = receiverSnap.data();
             const newNotif = {
               id: 'notif_gift_' + Date.now(),
               type: 'success',
@@ -1311,9 +1126,7 @@ export const AuthProvider = ({ children }) => {
             });
           }
 
-          // 3. Log the gift in status_interactions
-          const interactionRef = doc(db, "status_interactions", targetUserId);
-          const interactionSnap = await getDoc(interactionRef);
+          // 3. Log the gift in status document or status_interactions
           const giftItem = {
             id: 'gift_' + Date.now(),
             senderId: user.id,
@@ -1323,17 +1136,26 @@ export const AuthProvider = ({ children }) => {
             timestamp: Date.now()
           };
 
-          if (interactionSnap.exists()) {
-            await updateDoc(interactionRef, {
+          if (statusId) {
+            const statusDocRef = doc(db, "statuses", statusId);
+            await updateDoc(statusDocRef, {
               gifts: arrayUnion(giftItem)
             });
           } else {
-            await setDoc(interactionRef, {
-              likes: [],
-              shares: 0,
-              comments: [],
-              gifts: [giftItem]
-            });
+            const interactionRef = doc(db, "status_interactions", targetUserId);
+            const interactionSnap = await getDoc(interactionRef);
+            if (interactionSnap.exists()) {
+              await updateDoc(interactionRef, {
+                gifts: arrayUnion(giftItem)
+              });
+            } else {
+              await setDoc(interactionRef, {
+                likes: [],
+                shares: 0,
+                comments: [],
+                gifts: [giftItem]
+              });
+            }
           }
 
           addNotification(`Berhasil mengirimkan Gift sebesar ${bmcVal} BMC ke @${targetUserName}!`, "success");

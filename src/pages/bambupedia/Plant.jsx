@@ -45,7 +45,7 @@ function PlantPage() {
 
     if (addPendingValidation) {
       addPendingValidation({
-        title: `Penanaman Baru: ${amount} Tunas`,
+        title: `Penanaman Baru: ${amount} Bibit`,
         gps: location,
         tags: 'Penanaman, ' + type,
         details: { pemilik: 'Petani Lokal', tipe: type },
@@ -75,14 +75,14 @@ function PlantPage() {
             <Sprout size={32} />
           </div>
           <h1 style={{ fontSize: '2rem', fontWeight: '800', color: 'var(--text-main)', marginBottom: '8px' }}>Penanaman Baru</h1>
-          <p style={{ color: 'var(--text-muted)' }}>Catat setiap tunas baru yang Anda tanam hari ini.</p>
+          <p style={{ color: 'var(--text-muted)' }}>Catat setiap bibit baru yang Anda tanam hari ini.</p>
         </div>
 
         <div style={{ background: 'white', padding: '32px', borderRadius: '24px', border: '1px solid #eee', boxShadow: '0 10px 30px rgba(0,0,0,0.03)' }}>
           <form onSubmit={handleSubmit}>
             <div style={{ marginBottom: '24px' }}>
               <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: '700', color: 'var(--text-main)', marginBottom: '8px' }}>
-                Jumlah Tunas / Bibit
+                Jumlah Bibit
               </label>
               <input 
                 type="number" 

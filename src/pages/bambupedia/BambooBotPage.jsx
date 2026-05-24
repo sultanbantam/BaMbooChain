@@ -55,16 +55,74 @@ const BambooBotPage = () => {
     setInput('');
     setIsThinking(true);
 
-    await new Promise((resolve) => setTimeout(resolve, 500));
     const results = searchKnowledge(items, cleanQuestion, 5);
-    const response = composeRagAnswer(cleanQuestion, results);
+    const groqApiKey = import.meta.env.VITE_GROQ_API_KEY;
+    let finalAnswer = '';
+    let confidence = 'rendah';
+
+    if (groqApiKey && results.length > 0) {
+      try {
+        const contextText = results.map(({ item, snippet }, idx) => {
+          const authorInfo = [item.author, item.year].filter(Boolean).join(', ');
+          return `[Konteks ${idx + 1}] Sumber: "${item.title}" ${authorInfo ? `(${authorInfo})` : ''}\nIsi Dokumen: ${snippet}\n`;
+        }).join('\n');
+
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${groqApiKey}`
+          },
+          body: JSON.stringify({
+            model: 'llama-3.3-70b-versatile',
+            messages: [
+              {
+                role: 'system',
+                content: 'Anda adalah BambuBot RAG, asisten kecerdasan buatan terverifikasi untuk Yayasan Sabumi Nusantara Jaya. Tugas Anda adalah menjawab pertanyaan pengguna secara ringkas, profesional, dan akurat dalam Bahasa Indonesia menggunakan konteks dokumen/sumber terverifikasi yang disediakan.\n\nAturan penting:\n1. Jawab HANYA menggunakan informasi dari konteks yang diberikan.\n2. Cantumkan rujukan secara eksplisit dalam kurung siku, misalnya [1] atau [2], merujuk pada nomor konteks sumber.\n3. Jika informasi tidak ada dalam konteks, katakan bahwa Anda tidak memiliki informasi yang cukup dalam Knowledge Library.\n4. Jawab dengan gaya bahasa ilmiah, edukatif, dan ramah.'
+              },
+              {
+                role: 'user',
+                content: `Konteks Sumber:\n${contextText}\n\nPertanyaan: ${cleanQuestion}\n\nJawablah dengan merujuk konteks di atas secara ringkas:`
+              }
+            ],
+            temperature: 0.2,
+            max_tokens: 800
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          finalAnswer = data.choices[0].message.content;
+          confidence = results[0].score >= 8 ? 'tinggi' : 'sedang';
+        } else {
+          throw new Error(`API returned status ${response.status}`);
+        }
+      } catch (err) {
+        console.warn('[BambuBot] Groq LLM API failed. Falling back to static lexical answer:', err);
+        const fallbackResponse = composeRagAnswer(cleanQuestion, results);
+        finalAnswer = fallbackResponse.answer;
+        confidence = fallbackResponse.confidence;
+      }
+    } else {
+      const fallbackResponse = composeRagAnswer(cleanQuestion, results);
+      finalAnswer = fallbackResponse.answer;
+      confidence = fallbackResponse.confidence;
+    }
+
     setMessages((prev) => [
       ...prev,
       {
         role: 'bot',
-        text: response.answer,
-        confidence: response.confidence,
-        sources: results.map(({ item, score }) => ({ id: item.id, title: item.title, type: item.type, fileUrl: item.fileUrl, sourceUrl: item.sourceUrl, score }))
+        text: finalAnswer,
+        confidence: confidence,
+        sources: results.map(({ item, score }) => ({
+          id: item.id,
+          title: item.title,
+          type: item.type,
+          fileUrl: item.fileUrl,
+          sourceUrl: item.sourceUrl,
+          score
+        }))
       }
     ]);
     setIsThinking(false);

@@ -14,7 +14,7 @@ import { useMarketplace } from '../../context/MarketplaceContext';
 
 const MarketplacePage = () => {
   const { t } = useLanguage();
-  const { user, isAuthenticated: isGlobalAuth } = useAuth();
+  const { user } = useAuth();
   const { chats, sendMessage } = useMarketplace();
   
   const categories = [
@@ -37,7 +37,7 @@ const MarketplacePage = () => {
     t('market_unit_other')
   ];
   
-  const [activeCategory, setActiveCategory] = useState(categories[0]);
+  const [activeCategory] = useState(categories[0]);
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
   const fileInputRef = useRef(null);
 
@@ -58,9 +58,13 @@ const MarketplacePage = () => {
     { type: "Lain-lain", price: 0, trend: "-", up: true },
   ]);
   
+  // eslint-disable-next-line no-unused-vars
   const [lastSync, setLastSync] = useState(new Date());
-  const [usdtPrice, setUsdtPrice] = useState(17356);
+  const [usdtPrice] = useState(17356);
   const [cart, setCart] = useState([]);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatTarget] = useState(null);
+  const [chatInput, setChatInput] = useState('');
   const [showCartModal, setShowCartModal] = useState(false);
   const [cartStatus, setCartStatus] = useState(''); // '', 'shipping', 'payment', 'success'
   const [paymentMethod, setPaymentMethod] = useState('');
@@ -136,7 +140,7 @@ const MarketplacePage = () => {
   };
 
   const [activeChat, setActiveChat] = useState(null); // replaces old mock chat state
-  const [chatInput, setChatInput] = useState('');
+
 
   const [products, setProducts] = useState([
     { 

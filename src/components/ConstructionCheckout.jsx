@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   X, CreditCard, Truck, Users, CheckCircle, Package, 
   MapPin, Clock, ChevronRight, ArrowRight, ShieldCheck,
@@ -11,6 +11,7 @@ const ConstructionCheckout = ({ isOpen, onClose, design, inputs }) => {
   const [shippingType, setShippingType] = useState('truck');
   const [useAssembly, setUseAssembly] = useState(true);
   const [payoutRate, setPayoutRate] = useState(450000); // Default Rp 450k/m2
+  const [orderTrackingId] = useState(() => Math.floor(Math.random() * 9000) + 1000);
   
   if (!isOpen || !design) return null;
 
@@ -210,7 +211,7 @@ const ConstructionCheckout = ({ isOpen, onClose, design, inputs }) => {
 
               <div>
                 <h4 style={{ margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                   <Activity size={18} color="var(--primary)" /> Lacak Pesanan: #ORD-{Math.floor(Math.random()*9000)+1000}
+                   <Activity size={18} color="var(--primary)" /> Lacak Pesanan: #ORD-{orderTrackingId}
                 </h4>
                 
                 <div style={{ position: 'relative', paddingLeft: '32px' }}>

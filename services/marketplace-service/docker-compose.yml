@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  marketplace-service:
+    build: .
+    container_name: bmc-marketplace-service
+    ports:
+      - "5002:5002"
+    environment:
+      - PORT=5002
+      - NODE_ENV=development
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
