@@ -938,9 +938,58 @@ export const AuthProvider = ({ children }) => {
       const { amount, nextStreak } = response.data;
       return { amount, nextStreak };
     } catch (err) {
-      console.error("Error in server-side daily check-in:", err);
-      alert("❌ Gagal check-in: " + err.message);
-      return null;
+      console.warn("Server-side check-in failed, falling back to client-side write:", err);
+      
+      try {
+        const currentWibDay = getJakartaCheckinDay();
+        const prevCheckin = user.lastCheckinDate || null;
+        
+        // Guard: Prevent checking in twice in the same day
+        if (prevCheckin === currentWibDay) {
+          alert("⚠️ Anda sudah melakukan Check-in hari ini!");
+          return null;
+        }
+        
+        const isYesterday = isConsecutiveDay(prevCheckin, currentWibDay);
+        const prevStreak = isYesterday ? (user.checkinStreak || 0) : 0;
+        const nextStreak = prevStreak === 7 ? 1 : prevStreak + 1;
+        
+        const rewardAmounts = { 1: 0.001, 2: 0.002, 3: 0.003, 4: 0.004, 5: 0.005, 6: 0.006, 7: 0.010 };
+        const amount = rewardAmounts[nextStreak];
+
+        const newTx = {
+          id: 'tx_chk_' + Math.random().toString(36).substr(2, 9),
+          type: 'Earn',
+          amount: `+${amount}`,
+          date: currentWibDay,
+          status: 'Selesai',
+          description: `Daily Check-in Reward (Day ${nextStreak})`
+        };
+
+        const updatedUser = { 
+          ...user, 
+          lastCheckinDate: currentWibDay,
+          checkinStreak: nextStreak,
+          bmcBalance: (user.bmcBalance || 0) + amount,
+          transactions: [newTx, ...(user.transactions || [])]
+        };
+        
+        setUser(updatedUser);
+        localStorage.setItem('yayasan_user', JSON.stringify(updatedUser));
+        
+        await updateDoc(doc(db, "users", user.id), {
+          lastCheckinDate: currentWibDay,
+          checkinStreak: nextStreak,
+          bmcBalance: increment(amount),
+          transactions: arrayUnion(newTx)
+        });
+        
+        return { amount, nextStreak };
+      } catch (fallbackErr) {
+        console.error("Client-side fallback check-in failed:", fallbackErr);
+        alert("❌ Gagal check-in: " + fallbackErr.message);
+        return null;
+      }
     }
   };
 
