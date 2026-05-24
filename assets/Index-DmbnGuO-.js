@@ -1,0 +1,272 @@
+import{n as e,s as t,t as n}from"./jsx-runtime-C7M7YA1l.js";import{s as r}from"./chunk-UVKPFVEO-Tfzazvvv.js";import{t as i}from"./bot-BZj-BKGz.js";import{t as a}from"./chevron-right-NjvSnJOG.js";import{t as o}from"./landmark-ynzwMnvw.js";import{t as s}from"./leaf-CJtYLWIi.js";import{t as c}from"./sprout-JNzDLrO1.js";import{t as l}from"./assets-CdOb956R.js";import{B as u,E as d,H as f,L as p,R as m,k as ee,l as h}from"./index-D98RnXK3.js";var g=t(e(),1),_=n(),v=[{keywords:[`moso`,`phyllostachys edulis`],answer:`**Bambu Moso (Phyllostachys edulis)** adalah spesies bambu terbesar dan paling komersial di dunia, berasal dari Cina.
+
+📏 **Ukuran:** Bisa mencapai tinggi 28 meter, diameter 20 cm
+🌱 **Pertumbuhan:** Salah satu tanaman tercepat — bisa tumbuh hingga 91 cm per hari!
+🌍 **Persebaran:** Cina, Jepang, dan kini dikembangkan di Indonesia
+💡 **Kegunaan:** Konstruksi, furnitur, laminasi, tekstil, makanan (rebung)
+💰 **Nilai Ekonomi:** Harga bambu Moso olahan USD 800–1.200/ton di pasar internasional`},{keywords:[`petung`,`dendrocalamus asper`,`bambu petung`],answer:`**Bambu Petung (Dendrocalamus asper)** adalah salah satu bambu terbesar di Indonesia dan Asia Tenggara.
+
+📏 **Ukuran:** Tinggi 20–30 meter, diameter 8–20 cm, dinding batang tebal
+🇮🇩 **Habitat Asli:** Indonesia, Malaysia, Filipina, Vietnam
+🏗️ **Kegunaan Utama:**
+- Konstruksi bangunan & jembatan
+- Bambu laminasi (glulam)
+- Saluran air tradisional
+- Rebung — salah satu terbaik untuk dimakan
+
+💰 **Potensi Ekonomi:** Sangat tinggi untuk konstruksi hijau`},{keywords:[`apus`,`gigantochloa apus`,`bambu apus`],answer:`**Bambu Apus (Gigantochloa apus)** — paling banyak digunakan untuk kerajinan dan anyaman di Indonesia.
+
+📏 **Ukuran:** Tinggi 8–13 meter, diameter 4–8 cm
+🎨 **Kegunaan Utama:**
+- Anyaman & kerajinan tangan
+- Sumpit, sedotan bambu
+- Kertas & pulp bambu
+- Gagang alat pertanian
+
+🌱 **Keunggulan:** Tumbuh di lahan marjinal, perawatan mudah, dan dapat dipanen dalam 3–4 tahun.
+💡 Sangat cocok untuk program pemberdayaan masyarakat desa.`},{keywords:[`tanam`,`menanam`,`budidaya`,`cara tanam`,`penanaman`],answer:`**Panduan Budidaya Bambu:**
+
+🌱 **Persiapan Lahan:**
+- pH tanah ideal 5.5–6.5
+- Drainase baik, tidak tergenang
+- Jarak tanam 5×5 m (400 pohon/ha) atau 6×6 m (278 pohon/ha)
+
+🪴 **Bibit:**
+- Dari stek batang, anakan, atau biji
+- Masa penyemaian 2–3 bulan sebelum tanam
+
+📅 **Waktu Tanam:** Awal musim hujan (Oktober–November)
+
+🌿 **Pemupukan:**
+- Pupuk organik 10–20 kg/lubang saat tanam
+- NPK 3 bulan sekali pada tahun pertama
+
+⏱️ **Waktu Panen Pertama:** 3–5 tahun tergantung spesies
+
+💡 **Tips:** Jangan tebang semua batang! Prinzip 1/3 — ambil 1/3 batang tua, sisakan 2/3 untuk regenerasi.`},{keywords:[`panen`,`pemanenan`,`tebang`,`usia panen`],answer:`**Teknik Pemanenan Bambu yang Benar:**
+
+📅 **Usia Optimal:**
+- Bambu untuk konstruksi: 3–5 tahun (setelah lignifikasi penuh)
+- Rebung (bambu muda): 2–3 minggu setelah muncul
+- Bambu untuk anyaman: 2–3 tahun
+
+🗓️ **Waktu Terbaik:** Musim kemarau (Mei–September) — kadar air rendah, lebih awet
+
+⚠️ **Jangan panen saat:**
+- Musim hujan lebat (bambu mengandung banyak pati = rentan jamur & serangga)
+- Bulan purnama (mitos, tapi dipercaya petani: kadar air tinggi)
+
+✂️ **Teknik Tebang:** Potong 30 cm dari pangkal, biarkan tunggul untuk mendorong tunas baru
+
+📌 **Prinsip Lestari:** Hanya tebang maksimal 30% dari total rumpun per tahun`},{keywords:[`harga`,`nilai`,`ekonomi`,`jual`,`pasar`,`ekspor`],answer:`**Data Harga & Pasar Bambu (2025–2026):**
+
+🏠 **Pasar Domestik Indonesia:**
+- Bambu mentah (utuh): Rp 3.000–8.000/batang
+- Bambu belah: Rp 1.500–3.000/kg
+- Rebung segar: Rp 5.000–15.000/kg
+
+🌍 **Pasar Ekspor Internasional:**
+- Lantai bambu (flooring): USD 15–30/m²
+- Bambu laminasi: USD 800–1.500/m³
+- Serat bambu tekstil: USD 3–8/kg
+- Arang bambu (charcoal): USD 500–900/ton
+- Minyak bambu (bamboo vinegar): USD 2–5/liter
+
+📈 **Tren:** Permintaan bambu engineered global tumbuh 5–7% per tahun (2024–2030)
+
+💡 **Negara Importir Utama Produk Bambu Indonesia:**
+🇨🇳 Cina • 🇯🇵 Jepang • 🇺🇸 Amerika Serikat • 🇩🇪 Jerman • 🇳🇱 Belanda`},{keywords:[`karbon`,`carbon`,`co2`,`serapan`,`hijau`,`lingkungan`],answer:`**Bambu & Perubahan Iklim:**
+
+🌍 **Kemampuan Serapan Karbon:**
+- 1 hektar bambu menyerap 17 ton CO₂/tahun (vs pohon kayu: 2–7 ton/ha/tahun)
+- Bambu melepaskan 35% lebih banyak oksigen dibanding pohon setara
+
+♻️ **Keunggulan Lingkungan:**
+- Dapat dipanen berulang TANPA perlu tanam ulang (akar terus hidup)
+- Menguatkan struktur tanah di lahan miring/kritis
+- Memulihkan daerah aliran sungai (DAS)
+
+💰 **Monetisasi Carbon:**
+- Program VCS (Verified Carbon Standard)
+- Estimasi: 1 ha bambu = 5–10 carbon credit/tahun
+- Harga carbon credit: USD 15–50/ton CO₂
+
+🏆 **Bambu oleh PBB** diakui sebagai tanaman strategis untuk NDC (Nationally Determined Contribution) negara-negara berkembang.`},{keywords:[`konstruksi`,`bangunan`,`rumah`,`struktur`,`laminasi`,`glulam`],answer:`**Bambu untuk Konstruksi & Bangunan:**
+
+💪 **Kekuatan Bambu:**
+- Tensile strength: 28.000 psi (hampir setara baja!
+- Kuat tekan: 52 MPa
+- Rasio kekuatan/berat lebih baik dari beton
+
+🏗️ **Produk Konstruksi Bambu:**
+1. **Bambu Utuh (Round):** Rangka, tiang, scaffolding
+2. **Bambu Laminasi (GLB):** Balok & papan struktural pengganti kayu
+3. **Bambu Lapis (Plywood):** Panel dinding & lantai
+4. **Strand Woven Bamboo:** Lantai paling keras, 14x lebih keras dari kayu oak
+
+🌡️ **Kelemahan & Solusi:**
+- Rentan rayap → Perlakuan borax/salt
+- Rentan lembab → Coating & desain atap lebar
+
+🌍 **Standar Internasional:** ISO 22157, ASTM D143 adaptasi, SNI untuk bambu`},{keywords:[`spesies`,`jenis`,`varietas`,`macam`],answer:`**Mengenal Jenis-Jenis Bambu Utama di Indonesia:**
+
+🌿 **1. Bambu Petung** *(Dendrocalamus asper)* — Terbesar, untuk konstruksi
+🌿 **2. Bambu Moso** *(Phyllostachys edulis)* — Paling komersial di dunia
+🌿 **3. Bambu Apus** *(Gigantochloa apus)* — Terbaik untuk kerajinan
+🌿 **4. Bambu Tali** *(Gigantochloa psendoarundinacea)* — Serbaguna
+🌿 **5. Bambu Cendani** *(Bambusa vulgaris)* — Paling mudah tumbuh
+🌿 **6. Bambu Betung** *(Dendrocalamus giganteus)* — Tertinggi, bisa 30m+
+🌿 **7. Bambu Hitam** *(Gigantochloa atroviolacea)* — Warna unik, nilai tinggi
+🌿 **8. Bambu Kuning** *(Bambusa vulgaris vittata)* — Ornamen & turis
+
+🇮🇩 Indonesia memiliki 176 spesies bambu Indonesia (Widjaja 2019) dari total 1.400 spesies global.`},{keywords:[`tekstil`,`kain`,`serat`,`fiber`,`baju`,`pakaian`],answer:`**Bambu sebagai Bahan Tekstil & Fashion:**
+
+🧵 **Proses Produksi:**
+1. Batang bambu dipotong → direndam kimia/mekanik
+2. Serat diekstrak → dipintal menjadi benang
+3. Benang ditenun/dirajut → kain bambu
+
+✨ **Keunggulan Kain Bambu:**
+- Anti-bakteri alami (kandungan "bamboo kun")
+- Hypoallergenic — cocok kulit sensitif
+- Lebih lembut dari katun
+- Menyerap keringat 3x lebih baik
+- Biodegradable 100%
+
+💰 **Nilai Ekonomi:**
+- Benang bambu: USD 3–8/kg
+- Kain bambu: USD 8–20/meter
+- Pakaian bambu premium: USD 30–150/item
+
+🌍 **Pasar:** Eropa & Amerika Utara — fashion berkelanjutan (sustainable fashion) growing 15%/tahun`},{keywords:[`rebung`,`makanan`,`pangan`,`konsumsi`,`makan`,`kuliner`],answer:`**Rebung — Bambu sebagai Pangan:**
+
+🌱 **Apa itu Rebung?**
+Rebung adalah tunas muda bambu yang dipanen saat baru tumbuh 15–30 cm dari tanah.
+
+🍽️ **Nilai Gizi Rebung (per 100g):**
+- Protein: 3.9 g
+- Serat: 2.2 g
+- Kalori: hanya 27 kcal (sangat rendah!)
+- Vitamin B6, E, dan berbagai mineral
+
+🌿 **Spesies Terbaik untuk Rebung:**
+- Bambu Petung *(Dendrocalamus asper)* — terbesar & terlezat
+- Bambu Moso *(Phyllostachys edulis)* — populer di Asia Timur
+- Bambu Betung — ukuran besar
+
+🔪 **Cara Mengolah:** Rebus dulu untuk mengurangi rasa pahit (asam sianida alami akan hilang)
+
+💰 **Nilai Pasar:**
+- Rebung segar: Rp 5.000–15.000/kg
+- Rebung olahan/kalengan ekspor: USD 1.5–4/kg`},{keywords:[`bambu hitam`,`gigantochloa atroviolacea`,`black bamboo`],answer:`**Bambu Hitam (Gigantochloa atroviolacea)** — Si Hitam Bernilai Tinggi
+
+🎨 **Ciri Khas:** Batang berwarna hitam keunguan yang unik, menjadikannya sangat bernilai di pasar premium.
+
+📏 **Ukuran:** Tinggi 8–14 meter, diameter 6–12 cm
+🇮🇩 **Habitat:** Banyak ditemukan di Jawa dan Bali
+
+💼 **Kegunaan Premium:**
+- Furnitur & interior design high-end
+- Instrumen musik (seruling, gamelan)
+- Dinding & dekorasi arsitektur
+- Ekspor ke Jepang, Eropa untuk craft
+
+💰 **Nilai Ekonomi Tinggi:**
+- Harga 2–3x lipat bambu biasa
+- Sangat dicari pengrajin internasional
+
+💡 **Untuk YSNJ:** Bambu hitam adalah salah satu komoditas paling potensial untuk ekspor premium.`},{keywords:[`investasi`,`roi`,`keuntungan`,`modal`,`pulang`],answer:`**Analisis Investasi Kebun Bambu:**
+
+💰 **Asumsi: 1 Hektar Bambu Petung**
+
+📊 **Biaya Awal (Tahun 1–2):**
+- Persiapan lahan: Rp 5–8 juta/ha
+- Bibit (400 pohon): Rp 4–6 juta
+- Pemupukan & perawatan: Rp 3–5 juta/tahun
+- **Total investasi awal: ~Rp 15–20 juta/ha**
+
+📈 **Pendapatan (mulai tahun ke-3):**
+- Rebung: 2–4 ton/ha/tahun × Rp 8.000 = Rp 16–32 juta
+- Batang bambu: 200–400 batang/ha × Rp 15.000 = Rp 3–6 juta
+- **Total pendapatan: Rp 20–40 juta/ha/tahun**
+
+⏱️ **Break Even Point:** ~Tahun ke-3 hingga ke-4
+📆 **Siklus Produktif:** 50–100 tahun (akar tidak perlu diganti!)
+
+🏆 **ROI 5 Tahun:** Estimasi 150–250%
+💡 Bandingkan dengan investasi konvensional yang jauh lebih berisiko.`}],y=[`Apa spesies bambu yang paling bernilai ekonomi?`,`Bagaimana cara menanam bambu yang benar?`,`Berapa harga bambu di pasar ekspor?`,`Apakah bambu bisa mengurangi karbon CO₂?`,`Rebung bambu apa yang paling enak?`,`Bagaimana bambu digunakan dalam konstruksi?`],b=[{id:`pustaka_1`,icon:`🌿`,title:`Spesies Bambu Endemik Indonesia`,desc:`Analisis 176 spesies bambu Indonesia (Widjaja 2019) dari Sabang sampai Merauke`,tag:`Botani`,tier:`Basic`,priceRp:3e3,priceBmc:.3,preview:`Bambu bergenus Gigantochloa dan Dendrocalamus adalah spesies dominan yang membentuk tulang punggung ekosistem bambu di Indonesia. Secara botanis, persebarannya merepresentasikan keanekaragaman hayati yang sangat adaptif terhadap cuaca ekstrem. Eksekutif Ringkas: Terdapat lebih dari 176 spesies yang tersebar, dengan Bambu Petung dan Pring Tali memegang peran kultural tertinggi.`,fullContent:`Bambu bergenus Gigantochloa dan Dendrocalamus adalah spesies dominan yang membentuk tulang punggung ekosistem bambu di Indonesia. Secara botanis, persebarannya merepresentasikan keanekaragaman hayati yang sangat adaptif terhadap cuaca ekstrem. Eksekutif Ringkas: Terdapat lebih dari 176 spesies yang tersebar, dengan Bambu Petung dan Pring Tali memegang peran kultural tertinggi.
+    
+**Analisis Persebaran Spesies Khusus**
+Jawa Barat secara eksklusif menjadi rumah bagi bambu hitam (Gigantochloa atroviolacea) yang hanya mampu memproduksi pigmen gelapnya secara sempurna di atas tanah ber-ph 5.5 hingga 6.0 dengan curah hujan stabil. Karakteristik ini membuat bambu hitam menjadi bahan bernilai tinggi untuk instrumen kesenian dan furnitur. 
+Sementara di wilayah timur Indonesia seperti Nusa Tenggara, spesies bambu lebih sering dimanfaatkan sebagai perlengkapan hidup esensial akibat batangnya yang keras berdinding tebal.`},{id:`pustaka_2`,icon:`🏗️`,title:`Studi Ketahanan Bambu Laminasi`,desc:`Analisis kekuatan struktural bambu setara baja ringan`,tag:`Jurnal Analisis`,tier:`Analisis`,priceRp:5e3,priceBmc:.5,preview:`Penelitian ini mengupas performansi kompresi silang pada Bambu Laminasi (Glulam Bamboo) dibandingkan dengan kayu ulin dan struktur baja ringan. Ringkasan Eksekutif: Proses pres hidrolik dan penggunaan resin pengikat ramah lingkungan mampu meningkatkan kuat tarik (Tensile Strength) bambu hingga mencapai 28.000 psi, membuatnya amat layak dipakai pada gedung tinggi tingkat menengah.`,fullContent:`Penelitian ini mengupas performansi kompresi silang pada Bambu Laminasi (Glulam Bamboo) dibandingkan dengan kayu ulin dan struktur baja ringan. Ringkasan Eksekutif: Proses pres hidrolik dan penggunaan resin pengikat ramah lingkungan mampu meningkatkan kuat tarik (Tensile Strength) bambu hingga mencapai 28.000 psi, membuatnya amat layak dipakai pada gedung tinggi tingkat menengah.
+    
+**Parameter Rekayasa (Engineering Parameter)**
+Uji retak rambut (hairline fracture) menunjukkan bambu tidak melengkung secara permanen pada beban mati 10 ton di bentang 4 meter. Rahasianya terletak pada titik persimpangan ruas bambu yang bertindak secara mekanis seperti sabuk struktural di alam.
+Dalam aplikasi industri konstruksi berkelanjutan, material perekat *phenolic formaldehyde* yang biasa dipakai saat ini dapat dihindari demi menurunkan dampak gas emisi kimiawi di dalam ruangan.`},{id:`pustaka_3`,icon:`💹`,title:`Studi Kelayakan Bisnis Kebun Bambu`,desc:`Proyeksi ROI 5 tahun dan Ekspor Karbon`,tag:`Premium E-Book`,tier:`Premium`,priceRp:2e4,priceBmc:2,preview:`E-Book ini menyajikan cetak biru (blueprint) komersial bagi perintis hutan bambu industri berkelanjutan (HBI). Di dalamnya terdapat perhitungan detail Analisis Biaya dan Manfaat (Cost-Benefit Analysis) untuk siklus hidup 5 tahun pertama dengan penekanan pada monetisasi rebung tunas, batang tua, dan sertifikasi Karbon.`,fullContent:`E-Book ini menyajikan cetak biru (blueprint) komersial bagi perintis hutan bambu industri berkelanjutan (HBI). Di dalamnya terdapat perhitungan detail Analisis Biaya dan Manfaat (Cost-Benefit Analysis) untuk siklus hidup 5 tahun pertama dengan penekanan pada monetisasi rebung tunas, batang tua, dan sertifikasi Karbon.
+    
+**Perhitungan Return of Investment (ROI)**
+Dengan kepadatan 400 bibit PeTung per-hektar, biaya *land clearing* awal dan irigasi menelan Rp15-20Jt/ha. Pada tahun ke-3, panen tunas muda (rebung) skala komersial dapat menghasilkan margin murni minimum Rp12juta/tahun/hektar tanpa harus membunuh pohon bambu utamanya.
+
+**Ekspor Kredit Karbon**
+1 Hektar hutan PeTung dewasa secara resmi dapat dikurasi menjadi penyerot 17 Ton CO2 pertahun. Di platform pasar dagang karbon sukarela *(Voluntary Carbon Market/VCM)* Web3, satuan ini dapat difraksionalisasi mejadi token kredit karbon berkapitalisasi USD15 per Ton-nya.`},{id:`pustaka_4`,icon:`🌍`,title:`Roadmap Penyerapan Emisi Nasional`,desc:`Strategi pemenuhan target NDC iklim 2030`,tag:`Jurnal Analisis`,tier:`Analisis`,priceRp:5e3,priceBmc:.5,preview:`Target Kontribusi Nasional (NDC) mengamanatkan batas penurunan gas rumah kaca secara revolusioner di tahun 2030. Ringkasan Eksekutif: Rencana strategis ini menganalisis potensi integrasi reforestasi desa sabuk hijau *(greenbelt)* melalui klaster bambu sabumi sebagai solusi adaptif dan masif bagi kerusakan ekosistem DAS (Daerah Aliran Sungai).`,fullContent:`Target Kontribusi Nasional (NDC) mengamanatkan batas penurunan gas rumah kaca secara revolusioner di tahun 2030. Ringkasan Eksekutif: Rencana strategis ini menganalisis potensi integrasi reforestasi desa sabuk hijau *(greenbelt)* melalui klaster bambu sabumi sebagai solusi adaptif dan masif bagi kerusakan ekosistem DAS (Daerah Aliran Sungai).
+    
+**Rehabilitasi Daerah Aliran Sungai**
+Akar serabut tebal pada bambu berfungsi sebagai penahan laju erosi tebing sungai hingga 70% lebih baik dibanding pepohonan kayu solid dangkal. Pembentukan sistem hidrolis mikro oleh guguran daun bambu mati menciptakan penyeimbang air tanah lokal agar panen air lebih tertahan saat hujan drastis. Penanaman masif di daerah penyangga ini dapat menaikkan metrik *Environmental Performance Index* nasional.`},{id:`pustaka_5`,icon:`🧵`,title:`Inovasi Tekstil Viscose Bambu`,desc:`Pemintalan serat bambu ke lembaran sutra moden`,tag:`Artikel Dasar`,tier:`Basic`,priceRp:3e3,priceBmc:.3,preview:`Proses ekstraksi *bamboo kun*—zat anti-bakteri alami pada sel dinding bambu—menjadi benang murni memberikan kelembutan setara sutra dengan durabilitas katun industri. Di makalah paparan singkat ini ditunjukan siklus pabrikasi penguraian basa dan viskositas perajutan serat.`,fullContent:`Proses ekstraksi *bamboo kun*—zat anti-bakteri alami pada sel dinding bambu—menjadi benang murni memberikan kelembutan setara sutra dengan durabilitas katun industri. Di makalah paparan singkat ini ditunjukan siklus pabrikasi penguraian basa dan viskositas perajutan serat.
+    
+Berbeda drastis dengan budidaya lahan Kapas yang sangat gila air dan memakan puluhan ton liter pestisida berbahaya, kebun komersial tekstil bambu menjanjikan masa depan "Zero-Toxic Agro". Kain hasil jadinya murni memiliki sensasi sedingin air di kulit manusia, serta bersertifikasi uji *hypoallergenic* level klinis.`},{id:`pustaka_6`,icon:`💎`,title:`Tokenomics Ekonomi Bambu`,desc:`Sistem ekonomi desentralisasi suplai Web3`,tag:`Premium E-Book`,tier:`Premium`,priceRp:2e4,priceBmc:2,preview:`Buku Putih (Whitepaper) eksklusif penjabaran sistem keuangan generasi masa depan untuk sektor riil agrikultura berbasis blockchain. Penjelasan eksekutif mengupas fraksionalitas kepemilikan pohon bambu, insentif staking petani, hingga konversi nyata Token BMC dalam rantai suplai industri ekspor global.`,fullContent:`Buku Putih (Whitepaper) eksklusif penjabaran sistem keuangan generasi masa depan untuk sektor riil agrikultura berbasis blockchain. Penjelasan eksekutif mengupas fraksionalitas kepemilikan pohon bambu, insentif staking petani, hingga konversi nyata Token BMC dalam rantai suplai industri ekspor global.
+    
+**Arsitektur Token dan Pertanian Regeneratif**
+Token BMC lahir bukan dari ketiadaan utilitas layaknya Meme Coin, melainkan dipatok oleh komoditas bernilai biologis yang nyata—yakni batang dan akar bambu Sabumi Nusantara di Banten dan sekitarnya. Smart Contract memastikan setiap 1 unit token sejalan siklus hidup hasil panen kebun bambu komunal di mana dana dari investor langsung masuk merawat pohon di lahan kritis tanpa kebocoran perantara tengkulak tengahan.`}],x=void 0,S=`https://api.groq.com/openai/v1/chat/completions`,C=`Kamu adalah BambuBot, asisten AI ahli bambu dari Yayasan Sabumi Nusantara Jaya (YSNJ) Indonesia.
+
+PERAN:
+- Menjawab semua pertanyaan tentang bambu dalam bahasa Indonesia dengan akurat dan informatif
+- Fokus pada: botani, budidaya, ekonomi, konstruksi, tekstil, pangan, lingkungan, dan pasar ekspor bambu
+- Selalu menyertakan data angka spesifik, contoh, dan tips praktis
+
+KONTEKS YSNJ:
+- Yayasan yang mengembangkan industri bambu Indonesia dari hulu ke hilir
+- Lokasi: Serang, Banten — area perkebunan di Cibarani & Cisadane
+- Fokus pada bambu Petung (Dendrocalamus asper) dan Moso (Phyllostachys edulis)
+- Mengintegrasikan teknologi Web3 (token BMC BEP-20) untuk ekosistem bambu
+
+DATA PENTING:
+- Indonesia: 176 spesies bambu Indonesia (Widjaja 2019) dari 1.400 spesies global
+- Bambu Petung: tinggi 20-30m, diameter hingga 20cm, panen 3-5 tahun
+- Harga ekspor: bambu laminasi USD 800-1.500/m³, flooring USD 15-30/m²
+- Serapan karbon: 1 ha bambu = 17 ton CO₂/tahun
+- ROI kebun bambu: break even 3-4 tahun, produktif 50-100 tahun
+
+FORMAT JAWABAN:
+- Gunakan emoji untuk poin penting
+- Gunakan **bold** untuk istilah teknis
+- Berikan data angka spesifik bila relevan
+- Jawab ringkas tapi komprehensif (maks 300 kata)
+- Jika tidak tahu, akui dengan jujur dan sarankan sumber terpercaya
+
+Jangan pernah membuat data palsu. Akui ketidakpastian dengan jelas.`,w=async(e,t)=>{let n=[{role:`system`,content:C},...t.slice(-6).map(e=>({role:e.role,content:e.text})),{role:`user`,content:e}],r=await fetch(S,{method:`POST`,headers:{Authorization:`Bearer ${x}`,"Content-Type":`application/json`},body:JSON.stringify({model:`llama-3.3-70b-versatile`,messages:n,temperature:.4,max_tokens:600})});if(!r.ok)throw Error(`Groq API error: ${r.status}`);return(await r.json()).choices[0].message.content},T=e=>{let t=e.toLowerCase();for(let e of v)if(e.keywords.some(e=>t.includes(e)))return e.answer;return t.includes(`ysnj`)||t.includes(`yayasan`)||t.includes(`sabumi`)?`**Yayasan Sabumi Nusantara Jaya (YSNJ)** adalah yayasan yang berfokus pada pengembangan industri bambu Indonesia dari hulu ke hilir.
+
+🎯 **Fokus Utama:**
+- Riset & pengembangan spesies bambu unggul
+- Pendampingan petani & koperasi bambu
+- Koneksi ke pasar ekspor internasional
+- Tokenisasi aset bambu melalui Web3 (Token BMC)
+
+📍 **Lokasi:** Serang, Banten — percontohan di Cibarani & Cisadane`:t.includes(`halo`)||t.includes(`hai`)||t.includes(`hello`)?`Halo! 👋 Saya **BambuBot** — asisten AI Bambupedia.
+
+Silakan tanyakan apa saja tentang bambu: spesies, cara tanam, harga pasar, konstruksi, tekstil, atau peluang investasi!`:`Pertanyaan menarik! 🌿 Coba tanyakan tentang:
+- Spesies bambu (petung, moso, apus, hitam)
+- Cara menanam atau memanen bambu
+- Harga dan pasar ekspor bambu
+- Bambu untuk konstruksi atau tekstil
+- Manfaat bambu untuk lingkungan & karbon`},E=e=>e.replace(/\*\*(.*?)\*\*/g,`<strong>$1</strong>`).replace(/\n/g,`<br/>`),D=()=>{let[e,t]=(0,g.useState)(()=>{let e=localStorage.getItem(`bambubot_freeQuota`);return e===null?3:parseInt(e,10)}),[n,v]=(0,g.useState)(()=>{let e=localStorage.getItem(`bambubot_paidQuota`);return e===null?0:parseInt(e,10)}),[x,S]=(0,g.useState)(!1),[C,D]=(0,g.useState)(null),[O,k]=(0,g.useState)(10),[A,j]=(0,g.useState)(!1),[M,N]=(0,g.useState)(!1),[P,F]=(0,g.useState)(()=>{let e=localStorage.getItem(`bambubot_ownedNfts`);return e?JSON.parse(e):[]}),[I,L]=(0,g.useState)(null),[R,z]=(0,g.useState)(!1),[B,V]=(0,g.useState)(null);(0,g.useEffect)(()=>{localStorage.setItem(`bambubot_freeQuota`,e)},[e]),(0,g.useEffect)(()=>{localStorage.setItem(`bambubot_paidQuota`,n)},[n]),(0,g.useEffect)(()=>{localStorage.setItem(`bambubot_ownedNfts`,JSON.stringify(P))},[P]);let[H,U]=(0,g.useState)([{role:`assistant`,text:`Selamat datang di **Bambupedia** 🌿 — Perpustakaan Digital Bambu Indonesia!
+
+Saya **BambuBot**, asisten AI yang siap menjawab semua pertanyaan Anda tentang bambu: spesies, budidaya, ekonomi, konstruksi, lingkungan, hingga peluang investasi.
+
+📚 *Mode perpustakaan lokal aktif*
+
+*Ketik pertanyaan Anda atau pilih topik cepat!*`}]),[W,G]=(0,g.useState)(``),[K,q]=(0,g.useState)(!1),[J,Y]=(0,g.useState)(`chat`),[X,te]=(0,g.useState)(!1),Z=(0,g.useRef)(null),Q=r();(0,g.useEffect)(()=>{},[]),(0,g.useEffect)(()=>{H.length>1&&Z.current?.scrollIntoView({behavior:`smooth`})},[H]),(0,g.useEffect)(()=>{window.scrollTo({top:0,behavior:`instant`})},[]);let $=async r=>{let i=r||W.trim();if(!(!i||K)){if(e+n<=0){S(!0);return}e>0?t(e=>e-1):v(e=>e-1),U([...H,{role:`user`,text:i}]),G(``),q(!0);try{let e;X?e=await w(i,H):(await new Promise(e=>setTimeout(e,700+Math.random()*500)),e=T(i)),U(t=>[...t,{role:`assistant`,text:e}])}catch(e){console.error(`BambuBot error:`,e);let t=T(i);U(e=>[...e,{role:`assistant`,text:t}])}finally{q(!1)}}};return(0,_.jsxs)(`div`,{style:{paddingTop:`160px`,minHeight:`100vh`,background:`var(--bg-color)`},children:[(0,_.jsxs)(`div`,{className:`container`,style:{padding:`40px 24px`},children:[(0,_.jsxs)(`div`,{style:{textAlign:`center`,marginBottom:`40px`},children:[(0,_.jsxs)(`h1`,{style:{display:`inline-flex`,alignItems:`center`,justifyContent:`center`,gap:`12px`,fontSize:`2.8rem`,color:`var(--text-main)`,marginBottom:`12px`},children:[(0,_.jsx)(`img`,{src:l(`logos/bmc2.png`),alt:`Logo`,style:{height:`45px`,objectFit:`contain`}}),`Bambupedia`]}),(0,_.jsx)(`p`,{style:{color:`var(--text-muted)`,maxWidth:`800px`,margin:`0 auto`,fontSize:`1.05rem`,lineHeight:`1.6`},children:`Platform pengetahuan dan ekosistem digital bambu untuk mendukung lingkungan, ekonomi hijau, budaya, teknologi, dan pembangunan berkelanjutan melalui edukasi, inovasi, dan kolaborasi.`})]}),(0,_.jsxs)(`div`,{style:{display:`flex`,flexWrap:`wrap`,gap:`12px`,justifyContent:`center`,marginBottom:`40px`},children:[(0,_.jsxs)(`button`,{onClick:()=>{Y(`chat`),setTimeout(()=>{document.getElementById(`bambubot-chat-area`)?.scrollIntoView({behavior:`smooth`})},100)},style:{display:`flex`,alignItems:`center`,gap:`10px`,padding:`12px 20px`,borderRadius:`24px`,cursor:`pointer`,fontWeight:`800`,fontSize:`0.95rem`,transition:`all 0.3s`,background:J===`chat`?`var(--primary)`:`var(--bg-card)`,color:J===`chat`?`white`:`var(--text-main)`,boxShadow:J===`chat`?`0 10px 20px rgba(12,166,120,0.2)`:`0 4px 12px rgba(0,0,0,0.05)`,minWidth:`180px`,justifyContent:`center`,border:J===`chat`?`none`:`1px solid var(--border-color)`},children:[(0,_.jsx)(ee,{size:18}),` Tanya BambuBot`]}),(0,_.jsxs)(`button`,{onClick:()=>Y(`library`),style:{display:`flex`,alignItems:`center`,gap:`10px`,padding:`12px 20px`,borderRadius:`24px`,cursor:`pointer`,fontWeight:`800`,fontSize:`0.95rem`,transition:`all 0.3s`,background:J===`library`?`var(--primary)`:`var(--bg-card)`,color:J===`library`?`white`:`var(--text-main)`,boxShadow:J===`library`?`0 10px 20px rgba(12,166,120,0.2)`:`0 4px 12px rgba(0,0,0,0.05)`,minWidth:`180px`,justifyContent:`center`,border:J===`library`?`none`:`1px solid var(--border-color)`},children:[(0,_.jsx)(u,{size:18}),` Pustaka Bambu`]}),(0,_.jsxs)(`button`,{onClick:()=>Q(`/bambupedia/tracker`),style:{display:`flex`,alignItems:`center`,gap:`10px`,padding:`12px 20px`,borderRadius:`24px`,cursor:`pointer`,fontWeight:`800`,fontSize:`0.95rem`,transition:`all 0.3s`,background:`var(--bg-card)`,color:`var(--text-main)`,boxShadow:`0 4px 12px rgba(0,0,0,0.05)`,minWidth:`180px`,justifyContent:`center`,border:`1px solid var(--border-color)`},children:[(0,_.jsx)(c,{size:18,color:`var(--primary)`}),` Tracker Bambu`]}),(0,_.jsxs)(`button`,{onClick:()=>Q(`/bambupedia/knowledge`),style:{display:`flex`,alignItems:`center`,gap:`10px`,padding:`12px 20px`,borderRadius:`24px`,border:`1px solid var(--border-color)`,cursor:`pointer`,fontWeight:`800`,fontSize:`0.95rem`,transition:`all 0.3s`,background:`var(--bg-card)`,color:`var(--text-main)`,boxShadow:`0 4px 12px rgba(0,0,0,0.05)`,minWidth:`180px`,justifyContent:`center`},children:[(0,_.jsx)(p,{size:18,color:`var(--primary)`}),` Upload Knowledge`]}),(0,_.jsxs)(`button`,{onClick:()=>Q(`/bambupedia/bambubot`),style:{display:`flex`,alignItems:`center`,gap:`10px`,padding:`12px 20px`,borderRadius:`24px`,border:`1px solid var(--border-color)`,cursor:`pointer`,fontWeight:`800`,fontSize:`0.95rem`,transition:`all 0.3s`,background:`var(--bg-card)`,color:`var(--text-main)`,boxShadow:`0 4px 12px rgba(0,0,0,0.05)`,minWidth:`180px`,justifyContent:`center`},children:[(0,_.jsx)(i,{size:18,color:`var(--primary)`}),` BambuBot RAG`]})]}),J===`chat`&&(0,_.jsxs)(`div`,{style:{display:`grid`,gridTemplateColumns:window.innerWidth<768?`1fr`:`1fr 320px`,gap:`24px`,alignItems:`start`},children:[(0,_.jsxs)(`div`,{id:`bambubot-chat-area`,style:{background:`var(--bg-card)`,borderRadius:`20px`,border:`1px solid var(--border-color)`,overflow:`hidden`,boxShadow:`0 4px 20px rgba(0,0,0,0.06)`,order:(window.innerWidth,1)},children:[(0,_.jsxs)(`div`,{style:{background:`linear-gradient(135deg, #0ca678, #2b8a3e)`,padding:`16px 20px`,display:`flex`,alignItems:`center`,gap:`12px`},children:[(0,_.jsx)(`div`,{style:{width:`42px`,height:`42px`,background:`rgba(255,255,255,0.2)`,borderRadius:`50%`,display:`flex`,alignItems:`center`,justifyContent:`center`,overflow:`hidden`},children:(0,_.jsx)(`img`,{src:l(`logos/bmc10.png`),alt:`BambuBot`,style:{width:`28px`,height:`28px`,objectFit:`contain`}})}),(0,_.jsxs)(`div`,{children:[(0,_.jsx)(`div`,{style:{fontWeight:`700`,color:`white`,fontSize:`1rem`},children:`BambuBot`}),(0,_.jsx)(`div`,{style:{fontSize:`0.75rem`,color:`rgba(255,255,255,0.8)`},children:`Asisten AI Bambupedia • Online`})]}),(0,_.jsxs)(`div`,{style:{marginLeft:`auto`,display:`flex`,alignItems:`center`,gap:`8px`},children:[(0,_.jsxs)(`div`,{style:{background:`rgba(255,255,255,0.2)`,padding:`4px 10px`,borderRadius:`12px`,fontSize:`0.75rem`,color:`white`,fontWeight:`600`},children:[`Sisa: `,e>0?`${e} (Gratis)`:`${n} (Premium)`]}),e+n===0&&(0,_.jsx)(`button`,{onClick:()=>S(!0),style:{background:`#ffca28`,border:`none`,color:`#333`,padding:`4px 10px`,borderRadius:`12px`,fontSize:`0.75rem`,fontWeight:`bold`,cursor:`pointer`},children:`Top-up`}),(0,_.jsx)(`div`,{style:{width:`10px`,height:`10px`,background:`#69db7c`,borderRadius:`50%`,boxShadow:`0 0 0 3px rgba(105,219,124,0.3)`,marginLeft:`4px`}})]})]}),(0,_.jsxs)(`div`,{style:{height:`450px`,overflowY:`auto`,padding:`20px`,display:`flex`,flexDirection:`column`,gap:`16px`},children:[H.map((e,t)=>(0,_.jsxs)(`div`,{style:{display:`flex`,gap:`10px`,alignItems:`flex-start`,flexDirection:e.role===`user`?`row-reverse`:`row`},children:[e.role===`assistant`&&(0,_.jsx)(`div`,{style:{width:`32px`,height:`32px`,background:`linear-gradient(135deg, #0ca678, #2b8a3e)`,borderRadius:`50%`,display:`flex`,alignItems:`center`,justifyContent:`center`,flexShrink:0,overflow:`hidden`},children:(0,_.jsx)(`img`,{src:l(`logos/bmc10.png`),alt:`BambuBot`,style:{width:`20px`,height:`20px`,objectFit:`contain`}})}),(0,_.jsx)(`div`,{style:{maxWidth:`75%`,padding:`12px 16px`,borderRadius:e.role===`user`?`18px 18px 4px 18px`:`18px 18px 18px 4px`,background:e.role===`user`?`linear-gradient(135deg, #0ca678, #2b8a3e)`:`var(--bg-secondary)`,color:e.role===`user`?`white`:`var(--text-main)`,fontSize:`0.88rem`,lineHeight:`1.6`},dangerouslySetInnerHTML:{__html:E(e.text)}})]},t)),K&&(0,_.jsxs)(`div`,{style:{display:`flex`,gap:`10px`,alignItems:`center`},children:[(0,_.jsx)(`div`,{style:{width:`32px`,height:`32px`,background:`linear-gradient(135deg, #0ca678, #2b8a3e)`,borderRadius:`50%`,display:`flex`,alignItems:`center`,justifyContent:`center`,overflow:`hidden`},children:(0,_.jsx)(`img`,{src:l(`logos/bmc10.png`),alt:`BambuBot`,style:{width:`20px`,height:`20px`,objectFit:`contain`}})}),(0,_.jsx)(`div`,{style:{background:`#f1f3f5`,padding:`12px 16px`,borderRadius:`18px 18px 18px 4px`,display:`flex`,gap:`4px`,alignItems:`center`},children:[0,1,2].map(e=>(0,_.jsx)(`div`,{style:{width:`7px`,height:`7px`,background:`#adb5bd`,borderRadius:`50%`,animation:`bounce 1s ${e*.2}s infinite`}},e))})]}),(0,_.jsx)(`div`,{ref:Z})]}),(0,_.jsxs)(`div`,{style:{padding:`16px 20px`,borderTop:`1px solid #f1f3f5`,display:`flex`,gap:`10px`,alignItems:`flex-end`},children:[(0,_.jsx)(`textarea`,{value:W,onChange:e=>G(e.target.value),onKeyDown:e=>{e.key===`Enter`&&!e.shiftKey&&(e.preventDefault(),$())},placeholder:`Tanya tentang bambu... (Enter untuk kirim)`,rows:1,style:{flex:1,border:`1px solid #dee2e6`,borderRadius:`12px`,padding:`10px 14px`,fontSize:`0.9rem`,resize:`none`,outline:`none`,fontFamily:`inherit`,lineHeight:`1.5`},onFocus:e=>e.target.style.borderColor=`var(--primary)`,onBlur:e=>e.target.style.borderColor=`#dee2e6`}),(0,_.jsx)(`button`,{onClick:()=>$(),style:{width:`44px`,height:`44px`,background:`var(--primary)`,border:`none`,borderRadius:`12px`,cursor:`pointer`,display:`flex`,alignItems:`center`,justifyContent:`center`,flexShrink:0},children:(0,_.jsx)(d,{size:18,color:`white`})})]})]}),(0,_.jsxs)(`div`,{style:{order:(window.innerWidth,2)},children:[(0,_.jsxs)(`div`,{style:{background:`var(--bg-card)`,borderRadius:`16px`,padding:`20px`,border:`1px solid var(--border-color)`,marginBottom:`16px`},children:[(0,_.jsx)(`h3`,{style:{fontSize:`0.95rem`,fontWeight:`700`,marginBottom:`14px`,color:`var(--text-main)`},children:`⚡ Pertanyaan Cepat`}),(0,_.jsx)(`div`,{style:{display:`flex`,flexDirection:`column`,gap:`8px`},children:y.map((e,t)=>(0,_.jsxs)(`button`,{onClick:()=>{$(e),document.getElementById(`bambubot-chat-area`)?.scrollIntoView({behavior:`smooth`})},style:{padding:`10px 14px`,background:`var(--bg-secondary)`,border:`1px solid var(--border-color)`,borderRadius:`10px`,cursor:`pointer`,textAlign:`left`,fontSize:`0.82rem`,color:`var(--text-main)`,display:`flex`,alignItems:`center`,gap:`8px`,transition:`all 0.2s`},onMouseEnter:e=>{e.currentTarget.style.background=`rgba(12,166,120,0.06)`,e.currentTarget.style.borderColor=`var(--primary)`},onMouseLeave:e=>{e.currentTarget.style.background=`var(--bg-secondary)`,e.currentTarget.style.borderColor=`var(--border-color)`},children:[(0,_.jsx)(s,{size:13,color:`var(--primary)`,style:{flexShrink:0}}),e]},t))})]}),(0,_.jsxs)(`div`,{style:{background:`linear-gradient(135deg, #0ca678, #2b8a3e)`,borderRadius:`16px`,padding:`20px`,color:`white`,textAlign:`center`},children:[(0,_.jsx)(`div`,{style:{fontSize:`2rem`,marginBottom:`8px`},children:`🌿`}),(0,_.jsx)(`div`,{style:{fontWeight:`700`,marginBottom:`6px`},children:`176 Spesies Bambu Indonesia (Widjaja 2019)`}),(0,_.jsx)(`div`,{style:{fontSize:`0.82rem`,opacity:.85},children:`Database botani bambu Indonesia terlengkap`})]})]})]}),J===`library`&&(0,_.jsx)(`div`,{style:{display:`grid`,gridTemplateColumns:`repeat(auto-fit, minmax(280px, 1fr))`,gap:`20px`},children:b.map((e,t)=>{let n=P.includes(e.id);return(0,_.jsxs)(`div`,{style:{background:`var(--bg-card)`,borderRadius:`16px`,padding:`24px`,border:`1px solid var(--border-color)`,cursor:`pointer`,transition:`all 0.2s`,position:`relative`,overflow:`hidden`},onMouseEnter:e=>{e.currentTarget.style.boxShadow=`0 8px 24px rgba(12,166,120,0.1)`,e.currentTarget.style.borderColor=`var(--primary)`},onMouseLeave:e=>{e.currentTarget.style.boxShadow=`none`,e.currentTarget.style.borderColor=`var(--border-color)`},onClick:()=>{L(e),z(!0),V(null),N(!1)},children:[n&&(0,_.jsx)(`div`,{style:{position:`absolute`,top:0,right:0,background:`linear-gradient(135deg, #FFD700, #FDB931)`,color:`#000`,fontSize:`0.6rem`,fontWeight:`900`,padding:`6px 24px`,transform:`rotate(45deg) translate(25%, -20%)`,boxShadow:`0 2px 4px rgba(0,0,0,0.2)`,letterSpacing:`1px`},children:`VERIFIED NFT`}),(0,_.jsx)(`div`,{style:{fontSize:`2.5rem`,marginBottom:`12px`},children:e.icon}),(0,_.jsxs)(`div`,{style:{display:`flex`,gap:`6px`,marginBottom:`8px`},children:[(0,_.jsx)(`span`,{style:{fontSize:`0.7rem`,fontWeight:`700`,background:`rgba(12,166,120,0.1)`,color:`var(--primary)`,padding:`3px 10px`,borderRadius:`20px`},children:e.tag}),(0,_.jsx)(`span`,{style:{fontSize:`0.7rem`,fontWeight:`700`,background:`#f1f3f5`,color:`#495057`,padding:`3px 10px`,borderRadius:`20px`},children:e.tier})]}),(0,_.jsx)(`h3`,{style:{fontSize:`1.05rem`,margin:`4px 0 8px`},children:e.title}),(0,_.jsx)(`p`,{style:{fontSize:`0.85rem`,color:`var(--text-muted)`,marginBottom:`16px`,lineHeight:`1.5`},children:e.desc}),(0,_.jsxs)(`div`,{style:{display:`flex`,alignItems:`center`,justifyContent:`space-between`,borderTop:`1px dashed #eee`,paddingTop:`12px`},children:[(0,_.jsx)(`div`,{style:{fontSize:`0.85rem`,fontWeight:`800`,color:n?`var(--primary)`:`#495057`},children:n?`Milik Anda`:`Rp ${(e.priceRp/1e3).toFixed(0)}k / ${e.priceBmc} BMC`}),(0,_.jsxs)(`div`,{style:{display:`flex`,alignItems:`center`,gap:`4px`,color:`var(--primary)`,fontSize:`0.85rem`,fontWeight:`600`},children:[n?`Baca Penuh`:`Buka Kunci`,` `,(0,_.jsx)(a,{size:15})]})]})]},t)})})]}),x&&(0,_.jsx)(`div`,{style:{position:`fixed`,top:0,left:0,right:0,bottom:0,background:`rgba(0,0,0,0.5)`,backdropFilter:`blur(8px)`,zIndex:9999,display:`flex`,alignItems:`center`,justifyContent:`center`,padding:`20px`},children:(0,_.jsxs)(`div`,{style:{background:`rgba(255, 255, 255, 0.85)`,backdropFilter:`blur(20px)`,border:`1px solid rgba(12,166,120,0.4)`,borderRadius:`24px`,width:`100%`,maxWidth:`450px`,padding:`32px`,boxShadow:`0 24px 48px rgba(12,166,120,0.2)`,position:`relative`},children:[(0,_.jsx)(`button`,{onClick:()=>{S(!1),D(null),N(!1)},style:{position:`absolute`,top:`20px`,right:`20px`,background:`transparent`,border:`none`,cursor:`pointer`,fontSize:`1.2rem`,color:`#868e96`},children:`✕`}),!C&&!M&&(0,_.jsxs)(_.Fragment,{children:[(0,_.jsxs)(`div`,{style:{textAlign:`center`,marginBottom:`24px`},children:[(0,_.jsx)(`div`,{style:{width:`60px`,height:`60px`,background:`rgba(12,166,120,0.1)`,border:`1px solid rgba(12,166,120,0.2)`,borderRadius:`50%`,display:`flex`,alignItems:`center`,justifyContent:`center`,margin:`0 auto 16px`},children:(0,_.jsx)(u,{size:28,color:`var(--primary)`})}),(0,_.jsx)(`h3`,{style:{fontSize:`1.5rem`,fontWeight:`800`,color:`var(--text-main)`,marginBottom:`8px`},children:`Batas Akses Terlampaui`}),(0,_.jsx)(`p`,{style:{fontSize:`0.9rem`,color:`var(--text-muted)`},children:`Anda telah menggunakan semua kuota gratis. Lakukan *top-up* untuk melanjutkan sesi tanya-jawab.`})]}),(0,_.jsxs)(`button`,{onClick:()=>D(`bank`),style:{width:`100%`,padding:`16px`,background:`rgba(255,255,255,0.6)`,border:`2px solid rgba(12,166,120,0.1)`,borderRadius:`16px`,display:`flex`,alignItems:`center`,gap:`16px`,marginBottom:`12px`,cursor:`pointer`,transition:`all 0.2s`},onMouseEnter:e=>e.currentTarget.style.borderColor=`var(--primary)`,onMouseLeave:e=>e.currentTarget.style.borderColor=`rgba(12,166,120,0.1)`,children:[(0,_.jsx)(`div`,{style:{width:`48px`,height:`48px`,background:`#e7f5ff`,borderRadius:`12px`,display:`flex`,alignItems:`center`,justifyContent:`center`},children:(0,_.jsx)(o,{size:24,color:`#1c7ed6`})}),(0,_.jsxs)(`div`,{style:{textAlign:`left`},children:[(0,_.jsx)(`div`,{style:{fontWeight:`700`,color:`var(--text-main)`,fontSize:`1.05rem`},children:`Transfer Bank BRI`}),(0,_.jsx)(`div`,{style:{fontSize:`0.8rem`,color:`var(--text-muted)`},children:`Rp 1.000 / Akses • Manual Verifikasi`})]}),(0,_.jsx)(f,{style:{marginLeft:`auto`,color:`#adb5bd`}})]}),(0,_.jsxs)(`button`,{onClick:()=>D(`bmc`),style:{width:`100%`,padding:`16px`,background:`rgba(255,255,255,0.6)`,border:`2px solid rgba(12,166,120,0.1)`,borderRadius:`16px`,display:`flex`,alignItems:`center`,gap:`16px`,cursor:`pointer`,transition:`all 0.2s`},onMouseEnter:e=>e.currentTarget.style.borderColor=`var(--primary)`,onMouseLeave:e=>e.currentTarget.style.borderColor=`rgba(12,166,120,0.1)`,children:[(0,_.jsx)(`div`,{style:{width:`48px`,height:`48px`,background:`rgba(12,166,120,0.1)`,borderRadius:`12px`,display:`flex`,alignItems:`center`,justifyContent:`center`},children:(0,_.jsx)(h,{size:24,color:`var(--primary)`})}),(0,_.jsxs)(`div`,{style:{textAlign:`left`},children:[(0,_.jsx)(`div`,{style:{fontWeight:`700`,color:`var(--text-main)`,fontSize:`1.05rem`},children:`BMC Token (Web3)`}),(0,_.jsx)(`div`,{style:{fontSize:`0.8rem`,color:`var(--text-muted)`},children:`Diskon Khusus Bundling • Otomatis`})]}),(0,_.jsx)(f,{style:{marginLeft:`auto`,color:`#adb5bd`}})]})]}),C===`bank`&&!M&&(0,_.jsxs)(_.Fragment,{children:[(0,_.jsx)(`button`,{onClick:()=>D(null),style:{background:`transparent`,border:`none`,color:`var(--text-muted)`,fontSize:`0.9rem`,cursor:`pointer`,marginBottom:`16px`,display:`flex`,alignItems:`center`,gap:`4px`},children:`← Kembali`}),(0,_.jsx)(`h3`,{style:{fontSize:`1.3rem`,fontWeight:`800`,marginBottom:`20px`,color:`var(--text-main)`},children:`Transfer Bank`}),(0,_.jsxs)(`div`,{style:{background:`rgba(255,255,255,0.5)`,padding:`20px`,borderRadius:`16px`,marginBottom:`20px`,border:`1px dashed rgba(12,166,120,0.3)`},children:[(0,_.jsx)(`div`,{style:{fontSize:`0.85rem`,color:`var(--text-muted)`,marginBottom:`4px`},children:`Bank Tujuan`}),(0,_.jsx)(`div`,{style:{fontSize:`1.2rem`,fontWeight:`800`,color:`#1c7ed6`,marginBottom:`12px`},children:`BRI (Bank Rakyat Indonesia)`}),(0,_.jsx)(`div`,{style:{fontSize:`0.85rem`,color:`var(--text-muted)`,marginBottom:`4px`},children:`Nomor Rekening`}),(0,_.jsx)(`div`,{style:{fontSize:`1.6rem`,fontWeight:`bold`,fontFamily:`monospace`,color:`var(--text-main)`,marginBottom:`12px`,letterSpacing:`2px`},children:`141101000456562`}),(0,_.jsx)(`div`,{style:{fontSize:`0.85rem`,color:`var(--text-muted)`,marginBottom:`4px`},children:`Atas Nama`}),(0,_.jsx)(`div`,{style:{fontSize:`1rem`,fontWeight:`700`,color:`var(--text-main)`},children:`YAYASAN SABUMI NUSANTARA JAYA`})]}),(0,_.jsxs)(`div`,{style:{marginBottom:`24px`},children:[(0,_.jsx)(`label`,{style:{fontSize:`0.9rem`,fontWeight:`600`,display:`block`,marginBottom:`8px`,color:`var(--text-main)`},children:`Ingin membeli berapa akses? (Rp 1.000/akses)`}),(0,_.jsxs)(`div`,{style:{display:`flex`,alignItems:`center`,gap:`10px`},children:[(0,_.jsx)(`input`,{type:`number`,min:`1`,value:O,onChange:e=>k(parseInt(e.target.value)||1),style:{width:`80px`,padding:`12px`,borderRadius:`10px`,border:`1px solid #dee2e6`,fontSize:`1.1rem`,textAlign:`center`,background:`white`}}),(0,_.jsx)(`span`,{style:{fontSize:`0.9rem`,color:`var(--text-muted)`},children:`Akses`})]}),(0,_.jsxs)(`div`,{style:{marginTop:`12px`,fontSize:`1.05rem`,color:`var(--primary)`,fontWeight:`bold`},children:[`Total Transfer: Rp `,(O*1e3).toLocaleString(`id-ID`)]})]}),(0,_.jsxs)(`div`,{style:{display:`flex`,gap:`10px`},children:[(0,_.jsx)(`a`,{href:`https://wa.me/628174139994?text=Halo%20Admin%2C%20saya%20telah%20mentransfer%20Rp%20${O*1e3}%20ke%20rekening%20BRI%20Yayasan%20Sabumi%20Nusantara%20Jaya%20untuk%20top-up%20akses%20BambuBot.`,target:`_blank`,rel:`noreferrer`,style:{flex:1,padding:`14px`,background:`#25D366`,color:`white`,textAlign:`center`,borderRadius:`12px`,fontWeight:`bold`,textDecoration:`none`,display:`inline-block`},children:`Konfirmasi WhatsApp`}),(0,_.jsx)(`button`,{onClick:()=>{v(e=>e+O),N(!0),setTimeout(()=>{S(!1),D(null),N(!1)},3e3)},style:{padding:`14px`,background:`rgba(12,166,120,0.1)`,color:`var(--primary)`,border:`none`,borderRadius:`12px`,cursor:`pointer`,fontSize:`0.8rem`,fontWeight:`bold`},title:`Hanya untuk demo`,children:`Simulasi ACC`})]})]}),C===`bmc`&&!M&&(0,_.jsxs)(_.Fragment,{children:[(0,_.jsx)(`button`,{onClick:()=>D(null),style:{background:`transparent`,border:`none`,color:`var(--text-muted)`,fontSize:`0.9rem`,cursor:`pointer`,marginBottom:`16px`,display:`flex`,alignItems:`center`,gap:`4px`},children:`← Kembali`}),(0,_.jsxs)(`div`,{style:{display:`flex`,justifyContent:`space-between`,alignItems:`center`,marginBottom:`20px`},children:[(0,_.jsx)(`h3`,{style:{fontSize:`1.3rem`,fontWeight:`800`,color:`var(--text-main)`},children:`Bayar dengan BMC`}),(0,_.jsx)(`div`,{style:{background:`rgba(12,166,120,0.15)`,color:`var(--primary)`,padding:`4px 10px`,borderRadius:`20px`,fontSize:`0.75rem`,fontWeight:`bold`,border:`1px solid rgba(12,166,120,0.3)`},children:`1 BMC = Rp 10.000`})]}),(0,_.jsx)(`div`,{style:{display:`flex`,flexDirection:`column`,gap:`12px`,marginBottom:`10px`},children:[{bmc:1,accesses:10,price:`Rp 10.000`,label:`Starter`},{bmc:5,accesses:50,price:`Rp 45.000`,label:`Pro`,badge:`Diskon Rp 5k`},{bmc:10,accesses:100,price:`Rp 80.000`,label:`Ahli`,badge:`Hemat Rp 20k`}].map((e,t)=>(0,_.jsxs)(`div`,{style:{padding:`16px`,background:`rgba(255,255,255,0.6)`,border:`2px solid rgba(12,166,120,0.15)`,borderRadius:`16px`,position:`relative`,display:`flex`,justifyContent:`space-between`,alignItems:`center`},children:[e.badge&&(0,_.jsx)(`span`,{style:{position:`absolute`,top:`-10px`,left:`16px`,background:`#ffca28`,color:`#333`,fontSize:`0.7rem`,fontWeight:`bold`,padding:`3px 10px`,borderRadius:`10px`},children:e.badge}),(0,_.jsxs)(`div`,{children:[(0,_.jsxs)(`div`,{style:{fontSize:`0.85rem`,fontWeight:`700`,color:`var(--primary)`,marginBottom:`4px`},children:[e.label,` Bundle`]}),(0,_.jsxs)(`div`,{style:{fontSize:`1.1rem`,fontWeight:`800`,color:`var(--text-main)`},children:[e.accesses,` Akses`]}),(0,_.jsxs)(`div`,{style:{fontSize:`0.8rem`,color:`var(--text-muted)`,marginTop:`4px`},children:[`Setara `,e.price]})]}),(0,_.jsx)(`button`,{onClick:async()=>{j(!0),await new Promise(e=>setTimeout(e,1500)),v(t=>t+e.accesses),j(!1),N(!0),setTimeout(()=>{S(!1),D(null),N(!1)},3e3)},disabled:A,style:{padding:`10px 20px`,background:`linear-gradient(135deg, #0ca678, #2b8a3e)`,color:`white`,border:`none`,borderRadius:`10px`,fontWeight:`bold`,cursor:A?`wait`:`pointer`,opacity:A?.7:1},children:A?`Loading...`:`${e.bmc} BMC`})]},t))})]}),M&&(0,_.jsxs)(`div`,{style:{textAlign:`center`,padding:`30px 0`},children:[(0,_.jsx)(m,{size:64,color:`var(--primary)`,style:{margin:`0 auto 16px`}}),(0,_.jsx)(`h3`,{style:{fontSize:`1.5rem`,fontWeight:`800`,color:`var(--text-main)`,marginBottom:`8px`},children:`Pembayaran Sukses!`}),(0,_.jsx)(`p`,{style:{fontSize:`0.95rem`,color:`var(--text-muted)`},children:`Kuota akses telah ditambahkan. Selamat mengeksplorasi kembali Bambupedia.`})]})]})}),R&&I&&(0,_.jsx)(`div`,{style:{position:`fixed`,top:0,left:0,right:0,bottom:0,background:`rgba(0,0,0,0.6)`,backdropFilter:`blur(8px)`,zIndex:9999,display:`flex`,alignItems:`center`,justifyContent:`center`,padding:`20px`},children:(0,_.jsxs)(`div`,{style:{background:`white`,borderRadius:`24px`,width:`100%`,maxWidth:`800px`,maxHeight:`90vh`,overflowY:`auto`,position:`relative`,boxShadow:`0 24px 48px rgba(0,0,0,0.3)`},children:[(0,_.jsxs)(`div`,{style:{background:`var(--primary)`,padding:`20px 32px`,display:`flex`,justifyContent:`space-between`,alignItems:`center`,position:`sticky`,top:0,zIndex:10},children:[(0,_.jsxs)(`div`,{style:{display:`flex`,alignItems:`center`,gap:`12px`},children:[(0,_.jsx)(`div`,{style:{fontSize:`2rem`},children:I.icon}),(0,_.jsxs)(`div`,{children:[(0,_.jsx)(`div`,{style:{color:`rgba(255,255,255,0.8)`,fontSize:`0.8rem`,fontWeight:`bold`,textTransform:`uppercase`,letterSpacing:`1px`},children:I.tag}),(0,_.jsx)(`h2`,{style:{color:`white`,fontSize:`1.2rem`,margin:0},children:I.title})]})]}),(0,_.jsx)(`button`,{onClick:()=>{z(!1),L(null),V(null),N(!1)},style:{background:`rgba(255,255,255,0.2)`,color:`white`,border:`none`,width:`36px`,height:`36px`,borderRadius:`50%`,cursor:`pointer`,display:`flex`,alignItems:`center`,justifyContent:`center`,fontSize:`1.2rem`},children:`✕`})]}),P.includes(I.id)?(0,_.jsxs)(`div`,{style:{padding:`40px`},children:[(0,_.jsxs)(`div`,{style:{background:`linear-gradient(135deg, #FFD700 0%, #FDB931 100%)`,padding:`12px 20px`,borderRadius:`12px`,display:`flex`,alignItems:`center`,gap:`12px`,marginBottom:`32px`,boxShadow:`0 4px 12px rgba(253, 185, 49, 0.3)`},children:[(0,_.jsx)(m,{size:24,color:`#000`}),(0,_.jsxs)(`div`,{children:[(0,_.jsx)(`div`,{style:{fontWeight:`900`,fontSize:`1.1rem`,color:`#000`},children:`Verified NFT Asset`}),(0,_.jsx)(`div`,{style:{fontSize:`0.8rem`,color:`rgba(0,0,0,0.7)`},children:`Sertifikat kepemilikan tercatat aman. Hak akses penuh atas kekayaan intelektual ini ada pada Anda.`})]})]}),(0,_.jsx)(`div`,{style:{fontSize:`1.05rem`,lineHeight:`1.8`,color:`var(--text-main)`,whiteSpace:`pre-wrap`},children:I.fullContent})]}):(0,_.jsxs)(`div`,{style:{padding:`40px`,position:`relative`},children:[(0,_.jsxs)(`div`,{style:{fontSize:`1.1rem`,lineHeight:`1.8`,color:`var(--text-main)`,marginBottom:`20px`},children:[(0,_.jsx)(`span`,{style:{fontWeight:`bold`},children:`Executive Summary:`}),(0,_.jsx)(`br`,{}),I.preview]}),(0,_.jsxs)(`div`,{style:{position:`relative`},children:[(0,_.jsx)(`div`,{style:{fontSize:`1.1rem`,lineHeight:`1.8`,color:`var(--text-main)`,filter:`blur(5px)`,userSelect:`none`,opacity:.4},children:`Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.`}),(0,_.jsxs)(`div`,{style:{position:`absolute`,top:`50%`,left:`50%`,transform:`translate(-50%, -50%)`,width:`100%`,maxWidth:`500px`,background:`white`,padding:`32px`,borderRadius:`24px`,boxShadow:`0 20px 40px rgba(0,0,0,0.15)`,textAlign:`center`,border:`1px solid #eee`},children:[!B&&!M&&(0,_.jsxs)(_.Fragment,{children:[(0,_.jsx)(`div`,{style:{width:`64px`,height:`64px`,background:`rgba(12,166,120,0.1)`,borderRadius:`50%`,margin:`0 auto 16px`,display:`flex`,alignItems:`center`,justifyContent:`center`},children:(0,_.jsx)(u,{size:32,color:`var(--primary)`})}),(0,_.jsx)(`h3`,{style:{fontSize:`1.4rem`,fontWeight:`800`,marginBottom:`8px`},children:`Eksklusif & Terlindungi`}),(0,_.jsx)(`p`,{style:{fontSize:`0.9rem`,color:`var(--text-muted)`,marginBottom:`24px`},children:`Buka kunci dokumen ini dengan menjadikannya NFT (*Minting*) berlisensi milik Anda untuk perlindungan Anti-Plagiasi penuh.`}),(0,_.jsxs)(`button`,{onClick:()=>V(`bank`),style:{width:`100%`,padding:`16px`,background:`white`,border:`2px solid #e9ecef`,borderRadius:`16px`,display:`flex`,alignItems:`center`,gap:`16px`,marginBottom:`12px`,cursor:`pointer`,transition:`all 0.2s`},children:[(0,_.jsx)(`div`,{style:{width:`48px`,height:`48px`,background:`#e7f5ff`,borderRadius:`12px`,display:`flex`,alignItems:`center`,justifyContent:`center`},children:(0,_.jsx)(o,{size:24,color:`#1c7ed6`})}),(0,_.jsxs)(`div`,{style:{textAlign:`left`},children:[(0,_.jsx)(`div`,{style:{fontWeight:`700`,color:`var(--text-main)`,fontSize:`1.05rem`},children:`Transfer Bank BRI`}),(0,_.jsxs)(`div`,{style:{fontSize:`0.85rem`,color:`var(--text-muted)`},children:[`Rp `,I.priceRp.toLocaleString(`id-ID`),` • Hubungi Admin`]})]}),(0,_.jsx)(f,{style:{marginLeft:`auto`,color:`#adb5bd`}})]}),(0,_.jsxs)(`button`,{onClick:()=>V(`bmc`),style:{width:`100%`,padding:`16px`,background:`white`,border:`2px solid #e9ecef`,borderRadius:`16px`,display:`flex`,alignItems:`center`,gap:`16px`,cursor:`pointer`,transition:`all 0.2s`},children:[(0,_.jsx)(`div`,{style:{width:`48px`,height:`48px`,background:`rgba(12,166,120,0.1)`,borderRadius:`12px`,display:`flex`,alignItems:`center`,justifyContent:`center`},children:(0,_.jsx)(h,{size:24,color:`var(--primary)`})}),(0,_.jsxs)(`div`,{style:{textAlign:`left`},children:[(0,_.jsx)(`div`,{style:{fontWeight:`700`,color:`var(--text-main)`,fontSize:`1.05rem`},children:`Mint dengan BMC Token`}),(0,_.jsxs)(`div`,{style:{fontSize:`0.85rem`,color:`var(--text-muted)`},children:[I.priceBmc,` BMC • Otomatis`]})]}),(0,_.jsx)(f,{style:{marginLeft:`auto`,color:`#adb5bd`}})]})]}),B===`bank`&&!M&&(0,_.jsxs)(_.Fragment,{children:[(0,_.jsx)(`button`,{onClick:()=>V(null),style:{background:`transparent`,border:`none`,color:`var(--text-muted)`,fontSize:`0.9rem`,cursor:`pointer`,marginBottom:`16px`,display:`flex`,alignItems:`center`,gap:`4px`},children:`← Kembali`}),(0,_.jsx)(`h3`,{style:{fontSize:`1.3rem`,fontWeight:`800`,marginBottom:`20px`},children:`Transfer Bank Manual`}),(0,_.jsxs)(`div`,{style:{background:`#f8f9fa`,padding:`20px`,borderRadius:`16px`,marginBottom:`24px`,border:`1px dashed #dee2e6`},children:[(0,_.jsxs)(`div`,{style:{fontSize:`0.85rem`,color:`var(--text-muted)`,marginBottom:`4px`},children:[`Tagihan Dokumen "`,I.tier,`"`]}),(0,_.jsxs)(`div`,{style:{fontSize:`1.6rem`,fontWeight:`800`,color:`var(--primary)`,marginBottom:`20px`},children:[`Rp `,I.priceRp.toLocaleString(`id-ID`)]}),(0,_.jsx)(`div`,{style:{fontSize:`0.85rem`,color:`var(--text-muted)`,marginBottom:`4px`},children:`Bank Tujuan`}),(0,_.jsx)(`div`,{style:{fontSize:`1.1rem`,fontWeight:`800`,color:`#1c7ed6`,marginBottom:`12px`},children:`BRI (Bank Rakyat Indonesia)`}),(0,_.jsx)(`div`,{style:{fontSize:`0.85rem`,color:`var(--text-muted)`,marginBottom:`4px`},children:`Nomor Rekening`}),(0,_.jsx)(`div`,{style:{fontSize:`1.5rem`,fontWeight:`bold`,fontFamily:`monospace`,color:`var(--text-main)`,marginBottom:`12px`,letterSpacing:`2px`},children:`141101000456562`}),(0,_.jsx)(`div`,{style:{fontSize:`0.85rem`,color:`var(--text-muted)`,marginBottom:`4px`},children:`Atas Nama`}),(0,_.jsx)(`div`,{style:{fontSize:`1rem`,fontWeight:`700`,color:`var(--text-main)`},children:`YAYASAN SABUMI NUSANTARA JAYA`})]}),(0,_.jsxs)(`div`,{style:{display:`flex`,gap:`10px`},children:[(0,_.jsx)(`a`,{href:`https://wa.me/628174139994?text=Halo%20Admin%2C%20saya%20telah%20mentransfer%20Rp%20${I.priceRp}%20ke%20rekening%20BRI%20yayasan%20untuk%20Dokumen%20NFT:%20${encodeURIComponent(I.title)}.`,target:`_blank`,rel:`noreferrer`,style:{flex:1,padding:`14px`,background:`#25D366`,color:`white`,textAlign:`center`,borderRadius:`12px`,fontWeight:`bold`,textDecoration:`none`},children:`Konfirmasi Admin`}),(0,_.jsx)(`button`,{onClick:()=>{F(e=>[...e,I.id]),N(!0),setTimeout(()=>{N(!1)},3e3)},style:{padding:`14px`,background:`#f1f3f5`,color:`#adb5bd`,border:`none`,borderRadius:`12px`,cursor:`pointer`,fontSize:`0.8rem`,fontWeight:`bold`},children:`Simulasi ACC`})]})]}),B===`bmc`&&!M&&(0,_.jsxs)(_.Fragment,{children:[(0,_.jsx)(`button`,{onClick:()=>V(null),style:{background:`transparent`,border:`none`,color:`var(--text-muted)`,fontSize:`0.9rem`,cursor:`pointer`,marginBottom:`16px`,display:`flex`,alignItems:`center`,gap:`4px`},children:`← Kembali`}),(0,_.jsx)(`h3`,{style:{fontSize:`1.3rem`,fontWeight:`800`,marginBottom:`8px`},children:`Koneksi Web3 Wallet`}),(0,_.jsx)(`p`,{style:{fontSize:`0.9rem`,color:`var(--text-muted)`,marginBottom:`24px`},children:`Dokumen akan di-*minting* di atas jaringan blockchain Bamboom network (Simulasi).`}),(0,_.jsxs)(`div`,{style:{background:`#f8f9fa`,padding:`24px`,borderRadius:`16px`,marginBottom:`24px`,border:`2px solid rgba(12,166,120,0.2)`},children:[(0,_.jsx)(`div`,{style:{fontSize:`0.85rem`,color:`var(--text-muted)`,marginBottom:`8px`},children:`Total Biaya Minting`}),(0,_.jsxs)(`div`,{style:{fontSize:`2rem`,fontWeight:`800`,color:`var(--primary)`,display:`flex`,alignItems:`center`,justifyContent:`center`,gap:`8px`},children:[(0,_.jsx)(s,{size:28}),` `,I.priceBmc,` BMC`]})]}),(0,_.jsx)(`button`,{onClick:async()=>{j(!0),await new Promise(e=>setTimeout(e,2e3)),F(e=>[...e,I.id]),j(!1),N(!0),setTimeout(()=>{N(!1)},2500)},disabled:A,style:{width:`100%`,padding:`16px`,background:`linear-gradient(135deg, #0ca678, #2b8a3e)`,color:`white`,border:`none`,borderRadius:`12px`,fontSize:`1.05rem`,fontWeight:`bold`,cursor:A?`wait`:`pointer`,opacity:A?.7:1},children:A?`Minting NFT...`:`Lanjutkan Pembayaran Web3`})]}),M&&(0,_.jsxs)(`div`,{style:{padding:`20px 0`},children:[(0,_.jsx)(m,{size:64,color:`var(--primary)`,style:{margin:`0 auto 16px`}}),(0,_.jsx)(`h3`,{style:{fontSize:`1.5rem`,fontWeight:`800`,color:`var(--text-main)`,marginBottom:`8px`},children:`Minting Sukses!`}),(0,_.jsx)(`p`,{style:{fontSize:`0.95rem`,color:`var(--text-muted)`},children:`Dokumen kini terenkripsi sebagai NFT milik Anda.`})]})]})]})]})]})}),(0,_.jsx)(`style`,{children:`
+        @keyframes bounce {
+          0%, 60%, 100% { transform: translateY(0); }
+          30% { transform: translateY(-8px); }
+        }
+      `})]})};export{D as default};
