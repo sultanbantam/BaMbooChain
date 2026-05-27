@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Wallet, PieChart, FileText, Gift, History, Cpu, TrendingUp, 
   ArrowDownToLine, ArrowUpFromLine, Send, CheckCircle, Clock, ExternalLink,
-  ChevronRight, Play, Camera, MapPin, Upload, ShieldCheck, Users, ShoppingCart, Award, CalendarDays, Lock, Leaf
+  ChevronRight, Play, Camera, MapPin, Upload, ShieldCheck, Users, ShoppingCart, Award, CalendarDays, Lock, Leaf, Globe
 } from 'lucide-react';
 import { useWeb3 } from '../../context/Web3Context';
 import { useAuth } from '../../context/AuthContext';
@@ -756,6 +756,117 @@ const EarnBMC = () => {
   const [taskInput, setTaskInput] = useState('');
   const [taskFile, setTaskFile] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [piPaymentStatus, setPiPaymentStatus] = useState('idle'); // idle, authenticating, paying, approved, completed, error
+  const [piPaymentLog, setPiPaymentLog] = useState('');
+
+  const handlePiPayment = async () => {
+    if (!window.Pi) {
+      setPiPaymentStatus('error');
+      setPiPaymentLog('Pi SDK tidak terdeteksi. Silakan buka aplikasi ini di dalam Pi Browser.');
+      alert('Pi SDK tidak terdeteksi. Buka aplikasi di Pi Browser!');
+      return;
+    }
+
+    try {
+      setPiPaymentStatus('authenticating');
+      setPiPaymentLog('Mengautentikasi dengan Pi Network...');
+      
+      const scopes = ['username', 'payments'];
+      
+      const onIncompletePaymentFound = async (payment) => {
+        setPiPaymentLog(`Menemukan transaksi menggantung (ID: ${payment.identifier}). Mencoba menyelesaikan...`);
+        if (payment.txid) {
+          const res = await fetch('/api/complete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paymentId: payment.identifier, txid: payment.txid }),
+          });
+          if (res.ok) {
+            setPiPaymentStatus('completed');
+            setPiPaymentLog(`Transaksi menggantung berhasil diselesaikan! (ID: ${payment.identifier})`);
+          } else {
+            setPiPaymentStatus('error');
+            setPiPaymentLog(`Gagal menyelesaikan transaksi menggantung.`);
+          }
+        } else {
+          setPiPaymentLog(`Transaksi menggantung ditemukan tetapi belum ditandatangani blockchain (tidak ada txid).`);
+        }
+      };
+
+      const auth = await window.Pi.authenticate(scopes, onIncompletePaymentFound);
+      setPiPaymentLog(`Autentikasi berhasil! User: ${auth.user.username}`);
+      
+      setPiPaymentStatus('paying');
+      setPiPaymentLog('Memulai pembayaran 0.1 Pi Testnet...');
+
+      window.Pi.createPayment({
+        amount: 0.1,
+        memo: "Uji Coba Transaksi BaMbooChain Step 10",
+        metadata: { paymentType: "verification" }
+      }, {
+        onReadyForServerApproval: async (paymentId) => {
+          setPiPaymentStatus('approved');
+          setPiPaymentLog(`Pembayaran dibuat (ID: ${paymentId}). Menunggu persetujuan backend...`);
+          
+          const res = await fetch('/api/approve', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paymentId })
+          });
+          
+          if (!res.ok) {
+            const err = await res.json();
+            setPiPaymentStatus('error');
+            setPiPaymentLog(`Backend gagal menyetujui pembayaran: ${err.error || 'Unknown error'}`);
+            throw new Error(err.error || 'Approval failed');
+          }
+          
+          setPiPaymentLog('Pembayaran disetujui backend. Silakan masukkan passphrase dompet Pi Anda di jendela pop-up Pi Browser.');
+          return res.json();
+        },
+        onReadyForServerCompletion: async (paymentId, txid) => {
+          setPiPaymentLog(`Transaksi ditandatangani di blockchain (TxID: ${txid.substring(0, 10)}...). Menyelesaikan di backend...`);
+          
+          const res = await fetch('/api/complete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paymentId, txid })
+          });
+          
+          if (!res.ok) {
+            const err = await res.json();
+            setPiPaymentStatus('error');
+            setPiPaymentLog(`Backend gagal menyelesaikan pembayaran: ${err.error || 'Unknown error'}`);
+            throw new Error(err.error || 'Completion failed');
+          }
+          
+          setPiPaymentStatus('completed');
+          setPiPaymentLog('✅ Pembayaran BERHASIL! Transaksi diselesaikan sepenuhnya.');
+          alert('Pembayaran Testnet Pi Berhasil!');
+          
+          // Reward user with 10 BMC on successful payment
+          if (addReward) {
+            addReward(10, 'Pi Testnet Payment Verification', 'Earn');
+          }
+          
+          return res.json();
+        },
+        onCancel: (paymentId) => {
+          setPiPaymentStatus('idle');
+          setPiPaymentLog(`Pembayaran dibatalkan oleh pengguna (ID: ${paymentId})`);
+        },
+        onError: (error, payment) => {
+          setPiPaymentStatus('error');
+          setPiPaymentLog(`Terjadi kesalahan pembayaran: ${error.message || error}`);
+          console.error("Pi Payment Error: ", error, payment);
+        }
+      });
+
+    } catch (err) {
+      setPiPaymentStatus('error');
+      setPiPaymentLog(`Autentikasi/Proses gagal: ${err.message || err}`);
+    }
+  };
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -865,6 +976,54 @@ const EarnBMC = () => {
             </div>
             );
           })}
+        </div>
+      </div>
+
+      {/* Pi Sandbox Payment Verification (Step 10) */}
+      <div style={{ background: 'var(--bg-card)', borderRadius: '20px', padding: isMobile ? '20px' : '24px', border: '1px solid var(--border-color)', marginBottom: '20px', background: 'linear-gradient(to bottom right, var(--bg-card), #f8f9fa)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+          <Globe size={24} color="#f59f00" />
+          <h4 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 'bold' }}>Pi Browser Payment Verification (Step 10)</h4>
+        </div>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '16px', lineHeight: 1.5 }}>
+          Uji coba pembayaran Testnet Pi dari pengguna ke aplikasi (User-to-App payment) untuk menyelesaikan langkah ke-10 di Portal Developer Pi.
+        </p>
+
+        {piPaymentLog && (
+          <div style={{ background: '#f8f9fa', padding: '12px', borderRadius: '12px', fontSize: '0.8rem', fontFamily: 'monospace', marginBottom: '16px', borderLeft: '4px solid #f59f00', color: '#495057', wordBreak: 'break-all', border: '1px solid #e9ecef', borderLeftWidth: '4px' }}>
+            <strong>Log:</strong> {piPaymentLog}
+          </div>
+        )}
+
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <button 
+            onClick={handlePiPayment} 
+            disabled={piPaymentStatus === 'authenticating' || piPaymentStatus === 'paying' || piPaymentStatus === 'approved'} 
+            style={{ 
+              background: piPaymentStatus === 'completed' ? '#12b886' : 'linear-gradient(135deg, #f59f00, #e03131)', 
+              color: 'white', 
+              border: 'none', 
+              padding: '12px 24px', 
+              borderRadius: '14px', 
+              fontWeight: 'bold', 
+              cursor: (piPaymentStatus === 'authenticating' || piPaymentStatus === 'paying' || piPaymentStatus === 'approved') ? 'not-allowed' : 'pointer', 
+              fontSize: '0.9rem',
+              boxShadow: '0 4px 12px rgba(245, 159, 0, 0.2)'
+            }}
+          >
+            {piPaymentStatus === 'idle' && 'Kirim Testnet 0.1 Pi'}
+            {piPaymentStatus === 'authenticating' && 'Mengautentikasi...'}
+            {piPaymentStatus === 'paying' && 'Memproses Pembayaran...'}
+            {piPaymentStatus === 'approved' && 'Menunggu Tanda Tangan Wallet...'}
+            {piPaymentStatus === 'completed' && 'Selesai (Kirim Ulang)'}
+            {piPaymentStatus === 'error' && 'Coba Lagi'}
+          </button>
+
+          {piPaymentStatus === 'completed' && (
+            <span style={{ color: '#12b886', fontSize: '0.85rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <CheckCircle size={16} /> Pembayaran Sukses! (+10 BMC)
+            </span>
+          )}
         </div>
       </div>
 
