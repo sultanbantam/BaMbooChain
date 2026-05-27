@@ -58,6 +58,75 @@ export const AuthProvider = ({ children }) => {
   const locationProposals = [];
   const articles = [];
 
+  // Pi Network Auto-Login Observer (Exclusivity compliance)
+  useEffect(() => {
+    const isPiBrowser = window.Pi && (
+      window.location.hostname.includes('vercel.app') || 
+      window.location.hostname.includes('bambu.pi') || 
+      window.location.search.includes('sandbox=true')
+    );
+
+    if (isPiBrowser && !isAuthenticated && !user) {
+      console.log("🕵️ Pi Browser detected. Auto-authenticating with Pi SDK...");
+      const handlePiAutoLogin = async () => {
+        try {
+          const isSandbox = window.location.search.includes('sandbox=true') || window.location.hostname.includes('vercel.app');
+          window.Pi.init({ version: "2.0", sandbox: isSandbox });
+          
+          const scopes = ['username'];
+          const authResult = await window.Pi.authenticate(scopes, () => {});
+          
+          const piUid = authResult.user.uid;
+          const piUsername = authResult.user.username;
+          const piEmail = `${piUid}@bamboochain.pi`;
+          const piPassword = `pi_${piUid}_secure`;
+
+          console.log(`🔐 Pi user authenticated: ${piUsername}. Logging into Firebase...`);
+
+          try {
+            await signInWithEmailAndPassword(auth, piEmail, piPassword);
+          } catch (loginErr) {
+            if (loginErr.code === 'auth/user-not-found' || loginErr.code === 'auth/invalid-credential' || loginErr.code === 'auth/wrong-password') {
+              console.log("🆕 Pi user not found in Firebase. Registering new profile...");
+              const userCredential = await createUserWithEmailAndPassword(auth, piEmail, piPassword);
+              const fbUser = userCredential.user;
+              
+              const mockAddress = '0x' + [...Array(40)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
+              const newUser = {
+                id: fbUser.uid,
+                name: piUsername,
+                username: piUsername,
+                email: piEmail,
+                phone: '',
+                joinedAt: new Date().toISOString(),
+                walletAddress: mockAddress,
+                bmcBalance: 0,
+                stakedBalance: 0,
+                isValidator: false,
+                kycStatus: 'unsubmitted',
+                securitySettings: { pin: null, twoFactor: false, retina: false },
+                transactions: [],
+                checkinStreak: 0,
+                lastCheckinDate: null,
+                notifications: [],
+                bioText: '',
+                statusText: ''
+              };
+              await setDoc(doc(db, "users", fbUser.uid), newUser);
+              console.log("✅ New Pi user profile created in Firestore!");
+            } else {
+              console.error("Firebase Login Error for Pi User:", loginErr);
+            }
+          }
+        } catch (err) {
+          console.error("Pi SDK auto-login failed:", err);
+        }
+      };
+      
+      handlePiAutoLogin();
+    }
+  }, [isAuthenticated, user]);
+
   // Firebase Auth Observer
   useEffect(() => {
     // CAPTURE REFERRAL CODE GLOBALLY
@@ -580,7 +649,12 @@ export const AuthProvider = ({ children }) => {
   const calculateLockedBalance = (userData) => {
     if (!userData) return 0;
     
-    const hasFiatDeposit = (userData.transactions || []).some(tx => tx.type === 'Fiat');
+    const isPiBrowser = window.Pi && (
+      window.location.hostname.includes('vercel.app') || 
+      window.location.hostname.includes('bambu.pi') || 
+      window.location.search.includes('sandbox=true')
+    );
+    const hasFiatDeposit = !isPiBrowser && (userData.transactions || []).some(tx => tx.type === 'Fiat');
     const isUnlocked = userData.kycStatus === 'verified' && ((userData.stakedBalance || 0) >= 10 || hasFiatDeposit);
     
     if (isUnlocked) return 0;
@@ -603,8 +677,18 @@ export const AuthProvider = ({ children }) => {
   const spendBmc = async (amount, description, category = 'Spend') => {
     if (!user) return false;
     const availableBalance = getAvailableBalance();
+    
+    const isPiBrowser = window.Pi && (
+      window.location.hostname.includes('vercel.app') || 
+      window.location.hostname.includes('bambu.pi') || 
+      window.location.search.includes('sandbox=true')
+    );
     if (availableBalance < amount) {
-      alert(`❌ Saldo tidak cukup. Saldo Airdrop/Earned Anda saat ini TERKUNCI.\n\nSyarat Unlock:\n1. KYC Terverifikasi\n2. Staking min. 10 BMC / Top-up via Fiat.`);
+      alert(
+        isPiBrowser
+          ? `❌ Saldo tidak cukup. Saldo Airdrop/Earned Anda saat ini TERKUNCI.\n\nSyarat Unlock:\n1. KYC Terverifikasi\n2. Staking min. 10 BMC.`
+          : `❌ Saldo tidak cukup. Saldo Airdrop/Earned Anda saat ini TERKUNCI.\n\nSyarat Unlock:\n1. KYC Terverifikasi\n2. Staking min. 10 BMC / Top-up via Fiat.`
+      );
       return false;
     }
     const newTx = {
@@ -635,8 +719,18 @@ export const AuthProvider = ({ children }) => {
   const transferBmc = async (amount, destinationAddress) => {
     if (!user) return false;
     const availableBalance = getAvailableBalance();
+    
+    const isPiBrowser = window.Pi && (
+      window.location.hostname.includes('vercel.app') || 
+      window.location.hostname.includes('bambu.pi') || 
+      window.location.search.includes('sandbox=true')
+    );
     if (availableBalance < amount) {
-      alert(`❌ Transfer gagal. Saldo Airdrop/Earned Anda saat ini TERKUNCI.\n\nSyarat Unlock:\n1. KYC Terverifikasi\n2. Staking min. 10 BMC / Top-up via Fiat.`);
+      alert(
+        isPiBrowser
+          ? `❌ Transfer gagal. Saldo Airdrop/Earned Anda saat ini TERKUNCI.\n\nSyarat Unlock:\n1. KYC Terverifikasi\n2. Staking min. 10 BMC.`
+          : `❌ Transfer gagal. Saldo Airdrop/Earned Anda saat ini TERKUNCI.\n\nSyarat Unlock:\n1. KYC Terverifikasi\n2. Staking min. 10 BMC / Top-up via Fiat.`
+      );
       return false;
     }
 

@@ -68,7 +68,70 @@ const AuthModal = () => {
     }
   }, [isAuthModalOpen, authModalInitialTab]);
 
+  const isPiBrowser = window.Pi && (
+    window.location.hostname.includes('vercel.app') || 
+    window.location.hostname.includes('bambu.pi') || 
+    window.location.search.includes('sandbox=true')
+  );
+
   if (!isAuthModalOpen) return null;
+
+  if (isPiBrowser) {
+    return (
+      <div style={{
+        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+        background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '16px',
+        zIndex: 100000
+      }}>
+        <div style={{
+          background: 'var(--bg-card)',
+          width: '100%', maxWidth: '380px',
+          borderRadius: '20px',
+          boxShadow: '0 24px 60px rgba(0,0,0,0.3)',
+          padding: '32px',
+          textAlign: 'center',
+          border: '1px solid var(--border-color)',
+          position: 'relative'
+        }}>
+          <button onClick={closeModal} style={{
+            position: 'absolute', top: '20px', right: '20px', background: 'var(--bg-secondary)',
+            border: '1px solid var(--border-color)', borderRadius: '50%', width: '32px', height: '32px',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', zIndex: 10, color: 'var(--text-main)'
+          }}>
+            <X size={18} />
+          </button>
+          
+          <div style={{ width: '64px', height: '64px', background: 'linear-gradient(135deg, #f59f00, #e03131)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px auto', color: 'white', fontWeight: '900', fontSize: '2rem' }}>
+            π
+          </div>
+          
+          <h2 style={{ margin: '0 0 8px 0', fontSize: '1.5rem', color: 'var(--text-main)', fontWeight: '900' }}>
+            Pi SDK Authentication
+          </h2>
+          
+          <p style={{ margin: '0 0 24px 0', fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: '1.5' }}>
+            Anda sedang membuka aplikasi ini di Pi Browser. Sistem mengautentikasi secara otomatis menggunakan akun Pi Network Anda.
+          </p>
+          
+          <div style={{ background: '#f8f9fa', padding: '16px', borderRadius: '12px', border: '1px dashed #dee2e6', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '24px' }}>
+            🔒 <strong>Kepatuhan Eksklusif:</strong> Hanya login SDK Pi yang diizinkan saat diakses di dalam ekosistem Pi Browser.
+          </div>
+          
+          <button onClick={closeModal} style={{
+            width: '100%', padding: '12px', background: 'var(--primary)', color: 'white',
+            border: 'none', borderRadius: '12px', fontSize: '1rem', fontWeight: 'bold', cursor: 'pointer'
+          }}>
+            Tutup
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();

@@ -359,6 +359,11 @@ const WalletDashboardTab = ({ initialModal, setInitialModal }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const isPiBrowser = window.Pi && (
+    window.location.hostname.includes('vercel.app') || 
+    window.location.hostname.includes('bambu.pi') || 
+    window.location.search.includes('sandbox=true')
+  );
 
   useEffect(() => {
     if (initialModal) {
@@ -575,19 +580,22 @@ const WalletDashboardTab = ({ initialModal, setInitialModal }) => {
             </div>
 
             {/* Mission 2 */}
-            <div style={{ padding: '16px', borderRadius: '16px', border: ((user?.stakedBalance || 0) >= 10 || (user?.transactions || []).some(t => t.type === 'Fiat')) ? '2px solid #51cf66' : '2px solid #e9ecef', background: ((user?.stakedBalance || 0) >= 10 || (user?.transactions || []).some(t => t.type === 'Fiat')) ? '#ebfbee' : '#f8f9fa' }}>
+            <div style={{ padding: '16px', borderRadius: '16px', border: ((user?.stakedBalance || 0) >= 10 || (!isPiBrowser && (user?.transactions || []).some(t => t.type === 'Fiat'))) ? '2px solid #51cf66' : '2px solid #e9ecef', background: ((user?.stakedBalance || 0) >= 10 || (!isPiBrowser && (user?.transactions || []).some(t => t.type === 'Fiat'))) ? '#ebfbee' : '#f8f9fa' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                 <div style={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Leaf size={18} color={((user?.stakedBalance || 0) >= 10 || (user?.transactions || []).some(t => t.type === 'Fiat')) ? '#2b8a3e' : '#adb5bd'} />
+                  <Leaf size={18} color={((user?.stakedBalance || 0) >= 10 || (!isPiBrowser && (user?.transactions || []).some(t => t.type === 'Fiat'))) ? '#2b8a3e' : '#adb5bd'} />
                   2. Anggota Aktif Ekosistem
                 </div>
-                {((user?.stakedBalance || 0) >= 10 || (user?.transactions || []).some(t => t.type === 'Fiat')) ? (
+                {((user?.stakedBalance || 0) >= 10 || (!isPiBrowser && (user?.transactions || []).some(t => t.type === 'Fiat'))) ? (
                   <CheckCircle size={20} color="#51cf66" />
                 ) : (
                   <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#adb5bd', background: '#e9ecef', padding: '4px 8px', borderRadius: '12px' }}>Belum</span>
                 )}
               </div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Staking min. 10 BMC atau pernah Top-Up via Fiat. Progress Staking: <strong>{user?.stakedBalance || 0}/10 BMC</strong>.</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                {isPiBrowser ? "Staking min. 10 BMC. " : "Staking min. 10 BMC atau pernah Top-Up via Fiat. "}
+                Progress Staking: <strong>{user?.stakedBalance || 0}/10 BMC</strong>.
+              </div>
             </div>
           </div>
         </div>
@@ -1507,9 +1515,15 @@ const GetBMCTab = () => {
   const location = useLocation();
   const [subTab, setSubTab] = useState(location.search.includes('tab=validator') ? 'validator' : 'earn');
   
+  const isPiBrowser = window.Pi && (
+    window.location.hostname.includes('vercel.app') || 
+    window.location.hostname.includes('bambu.pi') || 
+    window.location.search.includes('sandbox=true')
+  );
+
   const subTabs = [
     { id: 'earn', label: 'Earn (Gratis)' },
-    { id: 'buy', label: 'Buy BMC' },
+    ...(!isPiBrowser ? [{ id: 'buy', label: 'Buy BMC' }] : []),
     { id: 'contribute', label: 'Contribute Data' },
     { id: 'validator', label: 'Validator' },
     { id: 'marketplace', label: 'Marketplace' },
