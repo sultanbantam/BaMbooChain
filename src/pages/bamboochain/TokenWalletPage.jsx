@@ -769,6 +769,11 @@ const EarnBMC = () => {
 
     try {
       setPiPaymentStatus('authenticating');
+      setPiPaymentLog('Menginisialisasi Pi Network SDK...');
+
+      const isSandbox = window.location.search.includes('sandbox=true') || window.location.hostname.includes('vercel.app') || window.location.hostname.includes('localhost') || window.location.hostname.includes('127.0.0.1');
+      window.Pi.init({ version: "2.0", sandbox: isSandbox });
+
       setPiPaymentLog('Mengautentikasi dengan Pi Network...');
       
       const scopes = ['username', 'payments'];
