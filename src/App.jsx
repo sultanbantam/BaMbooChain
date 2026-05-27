@@ -15,6 +15,8 @@ const ImpactPage = lazy(() => import('./pages/ImpactPage'));
 const ContactPage = lazy(() => import('./pages/ContactPage'));
 const PartnersPage = lazy(() => import('./pages/PartnersPage'));
 const DisclaimerPage = lazy(() => import('./pages/DisclaimerPage'));
+const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicyPage'));
+const TermsOfServicePage = lazy(() => import('./pages/TermsOfServicePage'));
 const TransparencyPage = lazy(() => import('./pages/TransparencyPage'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const MembershipPage = lazy(() => import('./pages/MembershipPage'));
@@ -140,6 +142,14 @@ const SEO_MAP = {
     title: 'Tanya Jawab (FAQ) - BaMbooChain',
     description: 'Temukan jawaban atas pertanyaan umum seputar penanaman bambu digital, kegunaan token BMC, dan tata kelola DAO.'
   },
+  '/privacy': {
+    title: 'Kebijakan Privasi (Privacy Policy) - BaMbooChain',
+    description: 'Kebijakan privasi aplikasi BaMbooChain mengenai perlindungan data pengguna, autentikasi Pi SDK, dan kerahasiaan geospasial.'
+  },
+  '/terms': {
+    title: 'Ketentuan Layanan (Terms of Service) - BaMbooChain',
+    description: 'Syarat dan ketentuan penggunaan platform BaMbooChain, kepatuhan eksklusivitas ekosistem Pi, dan aturan slashing validator.'
+  },
   '/bambupedia': {
     title: 'Bambupedia - Pusat Pengetahuan & AI RAG',
     description: 'Akses database taksonomi bambu, pelacakan daur hidup tanaman, dan gunakan asisten AI BambooBot untuk riset terverifikasi.'
@@ -221,6 +231,8 @@ function App() {
             <Route path="/about" element={<AboutPage />} />
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/disclaimer" element={<DisclaimerPage />} />
+            <Route path="/privacy" element={<PrivacyPolicyPage />} />
+            <Route path="/terms" element={<TermsOfServicePage />} />
             <Route path="/transparency" element={<TransparencyPage />} />
             <Route path="/bamboochain/marketplace" element={<BcMarketplacePage />} />
             <Route path="/bamboochain/pre-order" element={<PreOrderPage />} />
