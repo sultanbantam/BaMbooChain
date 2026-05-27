@@ -94,7 +94,7 @@ const JoinFarmerPage = () => {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-color)' }}>
       <Navbar />
-      <div className="container" style={{ padding: '100px 20px' }}>
+      <div className="container" style={{ padding: '160px 20px 100px 20px' }}>
         <div style={{ maxWidth: '900px', margin: '0 auto' }}>
           <BackButton />
           

@@ -158,17 +158,23 @@ const Navbar = () => {
               {showBambooMenu && (
                 <div style={{ position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)', width: '260px', background: 'var(--bg-card)', boxShadow: '0 15px 40px rgba(0,0,0,0.15)', borderRadius: '0 0 16px 16px', padding: '10px', zIndex: 10005, border: '1px solid var(--border-color)' }}>
                    {bambooNusaFeatures.map((feature, index) => (
-                     <Link 
-                       key={index} 
-                       to={feature.path} 
-                       style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 15px', color: '#333', textDecoration: 'none', borderRadius: '8px', transition: 'all 0.2s' }}
-                       onMouseEnter={e => { e.currentTarget.style.background = '#f0fdf4'; e.currentTarget.style.color = 'var(--primary)'; }}
-                       onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#333'; }}
-                     >
-                       <span style={{ color: 'var(--primary)' }}>{feature.icon}</span>
-                       <span style={{ fontSize: '0.9rem', fontWeight: '500' }}>{feature.label}</span>
-                     </Link>
-                   ))}
+                      <Link 
+                        key={index} 
+                        to={feature.path} 
+                        style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 15px', color: 'var(--text-main)', textDecoration: 'none', borderRadius: '8px', transition: 'all 0.2s' }}
+                        onMouseEnter={e => { 
+                          e.currentTarget.style.background = isDark ? 'rgba(12, 166, 120, 0.2)' : '#f0fdf4'; 
+                          e.currentTarget.style.color = 'var(--primary)'; 
+                        }}
+                        onMouseLeave={e => { 
+                          e.currentTarget.style.background = 'transparent'; 
+                          e.currentTarget.style.color = 'var(--text-main)'; 
+                        }}
+                      >
+                        <div style={{ color: 'var(--primary)', display: 'flex', alignItems: 'center' }}>{feature.icon}</div>
+                        <div style={{ fontSize: '0.9rem', fontWeight: '500' }}>{feature.label}</div>
+                      </Link>
+                    ))}
                 </div>
               )}
             </div>

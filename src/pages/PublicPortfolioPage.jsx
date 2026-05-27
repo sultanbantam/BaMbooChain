@@ -34,6 +34,11 @@ const parseCoords = (locStr) => {
   return null;
 };
 
+const formatBalance = (val) => {
+  const num = Number(val || 0);
+  return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+};
+
 const PublicPortfolioPage = () => {
   const { username } = useParams();
   const { user: currentUser, giftBmc } = useAuth();
@@ -123,9 +128,10 @@ const PublicPortfolioPage = () => {
         // Plantings
         const plantingsQuery = query(collection(db, "plantings"), where("userId", "==", targetUser.id));
         const plantingsSnap = await getDocs(plantingsQuery);
-        setPlantCount(plantingsSnap.size);
         const plantingsData = plantingsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setPlantingsList(plantingsData);
+        const totalAmount = plantingsData.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
+        setPlantCount(totalAmount);
         
         // Maintenances
         const maintQuery = query(collection(db, "maintenances"), where("userId", "==", targetUser.id));
@@ -481,11 +487,24 @@ const PublicPortfolioPage = () => {
                       {currentUser?.kycStatus === 'verified' ? (
                         <button 
                           onClick={() => {
-                            const link = document.createElement('a');
-                            link.href = targetUser.cvFile.data;
-                            link.download = targetUser.cvFile.name;
-                            link.click();
-                          }}
+                             const dataURI = targetUser.cvFile.data;
+                             const parts = dataURI.split(',');
+                             const byteString = atob(parts[1]);
+                             const mimeString = parts[0].split(':')[1].split(';')[0];
+                             const ab = new ArrayBuffer(byteString.length);
+                             const ia = new Uint8Array(ab);
+                             for (let i = 0; i < byteString.length; i++) {
+                               ia[i] = byteString.charCodeAt(i);
+                             }
+                             const blob = new Blob([ab], { type: mimeString });
+                             const blobUrl = URL.createObjectURL(blob);
+
+                             const link = document.createElement('a');
+                             link.href = blobUrl;
+                             link.download = targetUser.cvFile.name;
+                             link.click();
+                             setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+                           }}
                           style={{
                             width: '100%',
                             background: 'var(--primary)',
@@ -802,7 +821,7 @@ const PublicPortfolioPage = () => {
 
                   <div style={{ background: 'rgba(12, 166, 120, 0.04)', border: '1px solid rgba(12, 166, 120, 0.08)', padding: '20px', borderRadius: '20px' }}>
                     <Award size={24} color="var(--primary)" style={{ marginBottom: '10px' }} />
-                    <div style={{ fontSize: '1.8rem', fontWeight: 'bold', color: 'var(--text-main)', margin: '0 0 4px 0' }}>{Number(targetUser.bmcBalance || 0).toFixed(2)}</div>
+                    <div style={{ fontSize: '1.8rem', fontWeight: 'bold', color: 'var(--text-main)', margin: '0 0 4px 0' }}>{formatBalance(targetUser.bmcBalance)}</div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: '600' }}>BMC Reward</div>
                   </div>
 
@@ -953,7 +972,7 @@ const PublicPortfolioPage = () => {
               >
                 {mat.cover && (
                   <div style={{ height: '180px', overflow: 'hidden', background: '#f8f9fa', display: 'flex', alignItems: 'center', justifyContent: 'center', borderBottom: '1px solid var(--border-color)' }}>
-                    <img src={mat.cover} alt={mat.title} style={{ height: '100%', maxWidth: '100%', objectFit: 'contain' }} />
+                    <img src={mat.cover && mat.cover.startsWith('/assets/') ? '.' + mat.cover : mat.cover} alt={mat.title} style={{ height: '100%', maxWidth: '100%', objectFit: 'contain' }} />
                   </div>
                 )}
                 <div style={{ padding: '24px', flex: 1, display: 'flex', flexDirection: 'column' }}>
@@ -978,17 +997,54 @@ const PublicPortfolioPage = () => {
                     </div>
                     
                     <button 
-                      onClick={() => {
+                      onClick={async () => {
                         if (!currentUser) {
                           alert("⚠️ Silakan login terlebih dahulu untuk mengakses unduhan!");
                         } else if (currentUser.kycStatus !== 'verified') {
                           alert(`⚠️ Akses Terkunci!\n\nUntuk mendownload Ebook '${mat.title}' secara gratis, Anda harus berstatus KYC TERVERIFIKASI. Silakan selesaikan pengajuan KYC Anda di menu KYC Center pada halaman Wallet Dashboard.`);
                           window.location.hash = "/bamboochain/token-wallet";
                         } else {
-                          const link = document.createElement('a');
-                          link.href = mat.pdf;
-                          link.download = mat.downloadName;
-                          link.click();
+                          const downloadUrl = mat.pdf && mat.pdf.startsWith('/assets/') ? '.' + mat.pdf : mat.pdf;
+                          if (downloadUrl === 'chunked') {
+                            alert("⏳ Sedang menyiapkan unduhan berkas PDF, mohon tunggu sebentar...");
+                            try {
+                              const chunksCollectionRef = collection(db, `premium_materials/${mat.id}/pdf_chunks`);
+                              const snap = await getDocs(chunksCollectionRef);
+                              const sortedDocs = snap.docs
+                                .map(d => d.data())
+                                .sort((a, b) => a.index - b.index);
+                              
+                              const fullBase64 = sortedDocs.map(d => d.data).join('');
+                              
+                              // Convert base64 Data URL to Blob URL to bypass browser size limits
+                              const parts = fullBase64.split(',');
+                              const byteString = atob(parts[1]);
+                              const mimeString = parts[0].split(':')[1].split(';')[0];
+                              const ab = new ArrayBuffer(byteString.length);
+                              const ia = new Uint8Array(ab);
+                              for (let i = 0; i < byteString.length; i++) {
+                                ia[i] = byteString.charCodeAt(i);
+                              }
+                              const blob = new Blob([ab], { type: mimeString });
+                              const blobUrl = URL.createObjectURL(blob);
+
+                              const link = document.createElement('a');
+                              link.href = blobUrl;
+                              link.download = mat.downloadName || 'materi.pdf';
+                              link.click();
+                              setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+                            } catch (err) {
+                              console.error("Error retrieving chunked PDF:", err);
+                              alert("❌ Gagal mengunduh berkas: " + err.message);
+                            }
+                          } else if (downloadUrl && downloadUrl.startsWith('http')) {
+                            window.open(downloadUrl, '_blank');
+                          } else if (downloadUrl) {
+                            const link = document.createElement('a');
+                            link.href = downloadUrl;
+                            link.download = mat.downloadName || 'materi.pdf';
+                            link.click();
+                          }
                         }
                       }}
                       style={{

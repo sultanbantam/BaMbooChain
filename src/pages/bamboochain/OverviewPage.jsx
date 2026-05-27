@@ -5,6 +5,11 @@ import BackButton from '../../components/BackButton';
 import AdSpace from '../../components/AdSpace';
 import { useAuth } from '../../context/AuthContext';
 
+const formatBalance = (val) => {
+  const num = Number(val || 0);
+  return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+};
+
 const OverviewPage = () => {
   const { user, updateProfile } = useAuth();
   const [showReportModal, setShowReportModal] = useState(false);
@@ -30,7 +35,7 @@ const OverviewPage = () => {
   const userStats = {
     totalBamboo: user?.totalBamboo || "1,250",
     co2Offset: user?.co2Offset || "12.5",
-    bmcBalance: user?.bmcBalance || "4,500.00",
+    bmcBalance: user ? formatBalance(user.bmcBalance) : "4,500.00",
     roi: "25.4"
   };
 

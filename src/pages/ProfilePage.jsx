@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useBambupedia } from '../context/BambupediaContext';
 import { db } from '../firebase/config';
 import { useArticles } from '../hooks/useFirestoreQueries';
-import { doc, onSnapshot, updateDoc, collection, query, where, getDoc, addDoc, arrayUnion, arrayRemove, increment } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc, collection, query, where, getDoc, getDocs, addDoc, arrayUnion, arrayRemove, increment } from 'firebase/firestore';
 import ShareModal from '../components/ShareModal';
 import { 
   User, Camera, Save, Copy, Share2, Award, Shield, CheckCircle, 
   TreeDeciduous, GraduationCap, Heart, MessageSquare, Gift, Edit3, X, Eye,
-  UploadCloud, FileText, Trash2, Send, ChevronRight, PlayCircle
+  UploadCloud, FileText, Trash2, Send, ChevronRight, PlayCircle, Search
 } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
@@ -62,6 +63,11 @@ const parseCoords = (locStr) => {
   return null;
 };
 
+const formatBalance = (val) => {
+  const num = Number(val || 0);
+  return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+};
+
 const ProfilePage = () => {
   const { user, updateProfile } = useAuth();
   const { data: articles = [] } = useArticles();
@@ -99,6 +105,38 @@ const ProfilePage = () => {
 
   const [myMatsCount, setMyMatsCount] = useState(0);
   const [directMessages, setDirectMessages] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    const delayDebounce = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const usersRef = collection(db, "users");
+        const querySnapshot = await getDocs(query(usersRef));
+        const matches = [];
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          const nameMatch = data.name?.toLowerCase().includes(searchQuery.toLowerCase());
+          const usernameMatch = data.username?.toLowerCase().includes(searchQuery.toLowerCase());
+          if (nameMatch || usernameMatch) {
+            matches.push({ id: doc.id, ...data });
+          }
+        });
+        setSearchResults(matches);
+      } catch (err) {
+        console.error("Error searching users:", err);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 300);
+    return () => clearTimeout(delayDebounce);
+  }, [searchQuery]);
 
   // Sync direct messages from Firestore
   useEffect(() => {
@@ -443,7 +481,7 @@ const ProfilePage = () => {
 
   // Ecosystem Counters
   const myArticlesCount = (articles || []).filter(a => a.userId === user.id).length;
-  const myPlantingsCount = (plantings || []).length;
+  const myPlantingsCount = (plantings || []).reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
   const myMaintenancesCount = (maintenances || []).length;
 
   const coordsList = (plantings || []).map(p => parseCoords(p.location)).filter(Boolean);
@@ -465,9 +503,123 @@ const ProfilePage = () => {
     <div style={{ paddingTop: '190px', paddingBottom: '100px', minHeight: '100vh', background: 'var(--bg-color)', transition: 'background 0.3s ease' }}>
       <div className="container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
         
-        <h1 style={{ fontSize: '2.5rem', fontWeight: '900', color: 'var(--text-main)', marginBottom: '30px' }}>
-          Profil <span style={{ color: 'var(--primary)' }}>Pengguna</span>
-        </h1>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', flexWrap: 'wrap', gap: '20px' }}>
+          <h1 style={{ fontSize: '2.5rem', fontWeight: '900', color: 'var(--text-main)', margin: 0 }}>
+            Profil <span style={{ color: 'var(--primary)' }}>Pengguna</span>
+          </h1>
+          
+          {/* Global User Search Bar */}
+          <div style={{ position: 'relative', width: '320px' }}>
+            <div style={{ position: 'relative' }}>
+              <input
+                type="text"
+                placeholder="Cari pegiat ekosistem..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px 12px 42px',
+                  borderRadius: '16px',
+                  border: '1px solid var(--border-color)',
+                  background: 'var(--bg-card)',
+                  color: 'var(--text-main)',
+                  fontSize: '0.9rem',
+                  outline: 'none',
+                  boxShadow: '0 4px 15px rgba(0,0,0,0.03)',
+                  transition: 'all 0.2s ease'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = 'var(--primary)';
+                  e.target.style.boxShadow = '0 4px 20px rgba(12,166,120,0.1)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = 'var(--border-color)';
+                  e.target.style.boxShadow = '0 4px 15px rgba(0,0,0,0.03)';
+                }}
+              />
+              <Search size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
+              {searchQuery && (
+                <button 
+                  onClick={() => setSearchQuery('')}
+                  style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 0 }}
+                >
+                  <X size={16} />
+                </button>
+              )}
+            </div>
+
+            {/* Dropdown Results List */}
+            {searchQuery.trim() && (
+              <div style={{
+                position: 'absolute',
+                top: 'calc(100% + 8px)',
+                right: 0,
+                width: '100%',
+                background: 'var(--bg-card)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '16px',
+                boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+                zIndex: 1000,
+                maxHeight: '280px',
+                overflowY: 'auto',
+                padding: '8px'
+              }}>
+                {isSearching ? (
+                  <div style={{ textAlign: 'center', padding: '15px 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                    Mencari...
+                  </div>
+                ) : searchResults.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '15px 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                    Tidak ada pegiat ditemukan.
+                  </div>
+                ) : (
+                  searchResults.map((u, i) => (
+                    <Link
+                      key={u.username || i}
+                      to={`/portfolio/${u.username.toLowerCase()}`}
+                      onClick={() => setSearchQuery('')}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        padding: '10px 12px',
+                        borderRadius: '12px',
+                        textDecoration: 'none',
+                        color: 'var(--text-main)',
+                        transition: 'background 0.2s',
+                        marginBottom: i < searchResults.length - 1 ? '4px' : 0
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-secondary)'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                    >
+                      <img
+                        src={u.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.username}`}
+                        alt={u.name || u.username}
+                        style={{
+                          width: '36px',
+                          height: '36px',
+                          borderRadius: '50%',
+                          objectFit: 'cover',
+                          border: '1.5px solid var(--primary)',
+                          background: 'var(--bg-secondary)'
+                        }}
+                      />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontWeight: 'bold', fontSize: '0.85rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {u.name || u.username}
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                          @{u.username}
+                        </div>
+                      </div>
+                      <ChevronRight size={14} color="var(--primary)" />
+                    </Link>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+        </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '30px', alignItems: 'start' }}>
           
@@ -596,10 +748,23 @@ const ProfilePage = () => {
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <button 
                       onClick={() => {
+                        const dataURI = user.cvFile.data;
+                        const parts = dataURI.split(',');
+                        const byteString = atob(parts[1]);
+                        const mimeString = parts[0].split(':')[1].split(';')[0];
+                        const ab = new ArrayBuffer(byteString.length);
+                        const ia = new Uint8Array(ab);
+                        for (let i = 0; i < byteString.length; i++) {
+                          ia[i] = byteString.charCodeAt(i);
+                        }
+                        const blob = new Blob([ab], { type: mimeString });
+                        const blobUrl = URL.createObjectURL(blob);
+
                         const link = document.createElement('a');
-                        link.href = user.cvFile.data;
+                        link.href = blobUrl;
                         link.download = user.cvFile.name;
                         link.click();
+                        setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
                       }}
                       style={{ background: 'rgba(12,166,120,0.08)', color: 'var(--primary)', border: 'none', padding: '8px 12px', borderRadius: '10px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer' }}
                     >
@@ -1094,7 +1259,7 @@ const ProfilePage = () => {
                       <Award size={20} />
                     </div>
                     <div>
-                      <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--text-main)' }}>{Number(user.bmcBalance || 0).toFixed(2)}</div>
+                      <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--text-main)' }}>{formatBalance(user.bmcBalance)}</div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>BMC Reward</div>
                     </div>
                   </div>

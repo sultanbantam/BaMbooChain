@@ -3,9 +3,10 @@ import { useNavigate, Link } from 'react-router-dom';
 import { BookOpen, GraduationCap, Award, PlayCircle, Clock, ShieldCheck, DownloadCloud, Lock, User, FileText, X, Sparkles, Calendar, ChevronLeft, ChevronRight, Heart, Share2, Send, MessageSquare, Gift, UploadCloud, Edit3, Trash2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { db } from '../../firebase/config';
-import { collection, onSnapshot, doc, addDoc, updateDoc, setDoc, query, orderBy, serverTimestamp, arrayUnion, arrayRemove, increment, getDoc, getDocs, where } from 'firebase/firestore';
+import { collection, onSnapshot, doc, addDoc, updateDoc, setDoc, deleteDoc, query, orderBy, serverTimestamp, arrayUnion, arrayRemove, increment, getDoc, getDocs, where } from 'firebase/firestore';
 import ShareModal from '../../components/ShareModal';
 import { useArticles } from '../../hooks/useFirestoreQueries';
+import { getAssetUrl } from '../../utils/assets';
 
 const compressImage = (base64Str, maxWidth = 800, maxHeight = 800, quality = 0.6) => {
   return new Promise((resolve) => {
@@ -62,6 +63,7 @@ const AcademyPage = () => {
     pdf: '',
     downloadName: ''
   });
+  const [isUploading, setIsUploading] = useState(false);
 
   const [customTagNew, setCustomTagNew] = useState('');
   const [customTagEdit, setCustomTagEdit] = useState('');
@@ -176,8 +178,8 @@ const AcademyPage = () => {
   const handleUploadPdfChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    if (file.size > 1 * 1024 * 1024) {
-      alert("⚠️ Ukuran file PDF maksimal adalah 1MB!");
+    if (file.size > 10 * 1024 * 1024) {
+      alert("⚠️ Ukuran file PDF maksimal adalah 10MB!");
       return;
     }
     const reader = new FileReader();
@@ -208,8 +210,8 @@ const AcademyPage = () => {
   const handleEditPdfChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    if (file.size > 1 * 1024 * 1024) {
-      alert("⚠️ Ukuran file PDF maksimal adalah 1MB!");
+    if (file.size > 10 * 1024 * 1024) {
+      alert("⚠️ Ukuran file PDF maksimal adalah 10MB!");
       return;
     }
     const reader = new FileReader();
@@ -239,6 +241,7 @@ const AcademyPage = () => {
 
   const handleUploadMatSubmit = async (e) => {
     e.preventDefault();
+    console.log("🚀 handleUploadMatSubmit triggered!");
     if (!user || user.kycStatus !== 'verified') {
       alert("⚠️ Hanya kontributor terverifikasi KYC yang dapat mengunggah materi!");
       return;
@@ -250,13 +253,16 @@ const AcademyPage = () => {
 
     const finalTag = newMatForm.tag === 'Lainnya' ? (customTagNew.trim() || 'Lainnya') : newMatForm.tag;
 
+    setIsUploading(true);
     try {
+      console.log("⏳ Saving metadata to Firestore...");
+      // 1. Save metadata document to Firestore first (without the pdf content in the root field to avoid size limit)
       const newMat = {
         title: newMatForm.title,
         tag: finalTag,
         desc: newMatForm.desc,
         cover: newMatForm.cover,
-        pdf: newMatForm.pdf,
+        pdf: 'chunked', // Indicator that the file is stored in chunks
         downloadName: newMatForm.downloadName,
         userId: user.id,
         author: user.name || user.username || "Anonim",
@@ -268,7 +274,25 @@ const AcademyPage = () => {
         timestamp: new Date().getTime()
       };
 
-      await addDoc(collection(db, "premium_materials"), newMat);
+      const docRef = await addDoc(collection(db, "premium_materials"), newMat);
+      console.log("✅ Metadata saved. Document ID:", docRef.id);
+
+      // 2. Chunk the base64 string of the PDF
+      console.log("⏳ Uploading PDF chunks to Firestore...");
+      const pdfBase64 = newMatForm.pdf;
+      const chunkSize = 800000;
+      const totalChunks = Math.ceil(pdfBase64.length / chunkSize);
+      
+      const chunksCollectionRef = collection(db, `premium_materials/${docRef.id}/pdf_chunks`);
+      for (let i = 0; i < totalChunks; i++) {
+        const chunkData = pdfBase64.substring(i * chunkSize, (i + 1) * chunkSize);
+        await setDoc(doc(chunksCollectionRef, `chunk_${i}`), {
+          index: i,
+          data: chunkData
+        });
+      }
+      console.log("✅ PDF chunks saved successfully!");
+
       alert("✅ Berhasil mengunggah materi riset premium!");
       setNewMatForm({
         title: '',
@@ -281,31 +305,65 @@ const AcademyPage = () => {
       setCustomTagNew('');
       setIsUploadMatModalOpen(false);
     } catch (err) {
-      console.error("Error uploading material:", err);
+      console.error("❌ Error uploading material:", err);
       alert("❌ Gagal mengunggah materi: " + err.message);
+    } finally {
+      setIsUploading(false);
     }
   };
 
   const handleEditMatSubmit = async (e) => {
     e.preventDefault();
+    console.log("🚀 handleEditMatSubmit triggered!");
     if (!editMatForm.id) return;
     const finalTag = editMatForm.tag === 'Lainnya' ? (customTagEdit.trim() || 'Lainnya') : editMatForm.tag;
+    setIsUploading(true);
     try {
+      console.log("⏳ Updating document in Firestore...");
       const matRef = doc(db, "premium_materials", editMatForm.id);
+      
+      // Update metadata fields (excluding the pdf content if it's chunked)
       await updateDoc(matRef, {
         title: editMatForm.title,
         tag: finalTag,
         desc: editMatForm.desc,
         cover: editMatForm.cover,
-        pdf: editMatForm.pdf,
+        pdf: 'chunked',
         downloadName: editMatForm.downloadName
       });
+
+      // If a new PDF base64 string is selected, write new chunks
+      if (editMatForm.pdf && editMatForm.pdf !== 'chunked') {
+        console.log("⏳ Updating PDF chunks in Firestore...");
+        const pdfBase64 = editMatForm.pdf;
+        const chunkSize = 800000;
+        const totalChunks = Math.ceil(pdfBase64.length / chunkSize);
+
+        const chunksCollectionRef = collection(db, `premium_materials/${editMatForm.id}/pdf_chunks`);
+        const existingChunks = await getDocs(chunksCollectionRef);
+        for (const docSnap of existingChunks.docs) {
+          await deleteDoc(doc(db, `premium_materials/${editMatForm.id}/pdf_chunks`, docSnap.id));
+        }
+
+        for (let i = 0; i < totalChunks; i++) {
+          const chunkData = pdfBase64.substring(i * chunkSize, (i + 1) * chunkSize);
+          await setDoc(doc(chunksCollectionRef, `chunk_${i}`), {
+            index: i,
+            data: chunkData
+          });
+        }
+        console.log("✅ PDF chunks updated successfully!");
+      }
+
+      console.log("✅ Firestore document updated successfully!");
       alert("✅ Berhasil memperbarui materi riset premium!");
       setCustomTagEdit('');
       setIsEditMatModalOpen(false);
     } catch (err) {
-      console.error("Error editing material:", err);
+      console.error("❌ Error editing material:", err);
       alert("❌ Gagal memperbarui materi: " + err.message);
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -990,7 +1048,7 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
       modules: 12, 
       duration: "4.5 Jam", 
       students: 1250, 
-      img: "https://images.unsplash.com/photo-1542450530-5bfa5dfef006?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" 
+      img: getAssetUrl('gambar/bdb.jpg')
     },
     { 
       id: 2, 
@@ -999,7 +1057,7 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
       modules: 8, 
       duration: "6 Jam", 
       students: 840, 
-      img: "https://images.unsplash.com/photo-1596417937554-6eabaac17196?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" 
+      img: getAssetUrl('gambar/mbb.jpeg')
     },
     { 
       id: 3, 
@@ -1008,7 +1066,7 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
       modules: 15, 
       duration: "8 Jam", 
       students: 2100, 
-      img: "https://images.unsplash.com/photo-1621416894569-0f39ed31d247?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" 
+      img: getAssetUrl('gambar/bmc.jpg')
     }
   ];
 
@@ -1227,17 +1285,55 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
                         </div>
                       </div>
                       <button 
-                        onClick={() => {
+                        onClick={async () => {
                           if (!user) {
                             if (setAuthModalInitialTab) setAuthModalInitialTab('login');
                             if (setIsAuthModalOpen) setIsAuthModalOpen(true);
                           } else if (user.kycStatus !== 'verified') {
                             alert(`⚠️ Akses Terkunci!\n\nUntuk mendownload Ebook '${ebook.title}' secara gratis, Anda harus berstatus KYC TERVERIFIKASI di sistem. Silakan selesaikan pengajuan KYC Anda di menu KYC Center pada halaman Wallet Dashboard.`);
                             window.location.hash = "/bamboochain/token-wallet";
-                            const link = document.createElement('a');
-                            link.href = ebook.pdf && ebook.pdf.startsWith('/assets/') ? '.' + ebook.pdf : ebook.pdf;
-                            link.download = ebook.downloadName;
-                            link.click();
+                          } else {
+                            const downloadUrl = ebook.pdf && ebook.pdf.startsWith('/assets/') ? '.' + ebook.pdf : ebook.pdf;
+                            if (downloadUrl === 'chunked') {
+                              alert("⏳ Sedang menyiapkan unduhan berkas PDF, mohon tunggu sebentar...");
+                              try {
+                                const chunksCollectionRef = collection(db, `premium_materials/${ebook.id}/pdf_chunks`);
+                                const snap = await getDocs(chunksCollectionRef);
+                                const sortedDocs = snap.docs
+                                  .map(d => d.data())
+                                  .sort((a, b) => a.index - b.index);
+                                
+                                const fullBase64 = sortedDocs.map(d => d.data).join('');
+                                
+                                // Convert base64 Data URL to Blob URL to bypass browser size limits
+                                const parts = fullBase64.split(',');
+                                const byteString = atob(parts[1]);
+                                const mimeString = parts[0].split(':')[1].split(';')[0];
+                                const ab = new ArrayBuffer(byteString.length);
+                                const ia = new Uint8Array(ab);
+                                for (let i = 0; i < byteString.length; i++) {
+                                  ia[i] = byteString.charCodeAt(i);
+                                }
+                                const blob = new Blob([ab], { type: mimeString });
+                                const blobUrl = URL.createObjectURL(blob);
+
+                                const link = document.createElement('a');
+                                link.href = blobUrl;
+                                link.download = ebook.downloadName || 'materi.pdf';
+                                link.click();
+                                setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+                              } catch (err) {
+                                console.error("Error retrieving chunked PDF:", err);
+                                alert("❌ Gagal mengunduh berkas: " + err.message);
+                              }
+                            } else if (downloadUrl && downloadUrl.startsWith('http')) {
+                              window.open(downloadUrl, '_blank');
+                            } else if (downloadUrl) {
+                              const link = document.createElement('a');
+                              link.href = downloadUrl;
+                              link.download = ebook.downloadName || 'materi.pdf';
+                              link.click();
+                            }
                           }
                         }}
                         style={{
@@ -2466,7 +2562,7 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
                 </p>
               </div>
 
-              <form onSubmit={handleUploadMatSubmit} style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+              <form onSubmit={handleUploadMatSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' }}>
                 <div style={{ overflowY: 'auto', padding: '30px 40px', display: 'flex', flexDirection: 'column', gap: '20px', flex: 1 }}>
                   <div>
                     <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)', display: 'block', marginBottom: '8px' }}>Judul Ebook/Materi:</label>
@@ -2548,7 +2644,7 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
                     </div>
 
                     <div>
-                      <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)', display: 'block', marginBottom: '8px' }}>Dokumen PDF (Maks 1MB):</label>
+                      <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)', display: 'block', marginBottom: '8px' }}>Dokumen PDF (Maks 10MB):</label>
                       <button
                         type="button"
                         onClick={() => document.getElementById('new-mat-pdf-input').click()}
@@ -2582,9 +2678,10 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
                   </button>
                   <button 
                     type="submit"
-                    style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 15px rgba(12,166,120,0.2)' }}
+                    disabled={isUploading}
+                    style={{ background: isUploading ? 'var(--text-muted)' : 'var(--primary)', color: 'white', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 'bold', cursor: isUploading ? 'not-allowed' : 'pointer', boxShadow: '0 4px 15px rgba(12,166,120,0.2)' }}
                   >
-                    Unggah Sekarang
+                    {isUploading ? 'Mengunggah...' : 'Unggah Sekarang'}
                   </button>
                 </div>
               </form>
@@ -2641,7 +2738,7 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
                 </p>
               </div>
 
-              <form onSubmit={handleEditMatSubmit} style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+              <form onSubmit={handleEditMatSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' }}>
                 <div style={{ overflowY: 'auto', padding: '30px 40px', display: 'flex', flexDirection: 'column', gap: '20px', flex: 1 }}>
                   <div>
                     <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)', display: 'block', marginBottom: '8px' }}>Judul Ebook/Materi:</label>
@@ -2723,7 +2820,7 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
                     </div>
 
                     <div>
-                      <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)', display: 'block', marginBottom: '8px' }}>Dokumen PDF (Maks 1MB):</label>
+                      <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)', display: 'block', marginBottom: '8px' }}>Dokumen PDF (Maks 10MB):</label>
                       <button
                         type="button"
                         onClick={() => document.getElementById('edit-mat-pdf-input').click()}
@@ -2757,9 +2854,10 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
                   </button>
                   <button 
                     type="submit"
-                    style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 15px rgba(12,166,120,0.2)' }}
+                    disabled={isUploading}
+                    style={{ background: isUploading ? 'var(--text-muted)' : 'var(--primary)', color: 'white', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 'bold', cursor: isUploading ? 'not-allowed' : 'pointer', boxShadow: '0 4px 15px rgba(12,166,120,0.2)' }}
                   >
-                    Simpan Perubahan
+                    {isUploading ? 'Menyimpan...' : 'Simpan Perubahan'}
                   </button>
                 </div>
               </form>

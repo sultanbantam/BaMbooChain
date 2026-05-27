@@ -54,8 +54,10 @@ const TIERS = [
   },
 ];
 
-const getBMCNumber = (balanceStr) => {
-  if (!balanceStr) return 0;
+const getBMCNumber = (balanceVal) => {
+  if (balanceVal === undefined || balanceVal === null || balanceVal === '') return 0;
+  if (typeof balanceVal === 'number') return balanceVal;
+  const balanceStr = String(balanceVal).trim();
   return parseFloat(balanceStr.replace(/\./g, '').replace(',', '.')) || 0;
 };
 

@@ -167,7 +167,7 @@ const PlantationPage = () => {
   };
 
   return (
-    <div style={{ paddingTop: 'var(--navbar-height)', paddingBottom: '100px', minHeight: '100vh', background: 'linear-gradient(to bottom, #fdfdfd, #f4f7f4)' }}>
+    <div style={{ paddingTop: 'var(--navbar-height)', paddingBottom: '100px', minHeight: '100vh', background: 'linear-gradient(to bottom, var(--bg-secondary), var(--bg-color))' }}>
       <div className="container">
         
         {/* Step Indicator */}

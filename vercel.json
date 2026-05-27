@@ -5,5 +5,20 @@
       "source": "/:path((?!assets/|gambar/|logos/|favicon.svg|.*\\..*).*)",
       "destination": "/index.html"
     }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Frame-Options",
+          "value": "ALLOWALL"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "frame-ancestors * self https://sandbox.minepi.com"
+        }
+      ]
+    }
   ]
 }

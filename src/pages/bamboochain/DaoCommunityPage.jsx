@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Users, Vote, HeartHandshake, MessageSquare, ThumbsUp, ThumbsDown, User, Heart, CalendarCheck, Gamepad2, Gift, Trophy, Star, Target, MapPin, Compass } from 'lucide-react';
 import { getAssetUrl } from '../../utils/assets';
+import { useAuth } from '../../context/AuthContext';
 
 const bambooCharacters = Array.from({ length: 36 }, (_, i) => {
   const idStr = String(i + 1).padStart(2, '0');
@@ -19,8 +20,18 @@ const bambooCharacters = Array.from({ length: 36 }, (_, i) => {
   };
 });
 
+const formatBalance = (val) => {
+  const num = Number(val || 0);
+  return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+};
+
 const DaoCommunityPage = () => {
-  const [isCheckedIn, setIsCheckedIn] = useState(false);
+  const { user, processCheckin, getActiveStreak, getJakartaCheckinDay } = useAuth();
+  
+  const currentWibDay = getJakartaCheckinDay ? getJakartaCheckinDay() : new Intl.DateTimeFormat('fr-CA', { timeZone: 'Asia/Jakarta' }).format(new Date());
+  const lastCheckin = user?.lastCheckinDate || null;
+  const streak = getActiveStreak ? getActiveStreak() : 0;
+  const canCheckinToday = lastCheckin !== currentWibDay;
 
   // Mock Data untuk Proposals
   const proposals = [
@@ -77,20 +88,51 @@ const DaoCommunityPage = () => {
               <div style={{ position: 'absolute', top: '-10px', right: '-10px', opacity: 0.1 }}><CalendarCheck size={100} /></div>
               <div style={{ position: 'relative', zIndex: 1 }}>
                 <h3 style={{ fontSize: '1.2rem', margin: '0 0 8px 0', color: 'rgba(255,255,255,0.9)' }}>Daily Check-In</h3>
-                <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', marginBottom: '20px' }}>Masuk rutin, kalikan hadiahnya!</div>
+                <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', marginBottom: '20px' }}>Login setiap hari (Reset 07:00 WIB) untuk mendapatkan BMC. Streak: <strong>{streak} Hari</strong> 🔥</div>
                 <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginBottom: '20px' }}>
-                  {[1,2,3,4,5,6,7].map(day => (
-                    <div key={day} style={{ width: '28px', height: '28px', borderRadius: '50%', background: (isCheckedIn && day === 3) || day < 3 ? '#fcc419' : 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 'bold', color: day <= 3 ? '#1b5e20' : 'white', boxShadow: day === 3 && isCheckedIn ? '0 0 10px #fcc419' : 'none' }}>
-                      {day}
-                    </div>
-                  ))}
+                  {[
+                    { day: 1, rwd: "0.001" },
+                    { day: 2, rwd: "0.002" },
+                    { day: 3, rwd: "0.003" },
+                    { day: 4, rwd: "0.004" },
+                    { day: 5, rwd: "0.005" },
+                    { day: 6, rwd: "0.006" },
+                    { day: 7, rwd: "0.010", special: true },
+                  ].map((d, i) => {
+                    const dayNum = i + 1;
+                    let status = 'locked';
+                    if(dayNum <= streak) status = 'claimed';
+                    else if(dayNum === streak + 1 && canCheckinToday) status = 'today';
+                    else if(dayNum === streak + 1 && !canCheckinToday) status = 'locked';
+
+                    return (
+                      <div key={d.day} style={{ minWidth: '32px', height: '32px', background: status === 'claimed' ? '#fcc419' : status === 'today' ? '#ffffff' : 'rgba(255,255,255,0.2)', color: status === 'claimed' ? '#1b5e20' : status === 'today' ? 'var(--primary)' : 'white', border: d.special ? '2.5px solid #fcc419' : 'none', borderRadius: '50%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 'bold', boxShadow: status === 'claimed' ? '0 0 10px #fcc419' : 'none' }} title={`Day ${d.day}: ${d.rwd} BMC`}>
+                        {d.day}
+                      </div>
+                    );
+                  })}
                 </div>
-                <button 
-                  onClick={() => setIsCheckedIn(true)}
-                  disabled={isCheckedIn}
-                  style={{ background: isCheckedIn ? 'rgba(255,255,255,0.2)' : 'white', color: isCheckedIn ? 'white' : 'var(--primary)', padding: '12px 24px', borderRadius: '20px', border: 'none', fontWeight: 'bold', width: '100%', cursor: isCheckedIn ? 'default' : 'pointer' }}>
-                  {isCheckedIn ? 'Checked-In Day 3 ✅' : 'Check-In Sekarang (+10 BMC)'}
-                </button>
+                
+                {canCheckinToday ? (
+                  <button 
+                    onClick={async () => {
+                      const result = await processCheckin();
+                      if (result) {
+                        alert(`✅ Daily Check-in Day ${result.nextStreak} berhasil! +${result.amount} BMC ditambahkan ke saldo Anda.`);
+                      }
+                    }}
+                    style={{ background: 'white', color: 'var(--primary)', padding: '12px 24px', borderRadius: '20px', border: 'none', fontWeight: 'bold', width: '100%', cursor: 'pointer' }}
+                  >
+                    Check-In Sekarang
+                  </button>
+                ) : (
+                  <button 
+                    disabled
+                    style={{ background: 'rgba(255,255,255,0.2)', color: 'white', padding: '12px 24px', borderRadius: '20px', border: 'none', fontWeight: 'bold', width: '100%', cursor: 'default' }}
+                  >
+                    Sudah Check-In Hari Ini ✅ (Streak: {streak} Hari)
+                  </button>
+                )}
               </div>
             </div>
 
@@ -100,7 +142,7 @@ const DaoCommunityPage = () => {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 'bold', marginBottom: '4px' }}>
                   <Gift size={16} color="#f59f00" /> Total Reward Saya
                 </div>
-                <div style={{ fontSize: '1.8rem', fontWeight: '900', color: 'var(--text-main)' }}>4,250 <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>BMC</span></div>
+                <div style={{ fontSize: '1.8rem', fontWeight: '900', color: 'var(--text-main)' }}>{user ? formatBalance(user.bmcBalance) : "0.00"} <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>BMC</span></div>
               </div>
               <button onClick={() => alert('Fitur klaim hadiah sedang dalam tahap audit smart contract!')} style={{ background: '#fff9db', color: '#f59f00', border: '1px solid #fcc419', padding: '10px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>Klaim</button>
             </div>

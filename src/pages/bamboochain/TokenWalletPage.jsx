@@ -10,6 +10,11 @@ import { Link, useLocation } from 'react-router-dom';
 import BackButton from '../../components/BackButton';
 import { useValidations } from '../../hooks/useFirestoreQueries';
 
+const formatBalance = (val) => {
+  const num = Number(val || 0);
+  return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+};
+
 // ======================================
 // TAB COMPONENTS
 // ======================================
@@ -69,7 +74,7 @@ const OverviewTab = ({ setActiveTab, setInitialModal }) => {
             <div style={{ textAlign: 'center', marginBottom: '24px', position: 'relative', zIndex: 1 }}>
               <div style={{ fontSize: '0.75rem', fontWeight: 'bold', letterSpacing: '2px', opacity: 0.8, marginBottom: '8px', textTransform: 'uppercase' }}>Total Balance</div>
               <div style={{ fontSize: isMobile ? '2.5rem' : '3rem', fontWeight: '900', letterSpacing: '-1px' }}>
-                {Number(user?.bmcBalance || 0).toLocaleString('en-US')} <span style={{ fontSize: '1rem', opacity: 0.8 }}>BMC</span>
+                {formatBalance(user?.bmcBalance)} <span style={{ fontSize: '1rem', opacity: 0.8 }}>BMC</span>
               </div>
             </div>
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useWeb3 } from '../context/Web3Context';
 import { getUserTier, getBMCNumber } from './MembershipPage';
-import { MessageSquare, Vote, Users, ExternalLink, Bell, Award, ChevronRight } from 'lucide-react';
+import { MessageSquare, Vote, Users, ExternalLink, Bell, Award, ChevronRight, Search, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { db } from '../firebase/config';
 import { collection, query, getDocs, limit } from 'firebase/firestore';
@@ -87,6 +87,51 @@ const CommunityPage = () => {
   const [voted, setVoted] = useState({});
   const [pegiatList, setPegiatList] = useState([]);
   const [loadingPegiat, setLoadingPegiat] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    const delayDebounce = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const usersRef = collection(db, "users");
+        const querySnapshot = await getDocs(usersRef);
+        const matches = [];
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          const nameMatch = data.name?.toLowerCase().includes(searchQuery.toLowerCase());
+          const usernameMatch = data.username?.toLowerCase().includes(searchQuery.toLowerCase());
+          if (nameMatch || usernameMatch) {
+            matches.push({ id: doc.id, ...data });
+          }
+        });
+
+        // Merge with fallback profiles to ensure complete view
+        const mergedMatches = [...matches];
+        FALLBACK_PEGIAT.forEach(fallback => {
+          const nameMatch = fallback.name?.toLowerCase().includes(searchQuery.toLowerCase());
+          const usernameMatch = fallback.username?.toLowerCase().includes(searchQuery.toLowerCase());
+          if (nameMatch || usernameMatch) {
+            if (!mergedMatches.some(item => item.username.toLowerCase() === fallback.username.toLowerCase())) {
+              mergedMatches.push(fallback);
+            }
+          }
+        });
+
+        setSearchResults(mergedMatches);
+      } catch (err) {
+        console.error("Error searching pegiat:", err);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 300);
+    return () => clearTimeout(delayDebounce);
+  }, [searchQuery]);
 
   useEffect(() => {
     const fetchPegiat = async () => {
@@ -299,93 +344,226 @@ const CommunityPage = () => {
               </h3>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {pegiatList.map((u, i) => {
-                  const tier = getUserTier(String(u.bmcBalance || '0'));
-                  let tierLabel = 'Pegiat Bambu';
-                  let tierGradient = 'linear-gradient(135deg, #495057, #868e96)';
-                  
-                  if (tier === 'builder') {
-                    tierLabel = 'Ecosystem Builder';
-                    tierGradient = 'linear-gradient(135deg, #e67700, #fcc419)';
-                  } else if (tier === 'guardian') {
-                    tierLabel = 'Bamboo Guardian';
-                    tierGradient = 'linear-gradient(135deg, #1971c2, #339af0)';
-                  } else if (tier === 'seed') {
-                    tierLabel = 'Green Seed';
-                    tierGradient = 'linear-gradient(135deg, #2f9e44, #40c057)';
-                  }
-
-                  return (
-                    <div 
-                      key={u.username || i} 
-                      style={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        gap: '12px', 
-                        padding: '10px', 
-                        borderRadius: '12px', 
-                        border: '1px solid transparent',
-                        transition: 'all 0.2s ease',
-                        background: 'rgba(255, 255, 255, 0.02)'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = 'var(--bg-secondary)';
-                        e.currentTarget.style.borderColor = 'rgba(12, 166, 120, 0.2)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.02)';
-                        e.currentTarget.style.borderColor = 'transparent';
-                      }}
+                {/* Search Input field */}
+                <div style={{ position: 'relative', marginBottom: '8px' }}>
+                  <input
+                    type="text"
+                    placeholder="Cari pegiat..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px 10px 38px',
+                      borderRadius: '12px',
+                      border: '1px solid var(--border-color)',
+                      background: 'var(--bg-color)',
+                      color: 'var(--text-main)',
+                      fontSize: '0.85rem',
+                      outline: 'none',
+                      transition: 'border-color 0.2s'
+                    }}
+                    onFocus={(e) => e.target.style.borderColor = 'var(--primary)'}
+                    onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
+                  />
+                  <Search size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+                  {searchQuery && (
+                    <button 
+                      onClick={() => setSearchQuery('')}
+                      style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 0 }}
                     >
-                      <img 
-                        src={u.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.username}`} 
-                        alt={u.name || u.username}
-                        style={{ 
-                          width: '40px', 
-                          height: '40px', 
-                          borderRadius: '50%', 
-                          objectFit: 'cover', 
-                          border: '2px solid var(--primary)',
-                          background: 'var(--bg-secondary)'
-                        }} 
-                      />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontWeight: '700', fontSize: '0.85rem', color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {u.name || u.username}
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+
+                {/* Search Results list or default list */}
+                {searchQuery.trim() ? (
+                  isSearching ? (
+                    <div style={{ textAlign: 'center', padding: '20px 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                      Mencari pegiat...
+                    </div>
+                  ) : searchResults.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '20px 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                      Tidak ada pegiat ditemukan.
+                    </div>
+                  ) : (
+                    searchResults.map((u, i) => {
+                      const tier = getUserTier(u.bmcBalance || 0);
+                      let tierLabel = 'Pegiat Bambu';
+                      let tierGradient = 'linear-gradient(135deg, #495057, #868e96)';
+                      
+                      if (tier === 'builder') {
+                        tierLabel = 'Ecosystem Builder';
+                        tierGradient = 'linear-gradient(135deg, #e67700, #fcc419)';
+                      } else if (tier === 'guardian') {
+                        tierLabel = 'Bamboo Guardian';
+                        tierGradient = 'linear-gradient(135deg, #1971c2, #339af0)';
+                      } else if (tier === 'seed') {
+                        tierLabel = 'Green Seed';
+                        tierGradient = 'linear-gradient(135deg, #2f9e44, #40c057)';
+                      }
+
+                      return (
+                        <div 
+                          key={u.username || i} 
+                          style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '12px', 
+                            padding: '10px', 
+                            borderRadius: '12px', 
+                            border: '1px solid transparent',
+                            transition: 'all 0.2s ease',
+                            background: 'rgba(255, 255, 255, 0.02)'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = 'var(--bg-secondary)';
+                            e.currentTarget.style.borderColor = 'rgba(12, 166, 120, 0.2)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.02)';
+                            e.currentTarget.style.borderColor = 'transparent';
+                          }}
+                        >
+                          <img 
+                            src={u.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.username}`} 
+                            alt={u.name || u.username}
+                            style={{ 
+                              width: '40px', 
+                              height: '40px', 
+                              borderRadius: '50%', 
+                              objectFit: 'cover', 
+                              border: '2px solid var(--primary)',
+                              background: 'var(--bg-secondary)'
+                            }} 
+                          />
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontWeight: '700', fontSize: '0.85rem', color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {u.name || u.username}
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px', flexWrap: 'wrap' }}>
+                              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>@{u.username}</span>
+                              <span style={{
+                                fontSize: '0.62rem',
+                                fontWeight: 'bold',
+                                padding: '2px 6px',
+                                borderRadius: '8px',
+                                color: 'white',
+                                background: tierGradient,
+                                whiteSpace: 'nowrap'
+                              }}>
+                                {tierLabel}
+                              </span>
+                            </div>
+                          </div>
+                          <Link 
+                            to={`/portfolio/${u.username.toLowerCase()}`} 
+                            style={{ 
+                              fontSize: '0.8rem', 
+                              color: 'var(--primary)', 
+                              fontWeight: '700', 
+                              textDecoration: 'none', 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              gap: '2px',
+                              flexShrink: 0
+                            }}
+                          >
+                            Lihat <ChevronRight size={14} />
+                          </Link>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px', flexWrap: 'wrap' }}>
-                          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>@{u.username}</span>
-                          <span style={{
-                            fontSize: '0.62rem',
-                            fontWeight: 'bold',
-                            padding: '2px 6px',
-                            borderRadius: '8px',
-                            color: 'white',
-                            background: tierGradient,
-                            whiteSpace: 'nowrap'
-                          }}>
-                            {tierLabel}
-                          </span>
-                        </div>
-                      </div>
-                      <Link 
-                        to={`/portfolio/${u.username.toLowerCase()}`} 
+                      );
+                    })
+                  )
+                ) : (
+                  pegiatList.map((u, i) => {
+                    const tier = getUserTier(u.bmcBalance || 0);
+                    let tierLabel = 'Pegiat Bambu';
+                    let tierGradient = 'linear-gradient(135deg, #495057, #868e96)';
+                    
+                    if (tier === 'builder') {
+                      tierLabel = 'Ecosystem Builder';
+                      tierGradient = 'linear-gradient(135deg, #e67700, #fcc419)';
+                    } else if (tier === 'guardian') {
+                      tierLabel = 'Bamboo Guardian';
+                      tierGradient = 'linear-gradient(135deg, #1971c2, #339af0)';
+                    } else if (tier === 'seed') {
+                      tierLabel = 'Green Seed';
+                      tierGradient = 'linear-gradient(135deg, #2f9e44, #40c057)';
+                    }
+
+                    return (
+                      <div 
+                        key={u.username || i} 
                         style={{ 
-                          fontSize: '0.8rem', 
-                          color: 'var(--primary)', 
-                          fontWeight: '700', 
-                          textDecoration: 'none', 
                           display: 'flex', 
                           alignItems: 'center', 
-                          gap: '2px',
-                          flexShrink: 0
+                          gap: '12px', 
+                          padding: '10px', 
+                          borderRadius: '12px', 
+                          border: '1px solid transparent',
+                          transition: 'all 0.2s ease',
+                          background: 'rgba(255, 255, 255, 0.02)'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = 'var(--bg-secondary)';
+                          e.currentTarget.style.borderColor = 'rgba(12, 166, 120, 0.2)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.02)';
+                          e.currentTarget.style.borderColor = 'transparent';
                         }}
                       >
-                        Lihat <ChevronRight size={14} />
-                      </Link>
-                    </div>
-                  );
-                })}
+                        <img 
+                          src={u.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.username}`} 
+                          alt={u.name || u.username}
+                          style={{ 
+                            width: '40px', 
+                            height: '40px', 
+                            borderRadius: '50%', 
+                            objectFit: 'cover', 
+                            border: '2px solid var(--primary)',
+                            background: 'var(--bg-secondary)'
+                          }} 
+                        />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontWeight: '700', fontSize: '0.85rem', color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {u.name || u.username}
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px', flexWrap: 'wrap' }}>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>@{u.username}</span>
+                            <span style={{
+                              fontSize: '0.62rem',
+                              fontWeight: 'bold',
+                              padding: '2px 6px',
+                              borderRadius: '8px',
+                              color: 'white',
+                              background: tierGradient,
+                              whiteSpace: 'nowrap'
+                            }}>
+                              {tierLabel}
+                            </span>
+                          </div>
+                        </div>
+                        <Link 
+                          to={`/portfolio/${u.username.toLowerCase()}`} 
+                          style={{ 
+                            fontSize: '0.8rem', 
+                            color: 'var(--primary)', 
+                            fontWeight: '700', 
+                            textDecoration: 'none', 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '2px',
+                            flexShrink: 0
+                          }}
+                        >
+                          Lihat <ChevronRight size={14} />
+                        </Link>
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </div>
 
