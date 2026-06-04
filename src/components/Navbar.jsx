@@ -14,8 +14,9 @@ const Navbar = () => {
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotifMenu, setShowNotifMenu] = useState(false);
+  const [showLangMenu, setShowLangMenu] = useState(false);
 
-  const { language, toggleLanguage, t } = useLanguage();
+  const { language, changeLanguage, t } = useLanguage();
   const { walletAddress, connectWallet, isWalletModalOpen, closeWalletModal } = useWeb3();
   const { user, isAuthenticated, openLoginModal, logout, markAsRead, markAllAsRead, clearNotifications } = useAuth();
   const { isDark, toggleTheme } = useTheme();
@@ -101,7 +102,24 @@ const Navbar = () => {
                <button onClick={toggleTheme} className="theme-toggle-btn" title={isDark ? t('nav_theme_light') : t('nav_theme_dark')} style={{ width: '36px', height: '36px', background: 'transparent', border: 'none' }}>
                  {isDark ? <Sun size={20} color="#f59f00" /> : <Moon size={20} color="var(--primary)" />}
                </button>
-               <Globe size={22} color="var(--primary)" style={{ cursor: 'pointer' }} onClick={toggleLanguage} />
+               
+               <div style={{ position: 'relative' }}>
+                 <button 
+                   onClick={() => setShowLangMenu(!showLangMenu)} 
+                   style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--primary)', fontWeight: 'bold' }}
+                 >
+                   <Globe size={22} />
+                   <span>{language.toUpperCase()}</span>
+                 </button>
+                 
+                 {showLangMenu && (
+                   <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '8px', background: 'var(--bg-card)', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.15)', border: '1px solid var(--border-color)', overflow: 'hidden', minWidth: '120px', zIndex: 1000 }}>
+                     <button onClick={() => { changeLanguage('id'); setShowLangMenu(false); }} style={{ display: 'block', width: '100%', padding: '10px 16px', background: language === 'id' ? 'rgba(12, 166, 120, 0.1)' : 'transparent', border: 'none', textAlign: 'left', cursor: 'pointer', color: 'var(--text-main)' }}>🇮🇩 Indonesia</button>
+                     <button onClick={() => { changeLanguage('en'); setShowLangMenu(false); }} style={{ display: 'block', width: '100%', padding: '10px 16px', background: language === 'en' ? 'rgba(12, 166, 120, 0.1)' : 'transparent', border: 'none', textAlign: 'left', cursor: 'pointer', color: 'var(--text-main)' }}>🇬🇧 English</button>
+                     <button onClick={() => { changeLanguage('ja'); setShowLangMenu(false); }} style={{ display: 'block', width: '100%', padding: '10px 16px', background: language === 'ja' ? 'rgba(12, 166, 120, 0.1)' : 'transparent', border: 'none', textAlign: 'left', cursor: 'pointer', color: 'var(--text-main)' }}>🇯🇵 日本語</button>
+                   </div>
+                 )}
+               </div>
                <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} style={{ background: 'var(--primary)', border: 'none', borderRadius: '8px', color: 'white', padding: '6px' }}>
                  {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
                </button>
@@ -193,6 +211,24 @@ const Navbar = () => {
               >
                 {isDark ? <Sun size={18} color="#f59f00" /> : <Moon size={18} color="#555" />}
               </button>
+
+              <div style={{ position: 'relative' }}>
+                <button 
+                  onClick={() => setShowLangMenu(!showLangMenu)} 
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', color: '#555', fontWeight: 'bold' }}
+                >
+                  <Globe size={18} />
+                  <span>{language.toUpperCase()}</span>
+                </button>
+                
+                {showLangMenu && (
+                  <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '8px', background: 'var(--bg-card)', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.15)', border: '1px solid var(--border-color)', overflow: 'hidden', minWidth: '120px', zIndex: 1000 }}>
+                    <button onClick={() => { changeLanguage('id'); setShowLangMenu(false); }} style={{ display: 'block', width: '100%', padding: '10px 16px', background: language === 'id' ? 'rgba(12, 166, 120, 0.1)' : 'transparent', border: 'none', textAlign: 'left', cursor: 'pointer', color: 'var(--text-main)' }}>🇮🇩 Indonesia</button>
+                    <button onClick={() => { changeLanguage('en'); setShowLangMenu(false); }} style={{ display: 'block', width: '100%', padding: '10px 16px', background: language === 'en' ? 'rgba(12, 166, 120, 0.1)' : 'transparent', border: 'none', textAlign: 'left', cursor: 'pointer', color: 'var(--text-main)' }}>🇬🇧 English</button>
+                    <button onClick={() => { changeLanguage('ja'); setShowLangMenu(false); }} style={{ display: 'block', width: '100%', padding: '10px 16px', background: language === 'ja' ? 'rgba(12, 166, 120, 0.1)' : 'transparent', border: 'none', textAlign: 'left', cursor: 'pointer', color: 'var(--text-main)' }}>🇯🇵 日本語</button>
+                  </div>
+                )}
+              </div>
 
               <div 
                 style={{ position: 'relative', display: 'flex', alignItems: 'center', cursor: 'pointer' }}
