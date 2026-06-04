@@ -2,11 +2,13 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useBambupedia } from '../../context/BambupediaContext';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { Sprout, Droplets, Scissors, ArrowRight, PlusCircle, History, Layout, Leaf, Hammer, Camera, Scan } from 'lucide-react';
 import BackButton from '../../components/BackButton';
 
 const TrackerPage = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const { plantings, taxonomies } = useBambupedia();
   const navigate = useNavigate();
 
@@ -24,10 +26,10 @@ const TrackerPage = () => {
       <div className="container">
         <div style={{ marginBottom: '40px' }}>
           <h2 style={{ fontSize: '2rem', fontWeight: '800', color: 'var(--text-main)', marginBottom: '8px' }}>
-            Halo, {user?.name || 'Sahabat Bambu'}! 👋
+            {t('tr_greeting').replace('{name}', user?.name || 'Sahabat Bambu')}
           </h2>
           <p style={{ color: 'var(--primary)', fontWeight: '700', fontSize: '1.1rem' }}>
-            Level: {totalBamboo >= 100 ? 'Hutan Penjaga' : (totalBamboo >= 10 ? 'Penanam Muda' : 'Pemula')}
+            {t('tr_level').replace('{level}', totalBamboo >= 100 ? 'Hutan Penjaga' : (totalBamboo >= 10 ? 'Penanam Muda' : t('tr_level_beginner')))}
           </p>
         </div>
 
@@ -47,16 +49,16 @@ const TrackerPage = () => {
           </div>
           
           <div style={{ position: 'relative', zIndex: 1 }}>
-            <h3 style={{ fontSize: '1.1rem', opacity: 0.9, marginBottom: '8px', fontWeight: '600' }}>Total Bambu Ditanam</h3>
-            <p style={{ fontSize: '0.9rem', opacity: 0.8, marginBottom: '24px' }}>Pencapaian Lestari Anda</p>
+            <h3 style={{ fontSize: '1.1rem', opacity: 0.9, marginBottom: '8px', fontWeight: '600' }}>{t('tr_total_planted')}</h3>
+            <p style={{ fontSize: '0.9rem', opacity: 0.8, marginBottom: '24px' }}>{t('tr_achievement')}</p>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px' }}>
               <h1 style={{ fontSize: '5rem', fontWeight: '900', margin: 0, lineHeight: 1 }}>{totalBamboo}</h1>
-              <span style={{ fontSize: '1.5rem', fontWeight: '600' }}>Batang</span>
+              <span style={{ fontSize: '1.5rem', fontWeight: '600' }}>{t('tr_stem')}</span>
             </div>
           </div>
         </div>
 
-        <h3 style={{ fontSize: '1.4rem', fontWeight: '800', marginBottom: '24px', color: 'var(--text-main)' }}>Ringkasan Siklus Hidup</h3>
+        <h3 style={{ fontSize: '1.4rem', fontWeight: '800', marginBottom: '24px', color: 'var(--text-main)' }}>{t('tr_lifecycle')}</h3>
         
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '40px' }}>
           <div style={{ background: 'white', padding: '24px', borderRadius: '24px', border: '1px solid #eee', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
@@ -64,7 +66,7 @@ const TrackerPage = () => {
               <Sprout size={20} />
             </div>
             <div style={{ fontSize: '1.8rem', fontWeight: '800', color: 'var(--text-main)' }}>{plantedCount}</div>
-            <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Ditanam & Tumbuh</div>
+            <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>{t('tr_planted_grown')}</div>
           </div>
           
           <div style={{ background: 'white', padding: '24px', borderRadius: '24px', border: '1px solid #eee', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
@@ -72,7 +74,7 @@ const TrackerPage = () => {
               <Scissors size={20} />
             </div>
             <div style={{ fontSize: '1.8rem', fontWeight: '800', color: 'var(--text-main)' }}>{harvestedCount}</div>
-            <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Berhasil Dipanen</div>
+            <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>{t('tr_harvested')}</div>
           </div>
         </div>
 
@@ -85,7 +87,7 @@ const TrackerPage = () => {
             onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
             onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
           >
-            <PlusCircle size={24} /> Mulai Menanam Baru
+            <PlusCircle size={24} /> {t('tr_btn_plant_new')}
           </button>
 
           <button 
@@ -94,7 +96,7 @@ const TrackerPage = () => {
               background: 'none', border: 'none', color: 'var(--primary)', fontWeight: '700', fontSize: '0.9rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '-8px', marginBottom: '8px'
             }}
           >
-            <History size={16} /> Add Past Planting (Record)
+            <History size={16} /> {t('tr_btn_add_past')}
           </button>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
@@ -106,7 +108,7 @@ const TrackerPage = () => {
               onMouseEnter={e => e.currentTarget.style.borderColor = '#1c7ed6'}
               onMouseLeave={e => e.currentTarget.style.borderColor = '#eee'}
             >
-              <Droplets size={20} color="#1c7ed6" /> Pemeliharaan
+              <Droplets size={20} color="#1c7ed6" /> {t('tr_btn_maintain')}
             </button>
             <button 
               onClick={() => navigate('/bambupedia/harvest')}
@@ -116,7 +118,7 @@ const TrackerPage = () => {
               onMouseEnter={e => e.currentTarget.style.borderColor = '#f59f00'}
               onMouseLeave={e => e.currentTarget.style.borderColor = '#eee'}
             >
-              <Scissors size={20} color="#f59f00" /> Panen
+              <Scissors size={20} color="#f59f00" /> {t('tr_btn_harvest')}
             </button>
           </div>
 
@@ -129,7 +131,7 @@ const TrackerPage = () => {
               onMouseEnter={e => e.currentTarget.style.borderColor = '#5f4bd4'}
               onMouseLeave={e => e.currentTarget.style.borderColor = '#eee'}
             >
-              <Hammer size={20} color="#5f4bd4" /> Pemanfaatan
+              <Hammer size={20} color="#5f4bd4" /> {t('tr_btn_utilize')}
             </button>
             <button 
               onClick={() => navigate('/bambupedia/cultivate')}
@@ -139,7 +141,7 @@ const TrackerPage = () => {
               onMouseEnter={e => e.currentTarget.style.borderColor = '#40c057'}
               onMouseLeave={e => e.currentTarget.style.borderColor = '#eee'}
             >
-              <Sprout size={20} color="#40c057" /> Pembibitan
+              <Sprout size={20} color="#40c057" /> {t('tr_btn_nursery')}
             </button>
           </div>
 
@@ -151,7 +153,7 @@ const TrackerPage = () => {
             onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
             onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
           >
-            <Camera size={24} /> Analisis Taksonomi AI
+            <Camera size={24} /> {t('tr_btn_ai_analysis')}
           </button>
           
           <button 

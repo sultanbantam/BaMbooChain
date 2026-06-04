@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Search, Send, BookOpen, Leaf, ChevronRight, Mic, Landmark, Wallet, ArrowRight, CheckCircle, MessageSquare, Sprout, UploadCloud, Bot } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { getAssetUrl } from '../../utils/assets';
-
+import { useLanguage } from '../../context/LanguageContext';
 
 // ─── BASIS PENGETAHUAN BAMBU ─────────────────────────────────────────────────
 const BAMBOO_KB = [
@@ -213,6 +213,7 @@ const formatMessage = (text) => {
 
 // ─── KOMPONEN UTAMA ──────────────────────────────────────────────────────────
 const BambupediaPage = () => {
+  const { t } = useLanguage();
   const [freeQuota, setFreeQuota] = useState(() => {
     const saved = localStorage.getItem('bambubot_freeQuota');
     return saved !== null ? parseInt(saved, 10) : 3;
@@ -244,7 +245,7 @@ const BambupediaPage = () => {
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
-      text: `Selamat datang di **Bambupedia** 🌿 — Perpustakaan Digital Bambu Indonesia!\n\nSaya **BambuBot**, asisten AI yang siap menjawab semua pertanyaan Anda tentang bambu: spesies, budidaya, ekonomi, konstruksi, lingkungan, hingga peluang investasi.\n\n${GROQ_API_KEY && GROQ_API_KEY !== 'PASTE_GROQ_KEY_DISINI' ? '✨ *Didukung oleh Groq AI (Llama 3.3 70B) — jawaban akurat & kontekstual*' : '📚 *Mode perpustakaan lokal aktif*'}\n\n*Ketik pertanyaan Anda atau pilih topik cepat!*`,
+      text: `${t('bp_bot_welcome')}\n\n${GROQ_API_KEY && GROQ_API_KEY !== 'PASTE_GROQ_KEY_DISINI' ? t('bp_bot_groq') : t('bp_bot_local')}\n\n${t('bp_bot_prompt')}`,
     },
   ]);
   const [input, setInput] = useState('');
@@ -326,10 +327,10 @@ const BambupediaPage = () => {
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
           <h1 style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '12px', fontSize: '2.8rem', color: 'var(--text-main)', marginBottom: '12px' }}>
             <img src={getAssetUrl('logos/bmc2.png')} alt="Logo" style={{ height: '45px', objectFit: 'contain' }} />
-            Bambupedia
+            {t('bp_title')}
           </h1>
           <p style={{ color: 'var(--text-muted)', maxWidth: '800px', margin: '0 auto', fontSize: '1.05rem', lineHeight: '1.6' }}>
-            Platform pengetahuan dan ekosistem digital bambu untuk mendukung lingkungan, ekonomi hijau, budaya, teknologi, dan pembangunan berkelanjutan melalui edukasi, inovasi, dan kolaborasi.
+            {t('bp_subtitle')}
           </p>
 
         </div>
@@ -351,7 +352,7 @@ const BambupediaPage = () => {
               minWidth: '180px', justifyContent: 'center',
               border: activeTab === 'chat' ? 'none' : '1px solid var(--border-color)'
             }}>
-            <MessageSquare size={18} /> Tanya BambuBot
+            <MessageSquare size={18} /> {t('bp_tab_chat')}
           </button>
           
           <button 
@@ -364,7 +365,7 @@ const BambupediaPage = () => {
               minWidth: '180px', justifyContent: 'center',
               border: activeTab === 'library' ? 'none' : '1px solid var(--border-color)'
             }}>
-            <BookOpen size={18} /> Pustaka Bambu
+            <BookOpen size={18} /> {t('bp_tab_library')}
           </button>
 
           <button 
@@ -377,7 +378,7 @@ const BambupediaPage = () => {
               minWidth: '180px', justifyContent: 'center',
               border: '1px solid var(--border-color)'
             }}>
-            <Sprout size={18} color="var(--primary)" /> Tracker Bambu
+            <Sprout size={18} color="var(--primary)" /> {t('bp_tab_tracker')}
           </button>
 
           <button 
@@ -389,7 +390,7 @@ const BambupediaPage = () => {
               boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
               minWidth: '180px', justifyContent: 'center'
             }}>
-            <UploadCloud size={18} color="var(--primary)" /> Upload Knowledge
+            <UploadCloud size={18} color="var(--primary)" /> {t('bp_tab_upload')}
           </button>
 
           <button 
@@ -401,7 +402,7 @@ const BambupediaPage = () => {
               boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
               minWidth: '180px', justifyContent: 'center'
             }}>
-            <Bot size={18} color="var(--primary)" /> BambuBot RAG
+            <Bot size={18} color="var(--primary)" /> {t('bp_tab_rag')}
           </button>
         </div>
 
@@ -423,14 +424,14 @@ const BambupediaPage = () => {
                 </div>
                 <div>
                   <div style={{ fontWeight: '700', color: 'white', fontSize: '1rem' }}>BambuBot</div>
-                  <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.8)' }}>Asisten AI Bambupedia • Online</div>
+                  <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.8)' }}>{t('bp_bot_status_online')}</div>
                 </div>
                 <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <div style={{ background: 'rgba(255,255,255,0.2)', padding: '4px 10px', borderRadius: '12px', fontSize: '0.75rem', color: 'white', fontWeight: '600' }}>
-                    Sisa: {freeQuota > 0 ? `${freeQuota} (Gratis)` : `${paidQuota} (Premium)`}
+                    {freeQuota > 0 ? t('bp_bot_quota_free').replace('{quota}', freeQuota) : t('bp_bot_quota_paid').replace('{quota}', paidQuota)}
                   </div>
                   {(freeQuota + paidQuota === 0) && (
-                     <button onClick={() => setShowPaymentModal(true)} style={{ background: '#ffca28', border: 'none', color: '#333', padding: '4px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer' }}>Top-up</button>
+                     <button onClick={() => setShowPaymentModal(true)} style={{ background: '#ffca28', border: 'none', color: '#333', padding: '4px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer' }}>{t('bp_bot_topup')}</button>
                   )}
                   <div style={{ width: '10px', height: '10px', background: '#69db7c', borderRadius: '50%', boxShadow: '0 0 0 3px rgba(105,219,124,0.3)', marginLeft: '4px' }} />
                 </div>
@@ -477,7 +478,7 @@ const BambupediaPage = () => {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Tanya tentang bambu... (Enter untuk kirim)"
+                  placeholder={t('bp_bot_placeholder')}
                   rows={1}
                   style={{ flex: 1, border: '1px solid #dee2e6', borderRadius: '12px', padding: '10px 14px', fontSize: '0.9rem', resize: 'none', outline: 'none', fontFamily: 'inherit', lineHeight: '1.5' }}
                   onFocus={(e) => e.target.style.borderColor = 'var(--primary)'}
@@ -493,7 +494,7 @@ const BambupediaPage = () => {
             {/* Sidebar: Pertanyaan Cepat */}
             <div style={{ order: window.innerWidth < 768 ? 2 : 2 }}>
               <div style={{ background: 'var(--bg-card)', borderRadius: '16px', padding: '20px', border: '1px solid var(--border-color)', marginBottom: '16px' }}>
-                <h3 style={{ fontSize: '0.95rem', fontWeight: '700', marginBottom: '14px', color: 'var(--text-main)' }}>⚡ Pertanyaan Cepat</h3>
+                <h3 style={{ fontSize: '0.95rem', fontWeight: '700', marginBottom: '14px', color: 'var(--text-main)' }}>{t('bp_quick_questions')}</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {QUICK_QUESTIONS.map((q, i) => (
                     <button key={i} onClick={() => {
@@ -512,8 +513,8 @@ const BambupediaPage = () => {
 
               <div style={{ background: 'linear-gradient(135deg, #0ca678, #2b8a3e)', borderRadius: '16px', padding: '20px', color: 'white', textAlign: 'center' }}>
                 <div style={{ fontSize: '2rem', marginBottom: '8px' }}>🌿</div>
-                <div style={{ fontWeight: '700', marginBottom: '6px' }}>176 Spesies Bambu Indonesia (Widjaja 2019)</div>
-                <div style={{ fontSize: '0.82rem', opacity: 0.85 }}>Database botani bambu Indonesia terlengkap</div>
+                <div style={{ fontWeight: '700', marginBottom: '6px' }}>{t('bp_stat_title')}</div>
+                <div style={{ fontSize: '0.82rem', opacity: 0.85 }}>{t('bp_stat_desc')}</div>
               </div>
             </div>
           </div>
