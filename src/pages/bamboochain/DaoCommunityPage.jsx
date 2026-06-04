@@ -26,6 +26,7 @@ const formatBalance = (val) => {
 };
 
 const DaoCommunityPage = () => {
+  const { t } = useLanguage();
   const { user, processCheckin, getActiveStreak, getJakartaCheckinDay } = useAuth();
   
   const currentWibDay = getJakartaCheckinDay ? getJakartaCheckinDay() : new Intl.DateTimeFormat('fr-CA', { timeZone: 'Asia/Jakarta' }).format(new Date());

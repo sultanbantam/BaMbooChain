@@ -202,8 +202,14 @@ export const translations = {
     home_cta_btn: "Baca Buku Putih / Whitepaper",
 
     profile_title: 'Profil Pengguna',
+    join_farmer_title: 'Pendaftaran Kemitraan',
+    join_validator_title: 'Perekrutan Validator Lapangan',
+    dao_title: 'Komunitas',
     membership_title: 'Keanggotaan YSNJ',
     profile_title: 'User Profile',
+    join_farmer_title: 'Partnership Registration',
+    join_validator_title: 'Field Validator Recruitment',
+    dao_title: 'Community',
     membership_title: 'YSNJ Membership',
     // HomePage - KODIBA TOS
     home_kodiba_tos_title: "KOPERASI DIGITAL BAMBU (KODIBA)",
@@ -687,6 +693,9 @@ export const translations = {
     home_cta_btn: "Read Whitepaper",
 
     profile_title: 'Profil Pengguna',
+    join_farmer_title: 'Pendaftaran Kemitraan',
+    join_validator_title: 'Perekrutan Validator Lapangan',
+    dao_title: 'Komunitas',
     membership_title: 'Keanggotaan YSNJ',
     // HomePage - KODIBA TOS
     home_kodiba_tos_title: "BAMBOO DIGITAL COOPERATIVE (KODIBA)",

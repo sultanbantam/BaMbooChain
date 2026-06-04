@@ -11,6 +11,7 @@ import BackButton from '../../components/BackButton';
 import { useAuth } from '../../context/AuthContext';
 
 const JoinFarmerPage = () => {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const { submitPartnerApp, user } = useAuth();
   const [step, setStep] = useState(1);
@@ -103,7 +104,7 @@ const JoinFarmerPage = () => {
               <div style={{ width: '60px', height: '60px', background: '#ebfbee', color: 'var(--primary)', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
                 <Handshake size={32} />
               </div>
-              <h1 style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--text-main)', marginBottom: '12px' }}>Pendaftaran Kemitraan</h1>
+              <h1 style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--text-main)', marginBottom: '12px' }}>{t('join_farmer_title')}</h1>
               <p style={{ color: 'var(--text-muted)' }}>Mulai langkah Anda bergabung ke ekosistem Web3 bambuNUSA.</p>
             </div>
 

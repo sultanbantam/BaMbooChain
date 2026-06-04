@@ -9,6 +9,7 @@ import BackButton from '../../components/BackButton';
 import { useAuth } from '../../context/AuthContext';
 
 const JoinValidatorPage = () => {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const { submitPartnerApp, user } = useAuth();
   const [step, setStep] = useState(1);
@@ -81,7 +82,7 @@ const JoinValidatorPage = () => {
                 <div style={{ background: 'rgba(245, 159, 0, 0.1)', width: '70px', height: '70px', borderRadius: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', color: '#f59f00' }}>
                   <ShieldCheck size={36} />
                 </div>
-                <h1 style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--text-main)', marginBottom: '12px' }}>Perekrutan Validator Lapangan</h1>
+                <h1 style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--text-main)', marginBottom: '12px' }}>{t('join_validator_title')}</h1>
                 <p style={{ color: 'var(--text-muted)' }}>Jadilah penjaga ekosistem Web3 bambuNUSA. Verifikasi keaslian proyek dan lindungi dana investor.</p>
               </div>
 
