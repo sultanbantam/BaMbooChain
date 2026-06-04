@@ -278,7 +278,8 @@ const HomePage = () => {
             </div>
           </div>
         </div>
-      </section>      <section style={{ padding: '80px 0' }}>
+      </section>
+      <section style={{ padding: '80px 0' }}>
         <div className="container">
           <h2 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '50px', textAlign: 'center' }}>{t('home_project_title')}</h2>
           
@@ -614,37 +615,37 @@ const HomePage = () => {
             className="animate-fade-in-up"
             style={{ background: '#1a1a1a', padding: '40px', borderRadius: '30px', width: '100%', maxWidth: '800px', maxHeight: '90vh', overflowY: 'auto', textAlign: 'left', border: '1px solid #51cf66', display: 'flex', flexDirection: 'column' }}
           >
-            <h2 style={{ fontSize: '1.8rem', fontWeight: '900', marginBottom: '10px', color: '#51cf66', textAlign: 'center' }}>KOPERASI DIGITAL BAMBU (KODIBA)</h2>
-            <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '30px', textAlign: 'center', color: 'white' }}>Membangun Ekonomi Hijau Secara Gotong Royong</h3>
+            <h2 style={{ fontSize: '1.8rem', fontWeight: '900', marginBottom: '10px', color: '#51cf66', textAlign: 'center' }}>{t('home_kodiba_tos_title')}</h2>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '30px', textAlign: 'center', color: 'white' }}>{t('home_kodiba_tos_subtitle')}</h3>
             
             <div style={{ color: '#adb5bd', lineHeight: '1.6', fontSize: '0.95rem', marginBottom: '30px', paddingRight: '15px' }}>
               <p style={{ marginBottom: '15px' }}>
-                KODIBA adalah koperasi simpan pinjam dan pusat data bambu berbasis digital yang membantu masyarakat mencatat, menyimpan, dan mengembangkan informasi tentang bambu dari hulu sampai hilir. Konsep ini melanjutkan gerakan ekosistem bambu Nusantara yang sudah dikembangkan melalui Komunitas Bambu Nusantara, Akademi Bambu Nusantara, PERPUBI, dan Yayasan Sabumi Nusantara Jaya.
+                {t('home_kodiba_tos_p1')}
               </p>
-              <p style={{ marginBottom: '10px' }}>Di dalam KODIBA, masyarakat bisa menyetor dan menyimpan data seperti:</p>
+              <p style={{ marginBottom: '10px' }}>{t('home_kodiba_tos_p2')}</p>
               <ul style={{ listStyleType: 'disc', paddingLeft: '20px', marginBottom: '15px', color: '#ced4da' }}>
-                <li style={{ marginBottom: '5px' }}>jumlah dan jenis bibit bambu,</li>
-                <li style={{ marginBottom: '5px' }}>usia dan metode pembibitan,</li>
-                <li style={{ marginBottom: '5px' }}>lokasi dan pemilik lahan,</li>
-                <li style={{ marginBottom: '5px' }}>jumlah rumpun dan batang bambu,</li>
-                <li style={{ marginBottom: '5px' }}>aktivitas ekonomi di sekitar kebun bambu,</li>
-                <li style={{ marginBottom: '5px' }}>hasil penelitian, buku, jurnal, desain, pedoman teknis, dan karya ilmiah lainnya.</li>
+                <li style={{ marginBottom: '5px' }}>{t('home_kodiba_tos_l1_1')}</li>
+                <li style={{ marginBottom: '5px' }}>{t('home_kodiba_tos_l1_2')}</li>
+                <li style={{ marginBottom: '5px' }}>{t('home_kodiba_tos_l1_3')}</li>
+                <li style={{ marginBottom: '5px' }}>{t('home_kodiba_tos_l1_4')}</li>
+                <li style={{ marginBottom: '5px' }}>{t('home_kodiba_tos_l1_5')}</li>
+                <li style={{ marginBottom: '5px' }}>{t('home_kodiba_tos_l1_6')}</li>
               </ul>
               <p style={{ marginBottom: '15px' }}>
-                Semua data tersebut dapat menjadi aset bersama yang bermanfaat untuk pelestarian lingkungan, penelitian, pendidikan, industri, hingga pemberdayaan ekonomi masyarakat. Konsep pengumpulan database bambu sebagai bagian dari pelestarian dan pembangunan ekosistem bambu juga dijelaskan dalam profil Bambunusa Group.
+                {t('home_kodiba_tos_p3')}
               </p>
               <p style={{ marginBottom: '15px' }}>
-                Sebagai bentuk penghargaan, setiap data yang disetor dan diverifikasi akan dikonversi menjadi nilai digital berupa Token BMC, sehingga masyarakat, petani, peneliti, dosen, pengrajin, dan para sesepuh bisa mendapatkan manfaat ekonomi dari ilmu, pengalaman, dan data yang mereka miliki.
+                {t('home_kodiba_tos_p4')}
               </p>
-              <p style={{ marginBottom: '10px' }}>KODIBA hadir untuk:</p>
+              <p style={{ marginBottom: '10px' }}>{t('home_kodiba_tos_p5')}</p>
               <ul style={{ listStyleType: 'disc', paddingLeft: '20px', marginBottom: '15px', color: '#ced4da' }}>
-                <li style={{ marginBottom: '5px' }}>membantu petani mendapatkan akses permodalan dan pasar,</li>
-                <li style={{ marginBottom: '5px' }}>menjaga pengetahuan bambu agar tidak hilang,</li>
-                <li style={{ marginBottom: '5px' }}>memperkuat kerja sama antar pegiat bambu,</li>
-                <li style={{ marginBottom: '5px' }}>serta membangun ekonomi hijau yang adil, terbuka, dan berkelanjutan.</li>
+                <li style={{ marginBottom: '5px' }}>{t('home_kodiba_tos_l2_1')}</li>
+                <li style={{ marginBottom: '5px' }}>{t('home_kodiba_tos_l2_2')}</li>
+                <li style={{ marginBottom: '5px' }}>{t('home_kodiba_tos_l2_3')}</li>
+                <li style={{ marginBottom: '5px' }}>{t('home_kodiba_tos_l2_4')}</li>
               </ul>
               <p style={{ fontStyle: 'italic', color: '#51cf66', textAlign: 'center', marginTop: '30px', marginBottom: '10px', fontWeight: 'bold', fontSize: '1.05rem' }}>
-                Karena setiap rumpun bambu bukan hanya tanaman, tetapi sumber kehidupan, ilmu pengetahuan, budaya, dan masa depan Nusantara. 🌿
+                {t('home_kodiba_tos_quote')}
               </p>
             </div>
             

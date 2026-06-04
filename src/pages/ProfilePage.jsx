@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useBambupedia } from '../context/BambupediaContext';
+import { useLanguage } from '../context/LanguageContext';
 import { db } from '../firebase/config';
 import { useArticles } from '../hooks/useFirestoreQueries';
 import { doc, onSnapshot, updateDoc, collection, query, where, getDoc, getDocs, addDoc, arrayUnion, arrayRemove, increment } from 'firebase/firestore';
@@ -69,6 +70,7 @@ const formatBalance = (val) => {
 };
 
 const ProfilePage = () => {
+  const { t } = useLanguage();
   const { user, updateProfile } = useAuth();
   const { data: articles = [] } = useArticles();
   const { plantings, maintenances, harvests } = useBambupedia();
@@ -505,7 +507,7 @@ const ProfilePage = () => {
         
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', flexWrap: 'wrap', gap: '20px' }}>
           <h1 style={{ fontSize: '2.5rem', fontWeight: '900', color: 'var(--text-main)', margin: 0 }}>
-            Profil <span style={{ color: 'var(--primary)' }}>Pengguna</span>
+            {t('profile_title')}
           </h1>
           
           {/* Global User Search Bar */}

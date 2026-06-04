@@ -1,5 +1,6 @@
 import React from 'react';
 import { useWeb3 } from '../context/Web3Context';
+import { useLanguage } from '../context/LanguageContext';
 import { useNavigate } from 'react-router-dom';
 import { Shield, Star, Zap, ExternalLink } from 'lucide-react';
 
@@ -70,6 +71,7 @@ const getUserTier = (bmcBalance) => {
 };
 
 const MembershipPage = () => {
+  const { t } = useLanguage();
   const { walletAddress, bmcBalance, isConnected, openWalletModal } = useWeb3();
   const navigate = useNavigate();
   const userTier = getUserTier(bmcBalance);
@@ -85,7 +87,7 @@ const MembershipPage = () => {
             <Star size={16} color="var(--primary)" />
             <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--primary)' }}>Sistem Keanggotaan Berbasis Token BMC</span>
           </div>
-          <h1 style={{ fontSize: '2.8rem', color: 'var(--text-main)', marginBottom: '16px' }}>Keanggotaan YSNJ</h1>
+          <h1 style={{ fontSize: '2.8rem', color: 'var(--text-main)', marginBottom: '16px' }}>{t('membership_title')}</h1>
           <p style={{ color: 'var(--text-muted)', maxWidth: '600px', margin: '0 auto', fontSize: '1.1rem' }}>
             Pegang token BMC untuk membuka akses eksklusif — semakin banyak, semakin tinggi level keanggotaan Anda.
           </p>
