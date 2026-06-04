@@ -85,8 +85,8 @@ const Footer = () => {
           </div>
           
           <div>
-            <h3 style={{ fontSize: '1.5rem', marginBottom: '24px', color: 'var(--primary)' }}>Crypto Exchange & Web3</h3>
-            <p style={{ color: 'var(--text-muted)', marginBottom: '20px' }}>Gunakan link referral untuk menyelesaikan misi.</p>
+            <h3 style={{ fontSize: '1.5rem', marginBottom: '24px', color: 'var(--primary)' }}>{t('foot_crypto_title')}</h3>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '20px' }}>{t('foot_crypto_desc')}</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', color: 'var(--text-muted)' }}>
               <a href="https://www.bmwweb.biz/referral/earn-together/refer2earn-usdc/claim?hl=en&ref=GRO_28502_FFUQO&utm_source=referral_entrance" target="_blank" rel="noreferrer" style={{ display: 'flex', gap: '12px', alignItems: 'center', color: 'var(--text-muted)', textDecoration: 'none' }}>
                 <LinkIcon size={20} color="var(--primary)" /> Binance
@@ -116,16 +116,16 @@ const Footer = () => {
         <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '32px', textAlign: 'center', color: 'var(--text-muted)' }}>
           <p>{t('foot_copyright')}</p>
           <div style={{ marginTop: '12px', fontSize: '0.85rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
-            <p>Smart Contract BMC jaringan BEP20 : <code>0x812d9709f0A53982606b823Ee61d5CA216F7F9c0</code></p>
+            <p>{t('foot_sc_network')} <code>0x812d9709f0A53982606b823Ee61d5CA216F7F9c0</code></p>
             <img src={getAssetUrl('bmc-bep20.jpeg')} alt="Smart Contract BMC BEP20" style={{ width: '150px', borderRadius: '8px' }} />
             
             <p style={{ marginTop: '16px', borderTop: '1px dashed var(--border-color)', paddingTop: '16px', maxWidth: '600px', margin: '0 auto' }}>
-              Informasi di website ini bersifat edukasi dan bukan merupakan ajakan atau rekomendasi investasi. 
-              <span onClick={() => handleNav('/faq')} style={{ color: 'var(--primary)', textDecoration: 'underline', marginRight: '10px', cursor: 'pointer' }}>Pusat Bantuan (FAQ)</span> | 
-              <span onClick={() => handleNav('/privacy')} style={{ color: 'var(--primary)', textDecoration: 'underline', marginRight: '10px', cursor: 'pointer' }}>Kebijakan Privasi</span> | 
-              <span onClick={() => handleNav('/terms')} style={{ color: 'var(--primary)', textDecoration: 'underline', marginRight: '10px', cursor: 'pointer' }}>Syarat Layanan</span> | 
-              <span onClick={() => handleNav('/disclaimer')} style={{ color: 'var(--primary)', textDecoration: 'underline', marginRight: '10px', cursor: 'pointer' }}>Disclaimer</span> | 
-              <span onClick={() => handleNav('/bamboochain/token-wallet?tab=validator')} style={{ color: '#f59f00', textDecoration: 'underline', cursor: 'pointer' }}>Portal Validator Lapangan</span>
+              {t('foot_disclaimer_info')} 
+              <span onClick={() => handleNav('/faq')} style={{ color: 'var(--primary)', textDecoration: 'underline', marginRight: '10px', cursor: 'pointer', marginLeft: '5px' }}>{t('foot_help_center')}</span> | 
+              <span onClick={() => handleNav('/privacy')} style={{ color: 'var(--primary)', textDecoration: 'underline', marginRight: '10px', cursor: 'pointer', marginLeft: '5px' }}>{t('foot_privacy')}</span> | 
+              <span onClick={() => handleNav('/terms')} style={{ color: 'var(--primary)', textDecoration: 'underline', marginRight: '10px', cursor: 'pointer', marginLeft: '5px' }}>{t('foot_terms')}</span> | 
+              <span onClick={() => handleNav('/disclaimer')} style={{ color: 'var(--primary)', textDecoration: 'underline', marginRight: '10px', cursor: 'pointer', marginLeft: '5px' }}>{t('foot_disclaimer')}</span> | 
+              <span onClick={() => handleNav('/bamboochain/token-wallet?tab=validator')} style={{ color: '#f59f00', textDecoration: 'underline', cursor: 'pointer', marginLeft: '5px' }}>{t('foot_validator')}</span>
             </p>
           </div>
         </div>

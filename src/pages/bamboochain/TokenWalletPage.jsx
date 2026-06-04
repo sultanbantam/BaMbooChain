@@ -2077,6 +2077,7 @@ const SecuritySettingsTab = () => {
 const TokenWalletPage = () => {
   const { walletAddress, isConnected, connectWallet } = useWeb3();
   const location = useLocation();
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState(location.search.includes('tab=validator') ? 'get_bmc' : 'overview');
   const [initialModal, setInitialModal] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 1100);
@@ -2088,15 +2089,15 @@ const TokenWalletPage = () => {
   }, []);
 
   const TABS = [
-    { id: 'overview', label: 'Overview', icon: PieChart },
-    { id: 'whitepaper', label: 'Whitepaper BMC', icon: FileText },
-    { id: 'dashboard', label: 'Wallet Dashboard', icon: Wallet },
-    { id: 'get_bmc', label: 'Get BMC', icon: Gift },
-    { id: 'transactions', label: 'Transactions', icon: History },
-    { id: 'kyc', label: 'KYC Center', icon: ShieldCheck },
-    { id: 'security', label: 'Security (Advanced)', icon: Lock },
-    { id: 'staking', label: 'Staking (Opsional)', icon: Cpu },
-    { id: 'utility', label: 'Token Utility', icon: TrendingUp },
+    { id: 'overview', label: t('tw_tab_overview'), icon: PieChart },
+    { id: 'whitepaper', label: t('tw_tab_whitepaper'), icon: FileText },
+    { id: 'dashboard', label: t('tw_tab_dashboard'), icon: Wallet },
+    { id: 'get_bmc', label: t('tw_tab_get_bmc'), icon: Gift },
+    { id: 'transactions', label: t('tw_tab_transactions'), icon: History },
+    { id: 'kyc', label: t('tw_tab_kyc'), icon: ShieldCheck },
+    { id: 'security', label: t('tw_tab_security'), icon: Lock },
+    { id: 'staking', label: t('tw_tab_staking'), icon: Cpu },
+    { id: 'utility', label: t('tw_tab_utility'), icon: TrendingUp },
   ];
 
   return (
@@ -2132,7 +2133,7 @@ const TokenWalletPage = () => {
                   fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1.5px', 
                   color: 'var(--text-muted)', fontWeight: 'bold', marginBottom: '20px', paddingLeft: '12px'
                 }}>
-                  Menu Token & Wallet
+                  {t('tw_menu_title')}
                 </div>
               )}
               

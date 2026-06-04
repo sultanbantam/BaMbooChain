@@ -4,6 +4,7 @@ import { Leaf, Wind, Wallet, TrendingUp, MapPin, Search, PlusCircle, Activity, C
 import BackButton from '../../components/BackButton';
 import AdSpace from '../../components/AdSpace';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 
 const formatBalance = (val) => {
   const num = Number(val || 0);
@@ -12,6 +13,7 @@ const formatBalance = (val) => {
 
 const OverviewPage = () => {
   const { user, updateProfile } = useAuth();
+  const { t } = useLanguage();
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportingMission, setReportingMission] = useState(null);
 
@@ -27,7 +29,7 @@ const OverviewPage = () => {
   };
 
   const submitReport = () => {
-    alert('Laporan berhasil dikirim! Menunggu validasi Validator bambuNUSA.');
+    alert(t('ov_alert_success'));
     setShowReportModal(false);
   };
   
@@ -49,16 +51,16 @@ const OverviewPage = () => {
             <BackButton to="/" />
           </div>
           <div>
-            <h1 style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--text-main)', marginBottom: '8px' }}>bambuNUSA Dashboard</h1>
-            <p style={{ fontSize: '1.1rem', color: 'var(--text-muted)' }}>Real-time ecosystem of bamboo, blockchain, and green economy</p>
+            <h1 style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--text-main)', marginBottom: '8px' }}>{t('ov_title')}</h1>
+            <p style={{ fontSize: '1.1rem', color: 'var(--text-muted)' }}>{t('ov_subtitle')}</p>
           </div>
           <div style={{ display: 'flex', gap: '12px' }}>
             <Link to="/bamboochain/plantation" className="btn btn-crypto" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 24px' }}>
-              <PlusCircle size={18} /> Mulai Tanam Bambu
+              <PlusCircle size={18} /> {t('ov_btn_plant')}
             </Link>
             {user?.farmerStatus === 'none' ? (
               <Link to="/bambunusa/join-farmer" className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 24px' }}>
-                Join Petani
+                {t('ov_btn_join_farmer')}
               </Link>
             ) : (
               <div style={{ 
@@ -73,7 +75,7 @@ const OverviewPage = () => {
                 border: `1px solid ${user?.farmerStatus === 'verified' ? 'var(--primary)' : '#f59f00'}`
               }}>
                 {user?.farmerStatus === 'verified' ? <CheckCircle size={18} /> : <Clock size={18} />}
-                {user?.farmerStatus === 'verified' ? 'Mitra Terverifikasi' : 'Menunggu Verifikasi'}
+                {user?.farmerStatus === 'verified' ? t('ov_status_verified') : t('ov_status_pending')}
               </div>
             )}
           </div>
@@ -89,7 +91,7 @@ const OverviewPage = () => {
               <Leaf size={28} />
             </div>
             <div>
-              <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '4px' }}>Total Bambu Anda</div>
+              <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '4px' }}>{t('ov_stat_total')}</div>
               <div style={{ fontSize: '1.75rem', fontWeight: 'bold', color: 'var(--text-main)' }}>{userStats.totalBamboo}</div>
             </div>
           </div>
@@ -99,7 +101,7 @@ const OverviewPage = () => {
               <Wind size={28} />
             </div>
             <div>
-              <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '4px' }}>Carbon Offset (CO2)</div>
+              <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '4px' }}>{t('ov_stat_co2')}</div>
               <div style={{ fontSize: '1.75rem', fontWeight: 'bold', color: 'var(--text-main)' }}>{userStats.co2Offset} <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>ton</span></div>
             </div>
           </div>
@@ -109,7 +111,7 @@ const OverviewPage = () => {
               <Wallet size={28} />
             </div>
             <div>
-              <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '4px' }}>Saldo BMC</div>
+              <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '4px' }}>{t('ov_stat_balance')}</div>
               <div style={{ fontSize: '1.75rem', fontWeight: 'bold', color: 'var(--text-main)' }}>{userStats.bmcBalance}</div>
             </div>
           </div>
@@ -119,7 +121,7 @@ const OverviewPage = () => {
               <TrendingUp size={28} />
             </div>
             <div>
-              <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '4px' }}>Estimasi ROI</div>
+              <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '4px' }}>{t('ov_stat_roi')}</div>
               <div style={{ fontSize: '1.75rem', fontWeight: 'bold', color: 'var(--text-main)' }}>{userStats.roi}%</div>
             </div>
           </div>
@@ -133,9 +135,9 @@ const OverviewPage = () => {
           <div style={{ background: 'var(--bg-card)', borderRadius: '16px', padding: '32px', border: '1px solid var(--border-color)', animation: 'slideUp 0.5s ease-out' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
               <h3 style={{ fontSize: '1.25rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
-                <CheckCircle size={20} color="var(--primary)" /> Misi Penanaman Anda
+                <CheckCircle size={20} color="var(--primary)" /> {t('ov_mission_title')}
               </h3>
-              <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Saldo Pendamping: <strong>{user?.pendingPayouts || 0} BMC</strong></div>
+              <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{t('ov_mission_balance')} <strong>{user?.pendingPayouts || 0} BMC</strong></div>
             </div>
             
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
@@ -146,11 +148,11 @@ const OverviewPage = () => {
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={12} /> {mission.deadline}</span>
                   </div>
                   <h4 style={{ margin: '0 0 8px 0', fontSize: '1rem' }}>{mission.title}</h4>
-                  <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '16px' }}>Donatur: {mission.donor}</p>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '16px' }}>{t('ov_mission_donor')} {mission.donor}</p>
                   <button 
                     onClick={() => handleReportMission(mission)}
                     style={{ width: '100%', padding: '10px', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                    <Camera size={16} /> Lapor Selesai
+                    <Camera size={16} /> {t('ov_mission_report')}
                   </button>
                 </div>
               ))}
@@ -164,11 +166,11 @@ const OverviewPage = () => {
           <div style={{ background: 'var(--bg-card)', borderRadius: '16px', border: '1px solid var(--border-color)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
             <div style={{ padding: '20px 24px', borderBottom: '1px solid #f1f3f5', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h3 style={{ fontSize: '1.25rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <MapPin size={20} color="var(--primary)" /> Live Plantation Map
+                <MapPin size={20} color="var(--primary)" /> {t('ov_map_title')}
               </h3>
               <div style={{ position: 'relative' }}>
                 <Search size={16} color="var(--text-muted)" style={{ position: 'absolute', top: '50%', transform: 'translateY(-50%)', left: '12px' }} />
-                <input type="text" placeholder="Cari blok lahan..." style={{ padding: '8px 12px 8px 36px', borderRadius: '8px', border: '1px solid #ced4da', fontSize: '0.85rem' }} />
+                <input type="text" placeholder={t('ov_map_search')} style={{ padding: '8px 12px 8px 36px', borderRadius: '8px', border: '1px solid #ced4da', fontSize: '0.85rem' }} />
               </div>
             </div>
             <div style={{ flex: 1, backgroundColor: '#e9ecef', position: 'relative', minHeight: '400px', display: 'flex' }}>
@@ -190,7 +192,7 @@ const OverviewPage = () => {
                 </div>
                 
                 <div style={{ position: 'absolute', bottom: '16px', right: '16px', background: 'white', padding: '8px 12px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: '500', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: '8px', pointerEvents: 'auto' }}>
-                  <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--primary)', animation: 'pulse 1.5s infinite' }}></span> Real-time IoT Data Aktif
+                  <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--primary)', animation: 'pulse 1.5s infinite' }}></span> {t('ov_map_active')}
                 </div>
               </div>
             </div>
@@ -200,7 +202,7 @@ const OverviewPage = () => {
           <div style={{ background: 'var(--bg-card)', borderRadius: '16px', border: '1px solid var(--border-color)' }}>
             <div style={{ padding: '20px 24px', borderBottom: '1px solid #f1f3f5' }}>
               <h3 style={{ fontSize: '1.25rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Activity size={20} color="var(--primary)" /> Aktivitas Terbaru
+                <Activity size={20} color="var(--primary)" /> {t('ov_act_title')}
               </h3>
             </div>
             <div style={{ padding: '24px' }}>
@@ -225,7 +227,7 @@ const OverviewPage = () => {
               </div>
             </div>
             <div style={{ padding: '16px 24px', borderTop: '1px solid #f1f3f5', textAlign: 'center' }}>
-              <Link to="/bamboochain/activities" style={{ fontSize: '0.9rem', color: 'var(--primary)', fontWeight: '600', textDecoration: 'none' }}>Lihat Semua Aktivitas →</Link>
+              <Link to="/bamboochain/activities" style={{ fontSize: '0.9rem', color: 'var(--primary)', fontWeight: '600', textDecoration: 'none' }}>{t('ov_act_view_all')}</Link>
             </div>
           </div>
 
@@ -240,27 +242,27 @@ const OverviewPage = () => {
               <X size={20} />
             </button>
             <div style={{ padding: '40px' }}>
-              <h2 style={{ fontSize: '1.75rem', fontWeight: '900', color: 'var(--text-main)', marginBottom: '8px' }}>Laporan Misi</h2>
+              <h2 style={{ fontSize: '1.75rem', fontWeight: '900', color: 'var(--text-main)', marginBottom: '8px' }}>{t('ov_modal_title')}</h2>
               <p style={{ color: 'var(--text-muted)', marginBottom: '32px' }}>{reportingMission.title}</p>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                 <div style={{ background: '#f8f9fa', padding: '32px', borderRadius: '20px', border: '2px dashed #dee2e6', textAlign: 'center', cursor: 'pointer' }}>
                   <Camera size={40} color="#adb5bd" style={{ marginBottom: '12px' }} />
-                  <div style={{ fontWeight: 'bold', color: 'var(--text-main)' }}>Unggah Foto Bukti</div>
-                  <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Pastikan geotag GPS aktif</div>
+                  <div style={{ fontWeight: 'bold', color: 'var(--text-main)' }}>{t('ov_modal_upload')}</div>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{t('ov_modal_upload_desc')}</div>
                 </div>
                 
                 <div className="form-group">
-                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>Catatan Tambahan</label>
-                  <textarea placeholder="Contoh: Kondisi tanah lembap, bibit segar..." style={{ width: '100%', padding: '16px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none', minHeight: '100px' }}></textarea>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>{t('ov_modal_note')}</label>
+                  <textarea placeholder={t('ov_modal_note_plc')} style={{ width: '100%', padding: '16px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none', minHeight: '100px' }}></textarea>
                 </div>
 
                 <div style={{ background: 'rgba(245, 159, 0, 0.05)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(245, 159, 0, 0.2)', display: 'flex', gap: '12px' }}>
                   <AlertTriangle size={20} color="#f59f00" style={{ flexShrink: 0 }} />
-                  <p style={{ margin: 0, fontSize: '0.85rem', color: '#856404' }}>Data yang dikirim akan diverifikasi oleh Validator sebelum dana pencairan masuk ke saldo Anda.</p>
+                  <p style={{ margin: 0, fontSize: '0.85rem', color: '#856404' }}>{t('ov_modal_alert')}</p>
                 </div>
 
-                <button onClick={submitReport} className="btn btn-primary" style={{ padding: '16px', fontWeight: 'bold' }}>Kirim Laporan Validasi</button>
+                <button onClick={submitReport} className="btn btn-primary" style={{ padding: '16px', fontWeight: 'bold' }}>{t('ov_modal_btn')}</button>
               </div>
             </div>
           </div>

@@ -84,7 +84,7 @@ const Navbar = () => {
       const deepLinkUrl = wallet.deepLink + currentUrl;
       window.open(deepLinkUrl, '_blank');
     } else {
-      alert(`Silakan instal ${wallet.name} atau gunakan dApp Browser di dalam aplikasi dompet Anda.`);
+      alert(t('nav_wallet_not_installed').replace('{wallet}', wallet.name));
     }
   };
 
@@ -98,7 +98,7 @@ const Navbar = () => {
               <img src={getAssetUrl('logo-ysnj2.png')} alt="Logo" style={{ height: '35px' }} />
             </Link>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-               <button onClick={toggleTheme} className="theme-toggle-btn" title={isDark ? 'Mode Terang' : 'Mode Gelap'} style={{ width: '36px', height: '36px', background: 'transparent', border: 'none' }}>
+               <button onClick={toggleTheme} className="theme-toggle-btn" title={isDark ? t('nav_theme_light') : t('nav_theme_dark')} style={{ width: '36px', height: '36px', background: 'transparent', border: 'none' }}>
                  {isDark ? <Sun size={20} color="#f59f00" /> : <Moon size={20} color="var(--primary)" />}
                </button>
                <Globe size={22} color="var(--primary)" style={{ cursor: 'pointer' }} onClick={toggleLanguage} />
@@ -189,7 +189,7 @@ const Navbar = () => {
               <button
                 onClick={toggleTheme}
                 className="theme-toggle-btn"
-                title={isDark ? 'Mode Terang' : 'Mode Gelap'}
+                title={isDark ? t('nav_theme_light') : t('nav_theme_dark')}
               >
                 {isDark ? <Sun size={18} color="#f59f00" /> : <Moon size={18} color="#555" />}
               </button>
@@ -277,7 +277,7 @@ const Navbar = () => {
                   {showProfileMenu && (
                     <div style={{ position: 'absolute', top: '40px', right: '0', width: '200px', background: 'var(--bg-card)', boxShadow: '0 10px 40px rgba(0,0,0,0.1)', borderRadius: '16px', overflow: 'hidden', zIndex: 10006, border: '1px solid var(--border-color)' }}>
                       <Link to="/profile" style={{ display: 'block', padding: '12px 16px', color: '#333', textDecoration: 'none', borderBottom: '1px solid #eee' }}>👤 {t('nav_profile')}</Link>
-                      <Link to={`/portfolio/${user?.username || user?.id}`} style={{ display: 'block', padding: '12px 16px', color: '#333', textDecoration: 'none', borderBottom: '1px solid #eee' }}>🌿 Passport Saya</Link>
+                      <Link to={`/portfolio/${user?.username || user?.id}`} style={{ display: 'block', padding: '12px 16px', color: '#333', textDecoration: 'none', borderBottom: '1px solid #eee' }}>🌿 {t('nav_passport')}</Link>
                       <button onClick={(e) => { e.stopPropagation(); logout(); setShowProfileMenu(false); }} style={{ width: '100%', textAlign: 'left', padding: '12px 16px', background: 'white', border: 'none', color: '#e03131', cursor: 'pointer', fontWeight: 'bold' }}>🚪 {t('nav_logout')}</button>
                     </div>
                   )}
