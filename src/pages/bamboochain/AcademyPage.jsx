@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { BookOpen, GraduationCap, Award, PlayCircle, Clock, ShieldCheck, DownloadCloud, Lock, User, FileText, X, Sparkles, Calendar, ChevronLeft, ChevronRight, Heart, Share2, Send, MessageSquare, Gift, UploadCloud, Edit3, Trash2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { db } from '../../firebase/config';
 import { collection, onSnapshot, doc, addDoc, updateDoc, setDoc, deleteDoc, query, orderBy, serverTimestamp, arrayUnion, arrayRemove, increment, getDoc, getDocs, where } from 'firebase/firestore';
 import ShareModal from '../../components/ShareModal';
@@ -38,6 +39,7 @@ const compressImage = (base64Str, maxWidth = 800, maxHeight = 800, quality = 0.6
 };
 
 const AcademyPage = () => {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const { user, setIsAuthModalOpen, setAuthModalInitialTab, submitArticle, updateArticle, giftBmc } = useAuth();
   const { data: articles = [] } = useArticles();
@@ -1081,7 +1083,7 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
           </div>
         </div>
          <h1 style={{ fontSize: '3rem', fontWeight: '900', color: 'var(--text-main)', marginBottom: '16px', letterSpacing: '-0.5px' }}>
-          Akademi Bambu Nusantara
+          {t('academy_title')}
         </h1>
         <p style={{ fontSize: '1.2rem', color: 'var(--text-muted)', maxWidth: '600px', margin: '0 auto' }}>
           Belajar, Berkarya, Berdaya. Tingkatkan kapasitas diri melalui perpustakaan ilmu pengetahuan terpadu dari pakar bambu dan ahli teknologi terkemuka.

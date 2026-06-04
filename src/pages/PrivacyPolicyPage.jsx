@@ -1,11 +1,12 @@
 import React from 'react';
 
 const PrivacyPolicyPage = () => {
+  const { t } = useLanguage();
   return (
     <div style={{ paddingTop: '170px', minHeight: '100vh', background: 'var(--bg-secondary, #f8f9fa)', paddingBottom: '60px' }}>
       <div className="container" style={{ padding: '40px 24px', background: 'var(--bg-card, white)', borderRadius: '24px', boxShadow: '0 8px 30px rgba(0,0,0,0.05)', maxWidth: '800px', margin: '0 auto', border: '1px solid var(--border-color, #e9ecef)' }}>
         
-        <h1 style={{ fontSize: '2.5rem', fontWeight: '900', marginBottom: '10px', color: 'var(--text-main)', letterSpacing: '-0.5px' }}>Privacy Policy</h1>
+        <h1 style={{ fontSize: '2.5rem', fontWeight: '900', marginBottom: '10px', color: 'var(--text-main)', letterSpacing: '-0.5px' }}>{t('privacy_title')}</h1>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '30px' }}>Terakhir diperbarui: 28 Mei 2026</p>
         
         <div style={{ fontSize: '1.05rem', color: 'var(--text-main)', lineHeight: '1.8', display: 'flex', flexDirection: 'column', gap: '24px' }}>
