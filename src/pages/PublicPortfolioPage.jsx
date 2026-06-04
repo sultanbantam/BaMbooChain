@@ -410,7 +410,7 @@ const PublicPortfolioPage = () => {
 
   return (
     <div style={{ paddingTop: '190px', paddingBottom: '100px', minHeight: '100vh', background: 'var(--bg-color)', transition: 'background 0.3s ease' }}>
-      <div className="container" style={{ maxWidth: '1000px', margin: '0 auto', padding: '0 20px' }}>
+      <div className="container profile-container" style={{ maxWidth: '1000px', margin: '0 auto', padding: '0 20px' }}>
         
         {/* Back Button */}
         <button 
@@ -562,7 +562,7 @@ const PublicPortfolioPage = () => {
                 </div>
 
                 {/* Status Feed */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
+                <div className="profile-feed-container" style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
                   <h4 style={{ margin: '0 0 5px 0', fontSize: '1rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Riwayat Status ({displayStatuses.length})</h4>
                   
                   {displayStatuses.length === 0 ? (

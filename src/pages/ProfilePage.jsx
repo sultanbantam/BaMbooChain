@@ -503,7 +503,7 @@ const ProfilePage = () => {
 
   return (
     <div style={{ paddingTop: '190px', paddingBottom: '100px', minHeight: '100vh', background: 'var(--bg-color)', transition: 'background 0.3s ease' }}>
-      <div className="container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
+      <div className="container profile-container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
         
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', flexWrap: 'wrap', gap: '20px' }}>
           <h1 style={{ fontSize: '2.5rem', fontWeight: '900', color: 'var(--text-main)', margin: 0 }}>
@@ -1017,7 +1017,7 @@ const ProfilePage = () => {
               </div>
 
               {/* Status Feed */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '25px' }}>
+              <div className="profile-feed-container" style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '25px' }}>
                 <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                   Riwayat Status ({statuses.length})
                 </p>

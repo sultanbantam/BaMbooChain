@@ -643,3 +643,29 @@ section {
   background: linear-gradient(transparent, rgba(0,0,0,0.9));
   z-index: 1;
 }
+
+/* Profile Page Layout Fixes */
+.profile-container {
+  max-width: 1400px !important;
+}
+.profile-feed-container {
+  max-height: 500px;
+  overflow-y: auto;
+  padding-right: 15px;
+}
+
+.profile-feed-container::-webkit-scrollbar {
+  width: 6px;
+}
+.profile-feed-container::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+@media (max-width: 992px) {
+  .profile-feed-container {
+    max-height: none;
+    overflow-y: visible;
+    padding-right: 0;
+  }
+}
