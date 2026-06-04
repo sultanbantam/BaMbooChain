@@ -362,9 +362,22 @@ const Navbar = () => {
                
                <div style={{ borderLeft: '2px solid #f1f3f5', height: '24px', margin: '0 5px' }} />
                
-               <div onClick={toggleLanguage} style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', color: 'var(--primary)', fontWeight: 'bold' }}>
-                 <Globe size={20} />
-                 <span style={{ fontSize: '0.9rem' }}>{language.toUpperCase()}</span>
+               <div style={{ position: 'relative' }}>
+                 <button 
+                   onClick={() => setShowLangMenu(!showLangMenu)} 
+                   style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--primary)', fontWeight: 'bold' }}
+                 >
+                   <Globe size={20} />
+                   <span style={{ fontSize: '0.9rem' }}>{language.toUpperCase()}</span>
+                 </button>
+                 
+                 {showLangMenu && (
+                   <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '8px', background: 'var(--bg-card)', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.15)', border: '1px solid var(--border-color)', overflow: 'hidden', minWidth: '120px', zIndex: 1000 }}>
+                     <button onClick={() => { changeLanguage('id'); setShowLangMenu(false); }} style={{ display: 'block', width: '100%', padding: '10px 16px', background: language === 'id' ? 'rgba(12, 166, 120, 0.1)' : 'transparent', border: 'none', textAlign: 'left', cursor: 'pointer', color: 'var(--text-main)' }}>🇮🇩 Indonesia</button>
+                     <button onClick={() => { changeLanguage('en'); setShowLangMenu(false); }} style={{ display: 'block', width: '100%', padding: '10px 16px', background: language === 'en' ? 'rgba(12, 166, 120, 0.1)' : 'transparent', border: 'none', textAlign: 'left', cursor: 'pointer', color: 'var(--text-main)' }}>🇬🇧 English</button>
+                     <button onClick={() => { changeLanguage('ja'); setShowLangMenu(false); }} style={{ display: 'block', width: '100%', padding: '10px 16px', background: language === 'ja' ? 'rgba(12, 166, 120, 0.1)' : 'transparent', border: 'none', textAlign: 'left', cursor: 'pointer', color: 'var(--text-main)' }}>🇯🇵 日本語</button>
+                   </div>
+                 )}
                </div>
             </div>
           </div>
