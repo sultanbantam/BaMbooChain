@@ -3,14 +3,21 @@ import { Wind, Droplets, Map, FileText, DownloadCloud, LineChart, Leaf, ShieldCh
 import BackButton from '../../components/BackButton';
 import { useAuth } from '../../context/AuthContext';
 
+import { usePlantationDonations } from '../../hooks/useFirestoreQueries';
+
 const CarbonImpactPage = () => {
   const { user } = useAuth();
+  const { data: allDonations = [] } = usePlantationDonations();
 
-  // Data metrik statis mock (Dapat dihubungkan ke fitur Plantation di tahap berikutnya)
+  // Hitung metrik dinamis dari donasi
+  const verifiedDonations = allDonations.filter(d => d.status === 'verified');
+  const firestoreTrees = verifiedDonations.reduce((sum, d) => sum + Number(d.amount || 0), 0); // Asumsi 1 USDT = 1 Pohon
+  
+  // Data metrik dinamis
   const impactData = {
-    co2: "15,240",
-    water: "2.5 Juta",
-    land: "450"
+    co2: (15240 + firestoreTrees * 0.5).toLocaleString(), // Asumsi 1 pohon = 0.5 ton CO2
+    water: (2.5 + firestoreTrees * 0.0001).toFixed(2) + " Juta", // Asumsi 1 pohon = 100 liter
+    land: (450 + firestoreTrees * 0.01).toLocaleString() // Asumsi 1 pohon = 0.01 hektar
   };
 
   const handleDownload = () => {

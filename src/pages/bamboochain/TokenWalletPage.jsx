@@ -8,7 +8,7 @@ import { useWeb3 } from '../../context/Web3Context';
 import { useAuth } from '../../context/AuthContext';
 import { Link, useLocation } from 'react-router-dom';
 import BackButton from '../../components/BackButton';
-import { useValidations } from '../../hooks/useFirestoreQueries';
+import { useValidations, usePlantationDonations } from '../../hooks/useFirestoreQueries';
 import { useLanguage } from '../../context/LanguageContext';
 
 const formatBalance = (val) => {
@@ -1277,8 +1277,11 @@ const ContributeDataBMC = () => {
 };
 
 const ValidatorBMC = () => {
-  const { user, stakeBmc, approveValidation } = useAuth();
+  const { user, stakeBmc, approveValidation, approvePlantationDonation } = useAuth();
   const { data: pendingValidations = [] } = useValidations(user?.id);
+  const { data: plantationDonations = [] } = usePlantationDonations();
+  
+  const pendingDonations = plantationDonations.filter(d => d.status === 'pending');
   const staked = user?.stakedBalance || 0;
   
   let tierName = "Non-Validator";
@@ -1387,7 +1390,7 @@ const ValidatorBMC = () => {
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: isMobile ? '12px' : '16px' }}>
             {[
               { val: tierName.split(' ')[0], label: tierName.replace(tierName.split(' ')[0] + ' ', ''), color: 'var(--primary)' },
-              { val: filteredValidations.length, label: 'Pending', color: '#f59f00' },
+              { val: filteredValidations.length + pendingDonations.length, label: 'Pending', color: '#f59f00' },
               { val: staked, label: 'Staked BMC', color: '#12b886' },
               { val: '99%', label: 'Score', color: '#12b886' }
             ].map((stat, i) => (
@@ -1401,12 +1404,39 @@ const ValidatorBMC = () => {
           <div style={{ background: 'white', border: '1px solid #f1f3f5', borderRadius: '24px', padding: isMobile ? '24px' : '32px', boxShadow: '0 8px 24px rgba(0,0,0,0.03)' }}>
             <h4 style={{ fontSize: '1.1rem', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '900' }}><ShieldCheck size={24} color="#1864ab" /> Ruang Kerja Validator</h4>
             
-            {(user && filteredValidations.length === 0) ? (
+            {(user && filteredValidations.length === 0 && pendingDonations.length === 0) ? (
               <div style={{ padding: '48px 24px', textAlign: 'center', background: '#f8f9fa', borderRadius: '20px', color: '#adb5bd', fontSize: '0.9rem' }}>
                  Belum ada data antrean baru untuk Tier Anda saat ini.
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                 
+                 {/* Plantation Donations Queue */}
+                 {pendingDonations.map(don => (
+                   <div key={don.id} style={{ background: '#f8f9fa', padding: isMobile ? '20px' : '24px', borderRadius: '20px', border: '1.5px solid #f1f3f5', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
+                        <div>
+                          <div style={{ fontWeight: '900', fontSize: '1.1rem', marginBottom: '4px' }}>Verifikasi Dukungan Penanaman</div>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>🕒 {don.date}</div>
+                        </div>
+                        <span style={{ fontSize: '0.75rem', background: '#f59f00', color: 'white', padding: '6px 12px', borderRadius: '20px', fontWeight: 'bold' }}>Fiat / Pembelian</span>
+                     </div>
+
+                     <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px', fontSize: '0.85rem' }}>
+                       <div style={{ background: 'white', padding: '12px', borderRadius: '12px' }}><strong>👤 Donatur:</strong> <span style={{ color: '#1864ab', marginLeft: '4px' }}>{don.name} (@{don.username})</span></div>
+                       <div style={{ background: 'white', padding: '12px', borderRadius: '12px' }}><strong>📍 Lokasi:</strong> <span style={{ marginLeft: '4px' }}>{don.location?.name || '-'}</span></div>
+                       <div style={{ background: 'white', padding: '12px', borderRadius: '12px' }}><strong>📦 Paket:</strong> <span style={{ marginLeft: '4px' }}>{don.package?.name || '-'}</span></div>
+                       <div style={{ background: 'white', padding: '12px', borderRadius: '12px' }}><strong>💵 Nominal:</strong> <span style={{ color: '#e03131', marginLeft: '4px', fontWeight: 'bold' }}>{don.amount} USDT</span> ({don.paymentMethod})</div>
+                     </div>
+
+                     <div style={{ display: 'flex', gap: '12px', marginTop: '4px' }}>
+                       <button onClick={() => alert('Data ditolak.')} style={{ flex: 1, background: 'white', color: '#e03131', border: '1.5px solid #e03131', padding: '12px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem' }}>Tolak</button>
+                       <button onClick={async () => { await approvePlantationDonation(don.id); alert('✅ Dukungan berhasil disahkan!'); }} style={{ flex: 1, background: '#51cf66', color: 'white', border: 'none', padding: '12px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem', boxShadow: '0 4px 12px rgba(81,207,102,0.3)' }}>Sahkan Pembayaran</button>
+                     </div>
+                   </div>
+                 ))}
+
+                 {/* Other Validations Queue */}
                  {filteredValidations.map(task => (
                    <div key={task.id} style={{ background: '#f8f9fa', padding: isMobile ? '20px' : '24px', borderRadius: '20px', border: '1.5px solid #f1f3f5', display: 'flex', flexDirection: 'column', gap: '20px' }}>
                      

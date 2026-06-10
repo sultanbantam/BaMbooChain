@@ -4,13 +4,13 @@ import { useAuth } from '../context/AuthContext';
 import { useBambupedia } from '../context/BambupediaContext';
 import { useLanguage } from '../context/LanguageContext';
 import { db } from '../firebase/config';
-import { useArticles } from '../hooks/useFirestoreQueries';
+import { useArticles, usePlantationDonations } from '../hooks/useFirestoreQueries';
 import { doc, onSnapshot, updateDoc, collection, query, where, getDoc, getDocs, addDoc, arrayUnion, arrayRemove, increment } from 'firebase/firestore';
 import ShareModal from '../components/ShareModal';
 import { 
   User, Camera, Save, Copy, Share2, Award, Shield, CheckCircle, 
   TreeDeciduous, GraduationCap, Heart, MessageSquare, Gift, Edit3, X, Eye,
-  UploadCloud, FileText, Trash2, Send, ChevronRight, PlayCircle, Search
+  UploadCloud, FileText, Trash2, Send, ChevronRight, PlayCircle, Search, Leaf
 } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
@@ -74,6 +74,7 @@ const ProfilePage = () => {
   const { user, updateProfile } = useAuth();
   const { data: articles = [] } = useArticles();
   const { plantings, maintenances, harvests } = useBambupedia();
+  const { data: myDonations = [] } = usePlantationDonations(user?.id, user?.username);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -1263,6 +1264,16 @@ const ProfilePage = () => {
                     <div>
                       <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--text-main)' }}>{formatBalance(user.bmcBalance)}</div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>BMC Reward</div>
+                    </div>
+                  </div>
+
+                  <div style={{ background: 'rgba(28, 126, 214, 0.05)', border: '1px solid rgba(28, 126, 214, 0.1)', padding: '16px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ background: 'rgba(28, 126, 214, 0.1)', width: '40px', height: '40px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1c7ed6' }}>
+                      <Leaf size={20} />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--text-main)' }}>{myDonations.length}</div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Dukungan Penanaman</div>
                     </div>
                   </div>
 

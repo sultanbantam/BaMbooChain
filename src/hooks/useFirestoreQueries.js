@@ -65,3 +65,25 @@ export function useArticles() {
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   });
 }
+
+// 5. Hook for Plantation Donations
+export function usePlantationDonations(userId, username) {
+  return useQuery({
+    queryKey: ['plantationDonations', userId, username],
+    queryFn: async () => {
+      const plantationsRef = collection(db, 'plantations');
+      let q = plantationsRef;
+      
+      // If a userId is provided and it's not the admin, filter by userId.
+      // If no userId is provided (e.g., public impact page), fetch all (or aggregate in future).
+      if (userId && username !== 'admin_yayasan') {
+        q = query(plantationsRef, where('userId', '==', userId));
+      }
+
+      const snapshot = await getDocs(q);
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    },
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+  });
+}
+

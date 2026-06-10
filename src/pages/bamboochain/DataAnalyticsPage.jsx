@@ -5,9 +5,11 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { ethers } from 'ethers';
 import { escrowConfig } from '../../utils/escrowConfig';
 import { useWeb3 } from '../../context/Web3Context';
+import { usePlantationDonations } from '../../hooks/useFirestoreQueries';
 
 const DataAnalyticsPage = () => {
   const { isConnected, walletAddress } = useWeb3();
+  const { data: allDonations = [] } = usePlantationDonations();
   const [toast, setToast] = useState({ show: false, message: '' });
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
   const [loading, setLoading] = useState(true);
@@ -72,12 +74,17 @@ const DataAnalyticsPage = () => {
         const nextProjectId = await escrowContract.nextProjectId();
         const projectsCount = Number(nextProjectId) - 1;
 
+        // Calculate totals from firestore donations
+        const verifiedDonations = allDonations.filter(d => d.status === 'verified');
+        const firestoreAUM = verifiedDonations.reduce((sum, d) => sum + Number(d.amount || 0), 0);
+        const firestoreTrees = firestoreAUM; // Assume 1 USDT = 1 Tree/Rumpun for donation packages
+
         // 3. Calculate metrics
         setMetrics({
-          aum: balanceUsdt,
-          totalProjects: projectsCount,
-          treesFunded: Math.floor(balanceUsdt / 50 * 10), // Assuming 50 USDT = 10 trees
-          volume: balanceUsdt * 1.5 // Mock volume based on AUM
+          aum: balanceUsdt + firestoreAUM,
+          totalProjects: projectsCount + verifiedDonations.length,
+          treesFunded: Math.floor(balanceUsdt / 50 * 10) + firestoreTrees, // Assuming 50 USDT = 10 trees
+          volume: (balanceUsdt + firestoreAUM) * 1.5 // Mock volume based on AUM
         });
 
         // 4. Fetch Deposit Events for Chart
@@ -94,8 +101,8 @@ const DataAnalyticsPage = () => {
         ];
 
         // Append real Web3 deposits to current month
-        let currentMonthAUM = 65;
-        let currentCarbon = 80;
+        let currentMonthAUM = 65 + (firestoreAUM / 100);
+        let currentCarbon = 80 + (firestoreAUM / 500);
         
         events.forEach(ev => {
            const amount = Number(ethers.formatUnits(ev.args[2], 18));
@@ -108,12 +115,17 @@ const DataAnalyticsPage = () => {
         setChartData(data);
       } catch (error) {
         console.error("Web3 connection failed, using fallback/simulated data:", error);
+        // Calculate totals from firestore donations
+        const verifiedDonations = allDonations.filter(d => d.status === 'verified');
+        const firestoreAUM = verifiedDonations.reduce((sum, d) => sum + Number(d.amount || 0), 0);
+        const firestoreTrees = firestoreAUM;
+        
         // Fallback data for demo purposes when blockchain is not reachable
         setMetrics({
-          aum: 125430.50,
-          totalProjects: 12,
-          treesFunded: 25086,
-          volume: 188145.75
+          aum: 125430.50 + firestoreAUM,
+          totalProjects: 12 + verifiedDonations.length,
+          treesFunded: 25086 + firestoreTrees,
+          volume: (125430.50 + firestoreAUM) * 1.5
         });
         
         setChartData([
@@ -122,7 +134,7 @@ const DataAnalyticsPage = () => {
           { name: 'Mar', price: 45, carbon: 40 },
           { name: 'Apr', price: 50, carbon: 55 },
           { name: 'Mei', price: 65, carbon: 80 },
-          { name: 'Jun', price: 78, carbon: 95 }
+          { name: 'Jun', price: 78 + (firestoreAUM / 100), carbon: 95 + (firestoreAUM / 500) }
         ]);
       } finally {
         setLoading(false);
@@ -134,7 +146,7 @@ const DataAnalyticsPage = () => {
     // Auto-refresh every 5 seconds to show live updates
     const interval = setInterval(fetchBlockchainData, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [allDonations]);
 
   const handleExport = () => {
     let msg = "";

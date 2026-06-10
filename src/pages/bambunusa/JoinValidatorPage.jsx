@@ -7,6 +7,7 @@ import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import BackButton from '../../components/BackButton';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 
 const JoinValidatorPage = () => {
   const { t } = useLanguage();

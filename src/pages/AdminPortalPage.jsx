@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
-import { Shield, Users, MapPin, CheckCircle, XCircle, Clock, Eye, Filter, Download, Search, BookOpen } from 'lucide-react';
+import { Shield, Users, MapPin, CheckCircle, XCircle, Clock, Eye, Filter, Download, Search, BookOpen, Leaf } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import BackButton from '../components/BackButton';
-import { usePartnerApplications, useLocationProposals } from '../hooks/useFirestoreQueries';
+import { usePartnerApplications, useLocationProposals, usePlantationDonations } from '../hooks/useFirestoreQueries';
 
 const AdminPortalPage = () => {
   const { t } = useLanguage();
@@ -18,9 +18,10 @@ const AdminPortalPage = () => {
   
   const { data: partnerApps = [] } = usePartnerApplications(user?.id, user?.username);
   const { data: locationProposals = [] } = useLocationProposals(user?.id, user?.username);
+  const { data: plantationDonations = [] } = usePlantationDonations(user?.id, user?.username);
   
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('partners'); // 'partners' or 'locations'
+  const [activeTab, setActiveTab] = useState('partners'); // 'partners', 'locations', or 'donations'
   
   useEffect(() => {
     // Strict redirect: must be authenticated AND admin
@@ -97,7 +98,7 @@ const AdminPortalPage = () => {
         </div>
 
         {/* TABS CONTROL */}
-        <div style={{ background: 'white', borderRadius: '20px', padding: '8px', display: 'inline-flex', gap: '4px', marginBottom: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
+        <div style={{ background: 'white', borderRadius: '20px', padding: '8px', display: 'inline-flex', flexWrap: 'wrap', gap: '4px', marginBottom: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
           <button 
             onClick={() => setActiveTab('partners')}
             style={{ padding: '12px 24px', borderRadius: '14px', border: 'none', background: activeTab === 'partners' ? '#1c7ed6' : 'transparent', color: activeTab === 'partners' ? 'white' : '#495057', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}
@@ -110,6 +111,12 @@ const AdminPortalPage = () => {
           >
             <MapPin size={18} /> {t('admin_portal_tab_locations')}
           </button>
+          <button 
+            onClick={() => setActiveTab('donations')}
+            style={{ padding: '12px 24px', borderRadius: '14px', border: 'none', background: activeTab === 'donations' ? '#1c7ed6' : 'transparent', color: activeTab === 'donations' ? 'white' : '#495057', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}
+          >
+            <Leaf size={18} /> Dukungan Penanaman
+          </button>
         </div>
 
         {/* MAIN CONTENT AREA */}
@@ -117,7 +124,7 @@ const AdminPortalPage = () => {
           
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
             <h2 style={{ fontSize: '1.25rem', margin: 0, fontWeight: '800' }}>
-              {activeTab === 'partners' ? t('admin_portal_tab_partners') : t('admin_portal_tab_locations')}
+              {activeTab === 'partners' ? t('admin_portal_tab_partners') : activeTab === 'locations' ? t('admin_portal_tab_locations') : 'Dukungan Penanaman'}
             </h2>
             <div style={{ display: 'flex', gap: '10px' }}>
               <div style={{ position: 'relative' }}>
@@ -133,10 +140,10 @@ const AdminPortalPage = () => {
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ textAlign: 'left', borderBottom: '2px solid #f1f3f5' }}>
-                  <th style={{ padding: '16px', color: '#868e96', fontSize: '0.85rem' }}>{activeTab === 'partners' ? t('admin_portal_table_name') : t('admin_portal_table_loc_name')}</th>
-                  <th style={{ padding: '16px', color: '#868e96', fontSize: '0.85rem' }}>{activeTab === 'partners' ? t('admin_portal_table_role') : t('admin_portal_table_owner')}</th>
-                  <th style={{ padding: '16px', color: '#868e96', fontSize: '0.85rem' }}>{t('admin_portal_table_date')}</th>
-                  <th style={{ padding: '16px', color: '#868e96', fontSize: '0.85rem' }}>{t('admin_portal_table_status')}</th>
+                  <th style={{ padding: '16px', color: '#868e96', fontSize: '0.85rem' }}>{activeTab === 'partners' ? t('admin_portal_table_name') : activeTab === 'donations' ? 'Nama Donatur' : t('admin_portal_table_loc_name')}</th>
+                  <th style={{ padding: '16px', color: '#868e96', fontSize: '0.85rem' }}>{activeTab === 'partners' ? t('admin_portal_table_role') : activeTab === 'donations' ? 'Lokasi & Paket' : t('admin_portal_table_owner')}</th>
+                  <th style={{ padding: '16px', color: '#868e96', fontSize: '0.85rem' }}>{activeTab === 'donations' ? 'Nominal & Metode' : t('admin_portal_table_date')}</th>
+                  <th style={{ padding: '16px', color: '#868e96', fontSize: '0.85rem' }}>{activeTab === 'donations' ? 'Tanggal & Status' : t('admin_portal_table_status')}</th>
                   <th style={{ padding: '16px', color: '#868e96', fontSize: '0.85rem', textAlign: 'center' }}>{t('admin_portal_table_action')}</th>
                 </tr>
               </thead>
@@ -175,7 +182,7 @@ const AdminPortalPage = () => {
                       </td>
                     </tr>
                   ))
-                ) : (
+                ) : activeTab === 'locations' ? (
                   locationProposals.map((loc) => (
                     <tr key={loc.id} style={{ borderBottom: '1px solid #f1f3f5' }}>
                       <td style={{ padding: '20px 16px' }}>
@@ -202,6 +209,38 @@ const AdminPortalPage = () => {
                           {loc.status === 'pending' && (
                              <button onClick={() => handleApproveLocation(loc.id)} style={{ padding: '8px', borderRadius: '8px', border: 'none', background: '#40c057', color: 'white', cursor: 'pointer' }}><CheckCircle size={16} /></button>
                           )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  plantationDonations.map((don) => (
+                    <tr key={don.id} style={{ borderBottom: '1px solid #f1f3f5' }}>
+                      <td style={{ padding: '20px 16px' }}>
+                        <div style={{ fontWeight: 'bold' }}>{don.name}</div>
+                        <div style={{ fontSize: '0.8rem', color: '#868e96' }}>@{don.username}</div>
+                      </td>
+                      <td style={{ padding: '20px 16px' }}>
+                        <div style={{ fontSize: '0.9rem', fontWeight: '600' }}>{don.location?.name || '-'}</div>
+                        <div style={{ fontSize: '0.8rem', color: '#1c7ed6' }}>{don.package?.name || '-'}</div>
+                      </td>
+                      <td style={{ padding: '20px 16px' }}>
+                        <div style={{ fontSize: '0.9rem', fontWeight: '600', color: 'var(--text-main)' }}>{don.amount} USDT</div>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{don.paymentMethod}</div>
+                      </td>
+                      <td style={{ padding: '20px 16px' }}>
+                        <div style={{ fontSize: '0.85rem', marginBottom: '4px' }}>{don.date}</div>
+                        <span style={{ 
+                          padding: '4px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 'bold',
+                          background: don.status === 'verified' ? '#ebfbee' : '#fff9db',
+                          color: don.status === 'verified' ? '#2b8a3e' : '#e67700'
+                        }}>
+                          {don.status.toUpperCase()}
+                        </span>
+                      </td>
+                      <td style={{ padding: '20px 16px', textAlign: 'center' }}>
+                         <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                          <button style={{ padding: '8px', borderRadius: '8px', border: '1px solid #dee2e6', background: 'white', cursor: 'pointer' }}><Eye size={16} /></button>
                         </div>
                       </td>
                     </tr>

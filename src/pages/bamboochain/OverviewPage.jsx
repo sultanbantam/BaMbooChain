@@ -5,6 +5,7 @@ import BackButton from '../../components/BackButton';
 import AdSpace from '../../components/AdSpace';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { usePlantationDonations } from '../../hooks/useFirestoreQueries';
 
 const formatBalance = (val) => {
   const num = Number(val || 0);
@@ -33,10 +34,15 @@ const OverviewPage = () => {
     setShowReportModal(false);
   };
   
-  // Mock data untuk dashboard
+  const { data: myDonations = [] } = usePlantationDonations(user?.id, user?.username);
+  
+  const myVerifiedDonations = myDonations.filter(d => d.status === 'verified');
+  const myDonationAmount = myVerifiedDonations.reduce((sum, d) => sum + Number(d.amount || 0), 0);
+
+  // Mock data untuk dashboard, dengan tambahan dari data nyata
   const userStats = {
-    totalBamboo: user?.totalBamboo || "1,250",
-    co2Offset: user?.co2Offset || "12.5",
+    totalBamboo: (Number(user?.totalBamboo?.replace(/,/g, '') || "1250") + myDonationAmount).toLocaleString(),
+    co2Offset: (Number(user?.co2Offset || "12.5") + myDonationAmount * 0.5).toFixed(1),
     bmcBalance: user ? formatBalance(user.bmcBalance) : "4,500.00",
     roi: "25.4"
   };

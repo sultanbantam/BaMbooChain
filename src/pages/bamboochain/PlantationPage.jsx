@@ -21,7 +21,7 @@ const PlantationPage = () => {
   const [currentProjectId, setCurrentProjectId] = useState(1);
   const [showExampleModal, setShowExampleModal] = useState(false);
   const [exampleImg, setExampleImg] = useState('');
-  const { user, submitLocationProposal } = useAuth(); // Need to import useAuth
+  const { user, submitLocationProposal, submitPlantationDonation } = useAuth(); // Need to import useAuth
   
   // States for Suggestion Feature
   const [coords, setCoords] = useState({ lat: -6.2088, lng: 106.8456 }); // Default Jakarta
@@ -156,8 +156,22 @@ const PlantationPage = () => {
 
   const handlePayment = async (method) => {
     setIsProcessing(true);
-    setTxStatusText('Memproses Pembayaran (Simulasi)...');
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    setTxStatusText('Memproses Pembayaran...');
+    
+    // Save to Firestore via AuthContext
+    const success = await submitPlantationDonation({
+      location: selectedLocation,
+      package: selectedPackage,
+      amount: selectedPackage?.amount,
+      paymentMethod: method === 'bri' ? 'Transfer BRI' : method === 'bmc' ? 'Wallet BMC' : 'USDT'
+    });
+
+    if (!success) {
+      alert("Terjadi kesalahan saat menyimpan transaksi. Silakan coba lagi.");
+      setIsProcessing(false);
+      return;
+    }
+
     setSimulationActive(true);
     setIsProcessing(false);
     nextStep(); // Go to Step 3

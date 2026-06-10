@@ -1024,6 +1024,62 @@ export const AuthProvider = ({ children }) => {
     return (isToday || isYesterday) ? (user.checkinStreak || 0) : 0;
   };
 
+  const submitPlantationDonation = async (donationData) => {
+    if (!user) return false;
+    
+    const newDonation = {
+      ...donationData,
+      userId: user.id,
+      username: user.username,
+      name: user.name || user.username,
+      status: 'pending',
+      date: new Date().toISOString().split('T')[0],
+      timestamp: serverTimestamp()
+    };
+
+    try {
+      // 1. Save to plantations collection
+      const docRef = await addDoc(collection(db, "plantations"), newDonation);
+      
+      // 2. Add transaction to user profile
+      const newTx = {
+        id: 'tx_plt_' + Math.random().toString(36).substr(2, 9),
+        type: 'Spend',
+        amount: `-${donationData.amount}`,
+        date: newDonation.date,
+        status: 'Selesai',
+        description: `Dukungan Penanaman di ${donationData.location?.name || 'Lokasi'}`
+      };
+
+      const updatedUser = { 
+        ...user, 
+        transactions: [newTx, ...(user.transactions || [])]
+      };
+      
+      setUser(updatedUser);
+      localStorage.setItem('yayasan_user', JSON.stringify(updatedUser));
+      
+      await updateDoc(doc(db, "users", user.id), {
+        transactions: arrayUnion(newTx)
+      });
+      
+      return true;
+    } catch (err) {
+      console.error("Error submitting plantation donation:", err);
+      return false;
+    }
+  };
+
+  const approvePlantationDonation = async (donationId) => {
+    try {
+      await updateDoc(doc(db, "plantations", donationId), { status: 'verified' });
+      return true;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  };
+
   const processCheckin = async () => {
     if (!user) return null;
     try {
@@ -1123,6 +1179,8 @@ export const AuthProvider = ({ children }) => {
       rejectPartnerApp,
       submitLocationProposal,
       approveLocation,
+      submitPlantationDonation,
+      approvePlantationDonation,
       processCheckin,
       getActiveStreak,
       getJakartaCheckinDay,

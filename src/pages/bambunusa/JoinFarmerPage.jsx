@@ -9,6 +9,7 @@ import Footer from '../../components/Footer';
 import BackButton from '../../components/BackButton';
 
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 
 const JoinFarmerPage = () => {
   const { t } = useLanguage();
@@ -18,7 +19,9 @@ const JoinFarmerPage = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [paymentType, setPaymentType] = useState('bank');
   const [selectedRole, setSelectedRole] = useState('');
+  const [renderError, setRenderError] = useState(null);
 
+  try {
   // Form Data State
   const [formData, setFormData] = useState({
     name: user?.name || '',
@@ -273,6 +276,13 @@ const JoinFarmerPage = () => {
       `}</style>
     </div>
   );
+  } catch(error) {
+    return <div style={{padding: '50px', background: 'red', color: 'white', fontSize: '20px'}}>
+      <h1>React Component Error in JoinFarmerPage</h1>
+      <pre>{error.toString()}</pre>
+      <pre>{error.stack}</pre>
+    </div>;
+  }
 };
 
 export default JoinFarmerPage;

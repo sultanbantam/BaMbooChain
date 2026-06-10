@@ -2,9 +2,12 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Share2, Database, Users, Activity, CheckCircle, MapPin, Search } from 'lucide-react';
 import BackButton from '../../components/BackButton';
+import { usePlantationDonations } from '../../hooks/useFirestoreQueries';
 
 const SupplyChainPage = () => {
   const navigate = useNavigate();
+  const { data: allDonations = [] } = usePlantationDonations();
+  const verifiedDonors = allDonations.filter(d => d.status === 'verified');
   // Mock data untuk jaringan petani
   const farmerNetwork = [
     { id: 1, name: "Koperasi Tani Cibarani", role: "Petani Hulu", location: "Lebak, Banten", rating: "4.9", verified: true },
@@ -161,12 +164,12 @@ const SupplyChainPage = () => {
           {/* JARINGAN PETANI & INDUSTRI */}
           <div style={{ background: 'var(--bg-card)', borderRadius: '20px', padding: '32px', border: '1px solid var(--border-color)' }}>
             <h3 style={{ fontSize: '1.4rem', color: 'var(--text-main)', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <Users size={24} color="var(--primary)" /> Mitra Ekosistem
+              <Users size={24} color="var(--primary)" /> Mitra Ekosistem & Donatur
             </h3>
             
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '400px', overflowY: 'auto', paddingRight: '8px' }}>
               {farmerNetwork.map((partner) => (
-                <div key={partner.id} style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', border: '1px solid var(--border-color)', borderRadius: '12px', transition: 'all 0.2s', cursor: 'pointer' }}
+                <div key={`farmer_${partner.id}`} style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', border: '1px solid var(--border-color)', borderRadius: '12px', transition: 'all 0.2s', cursor: 'pointer' }}
                      onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.background = 'var(--bg-secondary)'; }}
                      onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.background = 'transparent'; }}>
                   <div style={{ width: '48px', height: '48px', background: 'rgba(12,166,120,0.1)', color: 'var(--primary)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', fontWeight: 'bold' }}>
@@ -181,6 +184,26 @@ const SupplyChainPage = () => {
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#ffe3e3', color: '#e03131', padding: '4px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold' }}>
                     ★ {partner.rating}
+                  </div>
+                </div>
+              ))}
+
+              {verifiedDonors.map((donor) => (
+                <div key={`donor_${donor.id}`} style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', border: '1px solid var(--border-color)', borderRadius: '12px', transition: 'all 0.2s', cursor: 'pointer' }}
+                     onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#1c7ed6'; e.currentTarget.style.background = 'var(--bg-secondary)'; }}
+                     onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.background = 'transparent'; }}>
+                  <div style={{ width: '48px', height: '48px', background: 'rgba(28,126,214,0.1)', color: '#1c7ed6', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', fontWeight: 'bold' }}>
+                    {donor.name.charAt(0)}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                      <span style={{ fontWeight: 'bold', color: 'var(--text-main)', fontSize: '0.95rem' }}>{donor.name}</span>
+                      <CheckCircle size={14} color="#1c7ed6" />
+                    </div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '2px' }}>Donatur Penanaman • {donor.location?.name || 'Lahan Cibarani'}</div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#e7f5ff', color: '#1c7ed6', padding: '4px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold' }}>
+                    {donor.amount} USDT
                   </div>
                 </div>
               ))}
