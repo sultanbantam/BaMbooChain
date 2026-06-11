@@ -37,7 +37,8 @@ export default async function handler(req, res) {
       success: true,
       balance: currentBalance,
       symbol: "BMC",
-      userId: userId
+      userId: userId,
+      userName: "Pekerja BaMboo" // Tambahkan ini agar game tidak fallback ke "Admin"
     });
   } catch (error) {
     return res.status(401).json({ error: 'Invalid or expired token' });
