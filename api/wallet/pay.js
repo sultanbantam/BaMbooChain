@@ -1,3 +1,7 @@
+import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'fallback_bamboochain_secret_key_123';
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -6,10 +10,26 @@ export default async function handler(req, res) {
   try {
     // 1. Cek Token
     const authHeader = req.headers.authorization || req.headers.Authorization;
-    if (!authHeader) return res.status(401).json({ error: 'Unauthorized' });
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Unauthorized, missing or invalid token format' });
+    }
+
+    const token = authHeader.split(' ')[1];
+    let userId;
+
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET);
+      userId = decoded.userId;
+    } catch (err) {
+      return res.status(401).json({ error: 'Invalid or expired token' });
+    }
 
     const { amount, memo, item_id } = req.body || {};
-    const userId = "bmc_9992384729"; // Hasil decode token
+    
+    // Validasi basic input
+    if (!amount || amount <= 0) {
+      return res.status(400).json({ error: 'Invalid amount' });
+    }
 
     // 2. Mulai transaksi Database (ACID)
     // - Cek apakah saldo cukup
@@ -26,8 +46,9 @@ export default async function handler(req, res) {
     return res.status(200).json({
       success: true,
       message: "Payment successful",
-      tx_id: "tx_123456789abc",
-      amount_deducted: amount
+      tx_id: `tx_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      amount_deducted: amount,
+      userId: userId
     });
     
   } catch (error) {

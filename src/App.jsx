@@ -73,6 +73,7 @@ import GlobalToast from './components/GlobalToast';
 import SocialInteractions from './components/SocialInteractions';
 
 const PublicPortfolioPage = lazy(() => import('./pages/PublicPortfolioPage'));
+const AuthorizePage = lazy(() => import('./pages/AuthorizePage'));
 const PageLoader = () => (
   <div style={{
     display: 'flex',
@@ -203,6 +204,11 @@ function App() {
       // Navigate directly to the meeting route publicly
       navigate(`/bamboochain/meeting?room=${room}`);
     }
+
+    // Auto-redirect for OAuth /authorize path without hash
+    if (window.location.pathname === '/authorize') {
+      window.location.replace('/#' + window.location.pathname + window.location.search);
+    }
   }, [navigate]);
 
   useEffect(() => {
@@ -239,6 +245,7 @@ function App() {
             <Route path="/careers" element={<CareersPage />} />
             <Route path="/portfolio/:username" element={<PublicPortfolioPage />} />
             <Route path="/bamboochain/meeting" element={<BambooMeetingPage />} />
+            <Route path="/authorize" element={<AuthorizePage />} />
             
             {/* Protected Routes */}
             <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
