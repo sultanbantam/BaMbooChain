@@ -432,6 +432,7 @@ export const AuthProvider = ({ children }) => {
       let msg = err.message;
       if (err.code === 'auth/user-not-found') msg = "Akun tidak ditemukan. Silakan daftar.";
       if (err.code === 'auth/wrong-password') msg = "Kata sandi salah.";
+      if (err.code === 'auth/invalid-credential') msg = "Email atau kata sandi yang Anda masukkan salah. Silakan periksa kembali atau daftar jika belum memiliki akun.";
       alert("❌ Gagal masuk: " + msg);
       return false;
     }
