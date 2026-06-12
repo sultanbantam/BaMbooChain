@@ -7,7 +7,7 @@ import { MapPin, Lock, Unlock, ArrowRight, X, Info, Coins } from 'lucide-react';
 import BackButton from '../components/BackButton';
 
 const ProjectsPage = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
   const { isConnected, rawBmcBalance, connectWallet } = useWeb3();
   const [selectedProject, setSelectedProject] = useState(null);
