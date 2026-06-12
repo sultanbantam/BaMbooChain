@@ -32,11 +32,22 @@ export default async function handler(req, res) {
       return res.status(400).json({ success: false, message: 'Invalid auth code' });
     }
 
-    // 2. Ambil data user yang sesuai (Mock data fallback karena DB belum direct connect)
-    const mockUserFromDB = {
+    // 2. Ambil data user yang sesuai dari Firestore REST API
+    const firestoreUrl = `https://firestore.googleapis.com/v1/projects/bamboochain-official/databases/(default)/documents/users/${uid}`;
+    const fbRes = await fetch(firestoreUrl);
+    
+    if (!fbRes.ok) {
+      return res.status(400).json({ success: false, message: 'User tidak ditemukan di database BaMbooChain' });
+    }
+    
+    const userDoc = await fbRes.json();
+    const userName = userDoc.fields.name ? userDoc.fields.name.stringValue : 'BaMbooChain User';
+    const walletAddress = userDoc.fields.walletAddress ? userDoc.fields.walletAddress.stringValue : '';
+
+    const realUserFromDB = {
       id: uid,
-      name: "BaMbooChain User",
-      wallet_address: "0xMockWalletAddress123"
+      name: userName,
+      wallet_address: walletAddress
     };
 
     // 3. Buat JWT Token asli
@@ -49,7 +60,7 @@ export default async function handler(req, res) {
     return res.status(200).json({
       success: true,
       access_token: accessToken,
-      user: mockUserFromDB
+      user: realUserFromDB
     });
   } catch (error) {
     return res.status(400).json({ success: false, message: 'Server error: ' + error.message });

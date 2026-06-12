@@ -29,16 +29,27 @@ export default async function handler(req, res) {
     const decoded = jwt.verify(token, JWT_SECRET);
     const userId = decoded.userId;
 
-    // 3. Query ke Database BaMbooChain / Smart Contract untuk ambil saldo
-    // const balance = await db.query('SELECT bmc_balance FROM wallets WHERE user_id = ?', [userId]);
-    const currentBalance = 2222.517; // Mock data
+    // 3. Query ke Database BaMbooChain (Firestore REST API)
+    const firestoreUrl = `https://firestore.googleapis.com/v1/projects/bamboochain-official/databases/(default)/documents/users/${userId}`;
+    const fbRes = await fetch(firestoreUrl);
+    
+    if (!fbRes.ok) {
+      throw new Error("User not found in database");
+    }
+    
+    const userDoc = await fbRes.json();
+    
+    // Parse value from Firestore format
+    const bmcField = userDoc.fields.bmcBalance;
+    const currentBalance = bmcField ? (parseFloat(bmcField.doubleValue || bmcField.integerValue || 0)) : 0;
+    const userName = userDoc.fields.name ? userDoc.fields.name.stringValue : 'Pekerja BaMboo';
 
     return res.status(200).json({
       success: true,
       balance: currentBalance,
       symbol: "BMC",
       userId: userId,
-      userName: "Pekerja BaMboo" // Tambahkan ini agar game tidak fallback ke "Admin"
+      userName: userName
     });
   } catch (error) {
     return res.status(401).json({ error: 'Invalid or expired token' });
