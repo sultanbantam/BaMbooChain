@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Heart, MessageSquare, Share2, Send, X, Gift } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { useLocation } from 'react-router-dom';
 import { 
   collection, 
@@ -20,6 +21,7 @@ import ShareModal from './ShareModal';
 
 const SocialInteractions = () => {
   const { user, isAuthenticated, openLoginModal, giftBmc } = useAuth();
+  const { t } = useLanguage();
   const location = useLocation();
   const pageId = location.pathname.replace(/\//g, '_') || 'home';
   
@@ -245,28 +247,28 @@ const SocialInteractions = () => {
             display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: 'none',
             color: hasLiked ? '#fa5252' : 'var(--text-muted)', cursor: 'pointer', fontSize: '1rem', fontWeight: 'bold'
           }}>
-            <Heart size={24} fill={hasLiked ? '#fa5252' : 'none'} /> {likes} Suka
+            <Heart size={24} fill={hasLiked ? '#fa5252' : 'none'} /> {likes} {t('action_like')}
           </button>
           
           <button onClick={() => setShowComments(!showComments)} style={{
             display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: 'none',
             color: 'var(--text-muted)', cursor: 'pointer', fontSize: '1rem', fontWeight: 'bold'
           }}>
-            <MessageSquare size={24} /> {comments.length} Komentar
+            <MessageSquare size={24} /> {comments.length} {t('action_comment')}
           </button>
 
           <button onClick={handleShare} style={{
             display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: 'none',
             color: 'var(--text-muted)', cursor: 'pointer', fontSize: '1rem', fontWeight: 'bold'
           }}>
-            <Share2 size={24} /> Bagikan
+            <Share2 size={24} /> {t('action_share')}
           </button>
 
           <button onClick={() => setIsGiftFormActive(!isGiftFormActive)} style={{
             display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: 'none',
             color: 'var(--text-muted)', cursor: 'pointer', fontSize: '1rem', fontWeight: 'bold'
           }}>
-            <Gift size={24} color="#f59f00" /> {giftsCount} Gift
+            <Gift size={24} color="#f59f00" /> {giftsCount} {t('action_gift')}
           </button>
         </div>
 

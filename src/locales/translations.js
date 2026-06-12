@@ -494,7 +494,13 @@ export const translations = {
     tw_photo_selfie: "Selfie dengan rumpun bambu (1 Foto)",
     tw_photo_btn_1: "Foto 1",
     tw_photo_btn_2: "Foto 2",
-    tw_photo_btn_3: "Foto 3"
+    tw_photo_btn_3: "Foto 3",
+
+    // Global Actions
+    action_like: "Suka",
+    action_comment: "Komentar",
+    action_share: "Bagikan",
+    action_gift: "Gift"
   },
   en: {
     // Navbar (Utama)
@@ -969,9 +975,14 @@ export const translations = {
     tw_photo_selfie: "Selfie with bamboo clump (1 Photo)",
     tw_photo_btn_1: "Photo 1",
     tw_photo_btn_2: "Photo 2",
-    tw_photo_btn_3: "Photo 3"
-  }
-,
+    tw_photo_btn_3: "Photo 3",
+
+    // Global Actions
+    action_like: "Like",
+    action_comment: "Comment",
+    action_share: "Share",
+    action_gift: "Gift"
+  },
   ja: {
     "nav_home": "家",
     "nav_projects": "プロジェクト",
@@ -1395,7 +1406,12 @@ export const translations = {
     "tw_photo_selfie": "竹の塊で自撮り（1枚）",
     "tw_photo_btn_1": "写真1",
     "tw_photo_btn_2": "写真2",
-    "tw_photo_btn_3": "写真3"
+    "tw_photo_btn_3": "写真3",
+
+    "action_like": "いいね",
+    "action_comment": "コメント",
+    "action_share": "共有",
+    "action_gift": "ギフト"
 }
 };
 

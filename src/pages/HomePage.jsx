@@ -336,16 +336,16 @@ const HomePage = () => {
             <div className="glass" style={{ background: 'var(--bg-card)', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 8px 30px rgba(0,0,0,0.08)', border: '1px solid var(--border-color)' }}>
               <div style={{ height: '220px', position: 'relative' }}>
                 <img src={getAssetUrl('gambar/produk_unggulan/Laminasi.jpeg')} alt="Bambu Laminasi" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'var(--primary)', color: 'white', padding: '4px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold' }}>Material</div>
+                <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'var(--primary)', color: 'white', padding: '4px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold' }}>{t('home_featured_laminate_badge1')}</div>
               </div>
               <div style={{ padding: '24px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
                   <div style={{ color: '#f59f00', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.9rem', fontWeight: 'bold' }}><Star size={14} fill="#f59f00" /> 5.0</div>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>ISO Production</div>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{t('home_featured_laminate_badge2')}</div>
                 </div>
                 <h3 style={{ fontSize: '1.2rem', marginBottom: '8px' }}>{t('home_featured_laminate')}</h3>
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '16px' }}>{t('home_featured_laminate_desc')}</p>
-                <div style={{ fontWeight: 'bold', color: 'var(--primary)' }}>Sertifikasi RI & ISO</div>
+                <div style={{ fontWeight: 'bold', color: 'var(--primary)' }}>{t('home_featured_laminate_badge3')}</div>
               </div>
             </div>
 
@@ -353,16 +353,16 @@ const HomePage = () => {
             <div className="glass" style={{ background: 'var(--bg-card)', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 8px 30px rgba(0,0,0,0.08)', border: '1px solid var(--border-color)' }}>
               <div style={{ height: '220px', position: 'relative' }}>
                 <img src={getAssetUrl('gambar/produk_unggulan/Interior.jpeg')} alt="Interior" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'var(--primary)', color: 'white', padding: '4px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold' }}>Interior</div>
+                <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'var(--primary)', color: 'white', padding: '4px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold' }}>{t('home_featured_interior_badge1')}</div>
               </div>
               <div style={{ padding: '24px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
                   <div style={{ color: '#f59f00', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.9rem', fontWeight: 'bold' }}><Star size={14} fill="#f59f00" /> 4.9</div>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Exclusive Design</div>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{t('home_featured_interior_badge2')}</div>
                 </div>
                 <h3 style={{ fontSize: '1.2rem', marginBottom: '8px' }}>{t('home_featured_interior')}</h3>
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '16px' }}>{t('home_featured_interior_desc')}</p>
-                <div style={{ fontWeight: 'bold', color: 'var(--primary)' }}>Custom Design</div>
+                <div style={{ fontWeight: 'bold', color: 'var(--primary)' }}>{t('home_featured_interior_badge3')}</div>
               </div>
             </div>
 
@@ -370,16 +370,16 @@ const HomePage = () => {
             <div className="glass" style={{ background: 'var(--bg-card)', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 8px 30px rgba(0,0,0,0.08)', border: '1px solid var(--border-color)' }}>
               <div style={{ height: '220px', position: 'relative' }}>
                 <img src={getAssetUrl('gambar/produk_unggulan/mbb.jpeg')} alt="Konstruksi Modular" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'var(--primary)', color: 'white', padding: '4px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold' }}>Konstruksi</div>
+                <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'var(--primary)', color: 'white', padding: '4px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold' }}>{t('home_featured_modular_badge1')}</div>
               </div>
               <div style={{ padding: '24px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
                   <div style={{ color: '#f59f00', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.9rem', fontWeight: 'bold' }}><Star size={14} fill="#f59f00" /> 5.0</div>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Blockbamboo System</div>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{t('home_featured_modular_badge2')}</div>
                 </div>
                 <h3 style={{ fontSize: '1.2rem', marginBottom: '8px' }}>{t('home_featured_modular')}</h3>
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '16px' }}>{t('home_featured_modular_desc')}</p>
-                <div style={{ fontWeight: 'bold', color: 'var(--primary)' }}>Eco-Building Solution</div>
+                <div style={{ fontWeight: 'bold', color: 'var(--primary)' }}>{t('home_featured_modular_badge3')}</div>
               </div>
             </div>
           </div>
@@ -449,8 +449,8 @@ const HomePage = () => {
           <p style={{ fontSize: '1.2rem', color: 'var(--text-muted)', marginBottom: '40px', maxWidth: '700px', margin: '0 auto 40px' }}>
             {t('home_partner_desc')}
           </p>
-          <div style={{ padding: '40px', background: '#f4fbf4', borderRadius: '16px', display: 'inline-block', minWidth: '300px' }}>
-            <h3 style={{ fontSize: '1.5rem', marginBottom: '16px' }}>{t('home_partner_cta_title')}</h3>
+          <div style={{ padding: '40px', background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '16px', display: 'inline-block', minWidth: '300px' }}>
+            <h3 style={{ fontSize: '1.5rem', marginBottom: '16px', color: 'var(--text-main)' }}>{t('home_partner_cta_title')}</h3>
             <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>{t('home_partner_cta_desc')}</p>
             <Link to="/contact" className="btn btn-primary" style={{ padding: '12px 24px' }}>{t('home_partner_btn')}</Link>
           </div>

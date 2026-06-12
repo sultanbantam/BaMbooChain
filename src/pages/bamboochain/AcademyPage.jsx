@@ -2116,16 +2116,16 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
                       onClick={(e) => handleLike(selectedArticle.id, e)} 
                       style={{ background: 'none', border: 'none', color: isArticleLiked(selectedArticle) ? '#fa5252' : 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.95rem' }}
                     >
-                      <Heart size={20} fill={isArticleLiked(selectedArticle) ? '#fa5252' : 'none'} /> {getArticleLikesCount(selectedArticle)} Suka
+                      <Heart size={20} fill={isArticleLiked(selectedArticle) ? '#fa5252' : 'none'} /> {getArticleLikesCount(selectedArticle)} {t('action_like')}
                     </button>
                     <span style={{ color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.95rem' }}>
-                      <MessageSquare size={20} /> {getArticleComments(selectedArticle).length} Komentar
+                      <MessageSquare size={20} /> {getArticleComments(selectedArticle).length} {t('action_comment')}
                     </span>
                     <button 
                       onClick={(e) => handleShare(selectedArticle.id, selectedArticle.title, e)} 
                       style={{ background: 'none', border: 'none', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.95rem', position: 'relative' }}
                     >
-                      <Share2 size={20} /> {getArticleSharesCount(selectedArticle)} Bagikan
+                      <Share2 size={20} /> {getArticleSharesCount(selectedArticle)} {t('action_share')}
                     </button>
                   </div>
                   <button 
@@ -2134,7 +2134,7 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
                     onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.03)'}
                     onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
                   >
-                    <Gift size={18} /> Kirim Gift
+                    <Gift size={18} /> Kirim {t('action_gift')}
                   </button>
                 </div>
               </div>

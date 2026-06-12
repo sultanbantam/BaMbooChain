@@ -106,11 +106,11 @@ const InsightPage = () => {
         `}
       </style>
 
-      <div className="container" style={{ padding: '60px 24px' }}>
+    <div className="container" style={{ padding: '60px 24px' }}>
         <BackButton to="/" />
-        <h1 style={{ textAlign: 'center', fontSize: '2.5rem', marginBottom: '40px', marginTop: '20px', color: 'var(--text-main)' }}>Insight Industri Bambu</h1>
+        <h1 style={{ textAlign: 'center', fontSize: '2.5rem', marginBottom: '40px', marginTop: '20px', color: 'var(--text-main)' }}>{t('insight_title')}</h1>
         <p style={{ textAlign: 'center', fontSize: '1.2rem', color: 'var(--text-muted)', marginBottom: '60px', maxWidth: '800px', margin: '0 auto 60px' }}>
-          Data, tren, dan potensi ekonomi dari industri bambu global sebagai pilar utama transformasi lingkungan dan material ramah lingkungan masa depan.
+          {t('insight_desc')}
         </p>
         
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '30px' }}>
@@ -120,9 +120,9 @@ const InsightPage = () => {
             <div style={{ display: 'inline-block', padding: '16px', background: 'rgba(0,100,0,0.1)', borderRadius: '50%', marginBottom: '20px' }}>
               <TrendingUp size={32} color="var(--primary)" />
             </div>
-            <h3 style={{ fontSize: '1.5rem', color: 'var(--text-main)', marginBottom: '16px' }}>Analisis Pasar Global</h3>
+            <h3 style={{ fontSize: '1.5rem', color: 'var(--text-main)', marginBottom: '16px' }}>{t('insight_card1_title')}</h3>
             <p style={{ color: 'var(--text-muted)', lineHeight: '1.6' }}>
-              Permintaan pasar terhadap produk bambu terus meningkat menggantikan kebutuhan kayu, logam, benang, dan plastik secara masif di pasar internasional.
+              {t('insight_card1_desc')}
             </p>
           </div>
 
@@ -131,9 +131,9 @@ const InsightPage = () => {
             <div style={{ display: 'inline-block', padding: '16px', background: 'rgba(0,100,0,0.1)', borderRadius: '50%', marginBottom: '20px' }}>
               <Lightbulb size={32} color="var(--primary)" />
             </div>
-            <h3 style={{ fontSize: '1.5rem', color: 'var(--text-main)', marginBottom: '16px' }}>Studi Kasus Industri</h3>
+            <h3 style={{ fontSize: '1.5rem', color: 'var(--text-main)', marginBottom: '16px' }}>{t('insight_card2_title')}</h3>
             <p style={{ color: 'var(--text-muted)', lineHeight: '1.6' }}>
-              Mempelajari kisah sukses dan best practice pemanfaatan bambu dalam industri konstruksi modular, tekstil, pertanian hingga manufaktur bernilai tinggi.
+              {t('insight_card2_desc')}
             </p>
           </div>
 
@@ -142,9 +142,9 @@ const InsightPage = () => {
             <div style={{ display: 'inline-block', padding: '16px', background: 'rgba(0,100,0,0.1)', borderRadius: '50%', marginBottom: '20px' }}>
               <Target size={32} color="var(--primary)" />
             </div>
-            <h3 style={{ fontSize: '1.5rem', color: 'var(--text-main)', marginBottom: '16px' }}>Perbandingan Material</h3>
+            <h3 style={{ fontSize: '1.5rem', color: 'var(--text-main)', marginBottom: '16px' }}>{t('insight_card3_title')}</h3>
             <p style={{ color: 'var(--text-muted)', lineHeight: '1.6' }}>
-              Bagaimana durabilitas, kekuatan tarik, dan efisiensi penyerapan karbon bambu jika dibandingkan baja, beton, atau kayu keras alami.
+              {t('insight_card3_desc')}
             </p>
           </div>
 
@@ -153,9 +153,9 @@ const InsightPage = () => {
             <div style={{ display: 'inline-block', padding: '16px', background: 'rgba(0,100,0,0.1)', borderRadius: '50%', marginBottom: '20px' }}>
               <Handshake size={32} color="var(--primary)" />
             </div>
-            <h3 style={{ fontSize: '1.5rem', color: 'var(--text-main)', marginBottom: '16px' }}>Potensi Ekonomi Bambu</h3>
+            <h3 style={{ fontSize: '1.5rem', color: 'var(--text-main)', marginBottom: '16px' }}>{t('insight_card4_title')}</h3>
             <p style={{ color: 'var(--text-muted)', lineHeight: '1.6' }}>
-              Nilai tambah yang dihasilkan melalui integrasi produksi dari hulu ke hilir, serta perhitungan proyeksi ROI yang atraktif untuk keberlanjutan.
+              {t('insight_card4_desc')}
             </p>
           </div>
 
