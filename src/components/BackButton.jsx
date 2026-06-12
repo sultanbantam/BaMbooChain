@@ -1,9 +1,11 @@
 import React from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../context/LanguageContext';
 
-const BackButton = ({ to, label = "Kembali", style = {} }) => {
+const BackButton = ({ to, label, style = {} }) => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   return (
     <button 
@@ -42,7 +44,7 @@ const BackButton = ({ to, label = "Kembali", style = {} }) => {
       }}
     >
       <ArrowLeft size={18} />
-      <span>{label}</span>
+      <span>{label || t('tr_back')}</span>
     </button>
   );
 };

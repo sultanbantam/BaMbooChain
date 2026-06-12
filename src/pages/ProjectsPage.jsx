@@ -16,6 +16,11 @@ const ProjectsPage = () => {
   const REQUIRED_BMC = 10;
   const hasAccess = isConnected && rawBmcBalance >= REQUIRED_BMC;
 
+  const tField = (item, field) => {
+    if (!item) return '';
+    return item[`${field}_${language}`] || item[field];
+  };
+
   const handleViewDetail = (project) => {
     if (hasAccess) {
       setSelectedProject(project);
@@ -95,35 +100,35 @@ const ProjectsPage = () => {
                   color: 'white', fontSize: '0.75rem', fontWeight: 'bold',
                   boxShadow: '0 4px 10px rgba(0,0,0,0.2)'
                 }}>
-                  {project.status.toUpperCase()}
+                  {tField(project, 'status').toUpperCase()}
                 </div>
                 <div style={{ 
                   position: 'absolute', bottom: '15px', right: '15px',
                   padding: '6px 12px', borderRadius: '10px',
                   background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(10px)',
-                  color: 'var(--text-main)', fontSize: '0.75rem', fontWeight: 'bold'
+                  color: '#212529', fontSize: '0.75rem', fontWeight: 'bold'
                 }}>
-                  {project.category}
+                  {tField(project, 'category')}
                 </div>
               </div>
 
               {/* Content */}
               <div style={{ padding: '30px', flex: 1, display: 'flex', flexDirection: 'column' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--primary)', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '10px' }}>
-                  <MapPin size={14} /> {project.location}
+                  <MapPin size={14} /> {tField(project, 'location')}
                 </div>
                 <h3 style={{ fontSize: '1.4rem', fontWeight: '800', marginBottom: '15px', color: 'var(--text-main)', lineHeight: '1.3' }}>
-                  {project.title}
+                  {tField(project, 'title')}
                 </h3>
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: '1.6', marginBottom: '25px', flex: 1 }}>
-                  {project.shortDesc}
+                  {tField(project, 'shortDesc')}
                 </p>
                 
                 <button 
                   onClick={() => handleViewDetail(project)}
                   style={{ 
                     width: '100%', padding: '14px', borderRadius: '14px',
-                    border: 'none', background: 'var(--text-main)', color: 'white',
+                    border: 'none', background: 'var(--text-main)', color: 'var(--bg-color)',
                     fontWeight: 'bold', cursor: 'pointer', display: 'flex', 
                     alignItems: 'center', justifyContent: 'center', gap: '10px',
                     transition: 'opacity 0.2s'
@@ -136,7 +141,7 @@ const ProjectsPage = () => {
                 </button>
               </div>
             </div>
-          ))}
+          )})}
         </div>
       </div>
 
@@ -168,25 +173,25 @@ const ProjectsPage = () => {
             
             <div style={{ padding: '40px' }}>
               <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
-                <span style={{ padding: '4px 12px', background: 'var(--primary-light)', color: 'var(--primary)', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 'bold' }}>{selectedProject.status}</span>
-                <span style={{ padding: '4px 12px', background: '#f0f0f0', color: '#666', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 'bold' }}>{selectedProject.category}</span>
+                <span style={{ padding: '4px 12px', background: 'var(--primary-light)', color: 'var(--primary)', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 'bold' }}>{tField(selectedProject, 'status')}</span>
+                <span style={{ padding: '4px 12px', background: '#f0f0f0', color: '#666', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 'bold' }}>{tField(selectedProject, 'category')}</span>
               </div>
-              <h2 style={{ fontSize: '2rem', fontWeight: '800', marginBottom: '20px' }}>{selectedProject.title}</h2>
+              <h2 style={{ fontSize: '2rem', fontWeight: '800', marginBottom: '20px' }}>{tField(selectedProject, 'title')}</h2>
               
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '20px', marginBottom: '30px', padding: '20px', background: '#f8fbf8', borderRadius: '16px' }}>
                 <div>
                   <div style={{ fontSize: '0.8rem', color: '#888', fontWeight: 'bold', textTransform: 'uppercase' }}>Lokasi</div>
-                  <div style={{ fontWeight: 'bold' }}>{selectedProject.location}</div>
+                  <div style={{ fontWeight: 'bold', color: '#212529' }}>{tField(selectedProject, 'location')}</div>
                 </div>
                 <div>
                   <div style={{ fontSize: '0.8rem', color: '#888', fontWeight: 'bold', textTransform: 'uppercase' }}>Dampak Utama</div>
-                  <div style={{ fontWeight: 'bold' }}>{selectedProject.impact}</div>
+                  <div style={{ fontWeight: 'bold', color: '#212529' }}>{tField(selectedProject, 'impact')}</div>
                 </div>
               </div>
 
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '10px' }}>Deskripsi Lengkap</h3>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '10px', color: '#212529' }}>Deskripsi Lengkap</h3>
               <p style={{ color: '#444', lineHeight: '1.8', fontSize: '1.1rem' }}>
-                {selectedProject.fullDesc}
+                {tField(selectedProject, 'fullDesc')}
               </p>
             </div>
           </div>
