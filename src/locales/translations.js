@@ -281,6 +281,18 @@ export const translations = {
     guide_opt14: "Mau belajar tentang BMC",
     guide_opt15: "Mau rapat atau diskusi online (Bamboo Meeting)",
 
+    // Insight Page
+    insight_title: "Insight Industri Bambu",
+    insight_desc: "Data, tren, dan potensi ekonomi dari industri bambu global sebagai pilar utama transformasi lingkungan dan material ramah lingkungan masa depan.",
+    insight_card1_title: "Analisis Pasar Global",
+    insight_card1_desc: "Permintaan pasar terhadap produk bambu terus meningkat menggantikan kebutuhan kayu, logam, benang, dan plastik secara masif di pasar internasional.",
+    insight_card2_title: "Studi Kasus Industri",
+    insight_card2_desc: "Mempelajari kisah sukses dan best practice pemanfaatan bambu dalam industri konstruksi modular, tekstil, pertanian hingga manufaktur bernilai tinggi.",
+    insight_card3_title: "Perbandingan Material",
+    insight_card3_desc: "Bagaimana durabilitas, kekuatan tarik, dan efisiensi penyerapan karbon bambu jika dibandingkan baja, beton, atau kayu keras alami.",
+    insight_card4_title: "Potensi Ekonomi Bambu",
+    insight_card4_desc: "Nilai tambah yang dihasilkan melalui integrasi produksi dari hulu ke hilir, serta perhitungan proyeksi ROI yang atraktif untuk keberlanjutan.",
+
     // Marketplace
     market_title: "bambuNUSA Marketplace",
     market_subtitle: "Katalog produk bambu lestari dari hulu ke hilir untuk ekosistem hijau Nusantara.",
@@ -771,6 +783,18 @@ export const translations = {
     guide_opt14: "Want to learn about BMC",
     guide_opt15: "Want to host a meeting or online discussion (Bamboo Meeting)",
 
+    // Insight Page
+    insight_title: "Bamboo Industry Insight",
+    insight_desc: "Data, trends, and economic potential of the global bamboo industry as the main pillar of environmental transformation and future eco-friendly materials.",
+    insight_card1_title: "Global Market Analysis",
+    insight_card1_desc: "Market demand for bamboo products continues to rise, massively replacing the need for wood, metal, yarn, and plastic in the international market.",
+    insight_card2_title: "Industry Case Studies",
+    insight_card2_desc: "Studying success stories and best practices of bamboo utilization in modular construction, textiles, agriculture, and high-value manufacturing industries.",
+    insight_card3_title: "Material Comparison",
+    insight_card3_desc: "How the durability, tensile strength, and carbon absorption efficiency of bamboo compare against steel, concrete, or natural hardwood.",
+    insight_card4_title: "Bamboo Economic Potential",
+    insight_card4_desc: "Value added generated through upstream-to-downstream production integration, as well as attractive ROI projection calculations for sustainability.",
+
     // Marketplace
     market_title: "bambuNUSA Marketplace",
     market_subtitle: "Catalogue of sustainable bamboo products from upstream to downstream for the green Nusantara ecosystem.",
@@ -1230,6 +1254,17 @@ export const translations = {
     "guide_opt13": "竹のイベントやアクティビティに参加する",
     "guide_opt14": "BMCについて知りたい",
     "guide_opt15": "会議やオンラインディスカッションを開催したい（Bamboo Meeting）",
+
+    "insight_title": "竹産業の洞察",
+    "insight_desc": "環境変革と未来の環境配慮型素材の主要な柱としての、世界の竹産業のデータ、トレンド、および経済的潜在力。",
+    "insight_card1_title": "世界市場分析",
+    "insight_card1_desc": "竹製品の市場需要は拡大し続けており、国際市場において木材、金属、糸、プラスチックの需要に大規模に取って代わっています。",
+    "insight_card2_title": "業界のケーススタディ",
+    "insight_card2_desc": "モジュール建築、繊維、農業、高付加価値製造業における竹活用の成功事例とベストプラクティスを学びます。",
+    "insight_card3_title": "材料の比較",
+    "insight_card3_desc": "竹の耐久性、引張強度、炭素吸収効率が鋼鉄、コンクリート、天然広葉樹とどのように比較されるか。",
+    "insight_card4_title": "竹の経済的潜在力",
+    "insight_card4_desc": "上流から下流までの生産統合を通じて生み出される付加価値、および持続可能性のための魅力的なROI予測計算。",
     "market_title": "バンブNUSA マーケットプレイス",
     "market_subtitle": "ヌサンタラの緑豊かな生態系の上流から下流まで持続可能な竹製品のカタログ。",
     "market_btn_sell": "製品を販売する",
