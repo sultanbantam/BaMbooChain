@@ -42,14 +42,16 @@ export default async function handler(req, res) {
     // Parse value from Firestore format
     const bmcField = userDoc.fields.bmcBalance;
     const currentBalance = bmcField ? (parseFloat(bmcField.doubleValue || bmcField.integerValue || 0)) : 0;
-    const userName = userDoc.fields.name ? userDoc.fields.name.stringValue : 'Pekerja BaMboo';
+    const userName = userDoc.fields.name ? userDoc.fields.name.stringValue : 'BaMboo User';
+    const walletAddress = userDoc.fields.walletAddress ? userDoc.fields.walletAddress.stringValue : '';
 
     return res.status(200).json({
       success: true,
       balance: currentBalance,
       symbol: "BMC",
       userId: userId,
-      userName: userName
+      userName: userName,
+      walletAddress: walletAddress
     });
   } catch (error) {
     return res.status(401).json({ error: 'Invalid or expired token' });
