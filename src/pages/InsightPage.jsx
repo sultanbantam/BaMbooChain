@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Target, Lightbulb, TrendingUp, Handshake, Globe } from 'lucide-react';
 import BackButton from '../components/BackButton';
+import { useLanguage } from '../context/LanguageContext';
 
 const InsightPage = () => {
+  const { t } = useLanguage();
   const [dailyNews, setDailyNews] = useState([]);
 
   // Database Berita Global (Simulasi)
