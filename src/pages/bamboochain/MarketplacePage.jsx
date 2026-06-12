@@ -60,7 +60,36 @@ const MarketplacePage = () => {
   
   // eslint-disable-next-line no-unused-vars
   const [lastSync, setLastSync] = useState(new Date());
-  const [usdtPrice] = useState(17356);
+  const [usdtPrice, setUsdtPrice] = useState(17352); // Fallback if API fails
+
+  useEffect(() => {
+    const fetchPrice = async () => {
+      try {
+        const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=idr');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.tether && data.tether.idr) {
+            setUsdtPrice(data.tether.idr);
+          }
+        } else {
+          // Fallback to fiat USD if CoinGecko is rate limited
+          const fallbackRes = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+          if (fallbackRes.ok) {
+            const fallbackData = await fallbackRes.json();
+            if (fallbackData.rates && fallbackData.rates.IDR) {
+              setUsdtPrice(Math.round(fallbackData.rates.IDR));
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch real-time USDT price", err);
+      }
+    };
+    fetchPrice();
+    // Refresh every 5 minutes
+    const interval = setInterval(fetchPrice, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
   const [cart, setCart] = useState([]);
   const [chatMessages, setChatMessages] = useState([]);
   const [chatTarget] = useState(null);

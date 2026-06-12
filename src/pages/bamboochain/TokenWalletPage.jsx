@@ -620,12 +620,41 @@ const BuyBMC = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
   
-  const MARKET_PRICE = 17352; // 1 USDT in IDR (Market Rate Revised)
+  const [marketPrice, setMarketPrice] = useState(17352); // Fallback if API fails
+
+  useEffect(() => {
+    const fetchPrice = async () => {
+      try {
+        const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=idr');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.tether && data.tether.idr) {
+            setMarketPrice(data.tether.idr);
+          }
+        } else {
+          // Fallback to fiat USD if CoinGecko is rate limited
+          const fallbackRes = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+          if (fallbackRes.ok) {
+            const fallbackData = await fallbackRes.json();
+            if (fallbackData.rates && fallbackData.rates.IDR) {
+              setMarketPrice(Math.round(fallbackData.rates.IDR));
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch real-time USDT price", err);
+      }
+    };
+    fetchPrice();
+    // Refresh every 5 minutes
+    const interval = setInterval(fetchPrice, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const packages = [
-    { bmc: 1, idr: MARKET_PRICE.toLocaleString('id-ID'), badge: "1 USDT" },
-    { bmc: 5, idr: Math.floor((5 * MARKET_PRICE) * 0.9).toLocaleString('id-ID'), badge: "Hemat 10%" },
-    { bmc: 10, idr: Math.floor((10 * MARKET_PRICE) * 0.8).toLocaleString('id-ID'), badge: "Hemat 20%" },
+    { bmc: 1, idr: marketPrice.toLocaleString('id-ID'), badge: "1 USDT" },
+    { bmc: 5, idr: Math.floor((5 * marketPrice) * 0.9).toLocaleString('id-ID'), badge: "Hemat 10%" },
+    { bmc: 10, idr: Math.floor((10 * marketPrice) * 0.8).toLocaleString('id-ID'), badge: "Hemat 20%" },
   ];
 
   const handleFileChange = (e) => {
@@ -672,7 +701,7 @@ const BuyBMC = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
         <h3 style={{ fontSize: isMobile ? '1.3rem' : '1.5rem', margin: 0, fontWeight: '900' }}>Buy BMC (Fiat)</h3>
         <div style={{ fontSize: '0.8rem', background: '#e7f5ff', color: '#1864ab', padding: '4px 12px', borderRadius: '20px', fontWeight: 'bold', border: '1px solid #a5d8ff' }}>
-           Kurs Saat Ini: 1 USDT ≈ Rp {MARKET_PRICE.toLocaleString('id-ID')}
+           Kurs Saat Ini: 1 USDT ≈ Rp {marketPrice.toLocaleString('id-ID')}
         </div>
       </div>
 
@@ -735,12 +764,12 @@ const BuyBMC = () => {
             <span style={{ fontSize: '1rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>BMC</span>
           </div>
           <div style={{ fontSize: '1.1rem', color: 'var(--primary)', fontWeight: 'bold', marginBottom: '16px' }}>
-            Rp {customBmc && parseFloat(customBmc) > 0 ? (parseFloat(customBmc) * MARKET_PRICE).toLocaleString('id-ID') : 0}
+            Rp {customBmc && parseFloat(customBmc) > 0 ? (parseFloat(customBmc) * marketPrice).toLocaleString('id-ID') : 0}
           </div>
           <button 
             onClick={() => {
               if(customBmc && parseFloat(customBmc) > 0) {
-                setActivePkg({ bmc: parseFloat(customBmc), idr: Math.floor(parseFloat(customBmc) * MARKET_PRICE).toLocaleString('id-ID') });
+                setActivePkg({ bmc: parseFloat(customBmc), idr: Math.floor(parseFloat(customBmc) * marketPrice).toLocaleString('id-ID') });
               } else {
                 alert("Masukkan nominal BMC yang valid!");
               }
