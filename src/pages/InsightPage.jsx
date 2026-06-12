@@ -4,21 +4,75 @@ import BackButton from '../components/BackButton';
 import { useLanguage } from '../context/LanguageContext';
 
 const InsightPage = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [dailyNews, setDailyNews] = useState([]);
+
+  const tField = (item, field) => {
+    return item[`${field}_${language}`] || item[field];
+  };
 
   // Database Berita Global (Simulasi)
   const globalNewsPool = [
-    { id: 1, title: "Ekspor Bambu China Capai Rekor Baru", preview: "Permintaan pasar Eropa untuk panel bambu meningkat pesat tahun ini.", source: "China Daily", img: "https://images.unsplash.com/photo-1542450530-5bfa5dfef006?auto=format&fit=crop&w=400&q=80" },
-    { id: 2, title: "Inovasi Tekstil di India", preview: "Startup Bangalore meluncurkan serat kain bambu super lembut ramah lingkungan.", source: "India Eco Times", img: "https://images.unsplash.com/photo-1598928376916-2fd125c192bd?auto=format&fit=crop&w=400&q=80" },
-    { id: 3, title: "Konstruksi Modular Bambu di Kolombia", preview: "Arsitek Bogota membangun kompleks perumahan sosial berbasis struktur bambu.", source: "ArchDaily LatAm", img: "https://images.unsplash.com/photo-1592078615290-033ee584e267?auto=format&fit=crop&w=400&q=80" },
-    { id: 4, title: "Uni Eropa Dukung Kredit Karbon Bambu", preview: "Regulasi baru memungkinkan penanaman bambu di Afrika masuk skema kredit karbon.", source: "Reuters Global", img: "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=400&q=80" },
-    { id: 5, title: "Produksi Kertas Bambu di Vietnam", preview: "Pabrik baru di Vietnam kurangi ketergantungan pada bubur kayu hutan alami.", source: "ASEAN Green News", img: "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=400&q=80" },
-    { id: 6, title: "Lantai Bambu Jadi Tren di Amerika Serikat", preview: "Konsumen AS beralih ke lantai bambu karena ketahanan dan keberlanjutannya.", source: "Home Decor US", img: "https://images.unsplash.com/photo-1618331835717-801e976710b2?auto=format&fit=crop&w=400&q=80" },
-    { id: 7, title: "Penelitian Jepang: Biofuel dari Bambu", preview: "Tim peneliti Tokyo temukan metode efisien ubah selulosa bambu jadi bahan bakar.", source: "Science Japan", img: "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&w=400&q=80" },
-    { id: 8, title: "Restorasi Lahan di Kenya dengan Bambu", preview: "Proyek rehabilitasi lahan kritis gunakan bambu untuk cegah erosi tanah.", source: "African Eco Journal", img: "https://images.unsplash.com/photo-1505843490538-5133c6c7d0e1?auto=format&fit=crop&w=400&q=80" },
-    { id: 9, title: "Suku Bunga Kredit Hijau untuk Petani Bambu", preview: "Bank Dunia siapkan dana hibah untuk pengembangan industri bambu hulu.", source: "World Finance", img: "https://images.unsplash.com/photo-1454165833767-027ff7731932?auto=format&fit=crop&w=400&q=80" },
-    { id: 10, title: "Mebel Bambu Dominasi Pameran Milan", preview: "Desainer Italia pamerkan koleksi mewah berbahan dasar bambu laminasi.", source: "Design Week", img: "https://images.unsplash.com/photo-1544457070-4cd773b4d71e?auto=format&fit=crop&w=400&q=80" },
+    { 
+      id: 1, 
+      title: "Ekspor Bambu China Capai Rekor Baru", title_en: "China's Bamboo Exports Hit New Record", title_ja: "中国の竹輸出が新記録を達成",
+      preview: "Permintaan pasar Eropa untuk panel bambu meningkat pesat tahun ini.", preview_en: "European market demand for bamboo panels has increased rapidly this year.", preview_ja: "今年のヨーロッパ市場における竹パネルの需要が急速に増加しています。",
+      source: "China Daily", img: "https://images.unsplash.com/photo-1542450530-5bfa5dfef006?auto=format&fit=crop&w=400&q=80" 
+    },
+    { 
+      id: 2, 
+      title: "Inovasi Tekstil di India", title_en: "Textile Innovation in India", title_ja: "インドの繊維イノベーション",
+      preview: "Startup Bangalore meluncurkan serat kain bambu super lembut ramah lingkungan.", preview_en: "Bangalore startup launches eco-friendly ultra-soft bamboo fabric fiber.", preview_ja: "バンガロールのスタートアップが環境に優しい超柔軟な竹繊維生地を発表。",
+      source: "India Eco Times", img: "https://images.unsplash.com/photo-1598928376916-2fd125c192bd?auto=format&fit=crop&w=400&q=80" 
+    },
+    { 
+      id: 3, 
+      title: "Konstruksi Modular Bambu di Kolombia", title_en: "Bamboo Modular Construction in Colombia", title_ja: "コロンビアの竹モジュラー建築",
+      preview: "Arsitek Bogota membangun kompleks perumahan sosial berbasis struktur bambu.", preview_en: "Bogota architects build a social housing complex based on bamboo structures.", preview_ja: "ボゴタの建築家が竹構造を基盤とした公営住宅コンプレックスを建設。",
+      source: "ArchDaily LatAm", img: "https://images.unsplash.com/photo-1592078615290-033ee584e267?auto=format&fit=crop&w=400&q=80" 
+    },
+    { 
+      id: 4, 
+      title: "Uni Eropa Dukung Kredit Karbon Bambu", title_en: "EU Supports Bamboo Carbon Credits", title_ja: "EUが竹カーボンクレジットを支援",
+      preview: "Regulasi baru memungkinkan penanaman bambu di Afrika masuk skema kredit karbon.", preview_en: "New regulations allow bamboo planting in Africa to enter the carbon credit scheme.", preview_ja: "新しい規制により、アフリカでの竹の植林がカーボンクレジットスキームに参加可能になりました。",
+      source: "Reuters Global", img: "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=400&q=80" 
+    },
+    { 
+      id: 5, 
+      title: "Produksi Kertas Bambu di Vietnam", title_en: "Bamboo Paper Production in Vietnam", title_ja: "ベトナムでの竹紙生産",
+      preview: "Pabrik baru di Vietnam kurangi ketergantungan pada bubur kayu hutan alami.", preview_en: "New factory in Vietnam reduces dependence on natural forest wood pulp.", preview_ja: "ベトナムの新工場により、天然林の木材パルプへの依存が減少します。",
+      source: "ASEAN Green News", img: "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=400&q=80" 
+    },
+    { 
+      id: 6, 
+      title: "Lantai Bambu Jadi Tren di Amerika Serikat", title_en: "Bamboo Flooring Becomes a Trend in the US", title_ja: "米国で竹の床材がトレンドに",
+      preview: "Konsumen AS beralih ke lantai bambu karena ketahanan dan keberlanjutannya.", preview_en: "US consumers are switching to bamboo flooring due to its durability and sustainability.", preview_ja: "米国の消費者は、その耐久性と持続可能性から竹の床材に切り替えています。",
+      source: "Home Decor US", img: "https://images.unsplash.com/photo-1618331835717-801e976710b2?auto=format&fit=crop&w=400&q=80" 
+    },
+    { 
+      id: 7, 
+      title: "Penelitian Jepang: Biofuel dari Bambu", title_en: "Japanese Research: Biofuel from Bamboo", title_ja: "日本の研究：竹からのバイオ燃料",
+      preview: "Tim peneliti Tokyo temukan metode efisien ubah selulosa bambu jadi bahan bakar.", preview_en: "Tokyo research team discovers an efficient method to convert bamboo cellulose into fuel.", preview_ja: "東京の研究チームが、竹のセルロースを燃料に変換する効率的な方法を発見しました。",
+      source: "Science Japan", img: "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&w=400&q=80" 
+    },
+    { 
+      id: 8, 
+      title: "Restorasi Lahan di Kenya dengan Bambu", title_en: "Land Restoration in Kenya with Bamboo", title_ja: "ケニアにおける竹を使った土地修復",
+      preview: "Proyek rehabilitasi lahan kritis gunakan bambu untuk cegah erosi tanah.", preview_en: "Critical land rehabilitation project uses bamboo to prevent soil erosion.", preview_ja: "危機的な土地のリハビリテーションプロジェクトにおいて、土壌侵食を防ぐために竹が使用されています。",
+      source: "African Eco Journal", img: "https://images.unsplash.com/photo-1505843490538-5133c6c7d0e1?auto=format&fit=crop&w=400&q=80" 
+    },
+    { 
+      id: 9, 
+      title: "Suku Bunga Kredit Hijau untuk Petani Bambu", title_en: "Green Credit Interest Rates for Bamboo Farmers", title_ja: "竹農家向けのグリーンクレジット金利",
+      preview: "Bank Dunia siapkan dana hibah untuk pengembangan industri bambu hulu.", preview_en: "World Bank prepares grant funds for upstream bamboo industry development.", preview_ja: "世界銀行は上流の竹産業の発展のための助成金を準備しています。",
+      source: "World Finance", img: "https://images.unsplash.com/photo-1454165833767-027ff7731932?auto=format&fit=crop&w=400&q=80" 
+    },
+    { 
+      id: 10, 
+      title: "Mebel Bambu Dominasi Pameran Milan", title_en: "Bamboo Furniture Dominates Milan Exhibition", title_ja: "ミラノの展示会で竹家具が主流に",
+      preview: "Desainer Italia pamerkan koleksi mewah berbahan dasar bambu laminasi.", preview_en: "Italian designers showcase luxury collections made of laminated bamboo.", preview_ja: "イタリアのデザイナーが、ラミネート加工された竹で作られた高級コレクションを展示。",
+      source: "Design Week", img: "https://images.unsplash.com/photo-1544457070-4cd773b4d71e?auto=format&fit=crop&w=400&q=80" 
+    },
   ];
 
   useEffect(() => {
@@ -58,9 +112,9 @@ const InsightPage = () => {
             }}>
               <img src={item.img} alt="" style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover', marginRight: '12px' }} />
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'white' }}>{item.title}</div>
+                <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'white' }}>{tField(item, 'title')}</div>
                 <div style={{ fontSize: '0.7rem', color: '#adb5bd' }}>
-                   {item.preview} <span style={{ color: 'var(--primary)', marginLeft: '10px' }}>• {item.source}</span>
+                   {tField(item, 'preview')} <span style={{ color: 'var(--primary)', marginLeft: '10px' }}>• {item.source}</span>
                 </div>
               </div>
             </div>
