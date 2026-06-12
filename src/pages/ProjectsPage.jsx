@@ -141,7 +141,7 @@ const ProjectsPage = () => {
                 </button>
               </div>
             </div>
-          )})}
+          ))}
         </div>
       </div>
 
