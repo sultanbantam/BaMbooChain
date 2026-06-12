@@ -97,18 +97,18 @@ const ImpactPage = () => {
               {t('impact_transparency_link')} <ArrowRight size={18} />
             </Link>
           </div>
-           <div style={{ flex: '1 1 300px', background: '#f8f9fa', padding: '30px', borderRadius: '20px', border: '1px solid #dee2e6' }}>
+          <div style={{ flex: '1 1 300px', background: '#f8f9fa', padding: '30px', borderRadius: '20px', border: '1px solid #dee2e6' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', borderBottom: '1px solid #dee2e6', paddingBottom: '16px' }}>
-              <span style={{ color: 'var(--text-muted)' }}>Status Smart Contract</span>
-              <span style={{ background: 'rgba(34, 197, 94, 0.1)', color: '#16a34a', padding: '4px 12px', borderRadius: '12px', fontSize: '0.85rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}><Activity size={14}/> {isConnected ? 'Live Web3' : 'Verified Node'}</span>
+              <span style={{ color: 'var(--text-muted)' }}>{t('impact_contract_status')}</span>
+              <span style={{ background: 'rgba(34, 197, 94, 0.1)', color: '#16a34a', padding: '4px 12px', borderRadius: '12px', fontSize: '0.85rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}><Activity size={14}/> {isConnected ? t('impact_live_web3') : t('impact_verified_node')}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
-              <span style={{ color: 'var(--text-main)', fontWeight: 'bold' }}>Total Dana Tersalurkan</span>
+              <span style={{ color: 'var(--text-main)', fontWeight: 'bold' }}>{t('impact_total_funds')}</span>
               <span style={{ color: 'var(--primary)', fontWeight: 'bold' }}>${isConnected ? (rawBmcBalance * 1.5).toLocaleString() : '4,250,000'} USDT</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ color: 'var(--text-main)', fontWeight: 'bold' }}>Proyek Tervalidasi</span>
-              <span style={{ color: 'var(--text-main)', fontWeight: 'bold' }}>1,204 Titik Lahan</span>
+              <span style={{ color: 'var(--text-main)', fontWeight: 'bold' }}>{t('impact_validated_projects')}</span>
+              <span style={{ color: 'var(--text-main)', fontWeight: 'bold' }}>1,204 {t('impact_land_points')}</span>
             </div>
           </div>
         </div>
@@ -116,8 +116,8 @@ const ImpactPage = () => {
         {/* CULTURAL & ECOLOGICAL NARRATIVE */}
         <div style={{ marginBottom: '100px' }}>
           <div style={{ textAlign: 'center', marginBottom: '60px' }}>
-            <h2 style={{ fontSize: '2.2rem', color: 'var(--text-main)', marginBottom: '16px' }}>Bukan Sekadar Menanam Bambu</h2>
-            <p style={{ color: 'var(--text-muted)', maxWidth: '600px', margin: '0 auto', fontSize: '1.1rem' }}>Kami melindungi harta karun peradaban dan hidrologi Nusantara melalui pendekatan ekonomi hijau.</p>
+            <h2 style={{ fontSize: '2.2rem', color: 'var(--text-main)', marginBottom: '16px' }}>{t('impact_section2_title')}</h2>
+            <p style={{ color: 'var(--text-muted)', maxWidth: '600px', margin: '0 auto', fontSize: '1.1rem' }}>{t('impact_section2_subtitle')}</p>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px' }}>
@@ -128,8 +128,8 @@ const ImpactPage = () => {
                 <div style={{ background: 'rgba(59, 130, 246, 0.1)', width: '50px', height: '50px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3b82f6', marginBottom: '20px' }}>
                   <Droplet size={24} />
                 </div>
-                <h3 style={{ fontSize: '1.3rem', marginBottom: '12px', color: 'var(--text-main)' }}>Menjaga 17 Mata Air Strategis</h3>
-                <p style={{ color: 'var(--text-muted)', lineHeight: '1.6', margin: 0 }}>Konsesi 490 Ha bambuNUSA melindungi hulu dari 17 mata air purba yang menjadi nadi bagi sungai-sungai besar di Banten. Akar serabut bambu mengikat tanah dan menjaga debit air abadi.</p>
+                <h3 style={{ fontSize: '1.3rem', marginBottom: '12px', color: 'var(--text-main)' }}>{t('impact_box1_title')}</h3>
+                <p style={{ color: 'var(--text-muted)', lineHeight: '1.6', margin: 0 }}>{t('impact_box1_desc')}</p>
               </div>
             </div>
 
@@ -140,8 +140,8 @@ const ImpactPage = () => {
                 <div style={{ background: 'rgba(245, 159, 0, 0.1)', width: '50px', height: '50px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f59f00', marginBottom: '20px' }}>
                   <Mountain size={24} />
                 </div>
-                <h3 style={{ fontSize: '1.3rem', marginBottom: '12px', color: 'var(--text-main)' }}>Melestarikan Kearifan Baduy</h3>
-                <p style={{ color: 'var(--text-muted)', lineHeight: '1.6', margin: 0 }}>Kami berdampingan erat dengan Kasepuhan Banten Kidul dan Wewengkon Kanekes (Baduy). Kami memberdayakan masyarakat adat tanpa mengubah tatanan suci warisan leluhur mereka.</p>
+                <h3 style={{ fontSize: '1.3rem', marginBottom: '12px', color: 'var(--text-main)' }}>{t('impact_box2_title')}</h3>
+                <p style={{ color: 'var(--text-muted)', lineHeight: '1.6', margin: 0 }}>{t('impact_box2_desc')}</p>
               </div>
             </div>
           </div>
@@ -149,8 +149,8 @@ const ImpactPage = () => {
 
         {/* SDG ALIGNMENT */}
         <div style={{ background: 'white', borderRadius: '32px', padding: '60px 40px', textAlign: 'center', boxShadow: '0 20px 50px rgba(0,0,0,0.03)' }}>
-          <h2 style={{ fontSize: '2rem', color: 'var(--text-main)', marginBottom: '16px' }}>Mendukung Global Goals (SDGs) PBB</h2>
-          <p style={{ color: 'var(--text-muted)', maxWidth: '700px', margin: '0 auto 40px' }}>Inisiatif YSNJ secara langsung berkontribusi pada pencapaian Tujuan Pembangunan Berkelanjutan (SDG) Perserikatan Bangsa-Bangsa.</p>
+          <h2 style={{ fontSize: '2rem', color: 'var(--text-main)', marginBottom: '16px' }}>{t('impact_sdg_title')}</h2>
+          <p style={{ color: 'var(--text-muted)', maxWidth: '700px', margin: '0 auto 40px' }}>{t('impact_sdg_desc')}</p>
           
           <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '20px' }}>
             {sdgs.map(sdg => (
@@ -158,7 +158,7 @@ const ImpactPage = () => {
                 <div style={{ width: '40px', height: '40px', background: sdg.color, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '1.2rem', borderRadius: '8px' }}>
                   {sdg.num}
                 </div>
-                <span style={{ fontWeight: 'bold', color: 'var(--text-main)' }}>{sdg.title}</span>
+                <span style={{ fontWeight: 'bold', color: 'var(--text-main)' }}>{t(`sdg_${sdg.num}`)}</span>
               </div>
             ))}
           </div>
