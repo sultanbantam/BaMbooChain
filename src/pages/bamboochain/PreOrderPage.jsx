@@ -20,7 +20,7 @@ const PreOrderPage = () => {
       description: 'Bibit bambu betung kualitas super, siap tanam untuk perkebunan berskala besar. Garansi tumbuh 90%.',
       minOrder: 500,
       price: 15000,
-      unit: 'pohon',
+      unit: 'rumpun',
       icon: <Leaf size={40} color="#0ca678" />
     },
     {

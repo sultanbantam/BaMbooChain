@@ -42,11 +42,16 @@ const DataAnalyticsPage = () => {
     scanStatus: 'Scanning Wilayah Jawa Barat...'
   });
 
-  // Simulasi Update AI & GIS secara real-time
+  // Update AI & GIS secara real-time
   useEffect(() => {
+    // Set static metrics from real data
+    setAiData(prev => ({
+      ...prev,
+      harvest: metrics.treesMaintained ? parseFloat((metrics.treesMaintained * 0.8).toFixed(1)) : 0
+    }));
+
     const aiInterval = setInterval(() => {
       setAiData(prev => {
-        const newHarvest = prev.harvest + (Math.random() * 2 - 1);
         const newPrice = prev.carbonPrice + (Math.random() * 0.1 - 0.05);
         const statuses = [
           t('da_status_1'), 
@@ -55,7 +60,7 @@ const DataAnalyticsPage = () => {
           t('da_status_4')
         ];
         return {
-          harvest: parseFloat(newHarvest.toFixed(0)),
+          ...prev,
           carbonPrice: parseFloat(newPrice.toFixed(2)),
           accuracy: parseFloat((94 + Math.random()).toFixed(1)),
           signal: Math.random() > 0.8 ? 'STRONG BUY' : 'BULLISH',
@@ -64,7 +69,7 @@ const DataAnalyticsPage = () => {
       });
     }, 4000);
     return () => clearInterval(aiInterval);
-  }, []);
+  }, [metrics.treesMaintained, t]);
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
@@ -107,7 +112,8 @@ const DataAnalyticsPage = () => {
           aum: balanceUsdt + firestoreAUM,
           totalProjects: projectsCount + activeDonations.length,
           treesFunded: Math.floor(balanceUsdt / 50 * 10) + firestoreTrees, // Web3 + Web2
-          volume: (balanceUsdt + firestoreAUM) * 1.5 // Mock volume
+          volume: (balanceUsdt + firestoreAUM) * 1.5, // Mock volume
+          treesMaintained: treesMaintained
         });
 
         // 4. Fetch Deposit Events for Chart
@@ -146,7 +152,8 @@ const DataAnalyticsPage = () => {
           aum: firestoreAUM,
           totalProjects: activeDonations.length,
           treesFunded: firestoreTrees,
-          volume: firestoreAUM * 1.5
+          volume: firestoreAUM * 1.5,
+          treesMaintained: treesMaintained
         });
         
         setChartData([
