@@ -28,10 +28,6 @@ const PlantationPage = () => {
   // States for Suggestion Feature
   const [coords, setCoords] = useState({ lat: -6.2088, lng: 106.8456 }); // Default Jakarta
   const [showMapPicker, setShowMapPicker] = useState(false);
-  const [suggestions, setSuggestions] = useState(() => {
-    const saved = localStorage.getItem('ysnj_suggestions');
-    return saved ? JSON.parse(saved) : [];
-  });
   const [newLoc, setNewLoc] = useState({ name: '', area: '', type: 'Lahan Adat', vision: '' });
 
   const getLahanTypeTranslation = (type) => {
@@ -56,10 +52,6 @@ const PlantationPage = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
-  useEffect(() => {
-    localStorage.setItem('ysnj_suggestions', JSON.stringify(suggestions));
-  }, [suggestions]);
-
   const handleSuggest = async () => {
     if (!newLoc.name || !newLoc.area) {
       alert(t('plantation_alert_fill_fields'));
@@ -78,14 +70,6 @@ const PlantationPage = () => {
     const success = await submitLocationProposal(proposalData);
 
     if (success) {
-      const suggestion = {
-        ...newLoc,
-        id: Date.now(),
-        coords,
-        status: 'Pending Verification',
-        date: new Date().toLocaleDateString()
-      };
-      setSuggestions(prev => [suggestion, ...prev]);
       alert(t('plantation_alert_suggest_success'));
       setNewLoc({ name: '', area: '', type: 'Lahan Adat', vision: '' });
     } else {
@@ -363,53 +347,6 @@ const PlantationPage = () => {
               </div>
             </div>
 
-            {/* ADMIN VERIFICATION PANEL (Visible if Admin) */}
-            {user?.email?.includes('admin') && (
-              <div style={{ marginTop: '80px', background: '#1e1e2e', borderRadius: '32px', padding: '40px', color: 'white' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-                  <h2 style={{ fontSize: '1.8rem', fontWeight: '800', margin: 0 }}>{t('plantation_admin_panel_title')}</h2>
-                  <div style={{ background: 'rgba(255,255,255,0.1)', padding: '8px 16px', borderRadius: '30px', fontSize: '0.8rem' }}>{t('plantation_admin_incoming_suggestions').replace('{count}', suggestions.length)}</div>
-                </div>
-                <div style={{ overflowX: 'auto' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                    <thead>
-                      <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', textAlign: 'left' }}>
-                        <th style={{ padding: '15px' }}>{t('plantation_table_location')}</th>
-                        <th style={{ padding: '15px' }}>{t('plantation_table_area')}</th>
-                        <th style={{ padding: '15px' }}>{t('plantation_table_coords')}</th>
-                        <th style={{ padding: '15px' }}>{t('plantation_table_status')}</th>
-                        <th style={{ padding: '15px' }}>{t('plantation_table_action')}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {suggestions.map((s) => (
-                        <tr key={s.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                          <td style={{ padding: '15px' }}>{s.name}</td>
-                          <td style={{ padding: '15px' }}>{s.area} Ha</td>
-                          <td style={{ padding: '15px' }}>
-                            <a href={`https://www.google.com/maps?q=${s.coords.lat},${s.coords.lng}`} target="_blank" rel="noreferrer" style={{ color: '#4dabf7', textDecoration: 'none' }}>
-                              {s.coords.lat.toFixed(4)}, {s.coords.lng.toFixed(4)} ↗
-                            </a>
-                          </td>
-                          <td style={{ padding: '15px' }}>
-                            <span style={{ background: 'rgba(245, 159, 0, 0.2)', color: '#f59f00', padding: '4px 10px', borderRadius: '8px', fontSize: '0.75rem' }}>{getStatusTranslation(s.status)}</span>
-                          </td>
-                          <td style={{ padding: '15px' }}>
-                            <button style={{ background: '#2f9e44', border: 'none', color: 'white', padding: '6px 12px', borderRadius: '6px', fontSize: '0.8rem', cursor: 'pointer', marginRight: '5px' }}>{t('plantation_btn_verify')}</button>
-                            <button onClick={() => setSuggestions(prev => prev.filter(x => x.id !== s.id))} style={{ background: '#e03131', border: 'none', color: 'white', padding: '6px 12px', borderRadius: '6px', fontSize: '0.8rem', cursor: 'pointer' }}>{t('plantation_btn_reject')}</button>
-                          </td>
-                        </tr>
-                      ))}
-                      {suggestions.length === 0 && (
-                        <tr>
-                          <td colSpan="5" style={{ textAlign: 'center', padding: '40px', color: 'rgba(255,255,255,0.4)' }}>{t('plantation_admin_empty_suggestions')}</td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
           </div>
         )}
 
@@ -585,62 +522,7 @@ const PlantationPage = () => {
           </div>
         )}
 
-        {/* ADMIN VERIFICATION PANEL */}
-        {user?.email?.includes('admin') && (
-          <div style={{ marginTop: '80px', background: '#1e1e2e', borderRadius: '32px', padding: '40px', color: 'white' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-              <div>
-                <h2 style={{ fontSize: '1.8rem', fontWeight: '900' }}>{t('plantation_admin_verification_title')}</h2>
-                <p style={{ color: 'rgba(255,255,255,0.6)' }}>{t('plantation_admin_verification_desc')}</p>
-              </div>
-              <div style={{ background: 'rgba(12, 166, 120, 0.2)', color: 'var(--primary)', padding: '10px 20px', borderRadius: '15px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <ShieldCheck size={20} /> {t('plantation_admin_verified_badge')}
-              </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
-              {suggestions.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '40px', background: 'rgba(255,255,255,0.05)', borderRadius: '20px', gridColumn: '1/-1' }}>
-                  <Info size={40} style={{ marginBottom: '15px', opacity: 0.5 }} />
-                  <p>{t('plantation_admin_no_suggestions')}</p>
-                </div>
-              ) : (
-                suggestions.map((s) => (
-                  <div key={s.id} style={{ background: 'rgba(255,255,255,0.05)', padding: '25px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
-                      <span style={{ background: 'var(--primary)', color: 'white', padding: '4px 12px', borderRadius: '10px', fontSize: '0.7rem', fontWeight: 'bold' }}>{getStatusTranslation(s.status)}</span>
-                      <span style={{ fontSize: '0.8rem', opacity: 0.5 }}>{s.date}</span>
-                    </div>
-                    <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '5px' }}>{s.name}</h3>
-                    <p style={{ fontSize: '0.85rem', opacity: 0.8, marginBottom: '15px' }}>{t('plantation_admin_est_area').replace('{area}', s.area).replace('{type}', getLahanTypeTranslation(s.type))}</p>
-                    
-                    <div style={{ background: 'rgba(0,0,0,0.3)', padding: '12px', borderRadius: '12px', marginBottom: '20px', fontSize: '0.8rem' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                        <Globe size={14} color="var(--primary)" />
-                        <span>Lat: {s.coords.lat.toFixed(6)}</span>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <Globe size={14} color="var(--primary)" />
-                        <span>Lng: {s.coords.lng.toFixed(6)}</span>
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'flex', gap: '10px' }}>
-                      <button onClick={() => {
-                        setSuggestions(prev => prev.map(item => item.id === s.id ? { ...item, status: 'Verified & Active' } : item));
-                        alert(t('plantation_alert_validated').replace('{name}', s.name));
-                      }} style={{ flex: 1, background: 'var(--primary)', color: 'white', border: 'none', padding: '10px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>{t('plantation_btn_validate')}</button>
-                      <button onClick={() => {
-                        setSuggestions(prev => prev.filter(item => item.id !== s.id));
-                        alert(t('plantation_alert_rejected').replace('{name}', s.name));
-                      }} style={{ flex: 1, background: 'rgba(255,62,62,0.2)', color: '#ff3e3e', border: 'none', padding: '10px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>{t('plantation_btn_reject')}</button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
           </div>
-        )}
 
 
 

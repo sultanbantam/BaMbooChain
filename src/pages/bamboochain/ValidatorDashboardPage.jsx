@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, UploadCloud, FileText, CheckCircle, AlertTriangle, ChevronRight, X, Image as ImageIcon } from 'lucide-react';
+import { ShieldCheck, UploadCloud, FileText, CheckCircle, AlertTriangle, ChevronRight, X, Image as ImageIcon, Globe, MapPin } from 'lucide-react';
 import { ethers } from 'ethers';
 import { escrowConfig } from '../../utils/escrowConfig';
 import { useLanguage } from '../../context/LanguageContext';
+import { collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore';
+import { db } from '../../firebase/config';
 
 const ValidatorDashboardPage = () => {
   const { t } = useLanguage();
@@ -13,6 +15,10 @@ const ValidatorDashboardPage = () => {
   const [selectedProject, setSelectedProject] = useState(null);
   const [selectedMilestone, setSelectedMilestone] = useState(null);
   
+  // GIS Proposal State
+  const [locationProposals, setLocationProposals] = useState([]);
+  const [loadingProposals, setLoadingProposals] = useState(false);
+
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -83,7 +89,44 @@ const ValidatorDashboardPage = () => {
     }
   };
 
+  const fetchProposals = async () => {
+    setLoadingProposals(true);
+    try {
+      const q = query(collection(db, "location_proposals"), where("status", "==", "pending"));
+      const snapshot = await getDocs(q);
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setLocationProposals(data);
+    } catch (err) {
+      console.error("Error fetching location proposals:", err);
+    } finally {
+      setLoadingProposals(false);
+    }
+  };
+
+  const handleVerifyLocation = async (id, name) => {
+    try {
+      await updateDoc(doc(db, "location_proposals", id), { status: "Verified & Active" });
+      setLocationProposals(prev => prev.filter(item => item.id !== id));
+      alert(`Berhasil memverifikasi ${name}!`);
+    } catch (err) {
+      console.error(err);
+      alert('Gagal memverifikasi.');
+    }
+  };
+
+  const handleRejectLocation = async (id, name) => {
+    try {
+      await updateDoc(doc(db, "location_proposals", id), { status: "Rejected" });
+      setLocationProposals(prev => prev.filter(item => item.id !== id));
+      alert(`Berhasil menolak ${name}!`);
+    } catch (err) {
+      console.error(err);
+      alert('Gagal menolak.');
+    }
+  };
+
   useEffect(() => {
+    fetchProposals();
     // Auto check if already connected
     if (window.ethereum) {
       window.ethereum.request({ method: 'eth_accounts' }).then(accounts => {
@@ -218,6 +261,51 @@ const ValidatorDashboardPage = () => {
               </tbody>
             </table>
           </div>
+          )}
+        </div>
+
+        {/* GIS LOCATION PROPOSALS */}
+        <div style={{ background: 'white', borderRadius: '24px', boxShadow: '0 10px 40px rgba(0,0,0,0.06)', overflow: 'hidden', marginTop: '40px' }}>
+          <div style={{ padding: '24px', borderBottom: '1px solid #f1f3f5', background: '#f8f9fa', fontWeight: 'bold', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <MapPin size={20} color="var(--primary)" /> Antrean Usulan Lokasi (GIS)
+          </div>
+
+          {loadingProposals ? (
+            <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>Memuat usulan lokasi...</div>
+          ) : locationProposals.length === 0 ? (
+            <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>Belum ada antrean usulan lokasi baru saat ini.</div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', padding: '24px' }}>
+              {locationProposals.map((s) => (
+                <div key={s.id} style={{ background: '#f8f9fa', padding: '25px', borderRadius: '24px', border: '1px solid #dee2e6' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
+                    <span style={{ background: 'rgba(245, 159, 0, 0.1)', color: '#f59f00', padding: '4px 12px', borderRadius: '10px', fontSize: '0.75rem', fontWeight: 'bold' }}>Pending Verification</span>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{s.date || 'Baru'}</span>
+                  </div>
+                  <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '5px' }}>{s.name}</h3>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '15px' }}>Estimasi Luas: {s.size} Ha • {s.type}</p>
+                  
+                  <div style={{ background: 'white', padding: '12px', borderRadius: '12px', marginBottom: '20px', fontSize: '0.8rem', border: '1px solid #dee2e6' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                      <Globe size={14} color="var(--primary)" />
+                      <span>Koordinat: {s.coordinates}</span>
+                    </div>
+                    <a href={`https://www.google.com/maps?q=${s.coordinates}`} target="_blank" rel="noreferrer" style={{ color: '#4dabf7', textDecoration: 'none', display: 'inline-block', marginTop: '4px' }}>
+                      Buka di Google Maps ↗
+                    </a>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button onClick={() => handleVerifyLocation(s.id, s.name)} style={{ flex: 1, background: '#16a34a', color: 'white', border: 'none', padding: '10px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s', ':hover': { opacity: 0.9 } }}>
+                      Verifikasi
+                    </button>
+                    <button onClick={() => handleRejectLocation(s.id, s.name)} style={{ flex: 1, background: '#fa5252', color: 'white', border: 'none', padding: '10px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s', ':hover': { opacity: 0.9 } }}>
+                      Tolak
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </div>
 
