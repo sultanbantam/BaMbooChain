@@ -8,6 +8,17 @@ import { useWeb3 } from '../../context/Web3Context';
 import { usePlantationDonations } from '../../hooks/useFirestoreQueries';
 
 import { useLanguage } from '../../context/LanguageContext';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+// Fix Leaflet's default icon issue
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
 
 const DataAnalyticsPage = () => {
   const { t } = useLanguage();
@@ -336,14 +347,38 @@ const DataAnalyticsPage = () => {
             </div>
             
             <div style={{ flex: 1, position: 'relative', borderRadius: '16px', overflow: 'hidden', minHeight: '250px', background: '#e9ecef', border: '1px solid #dee2e6' }}>
-              <iframe 
-                width="100%" 
-                height="100%" 
-                style={{ border: 0, position: 'absolute', top: 0, left: 0 }} 
-                loading="lazy" 
-                title="Topographic Map"
-                src="https://www.openstreetmap.org/export/embed.html?bbox=105.5,-7.0,106.8,-6.2&layer=transportmap">
-              </iframe>
+              <MapContainer 
+                center={[-6.5, 106.4]} 
+                zoom={9} 
+                style={{ height: '100%', width: '100%', position: 'absolute', top: 0, left: 0, zIndex: 1 }}
+                scrollWheelZoom={false}
+              >
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                {allDonations.filter(d => d.status === 'verified' || d.status === 'active').map((don, idx) => {
+                  let lat = -6.5, lng = 106.4;
+                  if (don.location?.id === 'cibarani') { lat = -6.6200; lng = 106.2800; }
+                  else if (don.location?.id === 'cisadane') { lat = -6.4000; lng = 106.6000; }
+                  else if (don.location?.lat) { lat = don.location.lat; lng = don.location.lng; }
+                  else {
+                    // pseudo-random offset based on id so it stays consistent
+                    const offset = (don.id.charCodeAt(0) % 10) * 0.02;
+                    lat = -6.5 + offset; lng = 106.4 - offset;
+                  }
+                  
+                  return (
+                    <Marker key={don.id} position={[lat, lng]}>
+                      <Popup>
+                        <strong>{don.location?.name || 'Proyek Penanaman'}</strong><br/>
+                        Didukung oleh: {don.name || don.username}<br/>
+                        Jumlah: {don.amount} USDT
+                      </Popup>
+                    </Marker>
+                  );
+                })}
+              </MapContainer>
               <div style={{ position: 'absolute', bottom: '12px', left: '12px', right: '12px', background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(4px)', padding: '10px', borderRadius: '12px', fontSize: '0.75rem', boxShadow: '0 4px 15px rgba(0,0,0,0.1)', border: '1px solid var(--primary)' }}>
                 <div style={{ fontWeight: 'bold', color: 'var(--primary)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <span style={{ width: '8px', height: '8px', background: 'red', borderRadius: '50%', animation: 'pulse 1s infinite' }}></span>

@@ -129,8 +129,8 @@ const PlantationPage = () => {
   const { data: verifiedLocations = [] } = useVerifiedLocations();
 
   const staticLocations = [
-    { id: 'cibarani', nameKey: 'plantation_loc_cibarani_name', image: getAssetUrl('gambar/pehcibarani.png'), area: '490 Ha', farmers: 120, descKey: 'plantation_loc_cibarani_desc' },
-    { id: 'cisadane', nameKey: 'plantation_loc_cisadane_name', image: getAssetUrl('gambar/ceap.png'), area: '120 Ha', farmers: 45, descKey: 'plantation_loc_cisadane_desc' }
+    { id: 'cibarani', nameKey: 'plantation_loc_cibarani_name', image: getAssetUrl('gambar/pehcibarani.png'), area: '490 Ha', farmers: 120, descKey: 'plantation_loc_cibarani_desc', lat: -6.6200, lng: 106.2800 },
+    { id: 'cisadane', nameKey: 'plantation_loc_cisadane_name', image: getAssetUrl('gambar/ceap.png'), area: '120 Ha', farmers: 45, descKey: 'plantation_loc_cisadane_desc', lat: -6.4000, lng: 106.6000 }
   ];
 
   const dynamicLocations = verifiedLocations.map(loc => ({
