@@ -7,7 +7,10 @@ import { escrowConfig } from '../../utils/escrowConfig';
 import { useWeb3 } from '../../context/Web3Context';
 import { usePlantationDonations } from '../../hooks/useFirestoreQueries';
 
+import { useLanguage } from '../../context/LanguageContext';
+
 const DataAnalyticsPage = () => {
+  const { t } = useLanguage();
   const { isConnected, walletAddress } = useWeb3();
   const { data: allDonations = [] } = usePlantationDonations();
   const [toast, setToast] = useState({ show: false, message: '' });
@@ -35,10 +38,10 @@ const DataAnalyticsPage = () => {
         const newHarvest = prev.harvest + (Math.random() * 2 - 1);
         const newPrice = prev.carbonPrice + (Math.random() * 0.1 - 0.05);
         const statuses = [
-          'Memproses Data Satelit Lapan...', 
-          'Analisis Vegetasi NDVI Selesai', 
-          'Sinkronisasi Harga Karbon Global...',
-          'Pemindaian Topografi Aktif'
+          t('da_status_1'), 
+          t('da_status_2'), 
+          t('da_status_3'),
+          t('da_status_4')
         ];
         return {
           harvest: parseFloat(newHarvest.toFixed(0)),
@@ -151,9 +154,9 @@ const DataAnalyticsPage = () => {
   const handleExport = () => {
     let msg = "";
     if (!isConnected) {
-      msg = "Mode Demo: Mengekspor laporan sampel. Hubungkan dompet untuk data real-time.";
+      msg = t('da_toast_demo');
     } else {
-      msg = `Mengekspor data real-time untuk dompet ${walletAddress.substring(0, 8)}...`;
+      msg = `${t('da_toast_export')} ${walletAddress.substring(0, 8)}...`;
     }
     
     setToast({ show: true, message: msg });
@@ -186,10 +189,10 @@ const DataAnalyticsPage = () => {
           </div>
         </div>
         <h1 style={{ fontSize: isMobile ? '2rem' : '3rem', fontWeight: '900', color: 'var(--text-main)', marginBottom: '16px', letterSpacing: '-0.5px', lineHeight: 1.2 }}>
-          Data & Analytics bambuNUSA
+          {t('da_title')}
         </h1>
         <p style={{ fontSize: isMobile ? '1rem' : '1.2rem', color: 'var(--text-muted)', maxWidth: '600px', margin: '0 auto' }}>
-          Big data untuk keputusan besar. Pangkas risiko investasi dan optimalkan hasil panen melalui kecerdasan buatan berbasis spasial dan metrik global.
+          {t('da_desc')}
         </p>
       </div>
 
@@ -199,28 +202,28 @@ const DataAnalyticsPage = () => {
         <div style={{ background: 'var(--bg-card)', borderRadius: isMobile ? '20px' : '24px', padding: isMobile ? '20px' : '32px', border: '1px solid var(--border-color)' }}>
           <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', marginBottom: '32px', gap: '20px' }}>
             <h2 style={{ fontSize: isMobile ? '1.2rem' : '1.5rem', color: 'var(--text-main)', margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <PieChart size={isMobile ? 20 : 24} color="#339af0" /> Analytics Dashboard
+              <PieChart size={isMobile ? 20 : 24} color="#339af0" /> {t('da_dashboard')}
             </h2>
             <div style={{ display: 'flex', gap: '10px', width: isMobile ? '100%' : 'auto' }}>
               <select style={{ flex: 1, padding: '8px 12px', borderRadius: '8px', border: '1px solid #ced4da', fontSize: '0.85rem', outline: 'none' }}>
-                <option>Tahun Ini</option>
-                <option>Tahun Lalu</option>
-                <option>Keseluruhan</option>
+                <option>{t('da_filter_year')}</option>
+                <option>{t('da_filter_last')}</option>
+                <option>{t('da_filter_all')}</option>
               </select>
               <button 
                 onClick={handleExport}
                 style={{ background: '#f8f9fa', border: '1px solid #ced4da', padding: '8px 16px', borderRadius: '8px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', color: '#333' }}>
-                <Download size={16} /> Export
+                <Download size={16} /> {t('da_export')}
               </button>
             </div>
           </div>
 
           {/* Key Metrics Row */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px', marginBottom: '32px' }}>
-            {[{ label: "Total AUM (Smart Contract)", val: loading ? "..." : `$${metrics.aum.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`, change: "Live Web3", up: true },
-              { label: "Rumpun Didanai", val: loading ? "..." : `${metrics.treesFunded.toLocaleString()} Rumpun`, change: "Estimasi Karbon", up: true },
-              { label: "Proyek Aktif (On-Chain)", val: loading ? "..." : `${metrics.totalProjects} Transaksi`, change: "Smart Contract", up: true },
-              { label: "Partisipasi Tata Kelola", val: "84.2%", change: "DAO Voting", up: true }
+            {[{ label: t('da_metric_aum'), val: loading ? "..." : `$${metrics.aum.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`, change: t('da_change_live'), up: true },
+              { label: t('da_metric_trees'), val: loading ? "..." : `${metrics.treesFunded.toLocaleString()} ${t('da_unit_trees')}`, change: t('da_change_carbon'), up: true },
+              { label: t('da_metric_projects'), val: loading ? "..." : `${metrics.totalProjects} ${t('da_unit_tx')}`, change: t('da_change_sc'), up: true },
+              { label: t('da_metric_gov'), val: "84.2%", change: t('da_change_dao'), up: true }
             ].map((stat, idx) => (
               <div key={idx} style={{ padding: '20px', background: 'var(--bg-secondary)', borderRadius: '16px', border: '1px solid var(--border-color)', position: 'relative' }}>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '8px', fontWeight: 'bold' }}>{stat.label}</div>
@@ -237,19 +240,19 @@ const DataAnalyticsPage = () => {
           <div style={{ position: 'relative', height: isMobile ? '350px' : '450px', background: 'var(--bg-secondary)', borderRadius: '16px', border: '1px solid var(--border-color)', padding: isMobile ? '15px' : '24px', display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', marginBottom: '24px', gap: '10px' }}>
               <div style={{ fontWeight: 'bold', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: isMobile ? '0.8rem' : '1rem' }}>
-                Tren Pertumbuhan Harga BMC vs Karbon
-                {!loading && <span style={{ fontSize: '0.65rem', background: 'rgba(34, 197, 94, 0.1)', color: '#16a34a', padding: '2px 8px', borderRadius: '12px' }}>Live Sync</span>}
+                {t('da_chart_title')}
+                {!loading && <span style={{ fontSize: '0.65rem', background: 'rgba(34, 197, 94, 0.1)', color: '#16a34a', padding: '2px 8px', borderRadius: '12px' }}>{t('da_chart_live')}</span>}
               </div>
               <div style={{ display: 'flex', gap: '12px', fontSize: '0.75rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div style={{ width: '10px', height: '10px', background: '#339af0', borderRadius: '2px' }}></div> AUM / BMC</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div style={{ width: '10px', height: '10px', background: 'var(--primary)', borderRadius: '2px' }}></div> Karbon (Ton)</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div style={{ width: '10px', height: '10px', background: '#339af0', borderRadius: '2px' }}></div> {t('da_chart_aum')}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div style={{ width: '10px', height: '10px', background: 'var(--primary)', borderRadius: '2px' }}></div> {t('da_chart_carbon')}</div>
               </div>
             </div>
             
             <div style={{ flex: 1, minHeight: 0 }}>
               {loading ? (
                 <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#adb5bd', fontSize: '0.9rem' }}>
-                  Mengambil data dari Blockchain...
+                  {t('da_chart_loading')}
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
@@ -272,7 +275,7 @@ const DataAnalyticsPage = () => {
                       itemStyle={{ fontWeight: 'bold' }}
                     />
                     <Area type="monotone" dataKey="price" stroke="#339af0" strokeWidth={3} fillOpacity={1} fill="url(#colorPrice)" name="AUM (Scaled)" />
-                    <Area type="monotone" dataKey="carbon" stroke="#0ca678" strokeWidth={3} fillOpacity={1} fill="url(#colorCarbon)" name="Karbon (Ton)" />
+                    <Area type="monotone" dataKey="carbon" stroke="#0ca678" strokeWidth={3} fillOpacity={1} fill="url(#colorCarbon)" name={t('da_chart_carbon')} />
                   </AreaChart>
                 </ResponsiveContainer>
               )}
@@ -289,24 +292,24 @@ const DataAnalyticsPage = () => {
               <div style={{ background: 'rgba(132,94,247,0.1)', padding: '10px', borderRadius: '12px', color: '#845ef7' }}>
                 <Cpu size={isMobile ? 20 : 24} />
               </div>
-              <h2 style={{ fontSize: isMobile ? '1.2rem' : '1.5rem', color: 'var(--text-main)', margin: 0 }}>AI Forecast</h2>
+              <h2 style={{ fontSize: isMobile ? '1.2rem' : '1.5rem', color: 'var(--text-main)', margin: 0 }}>{t('da_ai_title')}</h2>
             </div>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '32px', position: 'relative', zIndex: 1 }}>Prediksi biomassa bambu dan suplai *carbon offset* berbasis *Machine Learning*.</p>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '32px', position: 'relative', zIndex: 1 }}>{t('da_ai_desc')}</p>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', position: 'relative', zIndex: 1 }}>
               <div style={{ background: 'var(--bg-card)', padding: '15px', borderRadius: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid var(--border-color)' }}>
                 <div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>Proyeksi Panen (Q4 2026)</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>{t('da_ai_harvest')}</div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-main)', fontSize: '1rem', fontWeight: 'bold' }}>
-                    <Layers size={14} color="#845ef7" /> {aiData.harvest.toLocaleString()} Ton Plywood
+                    <Layers size={14} color="#845ef7" /> {aiData.harvest.toLocaleString()} {t('da_ai_plywood')}
                   </div>
                 </div>
-                <div style={{ background: '#eebefa', color: '#845ef7', padding: '3px 8px', borderRadius: '12px', fontSize: '0.65rem', fontWeight: 'bold' }}>+{aiData.accuracy}% AKURASI</div>
+                <div style={{ background: '#eebefa', color: '#845ef7', padding: '3px 8px', borderRadius: '12px', fontSize: '0.65rem', fontWeight: 'bold' }}>+{aiData.accuracy}% {t('da_ai_acc')}</div>
               </div>
 
               <div style={{ background: 'var(--bg-card)', padding: '15px', borderRadius: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid var(--border-color)' }}>
                 <div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>Spot Price Karbon</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>{t('da_ai_spot')}</div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-main)', fontSize: '1rem', fontWeight: 'bold' }}>
                     <TrendingUp size={14} color="#339af0" /> ${aiData.carbonPrice.toFixed(2)} / Ton
                   </div>
@@ -326,7 +329,7 @@ const DataAnalyticsPage = () => {
               <div style={{ background: 'rgba(12,166,120,0.1)', padding: '10px', borderRadius: '12px', color: 'var(--primary)' }}>
                 <Globe size={isMobile ? 20 : 24} />
               </div>
-              <h2 style={{ fontSize: isMobile ? '1.2rem' : '1.5rem', color: 'var(--text-main)', margin: 0 }}>GIS Mapping</h2>
+              <h2 style={{ fontSize: isMobile ? '1.2rem' : '1.5rem', color: 'var(--text-main)', margin: 0 }}>{t('da_gis_title')}</h2>
             </div>
             
             <div style={{ flex: 1, position: 'relative', borderRadius: '16px', overflow: 'hidden', minHeight: '250px', background: '#e9ecef', border: '1px solid #dee2e6' }}>
@@ -341,7 +344,7 @@ const DataAnalyticsPage = () => {
               <div style={{ position: 'absolute', bottom: '12px', left: '12px', right: '12px', background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(4px)', padding: '10px', borderRadius: '12px', fontSize: '0.75rem', boxShadow: '0 4px 15px rgba(0,0,0,0.1)', border: '1px solid var(--primary)' }}>
                 <div style={{ fontWeight: 'bold', color: 'var(--primary)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <span style={{ width: '8px', height: '8px', background: 'red', borderRadius: '50%', animation: 'pulse 1s infinite' }}></span>
-                  GIS Satellite Active
+                  {t('da_gis_status')}
                 </div>
                 <div style={{ color: 'var(--text-muted)', lineHeight: 1.4, fontWeight: '500' }}>{aiData.scanStatus}</div>
               </div>

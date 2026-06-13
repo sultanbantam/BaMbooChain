@@ -85,11 +85,11 @@ const MembershipPage = () => {
         <div style={{ textAlign: 'center', marginBottom: '60px' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(12,166,120,0.1)', padding: '6px 16px', borderRadius: '20px', marginBottom: '20px' }}>
             <Star size={16} color="var(--primary)" />
-            <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--primary)' }}>Sistem Keanggotaan Berbasis Token BMC</span>
+            <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--primary)' }}>{t('membership_badge')}</span>
           </div>
           <h1 style={{ fontSize: '2.8rem', color: 'var(--text-main)', marginBottom: '16px' }}>{t('membership_title')}</h1>
           <p style={{ color: 'var(--text-muted)', maxWidth: '600px', margin: '0 auto', fontSize: '1.1rem' }}>
-            Pegang token BMC untuk membuka akses eksklusif — semakin banyak, semakin tinggi level keanggotaan Anda.
+            {t('membership_desc')}
           </p>
         </div>
 
@@ -97,21 +97,21 @@ const MembershipPage = () => {
         {isConnected && (
           <div style={{ background: 'var(--bg-card)', borderRadius: '16px', padding: '24px', marginBottom: '40px', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
             <div>
-              <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '4px' }}>Saldo BMC Anda saat ini</div>
+              <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '4px' }}>{t('membership_balance_label')}</div>
               <div style={{ fontSize: '2rem', fontWeight: '800', color: 'var(--primary)' }}>{bmcBalance ?? '0'} BMC</div>
             </div>
             <div style={{ textAlign: 'right' }}>
               {userTier ? (
                 <div>
-                  <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '4px' }}>Tier Anda saat ini</div>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '4px' }}>{t('membership_tier_label')}</div>
                   <div style={{ fontSize: '1.5rem', fontWeight: '800' }}>
                     {TIERS.find(t => t.id === userTier)?.nameId}
                   </div>
                 </div>
               ) : (
                 <div>
-                  <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '4px' }}>Butuh minimal</div>
-                  <div style={{ fontWeight: '700', color: '#e03131' }}>1.000 BMC untuk Green Seed</div>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '4px' }}>{t('membership_need_min')}</div>
+                  <div style={{ fontWeight: '700', color: '#e03131' }}>{t('membership_need_greenseed')}</div>
                 </div>
               )}
             </div>
@@ -120,9 +120,9 @@ const MembershipPage = () => {
 
         {!isConnected && (
           <div style={{ textAlign: 'center', padding: '40px', background: 'var(--bg-card)', borderRadius: '16px', marginBottom: '40px', border: '2px dashed var(--border-color)' }}>
-            <p style={{ color: 'var(--text-muted)', marginBottom: '20px', fontSize: '1.05rem' }}>Hubungkan wallet untuk melihat status keanggotaan Anda</p>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '20px', fontSize: '1.05rem' }}>{t('membership_connect_desc')}</p>
             <button onClick={openWalletModal} className="btn btn-primary" style={{ padding: '14px 32px', fontSize: '1rem' }}>
-              🔗 Hubungkan Wallet
+              {t('membership_connect_btn')}
             </button>
           </div>
         )}
@@ -144,7 +144,7 @@ const MembershipPage = () => {
               }}>
                 {tier.featured && (
                   <div style={{ position: 'absolute', top: '16px', right: '16px', background: tier.color, color: 'white', padding: '3px 10px', borderRadius: '20px', fontSize: '0.72rem', fontWeight: '700' }}>
-                    POPULER
+                    {t('membership_popular')}
                   </div>
                 )}
                 {/* Header gradient */}
@@ -169,15 +169,15 @@ const MembershipPage = () => {
 
                   {isActive ? (
                     <div style={{ background: `${tier.color}15`, border: `1px solid ${tier.color}`, borderRadius: '12px', padding: '12px', textAlign: 'center', color: tier.color, fontWeight: '700' }}>
-                      ✅ Tier Aktif
+                      {t('membership_tier_active')}
                     </div>
                   ) : isUnlocked ? (
                     <div style={{ background: '#f0fff4', border: '1px solid #40c057', borderRadius: '12px', padding: '12px', textAlign: 'center', color: '#2b8a3e', fontWeight: '600' }}>
-                      🔓 Terbuka
+                      {t('membership_tier_unlocked')}
                     </div>
                   ) : (
                     <div style={{ background: '#f8f9fa', border: '1px solid #dee2e6', borderRadius: '12px', padding: '12px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                      Butuh {tier.minBMC.toLocaleString('id-ID')} BMC
+                      {t('membership_need_min')} {tier.minBMC.toLocaleString('id-ID')} BMC
                     </div>
                   )}
                 </div>
@@ -188,27 +188,27 @@ const MembershipPage = () => {
 
         {/* Cara Mendapatkan BMC */}
         <div style={{ background: 'linear-gradient(135deg, #0ca678, #2b8a3e)', borderRadius: '20px', padding: '40px', color: 'white', textAlign: 'center' }}>
-          <h3 style={{ fontSize: '1.8rem', marginBottom: '12px' }}>Cara Mendapatkan Token BMC</h3>
+          <h3 style={{ fontSize: '1.8rem', marginBottom: '12px' }}>{t('membership_bmc_title')}</h3>
           <p style={{ opacity: 0.9, marginBottom: '32px', maxWidth: '500px', margin: '0 auto 32px' }}>
-            Token BMC tersedia di jaringan BNB Smart Chain (BEP-20) dan dapat diperoleh melalui:
+            {t('membership_bmc_desc')}
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', maxWidth: '700px', margin: '0 auto 32px' }}>
             {[
-              { icon: '🔄', title: 'PancakeSwap', desc: 'Tukar BNB ke BMC di DEX terbesar BSC' },
-              { icon: '🤝', title: 'Airdrop', desc: 'Ikuti program komunitas & airdrop YSNJ' },
-              { icon: '🌱', title: 'Kontribusi', desc: 'Berkontribusi pada proyek bambu YSNJ' },
+              { icon: '🔄', titleKey: 'membership_bmc_pancake_title', descKey: 'membership_bmc_pancake_desc' },
+              { icon: '🤝', titleKey: 'membership_bmc_airdrop_title', descKey: 'membership_bmc_airdrop_desc' },
+              { icon: '🌱', titleKey: 'membership_bmc_contrib_title', descKey: 'membership_bmc_contrib_desc' },
             ].map((item, i) => (
               <div key={i} style={{ background: 'rgba(255,255,255,0.15)', borderRadius: '12px', padding: '20px' }}>
                 <div style={{ fontSize: '2rem', marginBottom: '8px' }}>{item.icon}</div>
-                <div style={{ fontWeight: '700', marginBottom: '6px' }}>{item.title}</div>
-                <div style={{ fontSize: '0.85rem', opacity: 0.85 }}>{item.desc}</div>
+                <div style={{ fontWeight: '700', marginBottom: '6px' }}>{t(item.titleKey)}</div>
+                <div style={{ fontSize: '0.85rem', opacity: 0.85 }}>{t(item.descKey)}</div>
               </div>
             ))}
           </div>
           <a href={`https://pancakeswap.finance/swap?outputCurrency=0x812d9709f0A53982606b823Ee61d5CA216F7F9c0`}
             target="_blank" rel="noreferrer"
             style={{ background: 'white', color: 'var(--primary)', padding: '14px 32px', borderRadius: '50px', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '1rem' }}>
-            <Zap size={18} /> Beli BMC di PancakeSwap <ExternalLink size={16} />
+            <Zap size={18} /> {t('membership_buy_btn')} <ExternalLink size={16} />
           </a>
         </div>
 

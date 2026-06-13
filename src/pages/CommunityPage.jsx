@@ -5,6 +5,7 @@ import { MessageSquare, Vote, Users, ExternalLink, Bell, Award, ChevronRight, Se
 import { Link } from 'react-router-dom';
 import { db } from '../firebase/config';
 import { collection, query, getDocs, limit } from 'firebase/firestore';
+import { useLanguage } from '../context/LanguageContext';
 
 const FALLBACK_PEGIAT = [
   {
@@ -81,6 +82,7 @@ const ANNOUNCEMENTS = [
 ];
 
 const CommunityPage = () => {
+  const { t } = useLanguage();
   const { bmcBalance, isConnected, openWalletModal } = useWeb3();
   const userTier = getUserTier(bmcBalance);
   const bmcNum = getBMCNumber(bmcBalance);
@@ -176,11 +178,11 @@ const CommunityPage = () => {
         <div style={{ textAlign: 'center', marginBottom: '50px' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(12,166,120,0.1)', padding: '6px 16px', borderRadius: '20px', marginBottom: '20px' }}>
             <Users size={16} color="var(--primary)" />
-            <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--primary)' }}>Komunitas & Governance • Ditenagai Token BMC</span>
+            <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--primary)' }}>{t('community_badge')}</span>
           </div>
-          <h1 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '16px' }}>Komunitas bambuNUSA</h1>
+          <h1 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '16px' }}>{t('community_title')}</h1>
           <p style={{ color: 'var(--text-muted)', maxWidth: '600px', margin: '0 auto' }}>
-            Bersama-sama membangun ekosistem bambu Indonesia. Voting, diskusi, dan keputusan strategis dilakukan secara transparan berbasis token BMC.
+            {t('community_desc')}
           </p>
         </div>
 
@@ -195,11 +197,11 @@ const CommunityPage = () => {
           <div style={{ order: window.innerWidth < 1100 ? 1 : 1 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <h2 style={{ fontSize: '1.4rem', display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <Vote size={22} color="var(--primary)" /> Voting Aktif
+                <Vote size={22} color="var(--primary)" /> {t('community_voting_title')}
               </h2>
               <a href="https://snapshot.org" target="_blank" rel="noreferrer"
                 style={{ fontSize: '0.82rem', color: 'var(--primary)', display: 'flex', gap: '4px', alignItems: 'center' }}>
-                Lihat di Snapshot <ExternalLink size={12} />
+                {t('community_snapshot_link')} <ExternalLink size={12} />
               </a>
             </div>
 
@@ -220,7 +222,7 @@ const CommunityPage = () => {
                         background: p.status === 'active' ? '#dbfff0' : '#f1f3f5',
                         color: p.status === 'active' ? '#2b8a3e' : '#868e96',
                       }}>
-                        {p.status === 'active' ? '🟢 AKTIF' : '✅ SELESAI'}
+                        {p.status === 'active' ? t('community_status_active') : t('community_status_done')}
                       </span>
                     </div>
 
@@ -229,8 +231,8 @@ const CommunityPage = () => {
                     {/* Progress bars */}
                     <div style={{ marginBottom: '16px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '4px' }}>
-                        <span style={{ color: '#2b8a3e' }}>✅ Setuju {yesW}%</span>
-                        <span style={{ color: '#e03131' }}>❌ Tolak {noW}%</span>
+                        <span style={{ color: '#2b8a3e' }}>{t('community_vote_agree')} {yesW}%</span>
+                        <span style={{ color: '#e03131' }}>{t('community_vote_reject')} {noW}%</span>
                       </div>
                       <div style={{ height: '8px', background: 'var(--bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
                         <div style={{ height: '100%', width: `${yesW}%`, background: 'linear-gradient(90deg, #40c057, #2b8a3e)', borderRadius: '4px' }} />
@@ -239,22 +241,22 @@ const CommunityPage = () => {
 
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
                       <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                        {p.status === 'active' ? `Berakhir: ${new Date(p.ends).toLocaleDateString('id-ID')}` : `Berakhir: ${new Date(p.ends).toLocaleDateString('id-ID')}`}
-                        {' · '}Min. {p.minBMC.toLocaleString('id-ID')} BMC
+                        {p.status === 'active' ? `${t('community_ends')} ${new Date(p.ends).toLocaleDateString('id-ID')}` : `${t('community_ends')} ${new Date(p.ends).toLocaleDateString('id-ID')}`}
+                        {' · '}{t('community_min_bmc').replace('{bmc}', p.minBMC.toLocaleString('id-ID'))}
                       </span>
                       {p.status === 'active' && !hasVoted && eligible && (
                         <div style={{ display: 'flex', gap: '8px' }}>
                           <button onClick={() => setVoted({ ...voted, [p.id]: 'yes' })}
                             style={{ padding: '6px 16px', background: '#40c057', color: 'white', border: 'none', borderRadius: '20px', cursor: 'pointer', fontSize: '0.82rem', fontWeight: '600' }}>
-                            ✅ Setuju
+                            {t('community_vote_agree')}
                           </button>
                           <button onClick={() => setVoted({ ...voted, [p.id]: 'no' })}
                             style={{ padding: '6px 16px', background: '#e03131', color: 'white', border: 'none', borderRadius: '20px', cursor: 'pointer', fontSize: '0.82rem', fontWeight: '600' }}>
-                            ❌ Tolak
+                            {t('community_vote_reject')}
                           </button>
                         </div>
                       )}
-                      {hasVoted && <span style={{ color: '#40c057', fontWeight: '600', fontSize: '0.85rem' }}>✅ Sudah voting</span>}
+                      {hasVoted && <span style={{ color: '#40c057', fontWeight: '600', fontSize: '0.85rem' }}>{t('community_voted')}</span>}
                       {p.status === 'active' && !eligible && (
                         <Link to="/membership" style={{ fontSize: '0.8rem', color: '#e67700', fontWeight: '600' }}>
                           🔒 Butuh {p.minBMC.toLocaleString('id-ID')} BMC
@@ -280,12 +282,12 @@ const CommunityPage = () => {
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <span style={{ fontSize: '2rem' }}>🎥</span>
                 <div>
-                  <h3 style={{ fontSize: '1.2rem', margin: 0, color: 'var(--text-main)' }}>Bamboo Meeting</h3>
-                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '2px 0 0 0' }}>Rapat & Diskusi Online Instan</p>
+                  <h3 style={{ fontSize: '1.2rem', margin: 0, color: 'var(--text-main)' }}>{t('community_meeting_title')}</h3>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '2px 0 0 0' }}>{t('community_meeting_subtitle')}</p>
                 </div>
               </div>
               <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', lineHeight: '1.6', margin: 0 }}>
-                Ingin mendiskusikan proposal di atas secara langsung? Adakan rapat, diskusi, atau presentasi online instan bersama komunitas pegiat bambu.
+                {t('community_meeting_desc')}
               </p>
               <div>
                 <Link to="/bamboochain/meeting" style={{
@@ -302,7 +304,7 @@ const CommunityPage = () => {
                   boxShadow: '0 4px 12px rgba(12, 166, 120, 0.25)',
                   transition: 'all 0.2s'
                 }}>
-                  Mulai Rapat Online &rarr;
+                  {t('community_meeting_btn')} &rarr;
                 </Link>
               </div>
             </div>
@@ -314,25 +316,25 @@ const CommunityPage = () => {
             {/* Status keanggotaan */}
             <div style={{ background: 'var(--bg-card)', borderRadius: '16px', padding: '20px', border: '1px solid var(--border-color)' }}>
               <h3 style={{ fontSize: '1rem', marginBottom: '16px', display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <Users size={18} color="var(--primary)" /> Status Anda
+                <Users size={18} color="var(--primary)" /> {t('community_status_title')}
               </h3>
               {isConnected ? (
                 <div>
-                  <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '8px' }}>Saldo BMC</div>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '8px' }}>{t('community_balance_label')}</div>
                   <div style={{ fontSize: '1.5rem', fontWeight: '800', color: 'var(--primary)', marginBottom: '12px' }}>{bmcBalance ?? '0'}</div>
                   {userTier ? (
                     <div style={{ background: '#f0fff4', border: '1px solid #40c057', borderRadius: '10px', padding: '10px', textAlign: 'center', fontWeight: '700', color: '#2b8a3e', fontSize: '0.9rem' }}>
-                      Tier Aktif ✅
+                      {t('community_tier_active')}
                     </div>
                   ) : (
                     <Link to="/membership" className="btn btn-primary" style={{ display: 'block', textAlign: 'center', padding: '10px', borderRadius: '50px', fontSize: '0.85rem' }}>
-                      Upgrade Keanggotaan
+                      {t('community_upgrade_btn')}
                     </Link>
                   )}
                 </div>
               ) : (
                 <button onClick={openWalletModal} className="btn btn-primary" style={{ width: '100%', padding: '12px', fontSize: '0.9rem' }}>
-                  🔗 Hubungkan Wallet
+                  {t('community_connect_btn')}
                 </button>
               )}
             </div>
@@ -340,7 +342,7 @@ const CommunityPage = () => {
             {/* Temukan Pegiat & Ecoportfolio */}
             <div style={{ background: 'var(--bg-card)', borderRadius: '16px', padding: '20px', border: '1px solid var(--border-color)' }}>
               <h3 style={{ fontSize: '1rem', marginBottom: '16px', display: 'flex', gap: '8px', alignItems: 'center', color: 'var(--text-main)' }}>
-                <Award size={18} color="var(--primary)" /> Temukan Pegiat & Ecoportfolio 🎋
+                <Award size={18} color="var(--primary)" /> {t('community_pegiat_title')}
               </h3>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -348,7 +350,7 @@ const CommunityPage = () => {
                 <div style={{ position: 'relative', marginBottom: '8px' }}>
                   <input
                     type="text"
-                    placeholder="Cari pegiat..."
+                    placeholder={t('community_search_ph')}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     style={{
@@ -380,26 +382,26 @@ const CommunityPage = () => {
                 {searchQuery.trim() ? (
                   isSearching ? (
                     <div style={{ textAlign: 'center', padding: '20px 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                      Mencari pegiat...
+                      {t('community_searching')}
                     </div>
                   ) : searchResults.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '20px 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                      Tidak ada pegiat ditemukan.
+                      {t('community_no_pegiat')}
                     </div>
                   ) : (
                     searchResults.map((u, i) => {
                       const tier = getUserTier(u.bmcBalance || 0);
-                      let tierLabel = 'Pegiat Bambu';
+                      let tierLabel = t('community_tier_pegiat');
                       let tierGradient = 'linear-gradient(135deg, #495057, #868e96)';
                       
                       if (tier === 'builder') {
-                        tierLabel = 'Ecosystem Builder';
+                        tierLabel = t('community_tier_builder');
                         tierGradient = 'linear-gradient(135deg, #e67700, #fcc419)';
                       } else if (tier === 'guardian') {
-                        tierLabel = 'Bamboo Guardian';
+                        tierLabel = t('community_tier_guardian');
                         tierGradient = 'linear-gradient(135deg, #1971c2, #339af0)';
                       } else if (tier === 'seed') {
-                        tierLabel = 'Green Seed';
+                        tierLabel = t('community_tier_seed');
                         tierGradient = 'linear-gradient(135deg, #2f9e44, #40c057)';
                       }
 
@@ -469,7 +471,7 @@ const CommunityPage = () => {
                               flexShrink: 0
                             }}
                           >
-                            Lihat <ChevronRight size={14} />
+                            {t('community_view_btn')} <ChevronRight size={14} />
                           </Link>
                         </div>
                       );
@@ -478,7 +480,7 @@ const CommunityPage = () => {
                 ) : (
                   pegiatList.map((u, i) => {
                     const tier = getUserTier(u.bmcBalance || 0);
-                    let tierLabel = 'Pegiat Bambu';
+                    let tierLabel = t('community_tier_pegiat');
                     let tierGradient = 'linear-gradient(135deg, #495057, #868e96)';
                     
                     if (tier === 'builder') {
@@ -558,7 +560,7 @@ const CommunityPage = () => {
                             flexShrink: 0
                           }}
                         >
-                          Lihat <ChevronRight size={14} />
+                          {t('community_view_btn')} <ChevronRight size={14} />
                         </Link>
                       </div>
                     );
@@ -570,7 +572,7 @@ const CommunityPage = () => {
             {/* Pengumuman */}
             <div style={{ background: 'var(--bg-card)', borderRadius: '16px', padding: '20px', border: '1px solid var(--border-color)' }}>
               <h3 style={{ fontSize: '1rem', marginBottom: '16px', display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <Bell size={18} color="var(--primary)" /> Pengumuman
+                <Bell size={18} color="var(--primary)" /> {t('community_announce_title')}
               </h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 {ANNOUNCEMENTS.map((a, i) => (
@@ -588,7 +590,7 @@ const CommunityPage = () => {
             {/* Link komunitas */}
             <div style={{ background: 'var(--bg-card)', borderRadius: '16px', padding: '20px', border: '1px solid var(--border-color)' }}>
               <h3 style={{ fontSize: '1rem', marginBottom: '16px', display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <MessageSquare size={18} color="var(--primary)" /> Bergabung
+                <MessageSquare size={18} color="var(--primary)" /> {t('community_join_title')}
               </h3>
               {[
                 { icon: '💬', name: 'Telegram bambuNUSA', url: 'https://t.me/bambucrypto' },

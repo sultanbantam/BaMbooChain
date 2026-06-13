@@ -36,8 +36,88 @@ const MarketplacePage = () => {
     t('market_unit_liter'),
     t('market_unit_other')
   ];
+
+  const getCategoryTranslation = (cat) => {
+    switch (cat) {
+      case 'Material konstruksi':
+      case 'Construction Material':
+      case 'market_cat_material':
+        return t('market_cat_material');
+      case 'Furniture':
+      case 'market_cat_furniture':
+        return t('market_cat_furniture');
+      case 'Kerajinan':
+      case 'Craft':
+      case 'market_cat_craft':
+        return t('market_cat_craft');
+      case 'NFT Bamboo':
+      case 'market_cat_nft':
+        return t('market_cat_nft');
+      case 'Lainnya':
+      case 'Other':
+      case 'market_cat_other':
+        return t('market_cat_other');
+      default:
+        return cat;
+    }
+  };
+
+  const getUnitTranslation = (unit) => {
+    switch (unit) {
+      case 'Batang':
+      case 'Stem':
+      case 'market_unit_stem':
+        return t('market_unit_stem');
+      case 'Lembar':
+      case 'Sheet':
+      case 'market_unit_sheet':
+        return t('market_unit_sheet');
+      case 'Unit':
+      case 'market_unit_unit':
+        return t('market_unit_unit');
+      case 'Pieces':
+      case 'market_unit_pcs':
+        return t('market_unit_pcs');
+      case 'Set':
+      case 'market_unit_set':
+        return t('market_unit_set');
+      case 'Kg':
+      case 'market_unit_kg':
+        return t('market_unit_kg');
+      case 'Liter':
+      case 'market_unit_liter':
+        return t('market_unit_liter');
+      case 'Lainnya':
+      case 'Other':
+      case 'market_unit_other':
+        return t('market_unit_other');
+      default:
+        return unit;
+    }
+  };
+
+  const getProductField = (product, field) => {
+    if (!product) return '';
+    switch (field) {
+      case 'name':
+        return product.nameKey ? t(product.nameKey) : product.name;
+      case 'category':
+        return product.categoryKey ? t(product.categoryKey) : getCategoryTranslation(product.category);
+      case 'unit':
+        return product.unitKey ? t(product.unitKey) : getUnitTranslation(product.unit);
+      case 'description':
+        return product.descKey ? t(product.descKey) : product.description;
+      case 'storyTelling':
+        return product.storyKey ? t(product.storyKey) : product.storyTelling;
+      case 'specs':
+        return product.specKeys ? product.specKeys.map(key => t(key)) : product.specs || [];
+      default:
+        return '';
+    }
+  };
   
-  const [activeCategory] = useState(categories[0]);
+  const [activeCategoryIndex, setActiveCategoryIndex] = useState(0);
+  const activeCategory = categories[activeCategoryIndex];
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
   const fileInputRef = useRef(null);
 
@@ -48,14 +128,14 @@ const MarketplacePage = () => {
   }, []);
 
   const [bursaData, setBursaData] = useState([
-    { type: "Bambu Betung (Meter)", price: 12500, trend: "+2.4%", up: true },
-    { type: "Bambu Wulung (Meter)", price: 9800, trend: "-1.1%", up: false },
-    { type: "Bambu Tali (Meter)", price: 7200, trend: "+0.5%", up: true },
-    { type: "Papan Lapis (Lbr)", price: 85000, trend: "+4.2%", up: true },
-    { type: "Cuka Bambu (Liter)", price: 45000, trend: "+1.2%", up: true },
-    { type: "Arang Bambu (25 Kg)", price: 125000, trend: "+0.8%", up: true },
-    { type: "Briket Bambu (25 Kg)", price: 150000, trend: "+2.1%", up: true },
-    { type: "Lain-lain", price: 0, trend: "-", up: true },
+    { typeKey: "market_bursa_betung", price: 12500, trend: "+2.4%", up: true },
+    { typeKey: "market_bursa_wulung", price: 9800, trend: "-1.1%", up: false },
+    { typeKey: "market_bursa_tali", price: 7200, trend: "+0.5%", up: true },
+    { typeKey: "market_bursa_plywood", price: 85000, trend: "+4.2%", up: true },
+    { typeKey: "market_bursa_vinegar", price: 45000, trend: "+1.2%", up: true },
+    { typeKey: "market_bursa_charcoal", price: 125000, trend: "+0.8%", up: true },
+    { typeKey: "market_bursa_briquette", price: 150000, trend: "+2.1%", up: true },
+    { typeKey: "market_bursa_other", price: 0, trend: "-", up: true },
   ]);
   
   // eslint-disable-next-line no-unused-vars
@@ -118,7 +198,7 @@ const MarketplacePage = () => {
   const [likes, setLikes] = useState(1240);
   const [pendingOrders, setPendingOrders] = useState([
     { id: 'BC-92831', customer: 'Bapak Ahmad', product: 'Bambu Betung', status: 'Pending Curation', total: 812500, date: '07/05/2026' },
-    { id: 'BC-92835', customer: 'Ibu Siti', product: 'Kursi Wulung', status: 'Paid', total: 7312500, date: '07/05/2026' },
+    { id: 'BC-92835', customer: 'Igu Siti', product: 'Kursi Wulung', status: 'Paid', total: 7312500, date: '07/05/2026' },
   ]);
   const [toast, setToast] = useState({ show: false, message: '' });
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -173,47 +253,92 @@ const MarketplacePage = () => {
 
   const [products, setProducts] = useState([
     { 
-      id: 1, name: "Sedotan", category: "Kerajinan", priceIdr: 5000, vendor: "admin", rating: 5, reviews: 10, verified: true,
+      id: 1, 
+      nameKey: "market_prod_1_name", 
+      categoryKey: "market_cat_craft", 
+      priceIdr: 5000, 
+      vendor: "admin", 
+      rating: 5, 
+      reviews: 10, 
+      verified: true,
       img: "gambar/produk/sdt.jpeg", 
       images: ["gambar/produk/sdt.jpeg", "gambar/produk/sdt2.jpeg", "gambar/produk/sdt3.jpeg"],
       status: 'Approved',
-      unit: "Pieces", 
-      description: "Sedotan bambu alami yang terbuat dari bambu tamiang pilihan dengan diameter 0,3 cm - 1 cm dan panjang 15 cm - 25 cm. Diproses secara tradisional oleh para pengrajin dari Gunung Kidul, Jawa Tengah, menghasilkan sedotan yang kuat, ringan, ramah lingkungan, dan dapat digunakan berulang kali. Cocok untuk minuman dingin maupun hangat, sekaligus menjadi alternatif pengganti sedotan plastik yang lebih berkelanjutan.",
-      storyTelling: "Sedotan bambu ini lahir dari alam karst Gunung Kidul, Jawa Tengah, daerah yang dikenal dengan ketangguhan masyarakat dan kekayaan bambunya. Dibuat secara tradisional oleh pengrajin utama Mas Kha Tiem bersama para perajin lokal, setiap batang bambu tamiang dipilih secara teliti, dipotong, dibersihkan, diamplas, lalu dikeringkan secara alami agar tetap kuat dan nyaman digunakan. Bukan sekadar sedotan, produk ini membawa semangat hidup selaras dengan alam. Dari tangan-tangan pengrajin desa, bambu yang tumbuh sederhana diubah menjadi produk ramah lingkungan yang membantu mengurangi limbah plastik sekaligus memberdayakan masyarakat lokal. Setiap sedotan memiliki karakter unik alami bambu Nusantara, menjadikannya tidak hanya fungsional tetapi juga memiliki nilai budaya dan keberlanjutan.",
-      specs: ["diameter 0,3 cm - 1 cm dan panjang 15 cm - 25 cm", "bisa dipakai berulang kali", "dibersihkan menggunakan air bersih dengan cara disemprot."]
+      unitKey: "market_unit_pcs", 
+      descKey: "market_prod_1_desc",
+      storyKey: "market_prod_1_story",
+      specKeys: ["market_prod_1_spec_1", "market_prod_1_spec_2", "market_prod_1_spec_3"]
     },
     { 
-      id: 2, name: "Jam Tangan Bambu Virageawie", category: "Kerajinan", priceIdr: 500000, vendor: "Virageawie Bandung", rating: 4.9, reviews: 92, verified: true,
+      id: 2, 
+      nameKey: "market_prod_2_name", 
+      categoryKey: "market_cat_craft", 
+      priceIdr: 500000, 
+      vendor: "Virageawie Bandung", 
+      rating: 4.9, 
+      reviews: 92, 
+      verified: true,
       img: "./gambar/produk/jam.jpg", 
       status: 'Approved',
-      unit: "Pieces", 
-      description: "Dibuat dengan ketelitian tinggi oleh para master muda kreatif dari komunitas Virageawie Bandung Barat, jam tangan bambu ini menghadirkan perpaduan antara kerajinan tradisional, desain modern, dan semangat keberlanjutan. Menggunakan material pilihan dari bambu gombong, setiap detailnya diproses dengan presisi sehingga menghasilkan karakter yang ringan, kuat, sekaligus eksotik alami. Serat dan warna alami bambu menjadikan setiap jam memiliki pola yang unik—tidak ada yang benar-benar sama. Dipadukan dengan desain minimalis dan elegan, jam ini bukan sekadar penunjuk waktu, tetapi juga simbol gaya hidup ramah lingkungan dan kebanggaan terhadap karya anak bangsa.",
-      storyTelling: "Di tangan para anak muda kreatif Virageawie, bambu yang dahulu dipandang sederhana berubah menjadi karya bernilai tinggi. Dari rumpun bambu gombong di Nusantara, lahirlah jam tangan yang membawa cerita tentang alam, ketekunan, dan inovasi. Setiap potongan bambu dipilih, dipahat, dan dirakit dengan penuh kesabaran hingga menjadi sebuah karya presisi yang hidup. Saat dikenakan, jam ini bukan hanya mengingatkan tentang waktu, tetapi juga tentang perjalanan—bahwa dari alam yang dijaga dengan baik, akan lahir masa depan yang indah dan berkelanjutan. “Bukan sekadar jam tangan, tetapi cerita tentang bambu Nusantara yang terus hidup di setiap detik waktu.”",
-      specs: ["Material: Bambu Gombong Pilihan", "Karakter: Ringan, Kuat & Eksotik Alami", "Finishing: Presisi Halus dengan Karakter Unik"]
+      unitKey: "market_unit_pcs", 
+      descKey: "market_prod_2_desc",
+      storyKey: "market_prod_2_story",
+      specKeys: ["market_prod_2_spec_1", "market_prod_2_spec_2", "market_prod_2_spec_3"]
     },
     { 
-      id: 3, name: "Lampu Hias Anyaman", category: "Kerajinan", priceIdr: 1950000, vendor: "Bamboo Art BDG", rating: 4.7, reviews: 215, verified: false,
+      id: 3, 
+      nameKey: "market_prod_3_name", 
+      categoryKey: "market_cat_craft", 
+      priceIdr: 1950000, 
+      vendor: "Bamboo Art BDG", 
+      rating: 4.7, 
+      reviews: 215, 
+      verified: false,
       img: "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", 
       status: 'Approved',
-      unit: "Unit", description: "Lampu hias anyaman tangan karya pengrajin lokal. Memberikan efek cahaya dramatis untuk interior ruangan mewah.",
-      specs: ["Fitting: E27", "Tegangan: 220V", "Material: Kulit Bambu Tali"]
+      unitKey: "market_unit_unit", 
+      descKey: "market_prod_3_desc",
+      specKeys: ["market_prod_3_spec_1", "market_prod_3_spec_2", "market_prod_3_spec_3"]
     },
     { 
-      id: 4, name: "Genesis bambuNUSA NFT #01", category: "NFT Bamboo", priceIdr: 16250000, vendor: "BaMbooChain Official", rating: 5.0, reviews: 12, verified: true,
+      id: 4, 
+      nameKey: "market_prod_4_name", 
+      categoryKey: "market_cat_nft", 
+      priceIdr: 16250000, 
+      vendor: "BaMbooChain Official", 
+      rating: 5.0, 
+      reviews: 12, 
+      verified: true,
       img: "https://images.unsplash.com/photo-1618331835717-801e976710b2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", 
       status: 'Approved',
-      unit: "Pieces", description: "Koleksi NFT eksklusif yang merepresentasikan kepemilikan pohon bambu nyata di area restorasi bursa BaMbooChain.",
-      specs: ["Network: Pi Network", "Token: BEP-20", "Perks: Carbon Credit Share"]
+      unitKey: "market_unit_pcs", 
+      descKey: "market_prod_4_desc",
+      specKeys: ["market_prod_4_spec_1", "market_prod_4_spec_2", "market_prod_4_spec_3"]
     },
     { 
-      id: 5, name: "Papan Laminasi Bambu", category: "Material konstruksi", priceIdr: 4500000, vendor: "IndoBamboo", rating: 4.6, reviews: 45, verified: true,
+      id: 5, 
+      nameKey: "market_prod_5_name", 
+      categoryKey: "market_cat_material", 
+      priceIdr: 4500000, 
+      vendor: "IndoBamboo", 
+      rating: 4.6, 
+      reviews: 45, 
+      verified: true,
       img: "https://images.unsplash.com/photo-1598928376916-2fd125c192bd?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", 
       status: 'Approved',
-      unit: "Lembar", description: "Papan laminasi presisi tinggi untuk kebutuhan flooring dan furniture premium. Tahan lama dan estetik.",
-      specs: ["Dimensi: 122x244cm", "Tebal: 18mm", "Material: Bambu Petung"]
+      unitKey: "market_unit_sheet", 
+      descKey: "market_prod_5_desc",
+      specKeys: ["market_prod_5_spec_1", "market_prod_5_spec_2", "market_prod_5_spec_3"]
     },
     { 
-      id: 6, name: "🌿 Rumah Sang Ahli Bambu Dunia — Dijual Rp 4 Miliar", category: "Lainnya", priceIdr: 4000000000, vendor: "Yayasan Sabumi", rating: 5.0, reviews: 1, verified: true,
+      id: 6, 
+      nameKey: "market_prod_6_name", 
+      categoryKey: "market_cat_other", 
+      priceIdr: 4000000000, 
+      vendor: "Yayasan Sabumi", 
+      rating: 5.0, 
+      reviews: 1, 
+      verified: true,
       img: "gambar/produk/r5.jpeg", 
       images: [
         "gambar/produk/r5.jpeg",
@@ -223,40 +348,10 @@ const MarketplacePage = () => {
         "gambar/produk/r9.jpeg"
       ],
       status: 'Approved',
-      unit: "Kawasan", 
-      description: `Rumah dan tanah milik Prof. Dr. Elizabeth A. Widjaja ini bukan sekadar hunian biasa, tetapi jejak sejarah penting perkembangan ilmu bambu Indonesia. Beliau dikenal sebagai salah satu ahli taksonomi bambu dunia yang selama puluhan tahun meneliti, mengidentifikasi, dan memberi nama ilmiah berbagai spesies bambu Nusantara. Bahkan, nama “Widjaja” tercatat dalam banyak nomenklatur ilmiah bambu Indonesia dan internasional.
-
-Di kawasan tenang Dramaga, Bogor, rumah ini menjadi museum hidup sekaligus laboratorium pribadi tempat lahirnya berbagai penelitian bambu Indonesia. Di sinilah koleksi bambu, catatan penelitian, dokumentasi lapangan, hingga diskusi ilmiah tentang bambu pernah berkembang selama puluhan tahun. Rumah utama berdiri di atas lahan ±2.590 m² dengan suasana hijau, kolam ikan, area kebun, dan lingkungan yang sangat mendukung aktivitas penelitian and konservasi.
-
-Tidak hanya memiliki rumah utama, kawasan ini juga dilengkapi rumah pendukung dan beberapa petak kebun yang menyatu dengan alam, menjadikannya sangat potensial untuk dikembangkan sebagai pusat riset bambu, museum bambu Nusantara, akademi bambu, eco-lab, atau kawasan edukasi lingkungan berbasis bambu dan biodiversitas.`,
-      storyTelling: `“Di rumah sederhana inilah, nama-nama bambu Indonesia ditulis untuk pertama kalinya ke dalam sejarah dunia.
-Setiap rumpun bambu yang pernah diteliti Prof. Elizabeth A. Widjaja bukan hanya tanaman, tetapi warisan ilmu pengetahuan Nusantara. Dari ruang-ruang inilah lahir identitas ilmiah bambu Indonesia yang kini dikenal dunia. Sebuah tempat sunyi yang menyimpan dedikasi besar untuk alam, ilmu pengetahuan, dan masa depan peradaban hijau.”
-
-“Bukan Sekadar Rumah, Tetapi Warisan Ilmu Pengetahuan Bambu Indonesia”
-
-Rumah dan kawasan ini merupakan tempat tinggal sekaligus laboratorium pribadi milik Prof. Dr. Elizabeth A. Widjaja, salah satu ahli taksonomi bambu dunia yang berjasa meneliti dan memberi nama ilmiah berbagai spesies bambu Indonesia. Nama “Widjaja” sendiri telah tercatat dalam sejarah penelitian bambu internasional. (en.wikipedia.org)
-
-Berlokasi di kawasan hijau dan tenang di Dramaga, Bogor, properti ini berdiri di atas total lahan ±4.770 m² dengan 4 sertifikat SHM, terdiri dari:
-- Rumah utama
-- Rumah pendukung
-- Area kebun
-- Kolam ikan
-- Dan lingkungan alami yang sangat asri.
-
-Tempat ini sangat potensial dikembangkan menjadi:
-🌿 Museum Bambu Nusantara
-🌿 Pusat Penelitian & Biodiversitas
-🌿 Eco Retreat & Akademi Bambu
-🌿 Bamboo Research Center
-🌿 Creative Eco Campus
-🌿 Kawasan Edukasi Lingkungan
-
-📍 Lokasi
-Jl. Cimurai RT03 No.20, Desa Sukawening, Kec. Dramaga, Kabupaten Bogor, Jawa Barat.
-
-💰 Harga Penawaran
-Rp 4 Miliar (nego)`,
-      specs: ["Total Lahan ±4.770 m²", "4 Sertifikat SHM", "Dramaga, Bogor", "Rumah Utama & Pendukung", "Kolam & Area Kebun"]
+      unitKey: "market_unit_unit", 
+      descKey: "market_prod_6_desc",
+      storyKey: "market_prod_6_story",
+      specKeys: ["market_prod_6_spec_1", "market_prod_6_spec_2", "market_prod_6_spec_3", "market_prod_6_spec_4", "market_prod_6_spec_5"]
     }
   ]);
 
@@ -264,7 +359,7 @@ Rp 4 Miliar (nego)`,
   useEffect(() => {
     const interval = setInterval(() => {
       setBursaData(prev => prev.map(item => {
-        if (item.type === "Lain-lain") return item;
+        if (item.typeKey === "market_bursa_other") return item;
         const change = (Math.random() * 200 - 100); 
         const up = change >= 0;
         return { ...item, price: Math.max(1000, Math.round(item.price + change)), up, trend: `${up ? '+' : ''}${(Math.random() * 5).toFixed(1)}%` };
@@ -285,7 +380,7 @@ Rp 4 Miliar (nego)`,
       if (existing) return prev.map(item => item.id === product.id ? { ...item, qty: item.qty + 1 } : item);
       return [...prev, { ...product, qty: 1 }];
     });
-    showToast(`"${product.name}" ditambahkan ke keranjang!`);
+    showToast(t('market_toast_cart_added').replace('{name}', getProductField(product, 'name')));
   };
 
   const updateQty = (id, delta) => {
@@ -308,7 +403,7 @@ Rp 4 Miliar (nego)`,
     const newOrder = {
       id: orderId,
       customer: 'Saya (Pembeli)',
-      product: cart.map(item => item.name).join(', '),
+      product: cart.map(item => getProductField(item, 'name')).join(', '),
       status: 'Pending Curation',
       total: cartTotalIdr,
       date: new Date().toLocaleDateString()
@@ -316,7 +411,7 @@ Rp 4 Miliar (nego)`,
     
     setOrderTracking({
       id: orderId,
-      status: 'Menunggu Verifikasi Kurator',
+      statusKey: 'market_checkout_awaiting_verification',
       date: new Date().toLocaleString()
     });
     
@@ -324,7 +419,7 @@ Rp 4 Miliar (nego)`,
     setPendingOrders(prev => [newOrder, ...prev]);
     
     setCartStatus('success');
-    showToast(`Pesanan ${orderId} berhasil dibuat!`);
+    showToast(t('market_toast_order_success').replace('{id}', orderId));
   };
 
   const handleAddProduct = (e) => {
@@ -353,7 +448,7 @@ Rp 4 Miliar (nego)`,
     setProducts([productToAdd, ...products]);
     setShowSellModal(false);
     setNewProduct({ name: '', category: t('market_cat_material'), customCategory: '', price: '', images: [], description: '', storyTelling: '', unit: t('market_unit_stem'), customUnit: '', specs: '', whatsapp: '' });
-    showToast(`Produk "${newProduct.name}" berhasil didaftarkan!`);
+    showToast(t('market_toast_product_registered').replace('{name}', newProduct.name));
   };
 
   const handleSendChatMessage = (e) => {
@@ -365,7 +460,7 @@ Rp 4 Miliar (nego)`,
     
     // Simulating auto-reply
     setTimeout(() => {
-      setChatMessages(prev => [...prev, { id: Date.now()+1, sender: chatTarget?.vendor || 'Vendor', text: 'Terima kasih atas minatnya! Kami akan segera merespon detailnya.', time, isMe: false }]);
+      setChatMessages(prev => [...prev, { id: Date.now()+1, sender: chatTarget?.vendor || 'Vendor', text: t('market_chat_auto_reply'), time, isMe: false }]);
     }, 1500);
   };
 
@@ -380,13 +475,13 @@ Rp 4 Miliar (nego)`,
   const handleApproveProduct = (id) => {
     setProducts(prev => prev.map(p => p.id === id ? { ...p, status: 'Approved', verified: true } : p));
     setSelectedProduct(null);
-    showToast(`Produk berhasil disetujui dan ditayangkan!`);
+    showToast(t('market_toast_product_approved'));
   };
 
   const handleRejectProduct = (id) => {
     setProducts(prev => prev.filter(p => p.id !== id));
     setSelectedProduct(null);
-    showToast(`Produk ditolak dan dihapus dari antrean.`);
+    showToast(t('market_toast_product_rejected'));
   };
 
   const visibleProducts = products.filter(p => p.status === 'Approved');
@@ -395,16 +490,16 @@ Rp 4 Miliar (nego)`,
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
     if (newProduct.images.length + files.length > 5) {
-      showToast("Maksimal 5 foto produk.");
+      showToast(t('market_toast_max_photos'));
       return;
     }
     
     const newImageUrls = files.map(file => URL.createObjectURL(file));
     setNewProduct(prev => ({ ...prev, images: [...prev.images, ...newImageUrls] }));
-    showToast(`${files.length} foto berhasil dipilih!`);
+    showToast(t('market_toast_photos_selected').replace('{count}', files.length));
   };
 
-  const handleGift = (type) => showToast(`Terima kasih! Gift ${type} telah dikirim ke Penjual.`);
+  const handleGift = (type) => showToast(t('market_toast_gift_sent').replace('{type}', type));
 
   const handleSwitchMode = (mode) => {
     if (mode === 'admin' && !isAdminAuthenticated) setShowAuthModal(true);
@@ -413,21 +508,21 @@ Rp 4 Miliar (nego)`,
 
   const updateOrderStatus = (id, newStatus) => {
     setPendingOrders(prev => prev.map(o => o.id === id ? { ...o, status: newStatus } : o));
-    showToast(`Pesanan ${id} diperbarui menjadi: ${newStatus}`);
+    showToast(t('market_toast_order_updated').replace('{id}', id).replace('{status}', newStatus));
   };
 
-  const filteredProducts = activeCategory === "Semua" ? visibleProducts : visibleProducts.filter(p => p.category === activeCategory);
+  const filteredProducts = activeCategoryIndex === 0 ? visibleProducts : visibleProducts.filter(p => getProductField(p, 'category') === activeCategory);
   const cartTotalIdr = cart.reduce((sum, item) => sum + (item.priceIdr * item.qty), 0);
 
   const shippingOptions = [
-    { id: 'express', name: 'Smart Logistics (Powered by Cainiao)', desc: 'Anticipatory Shipping - Prediksi sampai 1-2 hari.', price: 55000 },
-    { id: 'regular', name: 'Logistik Reguler (JNE/J&T)', desc: 'Standard shipping service.', price: 25000 },
-    { id: 'pickup', name: 'Self Pickup (Hub Yayasan)', desc: 'Ambil di gudang pusat kurasi.', price: 0 },
+    { id: 'express', name: t('market_ship_express_name'), desc: t('market_ship_express_desc'), price: 55000 },
+    { id: 'regular', name: t('market_ship_regular_name'), desc: t('market_ship_regular_desc'), price: 25000 },
+    { id: 'pickup', name: t('market_ship_pickup_name'), desc: t('market_ship_pickup_desc'), price: 0 },
   ];
 
   const liveStreams = [
-    { id: 1, title: "Panen Bambu Petung Live!", viewers: "1.2k", seller: "Koperasi Cibarani", img: "https://images.unsplash.com/photo-1588614959060-4d144f28b207?auto=format&fit=crop&w=400" },
-    { id: 2, title: "Review Kursi Wulung Premium", viewers: "850", seller: "EcoFurn Jabar", img: "https://images.unsplash.com/photo-1592078615290-033ee584e267?auto=format&fit=crop&w=400" },
+    { id: 1, titleKey: "market_live_title_1", viewers: "1.2k", seller: "Koperasi Cibarani", img: "https://images.unsplash.com/photo-1588614959060-4d144f28b207?auto=format&fit=crop&w=400" },
+    { id: 2, titleKey: "market_live_title_2", viewers: "850", seller: "EcoFurn Jabar", img: "https://images.unsplash.com/photo-1592078615290-033ee584e267?auto=format&fit=crop&w=400" },
   ];
 
   return (
@@ -447,7 +542,7 @@ Rp 4 Miliar (nego)`,
                 setViewMode('admin'); 
                 setShowAuthModal(false); 
                 setAuthPassword(''); // Clear password from state after login
-              } else showToast("Password Salah!"); 
+              } else showToast(t('market_toast_wrong_password')); 
             }}>
               <div style={{ position: 'relative', marginBottom: '15px' }}>
                 <input 
@@ -467,7 +562,7 @@ Rp 4 Miliar (nego)`,
                 </button>
               </div>
               <div style={{ marginBottom: '20px', textAlign: 'right' }}>
-                <button type="button" onClick={() => showToast("Hubungi admin untuk reset password.")} style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 'bold' }}>{t('market_auth_forgot')}</button>
+                <button type="button" onClick={() => showToast(t('market_toast_contact_admin'))} style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 'bold' }}>{t('market_auth_forgot')}</button>
               </div>
               <div style={{ display: 'flex', gap: '10px' }}>
                 <button type="button" onClick={() => setShowAuthModal(false)} style={{ flex: 1, padding: '12px', borderRadius: '10px', border: 'none', background: '#eee', cursor: 'pointer' }}>{t('market_auth_btn_cancel')}</button>
@@ -488,25 +583,25 @@ Rp 4 Miliar (nego)`,
                <img src={selectedLive.img} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.6 }} alt="" />
                <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', color: 'white' }}>
                   <Play size={60} fill="white" style={{ marginBottom: '20px' }} />
-                  <h2 style={{ fontSize: '1.5rem' }}>Live Streaming...</h2>
+                  <h2 style={{ fontSize: '1.5rem' }}>{t('market_live_streaming_status')}</h2>
                </div>
                <div style={{ position: 'absolute', bottom: '30px', left: '30px', display: 'flex', gap: '15px' }}>
                   <div style={{ background: '#fa5252', color: 'white', padding: '6px 12px', borderRadius: '10px', fontWeight: 'bold', fontSize: '0.8rem' }}>LIVE</div>
-                  <div style={{ background: 'rgba(255,255,255,0.2)', color: 'white', padding: '6px 12px', borderRadius: '10px', fontSize: '0.8rem' }}>{selectedLive.viewers} menonton</div>
+                  <div style={{ background: 'rgba(255,255,255,0.2)', color: 'white', padding: '6px 12px', borderRadius: '10px', fontSize: '0.8rem' }}>{selectedLive.viewers} {t('market_live_viewers')}</div>
                </div>
             </div>
 
             <div style={{ flex: 1, background: '#1a1a1a', padding: '30px', color: 'white', display: 'flex', flexDirection: 'column' }}>
                <div style={{ marginBottom: '20px' }}>
-                  <h3 style={{ fontSize: '1.2rem', marginBottom: '8px' }}>{selectedLive.title}</h3>
-                  <p style={{ fontSize: '0.85rem', color: '#888' }}>Hosted by: <strong>{selectedLive.seller}</strong></p>
+                  <h3 style={{ fontSize: '1.2rem', marginBottom: '8px' }}>{selectedLive.titleKey ? t(selectedLive.titleKey) : selectedLive.title}</h3>
+                  <p style={{ fontSize: '0.85rem', color: '#888' }}>{t('market_hosted_by')} <strong>{selectedLive.seller}</strong></p>
                </div>
 
                <div style={{ flex: 1, overflowY: 'auto', marginBottom: '20px' }}>
-                  <h4 style={{ fontSize: '0.7rem', color: '#555', letterSpacing: '1px', marginBottom: '15px' }}>LIVE CHAT</h4>
+                  <h4 style={{ fontSize: '0.7rem', color: '#555', letterSpacing: '1px', marginBottom: '15px' }}>{t('market_live_chat_label')}</h4>
                   {liveComments.map((c, i) => (
                     <div key={i} style={{ marginBottom: '8px', fontSize: '0.85rem' }}>
-                      <span style={{ fontWeight: 'bold', color: c.user === 'Saya' ? 'var(--primary)' : '#888' }}>{c.user}: </span>
+                      <span style={{ fontWeight: 'bold', color: c.user === 'Saya' ? 'var(--primary)' : '#888' }}>{c.user === 'Saya' ? t('market_user_me') : c.user}: </span>
                       <span style={{ opacity: 0.9 }}>{c.text}</span>
                     </div>
                   ))}
@@ -515,7 +610,7 @@ Rp 4 Miliar (nego)`,
                <form onSubmit={handleSendComment} style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
                   <input 
                     type="text" 
-                    placeholder="Tulis komentar..." 
+                    placeholder={t('market_live_comment_placeholder')} 
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
                     style={{ flex: 1, background: '#333', border: 'none', borderRadius: '10px', padding: '10px', color: 'white', fontSize: '0.85rem' }}
@@ -526,21 +621,21 @@ Rp 4 Miliar (nego)`,
                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
                   <div style={{ display: 'flex', gap: '10px' }}>
                      <button onClick={() => setLikes(l => l + 1)} style={{ background: '#333', border: 'none', borderRadius: '50%', width: '40px', height: '40px', color: '#fa5252', cursor: 'pointer' }}><Heart size={20} fill="#fa5252" /></button>
-                     <button onClick={() => showToast("Share ke sosial media...")} style={{ background: '#333', border: 'none', borderRadius: '50%', width: '40px', height: '40px', color: 'white', cursor: 'pointer' }}><ArrowRightLeft size={20} /></button>
+                     <button onClick={() => showToast(t('market_toast_share_social'))} style={{ background: '#333', border: 'none', borderRadius: '50%', width: '40px', height: '40px', color: 'white', cursor: 'pointer' }}><ArrowRightLeft size={20} /></button>
                   </div>
                   <div style={{ fontSize: '0.8rem', color: '#888' }}>{likes} Likes</div>
                </div>
 
                <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
-                  <button onClick={() => handleGift('Bamboo')} style={{ flex: 1, background: 'rgba(12,166,120,0.2)', color: 'var(--primary)', border: 'none', padding: '8px', borderRadius: '10px', fontSize: '0.7rem', fontWeight: 'bold', cursor: 'pointer' }}>🎁 BAMBOO</button>
-                  <button onClick={() => handleGift('Diamond')} style={{ flex: 1, background: 'rgba(34,139,230,0.2)', color: '#228be6', border: 'none', padding: '8px', borderRadius: '10px', fontSize: '0.7rem', fontWeight: 'bold', cursor: 'pointer' }}>💎 DIAMOND</button>
+                  <button onClick={() => handleGift('Bamboo')} style={{ flex: 1, background: 'rgba(12,166,120,0.2)', color: 'var(--primary)', border: 'none', padding: '8px', borderRadius: '10px', fontSize: '0.7rem', fontWeight: 'bold', cursor: 'pointer' }}>{t('market_live_gift_bamboo')}</button>
+                  <button onClick={() => handleGift('Diamond')} style={{ flex: 1, background: 'rgba(34,139,230,0.2)', color: '#228be6', border: 'none', padding: '8px', borderRadius: '10px', fontSize: '0.7rem', fontWeight: 'bold', cursor: 'pointer' }}>{t('market_live_gift_diamond')}</button>
                </div>
 
                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '20px' }}>
                   {['YT', 'TK', 'IG', 'FB', 'X', 'WA', 'TG', 'LI'].map(s => <div key={s} style={{ background: '#333', padding: '8px', borderRadius: '8px', textAlign: 'center', fontSize: '0.6rem', cursor: 'pointer' }}>{s}</div>)}
                </div>
 
-               <button onClick={() => { setSelectedLive(null); showToast("Produk ditambahkan dari Live!"); }} style={{ width: '100%', padding: '16px', borderRadius: '15px', background: 'var(--primary)', color: 'white', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}>BELI PRODUK INI</button>
+               <button onClick={() => { setSelectedLive(null); showToast(t('market_toast_live_added')); }} style={{ width: '100%', padding: '16px', borderRadius: '15px', background: 'var(--primary)', color: 'white', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}>{t('market_live_buy_btn')}</button>
             </div>
           </div>
         </div>
@@ -551,8 +646,8 @@ Rp 4 Miliar (nego)`,
         <div onClick={() => setShowCartModal(true)} style={{ position: 'fixed', top: '100px', right: '20px', background: 'rgba(12,166,120,0.95)', color: 'white', padding: '15px 25px', borderRadius: '15px', zIndex: 100000, boxShadow: '0 10px 40px rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>
           <CheckCircle size={18} />
           <div>
-            <div style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>Berhasil!</div>
-            <div style={{ fontSize: '0.8rem' }}>{toast.message} <span style={{ textDecoration: 'underline' }}>Lihat Keranjang →</span></div>
+            <div style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>{t('market_toast_cart_added_success')}</div>
+            <div style={{ fontSize: '0.8rem' }}>{toast.message} <span style={{ textDecoration: 'underline' }}>{t('market_toast_cart_added_view')}</span></div>
           </div>
         </div>
       )}
@@ -672,58 +767,58 @@ Rp 4 Miliar (nego)`,
                  )}
               </div>
               <div style={{ flex: windowWidth < 900 ? 'none' : '1', padding: windowWidth < 900 ? '20px' : '40px', display: 'flex', flexDirection: 'column', overflowY: windowWidth < 900 ? 'visible' : 'auto', minHeight: 0 }}>
-                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
-                      <span style={{ padding: '5px 15px', background: 'var(--primary)', color: 'white', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 'bold' }}>{selectedProduct.category}</span>
-                      {selectedProduct.verified && <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#228be6', fontSize: '0.8rem', fontWeight: 'bold' }}><ShieldCheck size={16} /> Terverifikasi Validator</span>}
-                   </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
+                       <span style={{ padding: '5px 15px', background: 'var(--primary)', color: 'white', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 'bold' }}>{getProductField(selectedProduct, 'category')}</span>
+                       {selectedProduct.verified && <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#228be6', fontSize: '0.8rem', fontWeight: 'bold' }}><ShieldCheck size={16} /> {t('market_status_verified')}</span>}
+                    </div>
                    
-                   <h2 style={{ fontSize: windowWidth < 900 ? '1.5rem' : '2.2rem', margin: '0 0 10px 0', fontWeight: '900', color: 'var(--text-main)', lineHeight: '1.2' }}>{selectedProduct.name}</h2>
-                   
-                   <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '25px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#f59f00', fontWeight: 'bold' }}><Star size={16} fill="#f59f00" /> {selectedProduct.rating}</span>
-                      <span style={{ borderLeft: '2px solid var(--border-color)', paddingLeft: '15px' }}>{selectedProduct.unit}</span>
-                   </div>
+                    <h2 style={{ fontSize: windowWidth < 900 ? '1.5rem' : '2.2rem', margin: '0 0 10px 0', fontWeight: '900', color: 'var(--text-main)', lineHeight: '1.2' }}>{getProductField(selectedProduct, 'name')}</h2>
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '25px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                       <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#f59f00', fontWeight: 'bold' }}><Star size={16} fill="#f59f00" /> {selectedProduct.rating}</span>
+                       <span style={{ borderLeft: '2px solid var(--border-color)', paddingLeft: '15px' }}>{getProductField(selectedProduct, 'unit')}</span>
+                    </div>
 
-                   <div style={{ background: 'rgba(12, 166, 120, 0.05)', border: '1px solid rgba(12, 166, 120, 0.2)', padding: '20px', borderRadius: '20px', marginBottom: '25px' }}>
-                      <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '5px' }}>Harga Ekosistem:</div>
-                      <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--primary)', lineHeight: '1' }}>{formatIdr(selectedProduct.priceIdr)}</div>
-                      <div style={{ fontSize: '0.85rem', color: '#888', marginTop: '8px', fontWeight: 'bold' }}>≈ {formatBmc(selectedProduct.priceIdr)}</div>
-                   </div>
+                    <div style={{ background: 'rgba(12, 166, 120, 0.05)', border: '1px solid rgba(12, 166, 120, 0.2)', padding: '20px', borderRadius: '20px', marginBottom: '25px' }}>
+                       <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '5px' }}>{t('market_ecosystem_price')}</div>
+                       <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--primary)', lineHeight: '1' }}>{formatIdr(selectedProduct.priceIdr)}</div>
+                       <div style={{ fontSize: '0.85rem', color: '#888', marginTop: '8px', fontWeight: 'bold' }}>≈ {formatBmc(selectedProduct.priceIdr)}</div>
+                    </div>
 
-                   <p style={{ color: 'var(--text-muted)', lineHeight: '1.7', marginBottom: '30px', fontSize: '0.95rem' }}>{selectedProduct.description || "Produk bambu berkualitas tinggi hasil kurasi tim Yayasan untuk standar ekosistem hijau."}</p>
+                    <p style={{ color: 'var(--text-muted)', lineHeight: '1.7', marginBottom: '30px', fontSize: '0.95rem' }}>{getProductField(selectedProduct, 'description') || "Produk bambu berkualitas tinggi hasil kurasi tim Yayasan untuk standar ekosistem hijau."}</p>
 
-                   {selectedProduct.storyTelling && (
-                     <div style={{ marginBottom: '30px', background: 'rgba(12, 166, 120, 0.05)', padding: '20px', borderRadius: '20px', borderLeft: '4px solid var(--primary)' }}>
-                        <h4 style={{ margin: '0 0 10px 0', color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                           <Sparkles size={18} /> Cerita di Balik Produk
-                        </h4>
-                        <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: '1.6', color: 'var(--text-main)', fontStyle: 'italic' }}>"{selectedProduct.storyTelling}"</p>
-                     </div>
-                   )}
+                    {getProductField(selectedProduct, 'storyTelling') && (
+                      <div style={{ marginBottom: '30px', background: 'rgba(12, 166, 120, 0.05)', padding: '20px', borderRadius: '20px', borderLeft: '4px solid var(--primary)' }}>
+                         <h4 style={{ margin: '0 0 10px 0', color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Sparkles size={18} /> {t('market_story_title')}
+                         </h4>
+                         <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: '1.6', color: 'var(--text-main)', fontStyle: 'italic' }}>"{getProductField(selectedProduct, 'storyTelling')}"</p>
+                      </div>
+                    )}
 
-                   {selectedProduct.specs && selectedProduct.specs.length > 0 && (
-                     <div style={{ marginBottom: '40px' }}>
-                        <h4 style={{ marginBottom: '15px' }}>Spesifikasi Utama:</h4>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                          {selectedProduct.specs.map((s, i) => (
-                             <span key={i} style={{ padding: '8px 15px', background: 'var(--bg-secondary)', borderRadius: '12px', fontSize: '0.8rem', color: 'var(--text-muted)', border: '1px solid var(--border-color)' }}>{s}</span>
-                          ))}
-                        </div>
-                     </div>
-                   )}
+                    {getProductField(selectedProduct, 'specs') && getProductField(selectedProduct, 'specs').length > 0 && (
+                      <div style={{ marginBottom: '40px' }}>
+                         <h4 style={{ marginBottom: '15px' }}>{t('market_specs_title')}</h4>
+                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                           {getProductField(selectedProduct, 'specs').map((s, i) => (
+                              <span key={i} style={{ padding: '8px 15px', background: 'var(--bg-secondary)', borderRadius: '12px', fontSize: '0.8rem', color: 'var(--text-muted)', border: '1px solid var(--border-color)' }}>{s}</span>
+                           ))}
+                         </div>
+                      </div>
+                    )}
 
                    {viewMode === 'admin' && selectedProduct.status === 'Pending Curation' ? (
                       <div style={{ display: 'flex', gap: '15px', marginTop: 'auto' }}>
-                         <button onClick={() => handleApproveProduct(selectedProduct.id)} style={{ flex: 1, padding: windowWidth < 900 ? '14px' : '16px', borderRadius: '15px', background: 'var(--primary)', color: 'white', border: 'none', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}><CheckCircle size={20} /> SETUJUI PRODUK</button>
+                         <button onClick={() => handleApproveProduct(selectedProduct.id)} style={{ flex: 1, padding: windowWidth < 900 ? '14px' : '16px', borderRadius: '15px', background: 'var(--primary)', color: 'white', border: 'none', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}><CheckCircle size={20} /> {t('market_btn_approve')}</button>
                          <button onClick={() => handleRejectProduct(selectedProduct.id)} style={{ padding: windowWidth < 900 ? '14px 20px' : '16px 25px', borderRadius: '15px', background: '#fa5252', color: 'white', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}><X size={20} /></button>
                       </div>
                    ) : (
                       <div style={{ marginTop: 'auto', display: 'flex', gap: '15px' }}>
-                         <button onClick={() => { addToCart(selectedProduct); setSelectedProduct(null); showToast(`"${selectedProduct.name}" ditambahkan ke keranjang`); }} style={{ flex: 1, padding: windowWidth < 900 ? '14px' : '18px', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '20px', fontSize: windowWidth < 900 ? '1rem' : '1.1rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', boxShadow: '0 10px 20px rgba(12, 166, 120, 0.2)' }}><ShoppingBag size={22} /> Tambah Ke Keranjang</button>
+                         <button onClick={() => { addToCart(selectedProduct); setSelectedProduct(null); }} style={{ flex: 1, padding: windowWidth < 900 ? '14px' : '18px', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '20px', fontSize: windowWidth < 900 ? '1rem' : '1.1rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', boxShadow: '0 10px 20px rgba(12, 166, 120, 0.2)' }}><ShoppingBag size={22} /> {t('market_btn_add_to_cart')}</button>
                          <button 
                             onClick={() => {
                                if (!user) {
-                                  showToast("Silakan login terlebih dahulu untuk memulai chat.");
+                                  showToast(t('market_chat_login_req'));
                                   return;
                                }
                                const existingChat = chats.find(c => c.productId === selectedProduct.id && c.buyerId === user.id);
@@ -731,7 +826,7 @@ Rp 4 Miliar (nego)`,
                                else setActiveChat({ isNew: true, product: selectedProduct });
                             }} 
                             style={{ width: windowWidth < 900 ? '50px' : '60px', height: windowWidth < 900 ? '50px' : '60px', background: '#228be6', color: 'white', border: 'none', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 10px 20px rgba(34, 139, 230, 0.3)' }} 
-                            title="Chat Penjual di Sistem Website"
+                            title={t('market_btn_chat_title')}
                          >
                             <MessageCircle size={windowWidth < 900 ? 20 : 24} />
                          </button>
@@ -754,12 +849,12 @@ Rp 4 Miliar (nego)`,
                 <CheckCircle size={80} color="var(--primary)" style={{ marginBottom: '20px' }} />
                 <h2>{t('market_checkout_success')}</h2>
                 <div style={{ background: '#f8f9fa', padding: '15px', borderRadius: '15px', margin: '20px 0' }}>
-                   <div style={{ fontSize: '0.8rem', color: '#888' }}>ID Transaksi:</div>
+                   <div style={{ fontSize: '0.8rem', color: '#888' }}>{t('market_checkout_tx_id')}</div>
                    <div style={{ fontWeight: 'bold', color: 'var(--primary)' }}>{orderTracking?.id}</div>
                 </div>
                 <div style={{ textAlign: 'left', background: '#f8f9fa', padding: '20px', borderRadius: '15px' }}>
-                   <h4 style={{ fontSize: '0.9rem', marginBottom: '10px' }}>Status Logistik Smart Tracking</h4>
-                   <div style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>• {orderTracking?.status}</div>
+                   <h4 style={{ fontSize: '0.9rem', marginBottom: '10px' }}>{t('market_checkout_smart_tracking')}</h4>
+                   <div style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>• {orderTracking?.statusKey ? t(orderTracking.statusKey) : orderTracking?.status}</div>
                 </div>
                 <div style={{ display: 'flex', gap: '10px', marginTop: '24px' }}>
                    <button onClick={() => { setShowCartModal(false); setCart([]); setCartStatus(''); }} className="btn btn-primary" style={{ flex: 1, padding: '16px' }}>{t('market_checkout_btn_finish')}</button>
@@ -780,17 +875,17 @@ Rp 4 Miliar (nego)`,
               <>
                 <h2 style={{ marginBottom: '24px' }}>{t('market_checkout_payment')}</h2>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '30px' }}>
-                  <div onClick={() => setPaymentMethod('bank')} style={{ padding: '16px', borderRadius: '15px', border: paymentMethod === 'bank' ? '2px solid var(--primary)' : '1px solid #ddd', cursor: 'pointer' }}>Transfer Bank</div>
-                  <div onClick={() => setPaymentMethod('bmc')} style={{ padding: '16px', borderRadius: '15px', border: paymentMethod === 'bmc' ? '2px solid var(--primary)' : '1px solid #ddd', cursor: 'pointer' }}>BMC Token</div>
-                  <div onClick={() => setPaymentMethod('credit')} style={{ padding: '16px', borderRadius: '15px', border: paymentMethod === 'credit' ? '2px solid var(--primary)' : '1px solid #ddd', cursor: 'pointer' }}>bambuPAY Credit (Escrow)</div>
+                  <div onClick={() => setPaymentMethod('bank')} style={{ padding: '16px', borderRadius: '15px', border: paymentMethod === 'bank' ? '2px solid var(--primary)' : '1px solid #ddd', cursor: 'pointer' }}>{t('market_checkout_bank')}</div>
+                  <div onClick={() => setPaymentMethod('bmc')} style={{ padding: '16px', borderRadius: '15px', border: paymentMethod === 'bmc' ? '2px solid var(--primary)' : '1px solid #ddd', cursor: 'pointer' }}>{t('market_checkout_bmc')}</div>
+                  <div onClick={() => setPaymentMethod('credit')} style={{ padding: '16px', borderRadius: '15px', border: paymentMethod === 'credit' ? '2px solid var(--primary)' : '1px solid #ddd', cursor: 'pointer' }}>{t('market_checkout_credit')}</div>
                 </div>
                 <div style={{ background: '#f8f9fa', padding: '15px', borderRadius: '12px', marginBottom: '20px' }}>
                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-                      <span>Total Rupiah:</span>
+                      <span>{t('market_checkout_total_idr')}</span>
                       <span style={{ fontWeight: 'bold' }}>{formatIdr(cartTotalIdr)}</span>
                    </div>
                    <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--primary)' }}>
-                      <span>Estimasi BMC:</span>
+                      <span>{t('market_checkout_est_bmc')}</span>
                       <span style={{ fontWeight: 'bold' }}>{formatBmc(cartTotalIdr)}</span>
                    </div>
                 </div>
@@ -820,7 +915,7 @@ Rp 4 Miliar (nego)`,
                      <div key={item.id} style={{ display: 'flex', gap: '15px', padding: '10px 0', borderBottom: '1px solid #eee' }}>
                         <img src={item.img} style={{ width: '50px', height: '50px', borderRadius: '10px', objectFit: 'cover' }} alt="" />
                         <div style={{ flex: 1 }}>
-                           <div style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>{item.name}</div>
+                           <div style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>{getProductField(item, 'name')}</div>
                            <div style={{ color: 'var(--primary)', fontSize: '0.85rem' }}>{formatIdr(item.priceIdr)}</div>
                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '5px' }}>
                               <button onClick={() => updateQty(item.id, -1)} style={{ width: '24px', height: '24px', borderRadius: '50%', border: '1px solid #ddd' }}>-</button>
@@ -898,7 +993,7 @@ Rp 4 Miliar (nego)`,
             <div style={{ display: 'inline-flex', background: 'white', padding: '5px', borderRadius: '30px', boxShadow: '0 5px 20px rgba(0,0,0,0.05)', border: '1px solid var(--primary)' }}>
               <button onClick={() => setViewMode('buyer')} style={{ padding: '8px 24px', borderRadius: '25px', border: 'none', background: viewMode === 'buyer' ? 'var(--primary)' : 'transparent', color: viewMode === 'buyer' ? 'white' : 'var(--text-main)', fontWeight: 'bold', cursor: 'pointer' }}>{t('market_mode_buyer')}</button>
               <button onClick={() => setViewMode('inbox')} style={{ padding: '8px 24px', borderRadius: '25px', border: 'none', background: viewMode === 'inbox' ? 'var(--primary)' : 'transparent', color: viewMode === 'inbox' ? 'white' : 'var(--text-main)', fontWeight: 'bold', cursor: 'pointer', position: 'relative' }}>
-                 KOTAK PESAN
+                 {t('market_btn_inbox')}
                  {chats.filter(c => c.vendor === user?.username && c.messages?.some(m => !m.isMe)).length > 0 && (
                     <span style={{ position: 'absolute', top: '0', right: '0', background: 'red', color: 'white', width: '15px', height: '15px', borderRadius: '50%', fontSize: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>!</span>
                  )}
@@ -910,10 +1005,10 @@ Rp 4 Miliar (nego)`,
           {viewMode === 'inbox' && (
              <div className="container" style={{ marginBottom: '50px' }}>
                 <div style={{ background: 'var(--bg-card)', borderRadius: '30px', padding: '40px', border: '1px solid var(--border-color)', minHeight: '500px' }}>
-                   <h2 style={{ marginBottom: '30px', display: 'flex', alignItems: 'center', gap: '15px' }}><MessageCircle size={32} color="var(--primary)" /> Kotak Pesan Vendor</h2>
+                   <h2 style={{ marginBottom: '30px', display: 'flex', alignItems: 'center', gap: '15px' }}><MessageCircle size={32} color="var(--primary)" /> {t('market_inbox_title')}</h2>
                    {chats.filter(c => c.vendor === user?.username).length === 0 ? (
                       <div style={{ textAlign: 'center', padding: '50px 0', color: 'var(--text-muted)' }}>
-                         Belum ada pesan dari pembeli.
+                         {t('market_inbox_empty')}
                       </div>
                    ) : (
                       <div style={{ display: 'grid', gridTemplateColumns: windowWidth < 800 ? '1fr' : '300px 1fr', gap: '20px', height: '600px' }}>
@@ -921,7 +1016,7 @@ Rp 4 Miliar (nego)`,
                             {chats.filter(c => c.vendor === user?.username).map(chat => (
                                <div key={chat.id} onClick={() => setActiveChat(chat)} style={{ padding: '15px', borderRadius: '15px', cursor: 'pointer', background: activeChat?.id === chat.id ? 'rgba(12, 166, 120, 0.1)' : 'transparent', border: activeChat?.id === chat.id ? '1px solid var(--primary)' : '1px solid transparent', marginBottom: '10px' }}>
                                   <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>{chat.buyerName || chat.buyerId}</div>
-                                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Produk: {chat.productName}</div>
+                                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t('market_chat_product_label').replace('{name}', chat.productName)}</div>
                                </div>
                             ))}
                          </div>
@@ -930,7 +1025,7 @@ Rp 4 Miliar (nego)`,
                                <>
                                   <div style={{ padding: '20px', borderBottom: '1px solid var(--border-color)', background: 'var(--bg-card)' }}>
                                      <h3 style={{ margin: 0 }}>{activeChat.buyerName || activeChat.buyerId}</h3>
-                                     <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>Tanya tentang: {activeChat.productName}</p>
+                                     <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>{t('market_chat_inquire_about')} {activeChat.productName}</p>
                                   </div>
                                   <div style={{ flex: 1, overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                                      {(activeChat.messages || []).map((msg, i) => (
@@ -941,12 +1036,12 @@ Rp 4 Miliar (nego)`,
                                      ))}
                                   </div>
                                   <div style={{ padding: '20px', background: 'var(--bg-card)', borderTop: '1px solid var(--border-color)', display: 'flex', gap: '10px' }}>
-                                     <input type="text" value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && (() => { if(chatInput.trim()){ sendMessage(activeChat.id, activeChat.productId, activeChat.productName, activeChat.vendor, chatInput, true); setChatInput(''); } })()} placeholder="Ketik balasan Anda..." style={{ flex: 1, padding: '15px 20px', borderRadius: '30px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', outline: 'none' }} />
+                                     <input type="text" value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && (() => { if(chatInput.trim()){ sendMessage(activeChat.id, activeChat.productId, activeChat.productName, activeChat.vendor, chatInput, true); setChatInput(''); } })()} placeholder={t('market_chat_reply_placeholder')} style={{ flex: 1, padding: '15px 20px', borderRadius: '30px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', outline: 'none' }} />
                                      <button onClick={() => { if(chatInput.trim()){ sendMessage(activeChat.id, activeChat.productId, activeChat.productName, activeChat.vendor, chatInput, true); setChatInput(''); } }} style={{ background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '50%', width: '50px', height: '50px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Play size={20} fill="white" /></button>
                                   </div>
                                </>
                             ) : (
-                               <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>Pilih pesan untuk mulai membalas.</div>
+                               <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>{t('market_chat_select_to_start')}</div>
                             )}
                          </div>
                       </div>
@@ -1010,17 +1105,17 @@ Rp 4 Miliar (nego)`,
 
                    <div style={{ marginBottom: '15px' }}>
                       <label style={{ fontSize: '0.75rem', color: '#888', display: 'block', marginBottom: '5px' }}>{t('market_sell_desc')}</label>
-                      <textarea required placeholder="Jelaskan detail produk Bapak..." value={newProduct.description} onChange={e => setNewProduct({...newProduct, description: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #ddd', minHeight: '80px', fontFamily: 'inherit' }} />
+                      <textarea required placeholder={t('market_sell_desc_placeholder')} value={newProduct.description} onChange={e => setNewProduct({...newProduct, description: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #ddd', minHeight: '80px', fontFamily: 'inherit' }} />
                    </div>
 
                    <div style={{ marginBottom: '15px' }}>
-                      <label style={{ fontSize: '0.75rem', color: '#888', display: 'block', marginBottom: '5px' }}>Cerita di Balik Produk (Story Telling)</label>
-                      <textarea placeholder="Ceritakan keunikan produk, asal usul bambu, dan pengrajin di baliknya..." value={newProduct.storyTelling} onChange={e => setNewProduct({...newProduct, storyTelling: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #ddd', minHeight: '100px', fontFamily: 'inherit' }} />
+                      <label style={{ fontSize: '0.75rem', color: '#888', display: 'block', marginBottom: '5px' }}>{t('market_sell_story_label')}</label>
+                      <textarea placeholder={t('market_sell_story_placeholder')} value={newProduct.storyTelling} onChange={e => setNewProduct({...newProduct, storyTelling: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #ddd', minHeight: '100px', fontFamily: 'inherit' }} />
                    </div>
 
                    <div style={{ marginBottom: '15px' }}>
                       <label style={{ fontSize: '0.75rem', color: '#888', display: 'block', marginBottom: '5px' }}>{t('market_sell_specs')}</label>
-                      <input type="text" placeholder="Contoh: Anti Rayap, Finishing Glossy, Diameter 10cm" value={newProduct.specs} onChange={e => setNewProduct({...newProduct, specs: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #ddd' }} />
+                      <input type="text" placeholder={t('market_sell_specs_placeholder')} value={newProduct.specs} onChange={e => setNewProduct({...newProduct, specs: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #ddd' }} />
                    </div>
 
                    <div style={{ marginBottom: '20px' }}>
@@ -1056,14 +1151,14 @@ Rp 4 Miliar (nego)`,
 
           {/* LIVE COMMERCE SECTION */}
           <div className="container" style={{ marginBottom: '50px' }}>
-             <h3 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}><Video color="#fa5252" /> Live Commerce</h3>
+             <h3 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}><Video color="#fa5252" /> {t('market_live_commerce_title')}</h3>
              <div style={{ display: 'flex', gap: '20px', overflowX: 'auto', paddingBottom: '10px' }}>
                 {liveStreams.map(live => (
                   <div key={live.id} onClick={() => setSelectedLive(live)} style={{ minWidth: '280px', height: '180px', borderRadius: '24px', overflow: 'hidden', position: 'relative', cursor: 'pointer' }}>
                      <img src={live.img} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
-                     <div style={{ position: 'absolute', top: '15px', left: '15px', background: '#fa5252', color: 'white', padding: '4px 10px', borderRadius: '8px', fontSize: '0.7rem', fontWeight: 'bold' }}>LIVE</div>
+                     <div style={{ position: 'absolute', top: '15px', left: '15px', background: '#fa5252', color: 'white', padding: '4px 10px', borderRadius: '8px', fontSize: '0.7rem', fontWeight: 'bold' }}>{t('market_live_badge')}</div>
                      <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', padding: '15px', background: 'linear-gradient(transparent, rgba(0,0,0,0.8))', color: 'white' }}>
-                        <div style={{ fontWeight: 'bold' }}>{live.title}</div>
+                        <div style={{ fontWeight: 'bold' }}>{live.titleKey ? t(live.titleKey) : live.title}</div>
                         <div style={{ fontSize: '0.8rem', opacity: 0.8 }}>{live.seller}</div>
                      </div>
                   </div>
@@ -1074,13 +1169,13 @@ Rp 4 Miliar (nego)`,
           {/* HYPER-PERSONALIZATION */}
           <div className="container" style={{ marginBottom: '50px' }}>
              <div style={{ background: 'linear-gradient(135deg, #0ca678 0%, #087f5b 100%)', borderRadius: '30px', padding: '40px', color: 'white' }}>
-                <h3 style={{ marginBottom: '8px', fontWeight: '900' }}>Khusus Untuk Anda <Sparkles size={20} /></h3>
-                <p style={{ opacity: 0.9, marginBottom: '30px' }}>Rekomendasi berbasis minat hijau Bapak.</p>
+                <h3 style={{ marginBottom: '8px', fontWeight: '900' }}>{t('market_recom_title')} <Sparkles size={20} /></h3>
+                <p style={{ opacity: 0.9, marginBottom: '30px' }}>{t('market_recom_subtitle')}</p>
                 <div style={{ display: 'flex', gap: '20px', overflowX: 'auto' }}>
                    {visibleProducts.slice(0, 4).map(p => (
                      <div key={p.id} onClick={() => setSelectedProduct(p)} style={{ minWidth: '200px', background: 'rgba(255,255,255,0.1)', borderRadius: '20px', padding: '15px', border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer' }}>
                         <img src={p.img} style={{ width: '100%', height: '120px', borderRadius: '12px', objectFit: 'cover', marginBottom: '10px' }} alt="" />
-                        <div style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>{p.name}</div>
+                        <div style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>{getProductField(p, 'name')}</div>
                      </div>
                    ))}
                 </div>
@@ -1094,7 +1189,7 @@ Rp 4 Miliar (nego)`,
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
                    {bursaData.slice(0, 4).map((item, idx) => (
                      <div key={idx} style={{ background: 'white', padding: '15px', borderRadius: '15px', display: 'flex', justifyContent: 'space-between' }}>
-                        <div><div style={{ fontSize: '0.7rem', color: '#888' }}>{item.type}</div><div style={{ fontWeight: 'bold' }}>Rp {item.price.toLocaleString()}</div></div>
+                        <div><div style={{ fontSize: '0.7rem', color: '#888' }}>{item.typeKey ? t(item.typeKey) : item.type}</div><div style={{ fontWeight: 'bold' }}>Rp {item.price.toLocaleString()}</div></div>
                         <div style={{ color: item.up ? 'var(--primary)' : '#fa5252', fontSize: '0.8rem' }}>{item.trend}</div>
                      </div>
                    ))}
@@ -1111,10 +1206,10 @@ Rp 4 Miliar (nego)`,
                       <div key={product.id} onClick={() => setSelectedProduct(product)} style={{ background: 'white', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.05)', cursor: 'pointer', transition: '0.3s' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-10px)'} onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
                          <div style={{ height: '220px', position: 'relative' }}>
                             <img src={product.img} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
-                            <div style={{ position: 'absolute', top: '15px', left: '15px', background: 'rgba(255,255,255,0.9)', padding: '5px 10px', borderRadius: '8px', fontSize: '0.7rem', fontWeight: 'bold' }}>{product.category}</div>
+                            <div style={{ position: 'absolute', top: '15px', left: '15px', background: 'rgba(255,255,255,0.9)', padding: '5px 10px', borderRadius: '8px', fontSize: '0.7rem', fontWeight: 'bold' }}>{getProductField(product, 'category')}</div>
                          </div>
                          <div style={{ padding: '24px' }}>
-                            <h3 style={{ fontSize: '1.1rem', margin: '0 0 10px 0', minHeight: '2.8rem' }}>{product.name}</h3>
+                            <h3 style={{ fontSize: '1.1rem', margin: '0 0 10px 0', minHeight: '2.8rem' }}>{getProductField(product, 'name')}</h3>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                                <div>
                                   <div style={{ fontWeight: 'bold', color: 'var(--primary)', fontSize: '1.1rem' }}>{formatIdr(product.priceIdr)}</div>
@@ -1130,8 +1225,8 @@ Rp 4 Miliar (nego)`,
 
               {/* SIDEBAR */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                 <AdSpace directAd={{ image: "gambar/Iklan/iklan.jpeg", title: "Tanah SHM Cipocok", description: "Strategis dekat kampus.", link: "#" }} />
-                 <AdSpace directAd={{ image: "gambar/Iklan/iklan2.png", title: "Rumah Padasuka", description: "View kota Bandung.", link: "#" }} />
+                 <AdSpace directAd={{ image: "gambar/Iklan/iklan.jpeg", title: t('market_ad_1_title'), description: t('market_ad_1_desc'), link: "#" }} />
+                 <AdSpace directAd={{ image: "gambar/Iklan/iklan2.png", title: t('market_ad_2_title'), description: t('market_ad_2_desc'), link: "#" }} />
               </div>
             </div>
           </div>
@@ -1159,7 +1254,7 @@ Rp 4 Miliar (nego)`,
             <div style={{ height: '300px', overflowY: 'auto', padding: '20px', background: 'var(--bg-secondary)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                {isNew && messages.length === 0 && (
                   <div style={{ alignSelf: 'flex-start', background: 'var(--bg-card)', color: 'var(--text-main)', padding: '12px 18px', borderRadius: '20px 20px 20px 0', maxWidth: '80%', border: '1px solid var(--border-color)' }}>
-                     <div style={{ fontSize: '0.95rem' }}>Halo! Ada yang bisa kami bantu mengenai {activeChat.product.name}?</div>
+                     <div style={{ fontSize: '0.95rem' }}>{t('market_chat_vendor_greeting').replace('{product}', getProductField(activeChat.product, 'name'))}</div>
                      <div style={{ fontSize: '0.7rem', opacity: 0.7, textAlign: 'right', marginTop: '5px' }}>{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
                   </div>
                )}
@@ -1182,14 +1277,14 @@ Rp 4 Miliar (nego)`,
                            const newChatId = `${user.id}_${activeChat.product.id}`;
                            sendMessage(newChatId, activeChat.product.id, activeChat.product.name, activeChat.product.vendor, chatInput, false);
                            setActiveChat(null); // Close active chat, it will appear in inbox
-                           showToast("Pesan terkirim ke vendor!");
+                           showToast(t('market_toast_msg_sent'));
                         } else {
                            sendMessage(activeChat.id, activeChat.productId, activeChat.productName, activeChat.vendor, chatInput, false); 
                         }
                         setChatInput(''); 
                      } 
                   })()} 
-                  placeholder="Ketik pesan..." 
+                  placeholder={t('market_chat_placeholder')} 
                   style={{ flex: 1, padding: '10px 15px', borderRadius: '20px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', outline: 'none' }} 
                />
                <button onClick={() => { 
@@ -1198,7 +1293,7 @@ Rp 4 Miliar (nego)`,
                            const newChatId = `${user.id}_${activeChat.product.id}`;
                            sendMessage(newChatId, activeChat.product.id, activeChat.product.name, activeChat.product.vendor, chatInput, false);
                            setActiveChat(null);
-                           showToast("Pesan terkirim ke vendor!");
+                           showToast(t('market_toast_msg_sent'));
                         } else {
                            sendMessage(activeChat.id, activeChat.productId, activeChat.productName, activeChat.vendor, chatInput, false); 
                         }

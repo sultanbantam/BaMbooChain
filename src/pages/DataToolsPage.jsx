@@ -3,6 +3,7 @@ import { useWeb3 } from '../context/Web3Context';
 import { getUserTier, getBMCNumber } from './MembershipPage';
 import { BarChart2, TrendingUp, Globe, Lock, ExternalLink, Download } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useLanguage } from '../context/LanguageContext';
 
 const TOOLS = [
   {
@@ -53,6 +54,7 @@ const tierLabel = { seed: '🌱 Green Seed', guardian: '🎋 Guardian', builder:
 const tierColor = { seed: '#40c057', guardian: '#1c7ed6', builder: '#f59f00' };
 
 const DataToolsPage = () => {
+  const { t } = useLanguage();
   const { bmcBalance, isConnected, openWalletModal } = useWeb3();
   const userTier = getUserTier(bmcBalance);
   const tierRank = { null: 0, seed: 1, guardian: 2, builder: 3 };
@@ -66,12 +68,11 @@ const DataToolsPage = () => {
         <div style={{ textAlign: 'center', marginBottom: '50px' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(12,166,120,0.1)', padding: '6px 16px', borderRadius: '20px', marginBottom: '20px' }}>
             <BarChart2 size={16} color="var(--primary)" />
-            <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--primary)' }}>Token-Gated Tools • Eksklusif Untuk Holder BMC</span>
+            <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--primary)' }}>{t('datatools_badge')}</span>
           </div>
-          <h1 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '16px' }}>Data & Tools</h1>
+          <h1 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '16px' }}>{t('datatools_title')}</h1>
           <p style={{ color: 'var(--text-muted)', maxWidth: '600px', margin: '0 auto' }}>
-            Alat analisis dan database eksklusif untuk peneliti, investor, dan pelaku industri bambu.
-            Akses dibuka berdasarkan jumlah token BMC yang Anda pegang.
+            {t('datatools_desc')}
           </p>
         </div>
 
@@ -79,22 +80,22 @@ const DataToolsPage = () => {
         {!isConnected ? (
           <div style={{ background: 'white', borderRadius: '16px', padding: '40px', textAlign: 'center', marginBottom: '40px', border: '2px dashed #dee2e6' }}>
             <Lock size={40} color="#adb5bd" style={{ marginBottom: '16px' }} />
-            <h3 style={{ marginBottom: '12px' }}>Akses Diperlukan</h3>
-            <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>Hubungkan wallet & pegang token BMC untuk membuka tools eksklusif ini.</p>
-            <button onClick={openWalletModal} className="btn btn-primary" style={{ padding: '14px 32px' }}>🔗 Hubungkan Wallet</button>
+            <h3 style={{ marginBottom: '12px' }}>{t('datatools_connect_title')}</h3>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>{t('datatools_connect_desc')}</p>
+            <button onClick={openWalletModal} className="btn btn-primary" style={{ padding: '14px 32px' }}>{t('datatools_connect_btn')}</button>
           </div>
         ) : (
           <div style={{ background: 'white', borderRadius: '12px', padding: '16px 24px', marginBottom: '32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', border: '1px solid #eee' }}>
-            <span>Saldo: <strong style={{ color: 'var(--primary)' }}>{bmcBalance ?? '0'} BMC</strong></span>
+            <span>{t('datatools_balance_label')} <strong style={{ color: 'var(--primary)' }}>{bmcBalance ?? '0'} BMC</strong></span>
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
               {userTier ? (
                 <span style={{ background: `${tierColor[userTier]}20`, color: tierColor[userTier], padding: '4px 14px', borderRadius: '20px', fontWeight: '700', fontSize: '0.88rem' }}>
-                  {tierLabel[userTier]} — Aktif
+                  {tierLabel[userTier]} — {t('dao_status_active')}
                 </span>
               ) : (
-                <span style={{ color: '#e03131', fontSize: '0.9rem' }}>Butuh 1.000 BMC untuk Green Seed</span>
+                <span style={{ color: '#e03131', fontSize: '0.9rem' }}>{t('datatools_need_greenseed')}</span>
               )}
-              <Link to="/membership" style={{ fontSize: '0.82rem', color: 'var(--primary)', textDecoration: 'underline' }}>Upgrade →</Link>
+              <Link to="/membership" style={{ fontSize: '0.82rem', color: 'var(--primary)', textDecoration: 'underline' }}>{t('datatools_upgrade_link')}</Link>
             </div>
           </div>
         )}
@@ -124,11 +125,11 @@ const DataToolsPage = () => {
 
                   {accessible ? (
                     <button className="btn btn-primary" style={{ width: '100%', padding: '10px', fontSize: '0.88rem', display: 'flex', gap: '6px', alignItems: 'center', justifyContent: 'center' }}>
-                      <TrendingUp size={15} /> Buka Tool
+                      <TrendingUp size={15} /> {t('datatools_btn_open')}
                     </button>
                   ) : (
                     <Link to="/membership" style={{ display: 'block', textAlign: 'center', padding: '10px', background: '#f1f3f5', borderRadius: '50px', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: '600' }}>
-                      🔒 Perlu {tierLabel[tool.tier]}
+                      🔒 {t('datatools_btn_need').replace('{tier}', tierLabel[tool.tier])}
                     </Link>
                   )}
                 </div>

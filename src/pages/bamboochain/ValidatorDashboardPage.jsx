@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { ShieldCheck, UploadCloud, FileText, CheckCircle, AlertTriangle, ChevronRight, X, Image as ImageIcon } from 'lucide-react';
 import { ethers } from 'ethers';
 import { escrowConfig } from '../../utils/escrowConfig';
+import { useLanguage } from '../../context/LanguageContext';
 
 const ValidatorDashboardPage = () => {
+  const { t } = useLanguage();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [walletConnected, setWalletConnected] = useState(false);
@@ -18,17 +20,17 @@ const ValidatorDashboardPage = () => {
   const [inspectionNote, setInspectionNote] = useState("");
 
   const MILESTONES = [
-    { key: 'isBibitReleased', fn: 'releaseBibit', name: 'Pemilik Bibit', percent: 16 },
-    { key: 'isTanamReleased', fn: 'releaseTanam', name: 'Penanam', percent: 4 },
-    { key: 'isRawatReleased', fn: 'releasePerawatan', name: 'Perawatan', percent: 10.67 },
-    { key: 'isRisikoReleased', fn: 'releaseRisiko', name: 'Cadangan Risiko', percent: 13.33 },
-    { key: 'isLahanReleased', fn: 'releaseLahan', name: 'Pemilik Lahan', percent: 2.67 },
-    { key: 'isRoyaltiReleased', fn: 'releaseRoyalti', name: 'Royalti', percent: 6.67 },
-    { key: 'isPengelolaReleased', fn: 'releasePengelola', name: 'Pengelola (YSNJ)', percent: 46.66 }
+    { key: 'isBibitReleased', fn: 'releaseBibit', name: t('val_ms_bibit'), percent: 16 },
+    { key: 'isTanamReleased', fn: 'releaseTanam', name: t('val_ms_tanam'), percent: 4 },
+    { key: 'isRawatReleased', fn: 'releasePerawatan', name: t('val_ms_rawat'), percent: 10.67 },
+    { key: 'isRisikoReleased', fn: 'releaseRisiko', name: t('val_ms_risiko'), percent: 13.33 },
+    { key: 'isLahanReleased', fn: 'releaseLahan', name: t('val_ms_lahan'), percent: 2.67 },
+    { key: 'isRoyaltiReleased', fn: 'releaseRoyalti', name: t('val_ms_royalti'), percent: 6.67 },
+    { key: 'isPengelolaReleased', fn: 'releasePengelola', name: t('val_ms_pengelola'), percent: 46.66 }
   ];
 
   const connectWallet = async () => {
-    if (!window.ethereum) return alert("MetaMask belum terinstal!");
+    if (!window.ethereum) return alert(t('val_err_no_metamask'));
     try {
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
@@ -97,7 +99,7 @@ const ValidatorDashboardPage = () => {
   }, []);
 
   const openVerificationModal = (project, milestone) => {
-    if (!walletConnected) return alert("Harap hubungkan MetaMask terlebih dahulu!");
+    if (!walletConnected) return alert(t('val_err_connect_first'));
     setSelectedProject(project);
     setSelectedMilestone(milestone);
     setUploadedFile(null);
@@ -106,7 +108,7 @@ const ValidatorDashboardPage = () => {
   };
 
   const handleVerify = async () => {
-    if (!uploadedFile) return alert("Bukti foto lapangan wajib diunggah!");
+    if (!uploadedFile) return alert(t('val_err_photo_required'));
     
     setIsProcessing(true);
     try {
@@ -118,12 +120,12 @@ const ValidatorDashboardPage = () => {
       const tx = await escrowContract[selectedMilestone.fn](selectedProject.id);
       await tx.wait();
       
-      alert(`Berhasil! Dana untuk tahap ${selectedMilestone.name} telah dicairkan ke Blockchain.`);
+      alert(t('val_success_release'));
       setIsModalOpen(false);
       fetchProjects(); // Refresh data
     } catch (error) {
       console.error(error);
-      alert("Transaksi gagal: " + (error.reason || error.message));
+      alert(t('val_err_tx_failed') + (error.reason || error.message));
     } finally {
       setIsProcessing(false);
     }
@@ -140,9 +142,9 @@ const ValidatorDashboardPage = () => {
               <div style={{ background: 'rgba(245, 159, 0, 0.1)', padding: '12px', borderRadius: '12px', color: '#f59f00' }}>
                 <ShieldCheck size={32} />
               </div>
-              <h1 style={{ fontSize: '2.5rem', fontWeight: '900', color: 'var(--text-main)', margin: 0 }}>Portal Validator</h1>
+              <h1 style={{ fontSize: '2.5rem', fontWeight: '900', color: 'var(--text-main)', margin: 0 }}>{t('val_title')}</h1>
             </div>
-            <p style={{ color: 'var(--text-muted)', margin: 0 }}>Modul khusus verifikator lapangan untuk validasi tahapan penanaman.</p>
+            <p style={{ color: 'var(--text-muted)', margin: 0 }}>{t('val_desc')}</p>
           </div>
           
           <div style={{ width: '100%', maxWidth: '300px' }}>
@@ -151,7 +153,7 @@ const ValidatorDashboardPage = () => {
                 onClick={connectWallet}
                 style={{ width: '100%', background: '#f59f00', color: 'white', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}
               >
-                <AlertTriangle size={18} /> Hubungkan Wallet Validator
+                <AlertTriangle size={18} /> {t('val_btn_connect')}
               </button>
             ) : (
               <div style={{ textAlign: 'center', background: 'rgba(245, 159, 0, 0.1)', color: '#f59f00', padding: '12px 24px', borderRadius: '12px', fontWeight: 'bold', border: '1px solid rgba(245, 159, 0, 0.2)' }}>
@@ -164,22 +166,22 @@ const ValidatorDashboardPage = () => {
         {/* PROJECTS LIST */}
         <div style={{ background: 'white', borderRadius: '24px', boxShadow: '0 10px 40px rgba(0,0,0,0.06)', overflow: 'hidden' }}>
           <div style={{ padding: '24px', borderBottom: '1px solid #f1f3f5', background: '#f8f9fa', fontWeight: 'bold', color: 'var(--text-main)' }}>
-            Daftar Antrean Inspeksi On-Chain
+            {t('val_list_title')}
           </div>
           
           {loading ? (
-            <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>Memuat data dari Blockchain...</div>
+            <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>{t('val_list_loading')}</div>
           ) : projects.length === 0 ? (
-            <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>Belum ada data proyek di Escrow.</div>
+            <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>{t('val_list_empty')}</div>
           ) : (
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '800px' }}>
               <thead>
                 <tr style={{ background: '#f8f9fa', borderBottom: '2px solid #dee2e6' }}>
-                  <th style={{ padding: '16px 24px', textAlign: 'left', color: 'var(--text-muted)', fontSize: '0.85rem' }}>ID PROYEK</th>
-                  <th style={{ padding: '16px 24px', textAlign: 'left', color: 'var(--text-muted)', fontSize: '0.85rem' }}>NILAI DANA</th>
-                  <th style={{ padding: '16px 24px', textAlign: 'left', color: 'var(--text-muted)', fontSize: '0.85rem' }}>STATUS</th>
-                  <th style={{ padding: '16px 24px', textAlign: 'left', color: 'var(--text-muted)', fontSize: '0.85rem' }}>AKSI VERIFIKASI</th>
+                  <th style={{ padding: '16px 24px', textAlign: 'left', color: 'var(--text-muted)', fontSize: '0.85rem' }}>{t('val_col_id')}</th>
+                  <th style={{ padding: '16px 24px', textAlign: 'left', color: 'var(--text-muted)', fontSize: '0.85rem' }}>{t('val_col_fund')}</th>
+                  <th style={{ padding: '16px 24px', textAlign: 'left', color: 'var(--text-muted)', fontSize: '0.85rem' }}>{t('val_col_status')}</th>
+                  <th style={{ padding: '16px 24px', textAlign: 'left', color: 'var(--text-muted)', fontSize: '0.85rem' }}>{t('val_col_action')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -189,17 +191,17 @@ const ValidatorDashboardPage = () => {
                     <td style={{ padding: '20px 24px', color: 'var(--primary)', fontWeight: 'bold' }}>{p.totalAmount} USDT</td>
                     <td style={{ padding: '20px 24px' }}>
                       {p.isFullyReleased ? (
-                        <span style={{ background: 'rgba(34, 197, 94, 0.1)', color: '#16a34a', padding: '4px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold' }}>Selesai</span>
+                        <span style={{ background: 'rgba(34, 197, 94, 0.1)', color: '#16a34a', padding: '4px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold' }}>{t('val_status_done')}</span>
                       ) : (
-                        <span style={{ background: 'rgba(245, 159, 0, 0.1)', color: '#f59f00', padding: '4px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold' }}>Menunggu Inspeksi</span>
+                        <span style={{ background: 'rgba(245, 159, 0, 0.1)', color: '#f59f00', padding: '4px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold' }}>{t('val_status_pending')}</span>
                       )}
                     </td>
                     <td style={{ padding: '20px 24px' }}>
                       {p.isFullyReleased ? (
-                        <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Semua dana tersalurkan</span>
+                        <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{t('val_status_all_released')}</span>
                       ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Tahap berikutnya:</span>
+                          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{t('val_next_stage')}</span>
                           <button 
                             onClick={() => openVerificationModal(p, p.pendingMilestones[0])}
                             style={{ background: '#f8f9fa', border: '1px solid #dee2e6', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontWeight: 'bold', color: 'var(--text-main)', transition: '0.2s' }}
@@ -227,7 +229,7 @@ const ValidatorDashboardPage = () => {
           <div style={{ background: 'white', width: '100%', maxWidth: '600px', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
             
             <div style={{ padding: '24px', borderBottom: '1px solid #f1f3f5', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8f9fa' }}>
-              <div style={{ fontWeight: 'bold', fontSize: '1.2rem', color: 'var(--text-main)' }}>Formulir Inspeksi & Verifikasi</div>
+              <div style={{ fontWeight: 'bold', fontSize: '1.2rem', color: 'var(--text-main)' }}>{t('val_modal_title')}</div>
               <button onClick={() => !isProcessing && setIsModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>
                 <X size={24} />
               </button>
@@ -236,27 +238,29 @@ const ValidatorDashboardPage = () => {
             <div style={{ padding: '32px' }}>
               <div style={{ background: 'rgba(245, 159, 0, 0.1)', color: '#d9480f', padding: '16px', borderRadius: '12px', marginBottom: '24px', fontSize: '0.9rem', display: 'flex', gap: '12px' }}>
                 <AlertTriangle size={24} style={{ flexShrink: 0 }} />
-                Anda akan mengotorisasi rilis dana sebesar <strong>{selectedMilestone.percent}%</strong> dari Proyek #{selectedProject.id} untuk tahap <strong>{selectedMilestone.name}</strong>. Aksi ini permanen di Blockchain.
+                <span>
+                  {t('val_modal_warn_1')} <strong>{selectedMilestone.percent}%</strong> {t('val_modal_warn_2')}{selectedProject.id} {t('val_modal_warn_3')} <strong>{selectedMilestone.name}</strong>. {t('val_modal_warn_4')}
+                </span>
               </div>
               
               <div style={{ marginBottom: '24px' }}>
-                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '8px', color: 'var(--text-main)' }}>Bukti Foto Lapangan (Wajib)</label>
+                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '8px', color: 'var(--text-main)' }}>{t('val_modal_photo_label')}</label>
                 <div style={{ border: '2px dashed #dee2e6', borderRadius: '12px', padding: '40px', textAlign: 'center', cursor: 'pointer', background: uploadedFile ? '#f4fce3' : '#f8f9fa', transition: '0.2s' }}>
                   {uploadedFile ? (
                     <div>
                       <CheckCircle size={32} color="#40c057" style={{ marginBottom: '8px' }} />
-                      <div style={{ fontWeight: 'bold', color: '#2b8a3e' }}>Foto berhasil dilampirkan</div>
+                      <div style={{ fontWeight: 'bold', color: '#2b8a3e' }}>{t('val_modal_photo_success')}</div>
                       <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{uploadedFile}</div>
                     </div>
                   ) : (
                     <div>
                       <ImageIcon size={32} color="#adb5bd" style={{ marginBottom: '8px' }} />
-                      <div style={{ color: 'var(--text-muted)', marginBottom: '8px' }}>Seret foto ke sini atau klik untuk mencari file</div>
+                      <div style={{ color: 'var(--text-muted)', marginBottom: '8px' }}>{t('val_modal_photo_drag')}</div>
                       <button 
                         onClick={() => setUploadedFile(`foto_lapangan_${selectedProject.id}_${Date.now()}.jpg`)}
                         style={{ background: 'white', border: '1px solid #ced4da', padding: '8px 16px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
                       >
-                        Pilih File
+                        {t('val_modal_photo_btn')}
                       </button>
                     </div>
                   )}
@@ -264,11 +268,11 @@ const ValidatorDashboardPage = () => {
               </div>
               
               <div style={{ marginBottom: '32px' }}>
-                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '8px', color: 'var(--text-main)' }}>Catatan Inspeksi</label>
+                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '8px', color: 'var(--text-main)' }}>{t('val_modal_note_label')}</label>
                 <textarea 
                   value={inspectionNote}
                   onChange={(e) => setInspectionNote(e.target.value)}
-                  placeholder="Deskripsikan hasil pantauan di lapangan..."
+                  placeholder={t('val_modal_note_ph')}
                   style={{ width: '100%', padding: '16px', border: '1px solid #ced4da', borderRadius: '12px', minHeight: '100px', resize: 'vertical', outline: 'none', fontFamily: 'inherit' }}
                 />
               </div>
@@ -279,9 +283,9 @@ const ValidatorDashboardPage = () => {
                 style={{ width: '100%', background: (!uploadedFile || isProcessing) ? '#ced4da' : '#f59f00', color: 'white', border: 'none', padding: '16px', borderRadius: '12px', fontWeight: 'bold', fontSize: '1.1rem', cursor: (!uploadedFile || isProcessing) ? 'not-allowed' : 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', transition: '0.2s' }}
               >
                 {isProcessing ? (
-                  <>Memproses Transaksi Web3...</>
+                  <>{t('val_modal_btn_processing')}</>
                 ) : (
-                  <><ShieldCheck size={20} /> Otorisasi & Cairkan Dana On-Chain</>
+                  <><ShieldCheck size={20} /> {t('val_modal_btn_submit')}</>
                 )}
               </button>
             </div>

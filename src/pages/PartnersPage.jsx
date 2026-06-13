@@ -2,15 +2,16 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Users, Factory, Cpu, GraduationCap, Landmark, ArrowRight, ShieldCheck, Building } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 
 const PartnersPage = () => {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
+  const { t } = useLanguage();
   const [isVisible, setIsVisible] = useState(false);
   const [selectedPartner, setSelectedPartner] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState(null);
-  const [partnersList, setPartnersList] = useState([]); // Will be populated from categories
 
   useEffect(() => {
     setIsVisible(true);
@@ -112,7 +113,7 @@ const PartnersPage = () => {
 
   const handleViewProfile = (partner) => {
     if (!isAuthenticated) {
-      navigate('/contact', { state: { from: 'partners', message: 'Silakan login atau hubungi kami untuk mendapatkan akses ke profil mitra strategis.' } });
+      navigate('/contact', { state: { from: 'partners', message: t('partners_login_msg') } });
       return;
     }
     setSelectedPartner(partner);
@@ -124,9 +125,8 @@ const PartnersPage = () => {
   };
 
   const handleSaveProfile = () => {
-    // Simulasi simpan data
     setIsEditing(false);
-    alert("Profil berhasil diperbarui dan sedang ditinjau oleh Admin Yayasan.");
+    alert(t('partners_alert_saved'));
   };
 
   return (
@@ -136,11 +136,11 @@ const PartnersPage = () => {
         {/* Header Section */}
         <div style={{ textAlign: 'center', marginBottom: '80px', animation: isVisible ? 'fadeInUp 0.8s ease-out' : 'none' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(12, 166, 120, 0.1)', color: 'var(--primary)', padding: '8px 16px', borderRadius: '30px', fontSize: '0.9rem', fontWeight: 'bold', marginBottom: '24px' }}>
-            <ShieldCheck size={18} /> Aliansi Strategis
+            <ShieldCheck size={18} /> {t('partners_badge')}
           </div>
-          <h1 style={{ fontSize: '3rem', fontWeight: 'bold', color: 'var(--text-main)', marginBottom: '20px', lineHeight: '1.2' }}>Kolaborasi Membangun Peradaban Hijau</h1>
+          <h1 style={{ fontSize: '3rem', fontWeight: 'bold', color: 'var(--text-main)', marginBottom: '20px', lineHeight: '1.2' }}>{t('partners_title')}</h1>
           <p style={{ fontSize: '1.15rem', color: 'var(--text-muted)', maxWidth: '800px', margin: '0 auto', lineHeight: '1.6' }}>
-            Transformasi ekologi tidak bisa dilakukan sendirian. Kami bangga didukung oleh konsorsium lintas sektoral: mulai dari Kasepuhan adat, raksasa teknologi, institusi riset, hingga jaringan perbankan internasional.
+            {t('partners_desc')}
           </p>
         </div>
 
@@ -182,13 +182,13 @@ const PartnersPage = () => {
                       <button 
                         onClick={() => handleViewProfile(partner)}
                         style={{ background: 'white', border: `1px solid ${category.color}`, color: category.color, padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 'bold' }}>
-                        View Profile
+                        {t('partners_btn_view')}
                       </button>
                       {isAuthenticated && (user?.role === 'partner' || user?.email?.includes('admin')) && (
                         <button 
                           onClick={() => handleEditProfile(partner)}
                           style={{ background: category.color, border: 'none', color: 'white', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 'bold' }}>
-                          Edit
+                          {t('partners_btn_edit')}
                         </button>
                       )}
                     </div>
@@ -201,9 +201,9 @@ const PartnersPage = () => {
 
         {/* CTA Section */}
         <div style={{ background: 'linear-gradient(135deg, var(--primary) 0%, #087f5b 100%)', color: 'white', padding: '60px 40px', borderRadius: '32px', textAlign: 'center', boxShadow: '0 20px 40px rgba(12, 166, 120, 0.2)' }}>
-          <h2 style={{ fontSize: '2.5rem', marginBottom: '20px', fontWeight: 'bold' }}>Jadilah Bagian dari Sejarah</h2>
+          <h2 style={{ fontSize: '2.5rem', marginBottom: '20px', fontWeight: 'bold' }}>{t('partners_cta_title')}</h2>
           <p style={{ fontSize: '1.1rem', opacity: '0.9', marginBottom: '40px', maxWidth: '600px', margin: '0 auto 40px', lineHeight: '1.6' }}>
-            Kami membuka pintu selebar-lebarnya bagi perusahaan, akademisi, dan investor untuk berkolaborasi dalam rantai pasok industri bambu bernilai miliaran dolar.
+            {t('partners_cta_desc')}
           </p>
           <button 
             onClick={() => navigate('/contact')} 
@@ -211,7 +211,7 @@ const PartnersPage = () => {
             onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-3px)'}
             onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
           >
-            Hubungi Kami Sekarang <ArrowRight size={20} />
+            {t('partners_cta_btn')} <ArrowRight size={20} />
           </button>
         </div>
         
@@ -228,27 +228,27 @@ const PartnersPage = () => {
               </div>
               <div>
                 <h2 style={{ margin: 0, color: 'var(--text-main)' }}>{selectedPartner.name}</h2>
-                <span style={{ color: 'var(--primary)', fontWeight: 'bold', fontSize: '0.9rem' }}>Verified Partner</span>
+                <span style={{ color: 'var(--primary)', fontWeight: 'bold', fontSize: '0.9rem' }}>{t('partners_modal_verified')}</span>
               </div>
             </div>
             <div style={{ marginBottom: '30px' }}>
-              <h3 style={{ fontSize: '1rem', color: 'var(--text-main)', marginBottom: '10px' }}>Mengenai Mitra</h3>
+              <h3 style={{ fontSize: '1rem', color: 'var(--text-main)', marginBottom: '10px' }}>{t('partners_modal_about')}</h3>
               <p style={{ color: 'var(--text-muted)', lineHeight: '1.6' }}>{selectedPartner.desc || "Deskripsi lengkap mitra strategis Yayasan Sabumi Nusantara Jaya dalam pengembangan ekosistem ekonomi hijau."}</p>
               
-              <h3 style={{ fontSize: '1rem', color: 'var(--text-main)', marginTop: '20px', marginBottom: '10px' }}>Detail Kolaborasi</h3>
+              <h3 style={{ fontSize: '1rem', color: 'var(--text-main)', marginTop: '20px', marginBottom: '10px' }}>{t('partners_modal_collab')}</h3>
               <ul style={{ color: 'var(--text-muted)', paddingLeft: '20px', lineHeight: '1.8' }}>
-                <li>Status: Aktif</li>
-                <li>Mulai Kolaborasi: Januari 2024</li>
-                <li>Fokus Area: Pemberdayaan & Teknologi</li>
+                <li>{t('partners_modal_status')}</li>
+                <li>{t('partners_modal_since')}</li>
+                <li>{t('partners_modal_focus')}</li>
               </ul>
 
               {selectedPartner.name.includes('Cibarani') && (
                 <div style={{ marginTop: '24px', padding: '18px', background: 'rgba(12, 166, 120, 0.05)', borderRadius: '16px', border: '1px dashed var(--primary)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   <div style={{ fontSize: '0.88rem', fontWeight: 'bold', color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <ShieldCheck size={16} /> Dokumen Resmi MoU Adat
+                    <ShieldCheck size={16} /> {t('partners_modal_mou_title')}
                   </div>
                   <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
-                    Nota Kesepahaman (MoU) kemitraan adat perkebunan emas hijau Kasepuhan Cibarani seluas ±490 Hektar.
+                    {t('partners_modal_mou_desc')}
                   </p>
                   <a 
                     href="./assets/pedoman/moucibarani.pdf" 
@@ -272,7 +272,7 @@ const PartnersPage = () => {
                     onMouseEnter={(e) => e.currentTarget.style.background = '#0b8a63'}
                     onMouseLeave={(e) => e.currentTarget.style.background = 'var(--primary)'}
                   >
-                    Unduh Dokumen MoU (PDF)
+                    {t('partners_modal_mou_btn')}
                   </a>
                 </div>
               )}
@@ -280,7 +280,7 @@ const PartnersPage = () => {
             <button 
               onClick={() => setSelectedPartner(null)}
               style={{ width: '100%', background: 'var(--primary)', color: 'white', border: 'none', padding: '16px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>
-              Tutup Profil
+              {t('partners_modal_close')}
             </button>
           </div>
         </div>
@@ -290,10 +290,10 @@ const PartnersPage = () => {
       {isEditing && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000, padding: '20px' }}>
           <div style={{ background: 'white', borderRadius: '24px', maxWidth: '600px', width: '100%', padding: '40px', position: 'relative' }}>
-            <h2 style={{ marginBottom: '30px', color: 'var(--text-main)' }}>Edit Profile Mitra</h2>
+            <h2 style={{ marginBottom: '30px', color: 'var(--text-main)' }}>{t('partners_edit_title')}</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '8px', fontWeight: 'bold' }}>Nama Lembaga</label>
+                <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '8px', fontWeight: 'bold' }}>{t('partners_edit_name')}</label>
                 <input 
                   type="text" 
                   defaultValue={editData?.name} 
@@ -301,7 +301,7 @@ const PartnersPage = () => {
                 />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '8px', fontWeight: 'bold' }}>Deskripsi Kolaborasi</label>
+                <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '8px', fontWeight: 'bold' }}>{t('partners_edit_desc')}</label>
                 <textarea 
                   rows="4" 
                   defaultValue={editData?.desc} 
@@ -312,12 +312,12 @@ const PartnersPage = () => {
                 <button 
                   onClick={() => setIsEditing(false)}
                   style={{ flex: 1, padding: '14px', borderRadius: '12px', border: '1px solid #ced4da', background: 'white', cursor: 'pointer' }}>
-                  Batal
+                  {t('partners_edit_cancel')}
                 </button>
                 <button 
                   onClick={handleSaveProfile}
                   style={{ flex: 1, padding: '14px', borderRadius: '12px', border: 'none', background: 'var(--primary)', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}>
-                  Simpan Perubahan
+                  {t('partners_edit_save')}
                 </button>
               </div>
             </div>

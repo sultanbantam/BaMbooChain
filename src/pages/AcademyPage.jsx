@@ -3,6 +3,7 @@ import { useWeb3 } from '../context/Web3Context';
 import { getUserTier, getBMCNumber } from './MembershipPage';
 import { Lock, BookOpen, Play, FileText, TrendingUp, Leaf } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useLanguage } from '../context/LanguageContext';
 
 const COURSES = [
   {
@@ -53,6 +54,7 @@ const tierLabel = { seed: '🌱 Green Seed', guardian: '🎋 Guardian', builder:
 const tierColor = { seed: '#40c057', guardian: '#1c7ed6', builder: '#f59f00' };
 
 const AcademyPage = () => {
+  const { t } = useLanguage();
   const { walletAddress, bmcBalance, isConnected, openWalletModal } = useWeb3();
   const userTier = getUserTier(bmcBalance);
   const bmcNum = getBMCNumber(bmcBalance);
@@ -68,12 +70,11 @@ const AcademyPage = () => {
         <div style={{ textAlign: 'center', marginBottom: '50px' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(12,166,120,0.1)', padding: '6px 16px', borderRadius: '20px', marginBottom: '20px' }}>
             <BookOpen size={16} color="var(--primary)" />
-            <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--primary)' }}>Token-Gated Learning • Perlu Token BMC</span>
+            <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--primary)' }}>{t('academy_badge')}</span>
           </div>
-          <h1 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '16px' }}>Akademi BMC</h1>
+          <h1 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '16px' }}>{t('academy_h1')}</h1>
           <p style={{ color: 'var(--text-muted)', maxWidth: '600px', margin: '0 auto' }}>
-            Kurikulum eksklusif tentang industri bambu — dari analisis pasar hingga strategi bisnis global.
-            Akses terbuka berdasarkan level keanggotaan BMC Anda.
+            {t('academy_desc')}
           </p>
         </div>
 
@@ -81,25 +82,25 @@ const AcademyPage = () => {
         {!isConnected ? (
           <div style={{ background: 'white', borderRadius: '16px', padding: '40px', textAlign: 'center', marginBottom: '40px', border: '2px dashed #dee2e6' }}>
             <Lock size={40} color="#adb5bd" style={{ marginBottom: '16px' }} />
-            <h3 style={{ marginBottom: '12px' }}>Hubungkan Wallet untuk Akses Konten</h3>
-            <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>Kursus Academy terkunci. Hubungkan wallet BSC dan pegang token BMC untuk membuka akses.</p>
-            <button onClick={openWalletModal} className="btn btn-primary" style={{ padding: '14px 32px' }}>🔗 Hubungkan Wallet</button>
+            <h3 style={{ marginBottom: '12px' }}>{t('academy_connect_title')}</h3>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>{t('academy_connect_desc')}</p>
+            <button onClick={openWalletModal} className="btn btn-primary" style={{ padding: '14px 32px' }}>{t('academy_connect_btn')}</button>
           </div>
         ) : (
           <div style={{ background: 'white', borderRadius: '12px', padding: '16px 24px', marginBottom: '32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', border: '1px solid #eee' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <Leaf size={20} color="var(--primary)" />
-              <span>Saldo: <strong style={{ color: 'var(--primary)' }}>{bmcBalance ?? '0'} BMC</strong></span>
+              <span>{t('academy_balance_label')} <strong style={{ color: 'var(--primary)' }}>{bmcBalance ?? '0'} BMC</strong></span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               {userTier ? (
                 <span style={{ background: `${tierColor[userTier]}20`, color: tierColor[userTier], padding: '4px 14px', borderRadius: '20px', fontWeight: '700', fontSize: '0.88rem' }}>
-                  {tierLabel[userTier]} — Aktif
+                  {tierLabel[userTier]} {t('academy_tier_active')}
                 </span>
               ) : (
-                <span style={{ color: '#e03131', fontSize: '0.9rem' }}>⚠️ Butuh 1.000 BMC untuk Green Seed</span>
+                <span style={{ color: '#e03131', fontSize: '0.9rem' }}>{t('academy_need_greenseed')}</span>
               )}
-              <Link to="/membership" style={{ fontSize: '0.82rem', color: 'var(--primary)', textDecoration: 'underline' }}>Upgrade Tier →</Link>
+              <Link to="/membership" style={{ fontSize: '0.82rem', color: 'var(--primary)', textDecoration: 'underline' }}>{t('academy_upgrade_link')}</Link>
             </div>
           </div>
         )}
@@ -130,7 +131,7 @@ const AcademyPage = () => {
                       <Lock size={16} color="#adb5bd" />
                     )}
                     {accessible && (
-                      <span style={{ fontSize: '0.75rem', color: '#40c057', fontWeight: '600' }}>✓ Tersedia</span>
+                      <span style={{ fontSize: '0.75rem', color: '#40c057', fontWeight: '600' }}>{t('academy_available')}</span>
                     )}
                   </div>
 
@@ -139,17 +140,17 @@ const AcademyPage = () => {
                   <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: '1.5', marginBottom: '16px' }}>{course.desc}</p>
 
                   <div style={{ display: 'flex', gap: '16px', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '16px' }}>
-                    <span>📚 {course.lessons} pelajaran</span>
+                    <span>📚 {course.lessons} {t('academy_lessons')}</span>
                     <span>⏱ {course.duration}</span>
                   </div>
 
                   {accessible ? (
                     <button className="btn btn-primary" style={{ width: '100%', padding: '10px', fontSize: '0.88rem', display: 'flex', gap: '6px', alignItems: 'center', justifyContent: 'center' }}>
-                      <Play size={15} /> Mulai Belajar
+                      <Play size={15} /> {t('academy_btn_start')}
                     </button>
                   ) : (
                     <Link to="/membership" style={{ display: 'block', textAlign: 'center', padding: '10px', background: '#f1f3f5', borderRadius: '50px', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: '600' }}>
-                      🔒 Perlu {tierLabel[course.tier]}
+                      🔒 {t('academy_btn_need').replace('{tier}', tierLabel[course.tier])}
                     </Link>
                   )}
                 </div>

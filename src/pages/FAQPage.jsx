@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Search, ChevronDown, ChevronUp, MessageCircle, ShieldCheck, HelpCircle, Box, Cpu, GraduationCap, ShoppingCart, Hammer, BarChart3, Wallet, Layout, Globe, AlertTriangle } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useLanguage } from '../context/LanguageContext';
 
 const FAQPage = () => {
+  const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('Semua');
   const [openIndex, setOpenIndex] = useState(null);
@@ -94,16 +96,16 @@ const FAQPage = () => {
       <div className="container" style={{ padding: '40px 24px' }}>
         
         <div style={{ textAlign: 'center', marginBottom: '60px' }}>
-          <h1 style={{ fontSize: '2.5rem', fontWeight: '900', color: 'var(--text-main)', marginBottom: '16px' }}>Pusat Bantuan & FAQ</h1>
+          <h1 style={{ fontSize: '2.5rem', fontWeight: '900', color: 'var(--text-main)', marginBottom: '16px' }}>{t('faq_title')}</h1>
           <p style={{ fontSize: '1.1rem', color: 'var(--text-muted)', maxWidth: '600px', margin: '0 auto 32px' }}>
-            Temukan jawaban atas pertanyaan Anda seputar fitur dan ekosistem BaMbooChain.
+            {t('faq_desc')}
           </p>
           
           <div style={{ position: 'relative', maxWidth: '600px', margin: '0 auto' }}>
             <Search size={20} style={{ position: 'absolute', left: '20px', top: '50%', transform: 'translateY(-50%)', color: '#adb5bd' }} />
             <input 
               type="text" 
-              placeholder="Cari pertanyaan... (misal: Token BMC, Akademi)" 
+              placeholder={t('faq_search_ph')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{ width: '100%', padding: '16px 16px 16px 56px', borderRadius: '30px', border: '1px solid #dee2e6', outline: 'none', fontSize: '1rem', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }} 
@@ -168,17 +170,17 @@ const FAQPage = () => {
           ) : (
             <div style={{ textAlign: 'center', padding: '60px 24px', background: 'white', borderRadius: '24px', color: 'var(--text-muted)' }}>
                <Search size={48} style={{ marginBottom: '16px', opacity: 0.2 }} />
-               <h3>Pertanyaan tidak ditemukan</h3>
-               <p>Coba gunakan kata kunci lain atau hubungi admin.</p>
+               <h3>{t('faq_not_found_title')}</h3>
+               <p>{t('faq_not_found_desc')}</p>
             </div>
           )}
         </div>
 
         {/* CTA Support */}
         <div style={{ marginTop: '80px', textAlign: 'center', padding: '60px', borderRadius: '30px', background: 'linear-gradient(135deg, #0ca678, #2b8a3e)', color: 'white' }}>
-           <h2 style={{ fontSize: '2rem', marginBottom: '16px' }}>Masih Butuh Bantuan?</h2>
+           <h2 style={{ fontSize: '2rem', marginBottom: '16px' }}>{t('faq_cta_title')}</h2>
            <p style={{ opacity: 0.9, marginBottom: '32px', maxWidth: '500px', margin: '0 auto 32px' }}>
-              Tim dukungan kami siap membantu Anda menjawab pertanyaan teknis maupun non-teknis setiap saat.
+              {t('faq_cta_desc')}
            </p>
            <a 
              href="https://wa.me/628174139994?text=Halo%20Admin%20BaMbooChain,%20saya%20butuh%20bantuan%20terkait..." 
@@ -194,7 +196,7 @@ const FAQPage = () => {
                fontWeight: '900', 
                boxShadow: '0 10px 20px rgba(0,0,0,0.1)' 
              }}>
-              Chat Admin Sekarang
+              {t('faq_cta_btn')}
            </a>
         </div>
 

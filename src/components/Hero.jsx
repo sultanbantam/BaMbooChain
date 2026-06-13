@@ -29,7 +29,7 @@ const Hero = () => {
       }}
     >
       <div className="container animate-slide-up" style={{ maxWidth: '900px' }}>
-        <h1 style={{ fontSize: 'clamp(1.75rem, 8vw, 3.5rem)', marginBottom: '24px', fontWeight: '800', lineHeight: '1.2' }}>
+        <h1 style={{ fontSize: 'clamp(1.2rem, 4vw, 2.8rem)', marginBottom: '24px', fontWeight: '800', lineHeight: '1.2', whiteSpace: 'nowrap' }}>
           Yayasan Sabumi Nusantara Jaya
         </h1>
         <p style={{ fontSize: 'clamp(1rem, 4vw, 1.25rem)', marginBottom: '40px', opacity: '0.9', lineHeight: '1.6' }}>

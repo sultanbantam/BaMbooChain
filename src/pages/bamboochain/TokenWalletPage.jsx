@@ -22,6 +22,7 @@ const formatBalance = (val) => {
 
 const OverviewTab = ({ setActiveTab, setInitialModal }) => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 1100);
 
   useEffect(() => {
@@ -33,7 +34,7 @@ const OverviewTab = ({ setActiveTab, setInitialModal }) => {
   const handleCopyWallet = () => {
     if(user?.walletAddress) {
       navigator.clipboard.writeText(user.walletAddress);
-      alert('Alamat Dompet Pintar (Smart Wallet) berhasil disalin!');
+      alert(t('tw_alert_copied'));
     }
   };
 
@@ -132,6 +133,7 @@ const OverviewTab = ({ setActiveTab, setInitialModal }) => {
 
 const WhitepaperTab = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   useEffect(() => {
@@ -144,7 +146,7 @@ const WhitepaperTab = () => {
     e.preventDefault();
     const staked = user?.stakedBalance || 0;
     if (staked < 10) {
-      alert(`⚠️ Akses Terkunci!\n\nAnda harus men-stake minimal 10 BMC untuk dapat membuka atau mengunduh Whitepaper resmi.\n\nSaldo Staking Anda: ${staked} BMC.\nSilakan ke menu Staking untuk menambah saldo.`);
+      alert(t('tw_alert_wp_locked').replace('{staked}', staked));
       return;
     }
     window.open('/wpbmc.pdf', '_blank');
@@ -354,6 +356,7 @@ const WhitepaperTab = () => {
 
 const WalletDashboardTab = ({ initialModal, setInitialModal }) => {
   const { user, transferBmc, calculateLockedBalance, getAvailableBalance, addReward } = useAuth();
+  const { t } = useLanguage();
   const [modalType, setModalType] = useState(null); // 'send', 'receive'
   const [sendAddr, setSendAddr] = useState('');
   const [sendAmount, setSendAmount] = useState('');
@@ -408,15 +411,15 @@ const WalletDashboardTab = ({ initialModal, setInitialModal }) => {
   }
 
   const handleSend = async () => {
-    if(!sendAddr || !sendAmount) return alert("Harap isi alamat dompet dan nominal BMC!");
-    if(!user || user.kycStatus !== 'verified') return alert("⚠️ Akun Anda belum terverifikasi KYC. Silakan selesaikan KYC di menu KYC Center untuk melakukan transfer.");
+    if(!sendAddr || !sendAmount) return alert(t('tw_alert_fill_addr'));
+    if(!user || user.kycStatus !== 'verified') return alert(t('tw_alert_kyc_first'));
     
     const amt = parseFloat(sendAmount);
-    if(isNaN(amt) || amt <= 0) return alert("Nominal tidak valid!");
+    if(isNaN(amt) || amt <= 0) return alert(t('tw_alert_invalid_amt'));
     
     const success = await transferBmc(amt, sendAddr);
     if(success) {
-      alert(`✅ Berhasil mentransfer ${amt} BMC tanpa potong Gas Fee ke ${sendAddr}!`);
+      alert(t('tw_alert_tx_success').replace('{amt}', amt).replace('{addr}', sendAddr));
       setModalType(null);
       setSendAddr('');
       setSendAmount('');
@@ -443,7 +446,7 @@ const WalletDashboardTab = ({ initialModal, setInitialModal }) => {
                 <div style={{ background: '#f8f9fa', padding: '14px', borderRadius: '16px', fontSize: '0.8rem', fontFamily: 'monospace', wordBreak: 'break-all', marginBottom: '24px', border: '1px solid #dee2e6', color: 'var(--primary)', fontWeight: 'bold' }}>{myWallet}</div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                   <button onClick={() => setModalType(null)} style={{ padding: '14px', background: 'transparent', border: '1px solid #ced4da', borderRadius: '16px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.9rem' }}>Tutup</button>
-                  <button onClick={() => { navigator.clipboard.writeText(myWallet); alert('Berhasil menyalin dompet!'); }} style={{ padding: '14px', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '16px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 12px rgba(12, 166, 120, 0.2)', fontSize: '0.9rem' }}>Salin Alamat</button>
+                  <button onClick={() => { navigator.clipboard.writeText(myWallet); alert(t('tw_alert_copy_wallet')); }} style={{ padding: '14px', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '16px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 12px rgba(12, 166, 120, 0.2)', fontSize: '0.9rem' }}>Salin Alamat</button>
                 </div>
               </div>
             )}
@@ -522,7 +525,7 @@ const WalletDashboardTab = ({ initialModal, setInitialModal }) => {
             </div>
 
             <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-              <button onClick={() => { addReward(1000, 'Dev Mint (Testing)', 'Earn'); alert('Berhasil menyuntikkan 1000 BMC (Dev Mode)!'); }} style={{ flex: '1 1 100%', padding: '10px', background: '#fcc419', color: '#b00020', border: 'none', borderRadius: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.85rem', boxShadow: '0 4px 10px rgba(0,0,0,0.2)' }}>
+              <button onClick={() => { addReward(1000, 'Dev Mint (Testing)', 'Earn'); alert(t('tw_alert_dev_mint')); }} style={{ flex: '1 1 100%', padding: '10px', background: '#fcc419', color: '#b00020', border: 'none', borderRadius: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.85rem', boxShadow: '0 4px 10px rgba(0,0,0,0.2)' }}>
                 🚀 Suntik 1000 BMC (Mode Dev)
               </button>
               <button onClick={() => setModalType('receive')} style={{ flex: 1, padding: '12px', background: 'white', color: 'var(--primary)', border: 'none', borderRadius: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.9rem' }}>
@@ -608,6 +611,7 @@ const WalletDashboardTab = ({ initialModal, setInitialModal }) => {
 // --- Sub-komponen Get BMC ---
 const BuyBMC = () => {
   const { user, addReward, addPendingValidation } = useAuth();
+  const { t } = useLanguage();
   const [activePkg, setActivePkg] = useState(null);
   const [bankName, setBankName] = useState('');
   const [paymentProof, setPaymentProof] = useState(null);
@@ -667,12 +671,12 @@ const BuyBMC = () => {
   };
 
   const handlePaymentProofSubmit = () => {
-    if(!bankName) return alert("Harap masukkan Nama di Rekening Bank Anda!");
-    if(!paymentProof) return alert("Harap unggah bukti transfer pembayaran!");
+    if(!bankName) return alert(t('tw_alert_bank_name'));
+    if(!paymentProof) return alert(t('tw_alert_proof'));
     
     // Safety check: Nama rekening harus sama dengan nama user (kyc simulated)
     if(user.kycStatus === 'verified' && bankName.toLowerCase() !== user.name.toLowerCase()) {
-        alert(`❌ Nama di Rekening (${bankName}) tidak cocok dengan Nama KYC Anda (${user.name}). Pembelian ditolak demi keamanan.`);
+        alert(t('tw_alert_name_mismatch').replace('{bank}', bankName).replace('{kyc}', user.name));
         return;
     }
 
@@ -687,7 +691,7 @@ const BuyBMC = () => {
         },
         rewardAmount: activePkg.bmc
       });
-      alert(`✅ Bukti terkirim! Pembelian Anda masuk antrean verifikasi Validator. Saldo ${activePkg.bmc} BMC akan cair setelah disahkan.`);
+      alert(t('tw_alert_buy_success').replace('{bmc}', activePkg.bmc));
       const waText = encodeURIComponent(`Halo Admin, saya (${bankName}) sudah mentransfer sejumlah Rp ${activePkg.idr} untuk pembelian ${activePkg.bmc} BMC. Berikut adalah bukti transfer saya.`);
       window.open(`https://wa.me/628174139994?text=${waText}`, '_blank');
     }
@@ -771,7 +775,7 @@ const BuyBMC = () => {
               if(customBmc && parseFloat(customBmc) > 0) {
                 setActivePkg({ bmc: parseFloat(customBmc), idr: Math.floor(parseFloat(customBmc) * marketPrice).toLocaleString('id-ID') });
               } else {
-                alert("Masukkan nominal BMC yang valid!");
+                alert(t('tw_alert_invalid_amt'));
               }
             }} 
             style={{ width: '100%', background: 'white', color: 'var(--primary)', border: '2px solid var(--primary)', padding: '10px', borderRadius: '15px', fontWeight: '900', cursor: 'pointer', fontSize: '0.9rem', marginTop: 'auto' }}>
@@ -789,6 +793,7 @@ const BuyBMC = () => {
 
 const EarnBMC = () => {
   const { user, addReward, addPendingValidation, processCheckin, getActiveStreak, getJakartaCheckinDay } = useAuth();
+  const { t } = useLanguage();
   const [tasks, setTasks] = useState({ social: false, crypto: false, pi: false, watch: false });
   const [activeTask, setActiveTask] = useState(null);
   const [taskInput, setTaskInput] = useState('');
@@ -799,9 +804,8 @@ const EarnBMC = () => {
 
   const handlePiPayment = async () => {
     if (!window.Pi) {
-      setPiPaymentStatus('error');
       setPiPaymentLog('Pi SDK tidak terdeteksi. Silakan buka aplikasi ini di dalam Pi Browser.');
-      alert('Pi SDK tidak terdeteksi. Buka aplikasi di Pi Browser!');
+      alert(t('tw_alert_pi_sdk'));
       return;
     }
 
@@ -885,7 +889,7 @@ const EarnBMC = () => {
           
           setPiPaymentStatus('completed');
           setPiPaymentLog('✅ Pembayaran BERHASIL! Transaksi diselesaikan sepenuhnya.');
-          alert('Pembayaran Testnet Pi Berhasil!');
+          alert(t('tw_alert_pi_success'));
           
           // Reward user with 10 BMC on successful payment
           if (addReward) {
@@ -926,7 +930,7 @@ const EarnBMC = () => {
     if (!canCheckinToday) return;
     const result = await processCheckin();
     if (result) {
-      alert(`✅ Daily Check-in Day ${result.nextStreak} berhasil! +${result.amount} BMC ditambahkan ke saldo Anda.`);
+      alert(t('tw_alert_daily_success').replace('{day}', result.nextStreak).replace('{amt}', result.amount));
     }
   };
 
@@ -938,7 +942,7 @@ const EarnBMC = () => {
 
   const handleTaskSubmit = (taskKey, taskName, amount) => {
     if (!taskInput || !taskFile) {
-      alert("Mohon masukkan username/ID dan unggah bukti screenshot!");
+      alert(t('tw_alert_req_username'));
       return;
     }
 
@@ -954,10 +958,10 @@ const EarnBMC = () => {
         rewardAmount: amount
       });
       setTasks(prev => ({ ...prev, [taskKey]: true }));
-      alert(`🕒 Bukti terkirim! Validator sedang meninjau tugas Anda. Reward ${amount} BMC akan cair setelah disahkan.`);
       setTaskInput('');
       setTaskFile(null);
       setActiveTask(null);
+      alert(t('tw_alert_task_review').replace('{amt}', amount));
     }
   };
 
@@ -1127,7 +1131,7 @@ const ContributeDataBMC = () => {
 
   const handleKycCheck = (action) => {
       if (user?.kycStatus !== 'verified') {
-          alert(`⚠️ Untuk melakukan kontribusi (${action}), Anda wajib memverifikasi akun (KYC) terlebih dahulu.`);
+          alert(t('tw_alert_kyc_req'));
           return false;
       }
       return true;
@@ -1152,7 +1156,7 @@ const ContributeDataBMC = () => {
   const handleSubmit = () => {
     if(!handleKycCheck('Kontribusi Data')) return;
     if(!localName || !gps) {
-      alert("Mohon lengkapi Nama Lokal Bambu dan Koordinat GPS sebelum mengirim.");
+      alert(t('tw_alert_req_gps'));
       return;
     }
     setLoading(true);
@@ -1169,7 +1173,7 @@ const ContributeDataBMC = () => {
         details: { jmlRebung, pemilik, alamatPemilik, waPemilik, aksesJalan },
         uploadedFiles
       });
-      alert("✅ Data berhasil dikirim! Validator saat ini sedang meninjau data Anda.");
+      alert(t('tw_alert_data_sent'));
     }, 1500);
   };
 
@@ -1307,6 +1311,7 @@ const ContributeDataBMC = () => {
 
 const ValidatorBMC = () => {
   const { user, stakeBmc, approveValidation, approvePlantationDonation } = useAuth();
+  const { t } = useLanguage();
   const { data: pendingValidations = [] } = useValidations(user?.id);
   const { data: plantationDonations = [] } = usePlantationDonations();
   
@@ -1336,9 +1341,9 @@ const ValidatorBMC = () => {
   const confirmStake = () => {
     if (stakeBmc(stakeTarget, 'Validator')) {
       setTermsModal(false);
-      alert(`✅ ${stakeTarget} BMC berhasil di-stake! Tier Anda diperbarui.`);
+      alert(t('tw_alert_stake_success').replace('{bmc}', stakeTarget));
     } else {
-      alert("Saldo tidak cukup.");
+      alert(t('tw_alert_insufficient'));
       setTermsModal(false);
     }
   };
@@ -1459,8 +1464,8 @@ const ValidatorBMC = () => {
                      </div>
 
                      <div style={{ display: 'flex', gap: '12px', marginTop: '4px' }}>
-                       <button onClick={() => alert('Data ditolak.')} style={{ flex: 1, background: 'white', color: '#e03131', border: '1.5px solid #e03131', padding: '12px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem' }}>Tolak</button>
-                       <button onClick={async () => { await approvePlantationDonation(don.id); alert('✅ Dukungan berhasil disahkan!'); }} style={{ flex: 1, background: '#51cf66', color: 'white', border: 'none', padding: '12px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem', boxShadow: '0 4px 12px rgba(81,207,102,0.3)' }}>Sahkan Pembayaran</button>
+                       <button onClick={() => alert(t('tw_alert_rejected'))} style={{ flex: 1, background: 'white', color: '#e03131', border: '1.5px solid #e03131', padding: '12px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem' }}>Tolak</button>
+                       <button onClick={async () => { await approvePlantationDonation(don.id); alert(t('tw_alert_approved')); }} style={{ flex: 1, background: '#51cf66', color: 'white', border: 'none', padding: '12px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem', boxShadow: '0 4px 12px rgba(81,207,102,0.3)' }}>Sahkan Pembayaran</button>
                      </div>
                    </div>
                  ))}
@@ -1505,12 +1510,12 @@ const ValidatorBMC = () => {
                      <div style={{ background: 'var(--bg-secondary)', padding: '12px', borderRadius: '12px', marginTop: '8px', border: '1px solid var(--border-color, #e9ecef)' }}>
                        <div style={{ fontWeight: 'bold', fontSize: '0.8rem', marginBottom: '8px', color: 'var(--text-main)' }}>💬 Chat Konfirmasi</div>
                        <input type="text" placeholder="Tanyakan detail spesifik..." style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color, #ced4da)', background: 'var(--bg-primary, white)', color: 'var(--text-main)', fontSize: '0.85rem', marginBottom: '8px', boxSizing: 'border-box' }} />
-                       <button onClick={() => alert('Pesan terkirim. Menunggu balasan.')} style={{ background: 'var(--text-main)', color: 'var(--bg-primary, white)', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer' }}>Kirim Pesan</button>
+                       <button onClick={() => alert(t('tw_alert_msg_sent'))} style={{ background: 'var(--text-main)', color: 'var(--bg-primary, white)', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer' }}>Kirim Pesan</button>
                      </div>
 
                      <div style={{ display: 'flex', gap: '12px', marginTop: '4px' }}>
-                       <button onClick={() => { approveValidation(task.id, 0, task.plantingId, task.userId); alert('Data ditolak.'); }} style={{ flex: 1, background: 'white', color: '#e03131', border: '1.5px solid #e03131', padding: '12px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem' }}>Tolak</button>
-                       <button onClick={() => { approveValidation(task.id, task.rewardAmount, task.plantingId, task.userId); alert('✅ Verifikasi Sah! Komisi +0.05 BMC untuk Anda.'); }} style={{ flex: 1, background: '#51cf66', color: 'white', border: 'none', padding: '12px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem', boxShadow: '0 4px 12px rgba(81,207,102,0.3)' }}>Sahkan Data</button>
+                       <button onClick={() => { approveValidation(task.id, 0, task.plantingId, task.userId); alert(t('tw_alert_rejected')); }} style={{ flex: 1, background: 'white', color: '#e03131', border: '1.5px solid #e03131', padding: '12px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem' }}>Tolak</button>
+                       <button onClick={() => { approveValidation(task.id, task.rewardAmount, task.plantingId, task.userId); alert(t('tw_alert_val_success')); }} style={{ flex: 1, background: '#51cf66', color: 'white', border: 'none', padding: '12px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem', boxShadow: '0 4px 12px rgba(81,207,102,0.3)' }}>Sahkan Data</button>
                      </div>
                    </div>
                  ))}
@@ -1742,6 +1747,7 @@ const TokenUtilityTab = () => {
 
 const KYCCenterTab = () => {
   const { user, updateKyc, addPendingValidation } = useAuth();
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
@@ -1791,9 +1797,9 @@ const KYCCenterTab = () => {
 
   const handleKycSubmit = (e) => {
     e.preventDefault();
-    if (!ktpPhoto) return alert(`⚠️ Silakan pilih/unggah Foto ${docType} Anda terlebih dahulu!`);
-    if (!selfiePhoto) return alert("⚠️ Silakan pilih/unggah Foto Selfie Anda bersama identitas terlebih dahulu!");
-    if (nik.length < 5) return alert("⚠️ Nomor identitas harus valid!");
+    if (!ktpPhoto) return alert(t('tw_alert_upload_doc'));
+    if (!selfiePhoto) return alert(t('tw_alert_upload_selfie'));
+    if (nik.length < 5) return alert(t('tw_alert_invalid_id'));
 
     setLoading(true);
     setScanStep('analyzing');
@@ -1833,8 +1839,8 @@ const KYCCenterTab = () => {
                     rewardAmount: 0
                   });
                 }
+                alert(t('tw_alert_kyc_sent'));
                 setSubmitted(true);
-                alert("✅ Data KYC berhasil dipindai oleh AI & dikirim ke Antrean Validator!");
               }
               setScanStep(null);
               setLoading(false);
@@ -2067,6 +2073,7 @@ const KYCCenterTab = () => {
 
 const SecuritySettingsTab = () => {
   const { user, updateSecurity } = useAuth();
+  const { t } = useLanguage();
   const [retinaScanning, setRetinaScanning] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
@@ -2083,7 +2090,7 @@ const SecuritySettingsTab = () => {
         setTimeout(() => {
             updateSecurity({ retina: true });
             setRetinaScanning(false);
-            alert("👁️ Biometrik Retina Aktif!");
+            alert(t('tw_alert_retina_on'));
         }, 3000);
     } else {
         updateSecurity({ retina: false });

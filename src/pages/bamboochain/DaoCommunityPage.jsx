@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Users, Vote, HeartHandshake, MessageSquare, ThumbsUp, ThumbsDown, User, Heart, CalendarCheck, Gamepad2, Gift, Trophy, Star, Target, MapPin, Compass } from 'lucide-react';
 import { getAssetUrl } from '../../utils/assets';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
+
 
 const bambooCharacters = Array.from({ length: 36 }, (_, i) => {
   const idStr = String(i + 1).padStart(2, '0');
@@ -36,27 +38,27 @@ const DaoCommunityPage = () => {
 
   // Mock Data untuk Proposals
   const proposals = [
-    { id: "BIP-42", title: "Ekspansi Pembibitan Ke Area Cikadut (50 Ha)", author: "Yayasan Core", status: "Active", endTime: "2 Hari lagi", yes: 75, no: 25 },
-    { id: "BIP-41", title: "Alokasi 5% Profit Untuk Beasiswa Tani", author: "0x4a...93b", status: "Active", endTime: "5 Jam lagi", yes: 92, no: 8 },
+    { id: "BIP-42", title: t('dao_prop_42_title'), author: "Yayasan Core", status: "Active", endTime: t('dao_prop_42_time'), yes: 75, no: 25 },
+    { id: "BIP-41", title: t('dao_prop_41_title'), author: "0x4a...93b", status: "Active", endTime: t('dao_prop_41_time'), yes: 92, no: 8 },
   ];
 
   const discussions = [
-    { id: 1, user: "NusantaraGreen", topic: "Berapa lama tunas bambu betung biasanya masuk panen pertama?", replies: 12, likes: 34, time: "2 jam yang lalu" },
-    { id: 2, user: "InvestBud", topic: "Saran: Tambahkan fitur Live Streaming Drone di Dashboard!", replies: 45, likes: 129, time: "5 jam yang lalu" },
+    { id: 1, user: "NusantaraGreen", topic: t('dao_forum_topic_1'), replies: 12, likes: 34, time: t('dao_forum_time_1') },
+    { id: 2, user: "InvestBud", topic: t('dao_forum_topic_2'), replies: 45, likes: 129, time: t('dao_forum_time_2') },
   ];
 
   const leaderboard = [
-    { rank: 1, user: "0x8fa...41C", points: "15,400 XP", tier: "Bamboo Master" },
-    { rank: 2, user: "EcoWarrior99", points: "12,250 XP", tier: "Green Ranger" },
-    { rank: 3, user: "BudiTani", points: "10,100 XP", tier: "Green Ranger" },
-    { rank: 4, user: "CibaraniFarm", points: "9,800 XP", tier: "Sprout" },
-    { rank: 5, user: "0x12b...89A", points: "8,450 XP", tier: "Sprout" }
+    { rank: 1, user: "0x8fa...41C", points: "15,400 XP", tier: t('dao_tier_master') },
+    { rank: 2, user: "EcoWarrior99", points: "12,250 XP", tier: t('dao_tier_ranger') },
+    { rank: 3, user: "BudiTani", points: "10,100 XP", tier: t('dao_tier_ranger') },
+    { rank: 4, user: "CibaraniFarm", points: "9,800 XP", tier: t('dao_tier_sprout') },
+    { rank: 5, user: "0x12b...89A", points: "8,450 XP", tier: t('dao_tier_sprout') }
   ];
 
   const missions = [
-    { id: 1, title: "Vote di 1 Proposal Aktif", reward: "0.5 BMC", done: false },
-    { id: 2, title: "Balas Diskusi di Forum", reward: "25 BMC", done: true },
-    { id: 3, title: "Main Semai Bibit (Mini-Game)", reward: "100 BMC", done: false },
+    { id: 1, title: t('dao_mission_1'), reward: "0.5 BMC", done: false },
+    { id: 2, title: t('dao_mission_2'), reward: "25 BMC", done: true },
+    { id: 3, title: t('dao_mission_3'), reward: "100 BMC", done: false },
   ];
 
   return (
@@ -70,10 +72,10 @@ const DaoCommunityPage = () => {
           </div>
         </div>
         <h1 style={{ fontSize: '3rem', fontWeight: '900', color: 'var(--text-main)', marginBottom: '16px', letterSpacing: '-0.5px' }}>
-          DAO & Community
+          {t('dao_header_title')}
         </h1>
         <p style={{ fontSize: '1.2rem', color: 'var(--text-muted)', maxWidth: '700px', margin: '0 auto' }}>
-          Kolaborasi tanpa batas. Menentukan arah ekosistem, ikuti keseruan *Gamification*, selesaikan misi hijau Anda, dan raih kompensasi BMC setiap harinya!
+          {t('dao_header_desc')}
         </p>
       </div>
 
@@ -88,8 +90,8 @@ const DaoCommunityPage = () => {
             <div style={{ background: 'linear-gradient(135deg, var(--primary), #1b5e20)', borderRadius: '20px', padding: '24px', color: 'white', textAlign: 'center', boxShadow: '0 8px 30px rgba(12,166,120,0.3)', position: 'relative', overflow: 'hidden' }}>
               <div style={{ position: 'absolute', top: '-10px', right: '-10px', opacity: 0.1 }}><CalendarCheck size={100} /></div>
               <div style={{ position: 'relative', zIndex: 1 }}>
-                <h3 style={{ fontSize: '1.2rem', margin: '0 0 8px 0', color: 'rgba(255,255,255,0.9)' }}>Daily Check-In</h3>
-                <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', marginBottom: '20px' }}>Login setiap hari (Reset 07:00 WIB) untuk mendapatkan BMC. Streak: <strong>{streak} Hari</strong> 🔥</div>
+                <h3 style={{ fontSize: '1.2rem', margin: '0 0 8px 0', color: 'rgba(255,255,255,0.9)' }}>{t('dao_daily_checkin_title')}</h3>
+                <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', marginBottom: '20px' }}>{t('dao_daily_checkin_desc').replace('{streak}', streak)}</div>
                 <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginBottom: '20px' }}>
                   {[
                     { day: 1, rwd: "0.001" },
@@ -119,19 +121,19 @@ const DaoCommunityPage = () => {
                     onClick={async () => {
                       const result = await processCheckin();
                       if (result) {
-                        alert(`✅ Daily Check-in Day ${result.nextStreak} berhasil! +${result.amount} BMC ditambahkan ke saldo Anda.`);
+                        alert(t('dao_alert_daily_success').replace('{day}', result.nextStreak).replace('{amt}', result.amount));
                       }
                     }}
                     style={{ background: 'white', color: 'var(--primary)', padding: '12px 24px', borderRadius: '20px', border: 'none', fontWeight: 'bold', width: '100%', cursor: 'pointer' }}
                   >
-                    Check-In Sekarang
+                    {t('dao_btn_checkin_now')}
                   </button>
                 ) : (
                   <button 
                     disabled
                     style={{ background: 'rgba(255,255,255,0.2)', color: 'white', padding: '12px 24px', borderRadius: '20px', border: 'none', fontWeight: 'bold', width: '100%', cursor: 'default' }}
                   >
-                    Sudah Check-In Hari Ini ✅ (Streak: {streak} Hari)
+                    {t('dao_btn_already_checkedin').replace('{streak}', streak)}
                   </button>
                 )}
               </div>
@@ -141,11 +143,11 @@ const DaoCommunityPage = () => {
             <div style={{ background: 'var(--bg-card)', borderRadius: '20px', padding: '24px', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 'bold', marginBottom: '4px' }}>
-                  <Gift size={16} color="#f59f00" /> Total Reward Saya
+                  <Gift size={16} color="#f59f00" /> {t('dao_my_total_rewards')}
                 </div>
                 <div style={{ fontSize: '1.8rem', fontWeight: '900', color: 'var(--text-main)' }}>{user ? formatBalance(user.bmcBalance) : "0.00"} <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>BMC</span></div>
               </div>
-              <button onClick={() => alert('Fitur klaim hadiah sedang dalam tahap audit smart contract!')} style={{ background: '#fff9db', color: '#f59f00', border: '1px solid #fcc419', padding: '10px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>Klaim</button>
+              <button onClick={() => alert(t('dao_alert_claim_audit'))} style={{ background: '#fff9db', color: '#f59f00', border: '1px solid #fcc419', padding: '10px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>{t('dao_btn_claim')}</button>
             </div>
           </div>
 
@@ -153,9 +155,9 @@ const DaoCommunityPage = () => {
           <div style={{ background: 'var(--bg-card)', borderRadius: '20px', padding: '24px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <h3 style={{ fontSize: '1.2rem', margin: 0, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Target size={20} color="#e03131" /> Misi & Tantangan Harian
+                <Target size={20} color="#e03131" /> {t('dao_daily_missions_title')}
               </h3>
-              <span style={{ fontSize: '0.8rem', background: '#ffe3e3', color: '#e03131', padding: '4px 8px', borderRadius: '12px', fontWeight: 'bold' }}>Reset: 14 Jam</span>
+              <span style={{ fontSize: '0.8rem', background: '#ffe3e3', color: '#e03131', padding: '4px 8px', borderRadius: '12px', fontWeight: 'bold' }}>{t('dao_mission_reset')}</span>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
@@ -174,17 +176,17 @@ const DaoCommunityPage = () => {
 
             <div style={{ marginTop: 'auto', background: 'linear-gradient(135deg, #1864ab, #339af0)', borderRadius: '16px', padding: '20px', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <h4 style={{ margin: '0 0 4px 0', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '6px' }}><Gamepad2 size={18} /> Mini-Game: Bamboo Tycoon</h4>
-                <p style={{ margin: 0, fontSize: '0.8rem', color: 'rgba(255,255,255,0.8)' }}>Simulasi semai bibit untuk *farming* hadiah NFT langka!</p>
+                <h4 style={{ margin: '0 0 4px 0', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '6px' }}><Gamepad2 size={18} /> {t('dao_minigame_title')}</h4>
+                <p style={{ margin: 0, fontSize: '0.8rem', color: 'rgba(255,255,255,0.8)' }}>{t('dao_minigame_desc')}</p>
               </div>
-              <button onClick={() => alert('Mini-game Bamboo Tycoon akan segera diluncurkan di Season 2!')} style={{ background: 'white', color: '#1864ab', border: 'none', padding: '10px 20px', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 10px rgba(0,0,0,0.2)' }}>Mainkan</button>
+              <button onClick={() => alert(t('dao_alert_minigame'))} style={{ background: 'white', color: '#1864ab', border: 'none', padding: '10px 20px', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 10px rgba(0,0,0,0.2)' }}>{t('dao_btn_play')}</button>
             </div>
           </div>
 
           {/* Kolom 3: Leaderboard */}
           <div style={{ background: 'var(--bg-card)', borderRadius: '20px', padding: '24px', border: '1px solid var(--border-color)' }}>
             <h3 style={{ fontSize: '1.2rem', margin: '0 0 20px 0', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Trophy size={20} color="#f59f00" /> Papan Peringkat Global
+              <Trophy size={20} color="#f59f00" /> {t('dao_leaderboard_title')}
             </h3>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -204,7 +206,7 @@ const DaoCommunityPage = () => {
               ))}
             </div>
             
-            <button onClick={() => alert('Peringkat Anda saat ini: Bamboo Master (Top 5%)')} style={{ background: 'transparent', color: 'var(--text-muted)', border: '1px dashed #ced4da', padding: '8px', width: '100%', borderRadius: '12px', marginTop: '16px', fontSize: '0.8rem', cursor: 'pointer' }}>Lihat Peringkat Saya</button>
+            <button onClick={() => alert(t('dao_alert_rank'))} style={{ background: 'transparent', color: 'var(--text-muted)', border: '1px dashed #ced4da', padding: '8px', width: '100%', borderRadius: '12px', marginTop: '16px', fontSize: '0.8rem', cursor: 'pointer' }}>{t('dao_btn_view_my_rank')}</button>
           </div>
         </div>
 
@@ -215,23 +217,23 @@ const DaoCommunityPage = () => {
           <div style={{ background: 'var(--bg-card)', borderRadius: '24px', padding: '32px', border: '1px solid var(--border-color)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
               <h3 style={{ fontSize: '1.4rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '10px', margin: 0 }}>
-                <Vote size={24} color="#845ef7" /> Voting Project (Governance)
+                <Vote size={24} color="#845ef7" /> {t('dao_voting_title')}
               </h3>
-              <button onClick={() => alert('Hanya pengguna dengan tier Green Ranger ke atas yang dapat membuat proposal.')} style={{ background: '#845ef7', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold', cursor: 'pointer' }}>Buat Proposal Baru</button>
+              <button onClick={() => alert(t('dao_alert_proposal_tier'))} style={{ background: '#845ef7', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold', cursor: 'pointer' }}>{t('dao_btn_create_proposal')}</button>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {proposals.map((prop, idx) => (
-                <div key={idx} onClick={() => alert('Memuat detail proposal ' + prop.id + '...')} style={{ padding: '20px', border: '1px solid var(--border-color)', borderRadius: '16px', cursor: 'pointer', transition: 'background 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-secondary)'} onMouseLeave={(e) => e.currentTarget.style.background = 'var(--bg-card)'}>
+                <div key={idx} onClick={() => alert(t('dao_alert_proposal_detail').replace('{id}', prop.id))} style={{ padding: '20px', border: '1px solid var(--border-color)', borderRadius: '16px', cursor: 'pointer', transition: 'background 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-secondary)'} onMouseLeave={(e) => e.currentTarget.style.background = 'var(--bg-card)'}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
                         <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: '#adb5bd' }}>{prop.id}</span>
-                        <span style={{ fontSize: '0.75rem', background: '#eebefa', color: '#845ef7', padding: '2px 8px', borderRadius: '12px', fontWeight: 'bold' }}>{prop.status}</span>
+                        <span style={{ fontSize: '0.75rem', background: '#eebefa', color: '#845ef7', padding: '2px 8px', borderRadius: '12px', fontWeight: 'bold' }}>{t('dao_status_' + prop.status.toLowerCase())}</span>
                         <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>🕒 {prop.endTime}</span>
                       </div>
                       <h4 style={{ fontSize: '1.1rem', color: 'var(--text-main)', margin: '0 0 4px 0' }}>{prop.title}</h4>
-                      <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Oleh: {prop.author}</div>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{t('dao_proposal_by').replace('{author}', prop.author)}</div>
                     </div>
                   </div>
                   <div>
@@ -251,17 +253,17 @@ const DaoCommunityPage = () => {
           {/* COMMUNITY FUNDING */}
           <div style={{ background: 'linear-gradient(135deg, rgba(245,159,0,0.05), rgba(201,42,42,0.05))', borderRadius: '24px', padding: '32px', border: '1px solid rgba(245,159,0,0.2)', display: 'flex', flexDirection: 'column' }}>
             <h3 style={{ fontSize: '1.4rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px', margin: 0 }}>
-              <HeartHandshake size={24} color="#f59f00" /> Community Funding
+              <HeartHandshake size={24} color="#f59f00" /> {t('dao_funding_title')}
             </h3>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginBottom: '32px' }}>Dana hibah kerumunan (crowdfunding) untuk inisiatif akar rumput.</p>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginBottom: '32px' }}>{t('dao_funding_desc')}</p>
             
             <div style={{ background: 'var(--bg-card)', borderRadius: '16px', padding: '24px', border: '1px solid var(--border-color)', marginBottom: '24px' }}>
-              <div style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--text-muted)' }}>Total Pundi Amal Terkumpul</div>
+              <div style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--text-muted)' }}>{t('dao_funding_total_raised')}</div>
               <div style={{ fontSize: '2.5rem', fontWeight: '900', color: '#f59f00' }}>$24,500 <span style={{ fontSize: '1.2rem', color: 'var(--text-muted)' }}>USDT</span></div>
             </div>
 
-            <button onClick={() => alert('Membuka modal Web3 untuk donasi...')} style={{ marginTop: 'auto', background: '#f59f00', color: 'white', padding: '16px', borderRadius: '30px', fontWeight: 'bold', fontSize: '1.05rem', border: 'none', cursor: 'pointer', display: 'flex', justifyContent: 'center', gap: '10px' }}>
-              <Heart size={20} /> Dukung Proyek Akar Rumput
+            <button onClick={() => alert(t('dao_alert_donate'))} style={{ marginTop: 'auto', background: '#f59f00', color: 'white', padding: '16px', borderRadius: '30px', fontWeight: 'bold', fontSize: '1.05rem', border: 'none', cursor: 'pointer', display: 'flex', justifyContent: 'center', gap: '10px' }}>
+              <Heart size={20} /> {t('dao_btn_support_grassroots')}
             </button>
           </div>
 
@@ -272,18 +274,18 @@ const DaoCommunityPage = () => {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
             <div>
               <h3 style={{ fontSize: '1.8rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '12px', margin: 0 }}>
-                <Compass size={32} color="var(--primary)" /> webNUSA (Wisata Edukasi Bambu Nusantara)
+                <Compass size={32} color="var(--primary)" /> {t('dao_webnusa_title')}
               </h3>
-              <p style={{ color: 'var(--text-muted)', margin: '4px 0 0 0' }}>Kunjungi pusat konservasi dan laboratorium bambu hidup terbesar di Nusantara.</p>
+              <p style={{ color: 'var(--text-muted)', margin: '4px 0 0 0' }}>{t('dao_webnusa_desc')}</p>
             </div>
-            <button onClick={() => alert('Membuka Peta Interaktif webNUSA...')} style={{ background: 'transparent', color: 'var(--primary)', border: '1px solid var(--primary)', padding: '10px 20px', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer' }}>Jelajahi Peta Wisata</button>
+            <button onClick={() => alert(t('dao_alert_map'))} style={{ background: 'transparent', color: 'var(--primary)', border: '1px solid var(--primary)', padding: '10px 20px', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer' }}>{t('dao_btn_explore_tourism_map')}</button>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
              {[
-               { title: "Hutan Bambu Cibarani", loc: "Siliwangi, Bandung", desc: "Laboratorium bambu hidup dengan 15+ spesies langka.", img: "https://images.unsplash.com/photo-1542450530-5bfa5dfef006?ixlib=rb-4.0.3" },
-               { title: "Workshop Bambu Jabar", loc: "Sukabumi, Jabar", desc: "Pelatihan teknik konstruksi bambu modern & pengawetan.", img: "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?ixlib=rb-4.0.3" },
-               { title: "Eco-Village Banten", loc: "Lebak, Banten", desc: "Kawasan hunian bambu berkelanjutan & kebun bibit.", img: "https://images.unsplash.com/photo-1587825027984-c4476461c8f9?ixlib=rb-4.0.3" }
+               { title: t('dao_site_1_title'), loc: t('dao_site_1_loc'), desc: t('dao_site_1_desc'), img: "https://images.unsplash.com/photo-1542450530-5bfa5dfef006?ixlib=rb-4.0.3" },
+               { title: t('dao_site_2_title'), loc: t('dao_site_2_loc'), desc: t('dao_site_2_desc'), img: "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?ixlib=rb-4.0.3" },
+               { title: t('dao_site_3_title'), loc: t('dao_site_3_loc'), desc: t('dao_site_3_desc'), img: "https://images.unsplash.com/photo-1587825027984-c4476461c8f9?ixlib=rb-4.0.3" }
              ].map((site, i) => (
                 <div key={i} style={{ background: 'var(--bg-card)', borderRadius: '24px', overflow: 'hidden', border: '1px solid var(--border-color)' }}>
                    <div style={{ height: '160px', position: 'relative' }}>
@@ -295,8 +297,8 @@ const DaoCommunityPage = () => {
                    <div style={{ padding: '24px' }}>
                       <h4 style={{ margin: '0 0 8px 0', fontSize: '1.2rem', color: 'var(--text-main)' }}>{site.title}</h4>
                       <p style={{ margin: '0 0 20px 0', fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: '1.5' }}>{site.desc}</p>
-                      <button onClick={() => alert('Membuka formulir pemesanan kunjungan untuk ' + site.title)} style={{ width: '100%', padding: '12px', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                         Booking Kunjungan <Star size={14} />
+                      <button onClick={() => alert(t('dao_alert_booking').replace('{site}', site.title))} style={{ width: '100%', padding: '12px', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                         {t('dao_btn_book_visit')} <Star size={14} />
                       </button>
                    </div>
                 </div>
@@ -310,15 +312,15 @@ const DaoCommunityPage = () => {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
             <div>
               <h3 style={{ fontSize: '1.8rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '12px', margin: 0 }}>
-                <Users size={32} color="#f59f00" /> Bamboo Guardians Gallery
+                <Users size={32} color="#f59f00" /> {t('dao_guardians_title')}
               </h3>
-              <p style={{ color: 'var(--text-muted)', margin: '4px 0 0 0' }}>Koleksi 36 karakter unik pelindung rumpun bambu Nusantara.</p>
+              <p style={{ color: 'var(--text-muted)', margin: '4px 0 0 0' }}>{t('dao_guardians_desc')}</p>
             </div>
             <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                <div style={{ background: 'var(--bg-card)', padding: '8px 16px', borderRadius: '12px', border: '1px solid var(--border-color)', fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-muted)' }}>
-                 Unlocked: <span style={{ color: 'var(--primary)' }}>12/36</span>
+                 {t('dao_unlocked_label')}: <span style={{ color: 'var(--primary)' }}>12/36</span>
                </div>
-               <button onClick={() => alert('Membuka pack NFT karakter (Butuh 100 BMC)...')} style={{ background: 'var(--text-main)', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer' }}>Buka Pack Baru</button>
+               <button onClick={() => alert(t('dao_alert_nft'))} style={{ background: 'var(--text-main)', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer' }}>{t('dao_btn_open_pack')}</button>
             </div>
           </div>
 
@@ -368,18 +370,18 @@ const DaoCommunityPage = () => {
                   color: char.rarity === 'Legendary' ? '#1b5e20' : 'white',
                   textTransform: 'uppercase'
                 }}>
-                  {char.rarity}
+                  {t('rarity_' + char.rarity.toLowerCase())}
                 </div>
 
                 <div style={{ width: '100%', aspectRatio: '1/1', borderRadius: '14px', overflow: 'hidden', marginBottom: '10px', background: '#f8f9fa' }}>
                   <img 
                     src={char.img} 
-                    alt={char.name} 
+                    alt={t('dao_guardian_name').replace('{id}', String(char.id).padStart(2, '0'))} 
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                     onError={(e) => { e.target.src = "https://via.placeholder.com/150?text=Bamboo"; }}
                   />
                 </div>
-                <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)' }}>{char.name}</div>
+                <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)' }}>{t('dao_guardian_name').replace('{id}', String(char.id).padStart(2, '0'))}</div>
                 <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>ID: #{String(char.id).padStart(3, '0')}</div>
               </div>
             ))}
@@ -390,9 +392,9 @@ const DaoCommunityPage = () => {
         <div style={{ background: 'var(--bg-card)', borderRadius: '24px', padding: '32px', border: '1px solid var(--border-color)', marginTop: '20px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
             <h3 style={{ fontSize: '1.4rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '10px', margin: 0 }}>
-              <MessageSquare size={24} color="#339af0" /> Diskusi Komunitas (Forum)
+              <MessageSquare size={24} color="#339af0" /> {t('dao_forum_title')}
             </h3>
-            <button onClick={() => alert('Mengalihkan ke forum diskusi komunitas...')} style={{ background: 'transparent', color: '#339af0', border: '1px solid #339af0', padding: '8px 16px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold', cursor: 'pointer' }}>Lihat Semua Topik</button>
+            <button onClick={() => alert(t('dao_alert_forum'))} style={{ background: 'transparent', color: '#339af0', border: '1px solid #339af0', padding: '8px 16px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold', cursor: 'pointer' }}>{t('dao_btn_view_all_topics')}</button>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px' }}>
             {discussions.map((chat) => (
