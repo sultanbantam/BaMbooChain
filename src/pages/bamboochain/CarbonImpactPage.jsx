@@ -10,14 +10,23 @@ const CarbonImpactPage = () => {
   const { data: allDonations = [] } = usePlantationDonations();
 
   // Hitung metrik dinamis dari donasi
-  const verifiedDonations = allDonations.filter(d => d.status === 'verified');
-  const firestoreTrees = verifiedDonations.reduce((sum, d) => sum + Number(d.amount || 0), 0); // Asumsi 1 USDT = 1 Pohon
+  const activeDonations = allDonations.filter(d => d.status === 'verified' || d.status === 'active');
   
-  // Data metrik dinamis
+  // Pohon ditanam jika milestone 'tanam' disahkan
+  const treesPlanted = activeDonations.reduce((sum, d) => {
+    return sum + (d.milestones?.tanam?.released ? Number(d.amount || 0) : 0);
+  }, 0);
+
+  // Pohon dirawat jika milestone 'rawat' disahkan (menghasilkan CO2/Air)
+  const treesMaintained = activeDonations.reduce((sum, d) => {
+    return sum + (d.milestones?.rawat?.released ? Number(d.amount || 0) : 0);
+  }, 0);
+  
+  // Data metrik murni dari aktivitas nyata
   const impactData = {
-    co2: (15240 + firestoreTrees * 0.5).toLocaleString(), // Asumsi 1 pohon = 0.5 ton CO2
-    water: (2.5 + firestoreTrees * 0.0001).toFixed(2) + " Juta", // Asumsi 1 pohon = 100 liter
-    land: (450 + firestoreTrees * 0.01).toLocaleString() // Asumsi 1 pohon = 0.01 hektar
+    co2: (treesMaintained * 0.5).toLocaleString(undefined, { maximumFractionDigits: 2 }), // Asumsi 1 pohon dirawat = 0.5 ton CO2
+    water: (treesMaintained * 100).toLocaleString(), // Asumsi 1 pohon dirawat = 100 liter (tampilkan angka asli, bukan "Juta" jika masih kecil)
+    land: (treesPlanted * 0.01).toLocaleString(undefined, { maximumFractionDigits: 2 }) // Asumsi 1 pohon ditanam = 0.01 hektar
   };
 
   const handleDownload = () => {

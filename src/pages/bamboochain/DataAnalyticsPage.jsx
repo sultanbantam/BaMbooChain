@@ -78,66 +78,69 @@ const DataAnalyticsPage = () => {
         const projectsCount = Number(nextProjectId) - 1;
 
         // Calculate totals from firestore donations
-        const verifiedDonations = allDonations.filter(d => d.status === 'verified');
-        const firestoreAUM = verifiedDonations.reduce((sum, d) => sum + Number(d.amount || 0), 0);
-        const firestoreTrees = firestoreAUM; // Assume 1 USDT = 1 Tree/Rumpun for donation packages
+        const activeDonations = allDonations.filter(d => d.status === 'verified' || d.status === 'active');
+        const firestoreAUM = activeDonations.reduce((sum, d) => sum + Number(d.amount || 0), 0);
+        
+        // Rumpun ditanam hanya dihitung jika misi penanaman disahkan
+        const firestoreTrees = activeDonations.reduce((sum, d) => {
+          return sum + (d.milestones?.tanam?.released ? Number(d.amount || 0) : 0);
+        }, 0);
+        
+        // Karbon diserap hanya dihitung jika misi perawatan disahkan
+        const treesMaintained = activeDonations.reduce((sum, d) => {
+          return sum + (d.milestones?.rawat?.released ? Number(d.amount || 0) : 0);
+        }, 0);
 
-        // 3. Calculate metrics
+        // 3. Calculate metrics (Mulai dari Nol, murni dari data donasi)
         setMetrics({
           aum: balanceUsdt + firestoreAUM,
-          totalProjects: projectsCount + verifiedDonations.length,
-          treesFunded: Math.floor(balanceUsdt / 50 * 10) + firestoreTrees, // Assuming 50 USDT = 10 trees
-          volume: (balanceUsdt + firestoreAUM) * 1.5 // Mock volume based on AUM
+          totalProjects: projectsCount + activeDonations.length,
+          treesFunded: Math.floor(balanceUsdt / 50 * 10) + firestoreTrees, // Web3 + Web2
+          volume: (balanceUsdt + firestoreAUM) * 1.5 // Mock volume
         });
 
         // 4. Fetch Deposit Events for Chart
         const filter = escrowContract.filters.Deposit();
         const events = await escrowContract.queryFilter(filter);
         
-        // Base historical mock data
-        let data = [
-          { name: 'Jan', price: 20, carbon: 10 },
-          { name: 'Feb', price: 30, carbon: 25 },
-          { name: 'Mar', price: 45, carbon: 40 },
-          { name: 'Apr', price: 50, carbon: 55 },
-          { name: 'Mei', price: 65, carbon: 80 }
-        ];
-
-        // Append real Web3 deposits to current month
-        let currentMonthAUM = 65 + (firestoreAUM / 100);
-        let currentCarbon = 80 + (firestoreAUM / 500);
+        // Data mulai dari 0 untuk chart
+        let data = [];
+        let currentMonthAUM = firestoreAUM;
+        let currentCarbon = treesMaintained * 0.5; // 0.5 ton per pohon
         
         events.forEach(ev => {
            const amount = Number(ethers.formatUnits(ev.args[2], 18));
-           currentMonthAUM += (amount / 100); // Scale down for chart demo
-           currentCarbon += (amount / 500);
+           currentMonthAUM += amount;
+           currentCarbon += (amount * 0.5); // Simplifikasi
         });
         
-        data.push({ name: 'Live (Jun)', price: currentMonthAUM, carbon: currentCarbon });
-
+        data.push({ name: 'Saat Ini', price: currentMonthAUM, carbon: currentCarbon });
         setChartData(data);
       } catch (error) {
         console.error("Web3 connection failed, using fallback/simulated data:", error);
-        // Calculate totals from firestore donations
-        const verifiedDonations = allDonations.filter(d => d.status === 'verified');
-        const firestoreAUM = verifiedDonations.reduce((sum, d) => sum + Number(d.amount || 0), 0);
-        const firestoreTrees = firestoreAUM;
         
-        // Fallback data for demo purposes when blockchain is not reachable
+        const activeDonations = allDonations.filter(d => d.status === 'verified' || d.status === 'active');
+        const firestoreAUM = activeDonations.reduce((sum, d) => sum + Number(d.amount || 0), 0);
+        
+        const firestoreTrees = activeDonations.reduce((sum, d) => {
+          return sum + (d.milestones?.tanam?.released ? Number(d.amount || 0) : 0);
+        }, 0);
+        
+        const treesMaintained = activeDonations.reduce((sum, d) => {
+          return sum + (d.milestones?.rawat?.released ? Number(d.amount || 0) : 0);
+        }, 0);
+        
+        // Real data fallback
         setMetrics({
-          aum: 125430.50 + firestoreAUM,
-          totalProjects: 12 + verifiedDonations.length,
-          treesFunded: 25086 + firestoreTrees,
-          volume: (125430.50 + firestoreAUM) * 1.5
+          aum: firestoreAUM,
+          totalProjects: activeDonations.length,
+          treesFunded: firestoreTrees,
+          volume: firestoreAUM * 1.5
         });
         
         setChartData([
-          { name: 'Jan', price: 20, carbon: 10 },
-          { name: 'Feb', price: 30, carbon: 25 },
-          { name: 'Mar', price: 45, carbon: 40 },
-          { name: 'Apr', price: 50, carbon: 55 },
-          { name: 'Mei', price: 65, carbon: 80 },
-          { name: 'Jun', price: 78 + (firestoreAUM / 100), carbon: 95 + (firestoreAUM / 500) }
+          { name: 'Sebelumnya', price: 0, carbon: 0 },
+          { name: 'Saat Ini', price: firestoreAUM, carbon: treesMaintained * 0.5 }
         ]);
       } finally {
         setLoading(false);

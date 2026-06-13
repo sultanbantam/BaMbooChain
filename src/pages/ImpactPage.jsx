@@ -4,27 +4,34 @@ import { Link } from 'react-router-dom';
 import { useWeb3 } from '../context/Web3Context';
 import { useLanguage } from '../context/LanguageContext';
 import { getAssetUrl } from '../utils/assets';
+import { usePlantationDonations } from '../hooks/useFirestoreQueries';
 
 const ImpactPage = () => {
   const { t } = useLanguage();
   const { bmcBalance, isConnected, rawBmcBalance } = useWeb3();
   const [isVisible, setIsVisible] = useState(false);
-  const [liveTrees, setLiveTrees] = useState(1240500);
+  const { data: allDonations = [] } = usePlantationDonations();
 
   useEffect(() => {
     setIsVisible(true);
-    // Simulasi pertumbuhan rumpun secara live
-    const interval = setInterval(() => {
-      setLiveTrees(prev => prev + Math.floor(Math.random() * 2));
-    }, 5000);
-    return () => clearInterval(interval);
   }, []);
 
+  const activeDonations = allDonations.filter(d => d.status === 'verified' || d.status === 'active');
+  const firestoreAUM = activeDonations.reduce((sum, d) => sum + Number(d.amount || 0), 0);
+  
+  const treesPlanted = activeDonations.reduce((sum, d) => {
+    return sum + (d.milestones?.tanam?.released ? Number(d.amount || 0) : 0);
+  }, 0);
+  
+  const treesMaintained = activeDonations.reduce((sum, d) => {
+    return sum + (d.milestones?.rawat?.released ? Number(d.amount || 0) : 0);
+  }, 0);
+
   const metrics = [
-    { id: 1, value: `${(liveTrees / 1000000).toFixed(2)}M+`, label: t('impact_stat_trees'), icon: <Sprout size={32} />, source: 'Admin Verified' },
-    { id: 2, value: '85,000', label: t('impact_stat_co2'), icon: <Leaf size={32} />, source: 'Admin Verified' },
-    { id: 3, value: '490 Ha', label: t('impact_stat_land'), icon: <MapPin size={32} />, source: 'On-Chain GIS' },
-    { id: 4, value: '1,250+', label: t('impact_stat_farmers'), icon: <Users size={32} />, source: 'Admin Verified' }
+    { id: 1, value: `${treesPlanted.toLocaleString()}`, label: t('impact_stat_trees'), icon: <Sprout size={32} />, source: 'Admin Verified' },
+    { id: 2, value: `${(treesMaintained * 0.5).toLocaleString(undefined, { maximumFractionDigits: 1 })}`, label: t('impact_stat_co2'), icon: <Leaf size={32} />, source: 'Admin Verified' },
+    { id: 3, value: `${(treesPlanted * 0.01).toLocaleString(undefined, { maximumFractionDigits: 2 })} Ha`, label: t('impact_stat_land'), icon: <MapPin size={32} />, source: 'On-Chain GIS' },
+    { id: 4, value: `${activeDonations.length > 0 ? activeDonations.length : 0}`, label: t('impact_stat_farmers'), icon: <Users size={32} />, source: 'Admin Verified' }
   ];
 
   const sdgs = [
@@ -104,11 +111,11 @@ const ImpactPage = () => {
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
               <span style={{ color: 'var(--text-main)', fontWeight: 'bold' }}>{t('impact_total_funds')}</span>
-              <span style={{ color: 'var(--primary)', fontWeight: 'bold' }}>${isConnected ? (rawBmcBalance * 1.5).toLocaleString() : '4,250,000'} USDT</span>
+              <span style={{ color: 'var(--primary)', fontWeight: 'bold' }}>${(firestoreAUM + (isConnected ? rawBmcBalance * 1.5 : 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ color: 'var(--text-main)', fontWeight: 'bold' }}>{t('impact_validated_projects')}</span>
-              <span style={{ color: 'var(--text-main)', fontWeight: 'bold' }}>1,204 {t('impact_land_points')}</span>
+              <span style={{ color: 'var(--text-main)', fontWeight: 'bold' }}>{activeDonations.length} {t('impact_land_points')}</span>
             </div>
           </div>
         </div>
