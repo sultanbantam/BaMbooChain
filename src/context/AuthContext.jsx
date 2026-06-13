@@ -1367,7 +1367,224 @@ export const AuthProvider = ({ children }) => {
           alert("❌ Gagal mengirimkan Gift.");
           return false;
         }
-      }
+      },
+
+      // ============================================================
+      // DAO FUNCTIONS
+      // ============================================================
+
+      voteOnProposal: async (proposalId, vote) => {
+        if (!user) { alert("❌ Silakan login terlebih dahulu!"); return false; }
+        try {
+          const propRef = doc(db, 'dao_proposals', proposalId);
+          const field = vote === 'yes' ? 'yesVotes' : 'noVotes';
+          await updateDoc(propRef, {
+            [field]: increment(1),
+            [`voters.${user.id}`]: vote
+          });
+          addNotification(`✅ Vote "${vote}" Anda berhasil direkam!`, 'success');
+          return true;
+        } catch (err) {
+          console.error('voteOnProposal error:', err);
+          alert('❌ Gagal vote: ' + err.message);
+          return false;
+        }
+      },
+
+      createProposal: async (data) => {
+        if (!user) { alert("❌ Silakan login terlebih dahulu!"); return false; }
+        if ((user.stakedBalance || 0) < 100) {
+          alert('❌ Anda harus memiliki minimal 100 BMC yang di-stake untuk membuat proposal.');
+          return false;
+        }
+        try {
+          const { addDoc: aDoc, collection: col, serverTimestamp: sts } = await import('firebase/firestore');
+          const docRef = await aDoc(col(db, 'dao_proposals'), {
+            title: data.title,
+            description: data.description,
+            author: user.username || user.name,
+            authorId: user.id,
+            status: 'active',
+            endTime: new Date(Date.now() + (data.durationDays || 7) * 24 * 60 * 60 * 1000),
+            yesVotes: 0,
+            noVotes: 0,
+            voters: {},
+            minBmcRequired: data.minBmcRequired || 0,
+            createdAt: sts()
+          });
+          addNotification(`🗳️ Proposal "${data.title}" berhasil dibuat!`, 'success');
+          return docRef.id;
+        } catch (err) {
+          console.error('createProposal error:', err);
+          alert('❌ Gagal membuat proposal: ' + err.message);
+          return false;
+        }
+      },
+
+      supportFunding: async (campaignId, amount, currency = 'BMC') => {
+        if (!user) { alert("❌ Silakan login terlebih dahulu!"); return false; }
+        try {
+          if (currency === 'BMC') {
+            if ((user.bmcBalance || 0) < amount) { alert('❌ Saldo BMC tidak mencukupi.'); return false; }
+            const newTx = {
+              id: 'tx_fund_' + Math.random().toString(36).substr(2, 9),
+              type: 'Spend',
+              amount: `-${amount}`,
+              date: new Date().toISOString().split('T')[0],
+              status: 'Selesai',
+              description: `Community Funding Contribution`
+            };
+            const updatedUser = { ...user, bmcBalance: user.bmcBalance - amount, transactions: [newTx, ...(user.transactions || [])] };
+            setUser(updatedUser);
+            localStorage.setItem('yayasan_user', JSON.stringify(updatedUser));
+            await updateDoc(doc(db, 'users', user.id), { bmcBalance: increment(-amount), transactions: arrayUnion(newTx) });
+          }
+          const supporter = { userId: user.id, username: user.username || user.name, amount, currency, date: new Date().toISOString() };
+          await updateDoc(doc(db, 'dao_funding', campaignId), {
+            raisedAmount: increment(amount),
+            supporters: arrayUnion(supporter)
+          });
+          addNotification(`🌿 Kontribusi ${amount} ${currency} berhasil disalurkan!`, 'success');
+          return true;
+        } catch (err) {
+          console.error('supportFunding error:', err);
+          alert('❌ Gagal berkontribusi: ' + err.message);
+          return false;
+        }
+      },
+
+      openNftPack: async () => {
+        if (!user) { alert("❌ Silakan login terlebih dahulu!"); return false; }
+        const cost = 50;
+        if ((user.bmcBalance || 0) < cost) {
+          alert(`❌ Membuka Pack NFT memerlukan saldo ${cost} BMC. Saldo Anda: ${user.bmcBalance || 0} BMC.`);
+          return false;
+        }
+        try {
+          const currentUnlocked = user.unlockedGuardians || [];
+          const allIds = Array.from({ length: 36 }, (_, i) => String(i + 1).padStart(2, '0'));
+          const remaining = allIds.filter(id => !currentUnlocked.includes(id));
+          if (remaining.length === 0) { alert('🎉 Anda sudah membuka semua 36 Bamboo Guardians!'); return false; }
+          const newId = remaining[Math.floor(Math.random() * remaining.length)];
+          const newTx = {
+            id: 'tx_nft_' + Math.random().toString(36).substr(2, 9),
+            type: 'Spend', amount: `-${cost}`,
+            date: new Date().toISOString().split('T')[0],
+            status: 'Selesai', description: `Membuka Pack NFT: Guardian #${newId}`
+          };
+          const updatedUser = {
+            ...user, bmcBalance: user.bmcBalance - cost,
+            unlockedGuardians: [...currentUnlocked, newId],
+            transactions: [newTx, ...(user.transactions || [])]
+          };
+          setUser(updatedUser);
+          localStorage.setItem('yayasan_user', JSON.stringify(updatedUser));
+          await updateDoc(doc(db, 'users', user.id), {
+            bmcBalance: increment(-cost),
+            unlockedGuardians: arrayUnion(newId),
+            transactions: arrayUnion(newTx)
+          });
+          addNotification(`🎴 Guardian #${newId} berhasil dibuka!`, 'success');
+          return newId;
+        } catch (err) {
+          console.error('openNftPack error:', err);
+          alert('❌ Gagal membuka pack: ' + err.message);
+          return false;
+        }
+      },
+
+      completeDailyMission: async (missionId, rewardBmc) => {
+        if (!user) return false;
+        const today = new Intl.DateTimeFormat('fr-CA', { timeZone: 'Asia/Jakarta' }).format(new Date());
+        const completedMissions = user.dao_missions_completed || {};
+        const todayMissions = completedMissions[today] || [];
+        if (todayMissions.includes(missionId)) return false;
+        try {
+          const newTx = {
+            id: 'tx_mission_' + Math.random().toString(36).substr(2, 9),
+            type: 'Earn', amount: `+${rewardBmc}`,
+            date: today, status: 'Selesai',
+            description: `Misi Harian: ${missionId}`
+          };
+          const updatedMissions = { ...completedMissions, [today]: [...todayMissions, missionId] };
+          const updatedUser = {
+            ...user, bmcBalance: (user.bmcBalance || 0) + rewardBmc,
+            dao_missions_completed: updatedMissions,
+            transactions: [newTx, ...(user.transactions || [])]
+          };
+          setUser(updatedUser);
+          localStorage.setItem('yayasan_user', JSON.stringify(updatedUser));
+          await updateDoc(doc(db, 'users', user.id), {
+            bmcBalance: increment(rewardBmc),
+            [`dao_missions_completed.${today}`]: arrayUnion(missionId),
+            transactions: arrayUnion(newTx)
+          });
+          addNotification(`✅ Misi selesai! +${rewardBmc} BMC ditambahkan.`, 'success');
+          return true;
+        } catch (err) {
+          console.error('completeDailyMission error:', err);
+          return false;
+        }
+      },
+
+      postForumTopic: async (topic, content, tags = []) => {
+        if (!user) { alert("❌ Silakan login terlebih dahulu!"); return false; }
+        try {
+          const { addDoc: aDoc, collection: col, serverTimestamp: sts } = await import('firebase/firestore');
+          const docRef = await aDoc(col(db, 'dao_forum'), {
+            topic, content,
+            author: user.username || user.name,
+            authorId: user.id,
+            likes: [], replyCount: 0, tags,
+            createdAt: sts()
+          });
+          addNotification(`💬 Topik forum berhasil diposting!`, 'success');
+          return docRef.id;
+        } catch (err) {
+          console.error('postForumTopic error:', err);
+          alert('❌ Gagal posting topik: ' + err.message);
+          return false;
+        }
+      },
+
+      likeForumTopic: async (topicId, currentLikes) => {
+        if (!user) { alert("❌ Silakan login terlebih dahulu!"); return false; }
+        try {
+          const topicRef = doc(db, 'dao_forum', topicId);
+          const alreadyLiked = (currentLikes || []).includes(user.id);
+          if (alreadyLiked) {
+            await updateDoc(topicRef, { likes: arrayRemove(user.id) });
+          } else {
+            await updateDoc(topicRef, { likes: arrayUnion(user.id) });
+          }
+          return !alreadyLiked;
+        } catch (err) {
+          console.error('likeForumTopic error:', err);
+          return false;
+        }
+      },
+
+      bookVisit: async (siteName, visitDate, notes = '') => {
+        if (!user) { alert("❌ Silakan login terlebih dahulu!"); return false; }
+        try {
+          const { addDoc: aDoc, collection: col, serverTimestamp: sts } = await import('firebase/firestore');
+          await aDoc(col(db, 'dao_bookings'), {
+            siteName, visitDate, notes,
+            userId: user.id,
+            username: user.username || user.name,
+            email: user.email,
+            status: 'pending',
+            createdAt: sts()
+          });
+          addNotification(`📅 Booking kunjungan ke "${siteName}" berhasil! Tim kami akan menghubungi Anda.`, 'success');
+          return true;
+        } catch (err) {
+          console.error('bookVisit error:', err);
+          alert('❌ Gagal booking: ' + err.message);
+          return false;
+        }
+      },
+
     }}>
       {children}
     </AuthContext.Provider>
