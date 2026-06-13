@@ -521,12 +521,6 @@ const PlantationPage = () => {
             </div>
           </div>
         )}
-
-          </div>
-
-
-
-
         {/* MAP PICKER MODAL - MOBILE OPTIMIZED */}
         {showMapPicker && (
           <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.9)', zIndex: 30000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '10px' }}>
