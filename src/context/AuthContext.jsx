@@ -1028,12 +1028,23 @@ export const AuthProvider = ({ children }) => {
   const submitPlantationDonation = async (donationData) => {
     if (!user) return false;
     
+    const defaultMilestones = {
+      bibit: { id: 'bibit', name: 'Pemilik Bibit', percent: 16, released: false },
+      tanam: { id: 'tanam', name: 'Penanam', percent: 4, released: false },
+      rawat: { id: 'rawat', name: 'Perawatan', percent: 10.67, released: false },
+      risiko: { id: 'risiko', name: 'Cadangan Risiko', percent: 13.33, released: false },
+      lahan: { id: 'lahan', name: 'Pemilik Lahan', percent: 2.67, released: false },
+      royalti: { id: 'royalti', name: 'Royalti Sistem', percent: 6.67, released: false },
+      pengelola: { id: 'pengelola', name: 'Sabumi (Manajemen)', percent: 46.66, released: false },
+    };
+
     const newDonation = {
       ...donationData,
       userId: user.id,
       username: user.username,
       name: user.name || user.username,
       status: 'pending',
+      milestones: defaultMilestones,
       date: new Date().toISOString().split('T')[0],
       timestamp: serverTimestamp()
     };
@@ -1074,6 +1085,20 @@ export const AuthProvider = ({ children }) => {
   const approvePlantationDonation = async (donationId) => {
     try {
       await updateDoc(doc(db, "plantations", donationId), { status: 'verified' });
+      return true;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  };
+
+  const releaseMilestone = async (donationId, milestoneKey) => {
+    try {
+      // Create a field path for nested update
+      const milestoneField = `milestones.${milestoneKey}.released`;
+      await updateDoc(doc(db, "plantations", donationId), {
+        [milestoneField]: true
+      });
       return true;
     } catch (err) {
       console.error(err);
@@ -1182,6 +1207,7 @@ export const AuthProvider = ({ children }) => {
       approveLocation,
       submitPlantationDonation,
       approvePlantationDonation,
+      releaseMilestone,
       processCheckin,
       getActiveStreak,
       getJakartaCheckinDay,

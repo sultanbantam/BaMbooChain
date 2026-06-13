@@ -1312,13 +1312,14 @@ const ContributeDataBMC = () => {
 };
 
 const ValidatorBMC = () => {
-  const { user, stakeBmc, approveValidation, approvePlantationDonation } = useAuth();
+  const { user, stakeBmc, approveValidation, approvePlantationDonation, releaseMilestone } = useAuth();
   const { t } = useLanguage();
   const { data: pendingValidations = [] } = useValidations(user?.id);
   const { data: plantationDonations = [] } = usePlantationDonations();
   const { data: allLocationProposals = [] } = useLocationProposals(user?.id, user?.username);
   
   const pendingDonations = plantationDonations.filter(d => d.status === 'pending');
+  const verifiedDonations = plantationDonations.filter(d => d.status === 'verified' || d.status === 'active');
   const pendingLocationProposals = allLocationProposals.filter(d => d.status === 'pending' || d.status === 'Pending Verification');
 
   const handleVerifyLocation = async (id, name) => {
@@ -1463,7 +1464,7 @@ const ValidatorBMC = () => {
           <div style={{ background: 'white', border: '1px solid #f1f3f5', borderRadius: '24px', padding: isMobile ? '24px' : '32px', boxShadow: '0 8px 24px rgba(0,0,0,0.03)' }}>
             <h4 style={{ fontSize: '1.1rem', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '900' }}><ShieldCheck size={24} color="#1864ab" /> Ruang Kerja Validator</h4>
             
-            {(user && filteredValidations.length === 0 && pendingDonations.length === 0 && pendingLocationProposals.length === 0) ? (
+            {(user && filteredValidations.length === 0 && pendingDonations.length === 0 && pendingLocationProposals.length === 0 && verifiedDonations.length === 0) ? (
               <div style={{ padding: '48px 24px', textAlign: 'center', background: '#f8f9fa', borderRadius: '20px', color: '#adb5bd', fontSize: '0.9rem' }}>
                  Belum ada data antrean baru untuk Tier Anda saat ini.
               </div>
@@ -1523,6 +1524,50 @@ const ValidatorBMC = () => {
                      <div style={{ display: 'flex', gap: '12px', marginTop: '4px' }}>
                        <button onClick={() => alert(t('tw_alert_rejected'))} style={{ flex: 1, background: 'white', color: '#e03131', border: '1.5px solid #e03131', padding: '12px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem' }}>Tolak</button>
                        <button onClick={async () => { await approvePlantationDonation(don.id); alert(t('tw_alert_approved')); }} style={{ flex: 1, background: '#51cf66', color: 'white', border: 'none', padding: '12px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem', boxShadow: '0 4px 12px rgba(81,207,102,0.3)' }}>Sahkan Pembayaran</button>
+                     </div>
+                   </div>
+                 ))}
+
+                 {/* Active Escrow Verification Queue */}
+                 {verifiedDonations.map(don => (
+                   <div key={don.id} style={{ background: '#f8f9fa', padding: isMobile ? '20px' : '24px', borderRadius: '20px', border: '1.5px solid #f1f3f5', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
+                        <div>
+                          <div style={{ fontWeight: '900', fontSize: '1.1rem', marginBottom: '4px' }}>Verifikasi Bukti Kerja (Escrow)</div>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>📍 Lokasi: {don.location?.name || '-'} | 💵 {don.amount} USDT</div>
+                        </div>
+                        <span style={{ fontSize: '0.75rem', background: '#12b886', color: 'white', padding: '6px 12px', borderRadius: '20px', fontWeight: 'bold' }}>Active Escrow</span>
+                     </div>
+                     
+                     <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '8px' }}>
+                        Verifikasi tugas lapangan di bawah ini untuk mencairkan porsi dana ke masing-masing stakeholder.
+                     </div>
+
+                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                        {don.milestones && Object.entries(don.milestones).map(([key, m]) => (
+                          <button 
+                            key={key} 
+                            onClick={async () => { 
+                               if (!m.released) {
+                                  await releaseMilestone(don.id, key); 
+                                  alert(`Misi ${m.name} disetujui! Dana dicairkan.`);
+                               }
+                            }} 
+                            style={{ 
+                              background: m.released ? '#ebfbee' : 'white', 
+                              color: m.released ? '#2b8a3e' : '#495057', 
+                              border: `1.5px solid ${m.released ? '#51cf66' : '#ced4da'}`, 
+                              padding: '8px 16px', 
+                              borderRadius: '12px', 
+                              fontWeight: 'bold', 
+                              cursor: m.released ? 'default' : 'pointer', 
+                              fontSize: '0.8rem',
+                              opacity: m.released ? 0.7 : 1,
+                              transition: 'all 0.2s'
+                            }}>
+                            {m.released ? `✓ ${m.name} Selesai` : `Sahkan: ${m.name} (${m.percent}%)`}
+                          </button>
+                        ))}
                      </div>
                    </div>
                  ))}
