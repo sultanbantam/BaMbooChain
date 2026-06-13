@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Users, Vote, HeartHandshake, MessageSquare, ThumbsUp, ThumbsDown, User, Heart, CalendarCheck, Gamepad2, Gift, Trophy, Star, Target, MapPin, Compass, Plus, X, Send, Loader } from 'lucide-react';
 import { getAssetUrl } from '../../utils/assets';
+import GameLogo from '../../assets/logo.png';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import {
@@ -415,12 +416,13 @@ const DaoCommunityPage = () => {
 
             <div style={{ marginTop: 'auto', background: 'linear-gradient(135deg, #1864ab, #339af0)', borderRadius: '16px', padding: '20px', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <img src={GameLogo} alt="enPIneering Logo" style={{ width: '56px', height: '56px', borderRadius: '12px', objectFit: 'contain', background: 'white', padding: '4px' }} />
                 <div>
                   <h4 style={{ margin: '0 0 4px 0', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Gamepad2 size={18} /> enPIneering Modular BlockBamboo
+                    enPIneering Modular BlockBamboo Constructor v1.0
                   </h4>
                   <p style={{ margin: 0, fontSize: '0.8rem', color: 'rgba(255,255,255,0.8)' }}>
-                    Constructor v1.0, Jadilah UNDAGI! Bangun dunia BlockBamboo, naik level, dan dapatkan hadiah BMC.
+                    Jadilah UNDAGI! Bangun dunia BlockBamboo, naik level, dan dapatkan hadiah BMC.
                   </p>
                 </div>
               </div>
