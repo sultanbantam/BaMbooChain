@@ -7,6 +7,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { ethers } from 'ethers';
 import { escrowConfig } from '../../utils/escrowConfig';
+import { useVerifiedLocations } from '../../hooks/useFirestoreQueries';
 
 const PlantationPage = () => {
   const { t } = useLanguage();
@@ -125,10 +126,23 @@ const PlantationPage = () => {
     fetchRate();
   }, []);
 
-  const locations = [
+  const { data: verifiedLocations = [] } = useVerifiedLocations();
+
+  const staticLocations = [
     { id: 'cibarani', nameKey: 'plantation_loc_cibarani_name', image: getAssetUrl('gambar/pehcibarani.png'), area: '490 Ha', farmers: 120, descKey: 'plantation_loc_cibarani_desc' },
     { id: 'cisadane', nameKey: 'plantation_loc_cisadane_name', image: getAssetUrl('gambar/ceap.png'), area: '120 Ha', farmers: 45, descKey: 'plantation_loc_cisadane_desc' }
   ];
+
+  const dynamicLocations = verifiedLocations.map(loc => ({
+    id: loc.id,
+    name: loc.name,
+    image: getAssetUrl('gambar/bambu_hutan.jpg'), // Default image for user-suggested locations
+    area: `${loc.size} Ha`,
+    farmers: 'Estimating...', // Or get from loc if available
+    desc: loc.vision || `Area konservasi tipe ${loc.type} yang diusulkan oleh komunitas untuk direstorasi.`
+  }));
+
+  const locations = [...staticLocations, ...dynamicLocations];
 
   const getLocationField = (loc, field) => {
     if (!loc) return '';

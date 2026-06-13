@@ -40,6 +40,20 @@ export function useLocationProposals(userId, username) {
   });
 }
 
+// 2b. Hook for Verified Location Proposals (Publicly visible to all users for Plantation)
+export function useVerifiedLocations() {
+  return useQuery({
+    queryKey: ['verifiedLocationProposals'],
+    queryFn: async () => {
+      const locationPropsRef = collection(db, 'location_proposals');
+      const q = query(locationPropsRef, where('status', '==', 'Verified & Active'));
+      const snapshot = await getDocs(q);
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    },
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+  });
+}
+
 // 3. Hook for Validations (Admins see all validations, users can filter locally or on-demand)
 export function useValidations(userId) {
   return useQuery({
