@@ -5,7 +5,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { ethers } from 'ethers';
 import { escrowConfig } from '../../utils/escrowConfig';
 import { useWeb3 } from '../../context/Web3Context';
-import { usePlantationDonations } from '../../hooks/useFirestoreQueries';
+import { usePlantationDonations, useGlobalSettings } from '../../hooks/useFirestoreQueries';
 
 import { useLanguage } from '../../context/LanguageContext';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
@@ -24,6 +24,7 @@ const DataAnalyticsPage = () => {
   const { t } = useLanguage();
   const { isConnected, walletAddress } = useWeb3();
   const { data: allDonations = [] } = usePlantationDonations();
+  const { data: globalSettings } = useGlobalSettings();
   const [toast, setToast] = useState({ show: false, message: '' });
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
   const [loading, setLoading] = useState(true);
@@ -31,11 +32,12 @@ const DataAnalyticsPage = () => {
     aum: 0,
     totalProjects: 0,
     treesFunded: 0,
-    volume: 0
+    volume: 0,
+    treesMaintained: 0
   });
   const [chartData, setChartData] = useState([]);
   const [aiData, setAiData] = useState({
-    harvest: 2450,
+    harvest: 0,
     carbonPrice: 54.20,
     accuracy: 94.2,
     signal: 'BULLISH',
@@ -44,10 +46,14 @@ const DataAnalyticsPage = () => {
 
   // Update AI & GIS secara real-time
   useEffect(() => {
+    const biomassFactor = globalSettings?.biomassPerClump || 0.8;
+    const baseCarbonPrice = globalSettings?.carbonSpotPrice || 54.27;
+
     // Set static metrics from real data
     setAiData(prev => ({
       ...prev,
-      harvest: metrics.treesMaintained ? parseFloat((metrics.treesMaintained * 0.8).toFixed(1)) : 0
+      carbonPrice: prev.carbonPrice === 54.20 ? baseCarbonPrice : prev.carbonPrice, // Initialize if first load
+      harvest: metrics.treesMaintained ? parseFloat((metrics.treesMaintained * biomassFactor).toFixed(1)) : 0
     }));
 
     const aiInterval = setInterval(() => {
@@ -69,7 +75,7 @@ const DataAnalyticsPage = () => {
       });
     }, 4000);
     return () => clearInterval(aiInterval);
-  }, [metrics.treesMaintained, t]);
+  }, [metrics.treesMaintained, t, globalSettings]);
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);

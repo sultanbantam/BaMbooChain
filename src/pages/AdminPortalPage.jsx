@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
-import { Shield, Users, MapPin, CheckCircle, XCircle, Clock, Eye, Filter, Download, Search, BookOpen, Leaf } from 'lucide-react';
+import { Shield, Users, MapPin, CheckCircle, XCircle, Clock, Eye, Filter, Download, Search, BookOpen, Leaf, Settings, Save, Wind, Droplets, DollarSign, Activity } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import BackButton from '../components/BackButton';
-import { usePartnerApplications, useLocationProposals, usePlantationDonations } from '../hooks/useFirestoreQueries';
+import { usePartnerApplications, useLocationProposals, usePlantationDonations, useGlobalSettings } from '../hooks/useFirestoreQueries';
+import { db } from '../firebase/config';
+import { doc, setDoc } from 'firebase/firestore';
 
 const AdminPortalPage = () => {
   const { t } = useLanguage();
@@ -21,7 +23,33 @@ const AdminPortalPage = () => {
   const { data: plantationDonations = [] } = usePlantationDonations(user?.id, user?.username);
   
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('partners'); // 'partners', 'locations', or 'donations'
+  const [activeTab, setActiveTab] = useState('partners'); // 'partners', 'locations', 'donations', or 'settings'
+  
+  const { data: globalSettings, isLoading: isSettingsLoading } = useGlobalSettings();
+  const [settingsForm, setSettingsForm] = useState({
+    biomassPerClump: 0.8,
+    co2PerClump: 0.5,
+    waterPerClump: 100,
+    landPerClump: 0.01,
+    carbonSpotPrice: 54.27,
+    oxygenPerClump: 1.2
+  });
+
+  useEffect(() => {
+    if (globalSettings) {
+      setSettingsForm(globalSettings);
+    }
+  }, [globalSettings]);
+
+  const handleSaveSettings = async () => {
+    try {
+      await setDoc(doc(db, 'settings', 'environmental_metrics'), settingsForm);
+      alert('Pengaturan Variabel Lingkungan Global berhasil disimpan!');
+    } catch (error) {
+      console.error("Gagal menyimpan:", error);
+      alert('Terjadi kesalahan saat menyimpan pengaturan.');
+    }
+  };
   
   useEffect(() => {
     // Strict redirect: must be authenticated AND admin
@@ -117,6 +145,12 @@ const AdminPortalPage = () => {
           >
             <Leaf size={18} /> Dukungan Penanaman
           </button>
+          <button 
+            onClick={() => setActiveTab('settings')}
+            style={{ padding: '12px 24px', borderRadius: '14px', border: 'none', background: activeTab === 'settings' ? '#1c7ed6' : 'transparent', color: activeTab === 'settings' ? 'white' : '#495057', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}
+          >
+            <Settings size={18} /> Pengaturan AI & Variabel
+          </button>
         </div>
 
         {/* MAIN CONTENT AREA */}
@@ -124,22 +158,65 @@ const AdminPortalPage = () => {
           
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
             <h2 style={{ fontSize: '1.25rem', margin: 0, fontWeight: '800' }}>
-              {activeTab === 'partners' ? t('admin_portal_tab_partners') : activeTab === 'locations' ? t('admin_portal_tab_locations') : 'Dukungan Penanaman'}
+              {activeTab === 'partners' ? t('admin_portal_tab_partners') : activeTab === 'locations' ? t('admin_portal_tab_locations') : activeTab === 'settings' ? 'Pengaturan AI & Variabel Global' : 'Dukungan Penanaman'}
             </h2>
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <div style={{ position: 'relative' }}>
-                <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#adb5bd' }} />
-                <input type="text" placeholder={t('admin_portal_search')} style={{ padding: '10px 16px 10px 40px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none', width: '240px' }} />
+            {activeTab !== 'settings' && (
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <div style={{ position: 'relative' }}>
+                  <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#adb5bd' }} />
+                  <input type="text" placeholder={t('admin_portal_search')} style={{ padding: '10px 16px 10px 40px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none', width: '240px' }} />
+                </div>
+                <button style={{ background: '#f8f9fa', border: '1px solid #dee2e6', padding: '10px', borderRadius: '12px', cursor: 'pointer' }}><Filter size={20} /></button>
+                <button style={{ background: '#f8f9fa', border: '1px solid #dee2e6', padding: '10px', borderRadius: '12px', cursor: 'pointer' }}><Download size={20} /></button>
               </div>
-              <button style={{ background: '#f8f9fa', border: '1px solid #dee2e6', padding: '10px', borderRadius: '12px', cursor: 'pointer' }}><Filter size={20} /></button>
-              <button style={{ background: '#f8f9fa', border: '1px solid #dee2e6', padding: '10px', borderRadius: '12px', cursor: 'pointer' }}><Download size={20} /></button>
-            </div>
+            )}
           </div>
 
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ textAlign: 'left', borderBottom: '2px solid #f1f3f5' }}>
+          {activeTab === 'settings' ? (
+            <div style={{ maxWidth: '800px', background: '#f8f9fa', padding: '30px', borderRadius: '20px', border: '1px solid #dee2e6' }}>
+              <p style={{ color: 'var(--text-muted)', marginBottom: '30px' }}>
+                Ubah parameter di bawah ini untuk memperbarui kalkulasi AI Forecast, Penyerapan Karbon, dan Dampak Lingkungan secara instan di seluruh website BaMbooChain.
+              </p>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '30px' }}>
+                {[
+                  { id: 'biomassPerClump', label: 'Biomassa per Rumpun (Ton)', icon: <Leaf size={16} /> },
+                  { id: 'co2PerClump', label: 'Karbon Terserap per Rumpun (Ton)', icon: <Wind size={16} /> },
+                  { id: 'waterPerClump', label: 'Air Tersimpan per Rumpun (Liter)', icon: <Droplets size={16} /> },
+                  { id: 'carbonSpotPrice', label: 'Harga Spot Karbon ($ / Ton)', icon: <DollarSign size={16} /> },
+                  { id: 'oxygenPerClump', label: 'Oksigen Dihasilkan per Rumpun (Ton)', icon: <Activity size={16} /> },
+                  { id: 'landPerClump', label: 'Luas Lahan per Rumpun (Hektar)', icon: <MapPin size={16} /> }
+                ].map(field => (
+                  <div key={field.id} style={{ background: 'white', padding: '15px', borderRadius: '12px', border: '1px solid #dee2e6' }}>
+                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-muted)', marginBottom: '8px' }}>
+                      <span style={{ marginRight: '6px', color: 'var(--primary)', verticalAlign: 'middle' }}>{field.icon}</span>
+                      {field.label}
+                    </label>
+                    <input 
+                      type="number" 
+                      step="0.01"
+                      value={settingsForm[field.id]}
+                      onChange={e => setSettingsForm({...settingsForm, [field.id]: parseFloat(e.target.value) || 0})}
+                      style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ced4da', fontSize: '1rem', fontWeight: 'bold' }}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <button 
+                  onClick={handleSaveSettings}
+                  style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '12px 30px', borderRadius: '12px', fontSize: '1rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 15px rgba(12, 166, 120, 0.3)' }}
+                >
+                  <Save size={18} /> Simpan Pengaturan Global
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ textAlign: 'left', borderBottom: '2px solid #f1f3f5' }}>
                   <th style={{ padding: '16px', color: '#868e96', fontSize: '0.85rem' }}>{activeTab === 'partners' ? t('admin_portal_table_name') : activeTab === 'donations' ? 'Nama Donatur' : t('admin_portal_table_loc_name')}</th>
                   <th style={{ padding: '16px', color: '#868e96', fontSize: '0.85rem' }}>{activeTab === 'partners' ? t('admin_portal_table_role') : activeTab === 'donations' ? 'Lokasi & Paket' : t('admin_portal_table_owner')}</th>
                   <th style={{ padding: '16px', color: '#868e96', fontSize: '0.85rem' }}>{activeTab === 'donations' ? 'Nominal & Metode' : t('admin_portal_table_date')}</th>
@@ -249,6 +326,7 @@ const AdminPortalPage = () => {
               </tbody>
             </table>
           </div>
+          )}
         </div>
 
       </div>

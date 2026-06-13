@@ -4,13 +4,14 @@ import { Link } from 'react-router-dom';
 import { useWeb3 } from '../context/Web3Context';
 import { useLanguage } from '../context/LanguageContext';
 import { getAssetUrl } from '../utils/assets';
-import { usePlantationDonations } from '../hooks/useFirestoreQueries';
+import { usePlantationDonations, useGlobalSettings } from '../hooks/useFirestoreQueries';
 
 const ImpactPage = () => {
   const { t } = useLanguage();
   const { bmcBalance, isConnected, rawBmcBalance } = useWeb3();
   const [isVisible, setIsVisible] = useState(false);
   const { data: allDonations = [] } = usePlantationDonations();
+  const { data: globalSettings } = useGlobalSettings();
 
   useEffect(() => {
     setIsVisible(true);
@@ -27,10 +28,13 @@ const ImpactPage = () => {
     return sum + (d.milestones?.rawat?.released ? Number(d.amount || 0) : 0);
   }, 0);
 
+  const co2Factor = globalSettings?.co2PerClump || 0.5;
+  const landFactor = globalSettings?.landPerClump || 0.01;
+
   const metrics = [
     { id: 1, value: `${treesPlanted.toLocaleString()}`, label: t('impact_stat_trees'), icon: <Sprout size={32} />, source: 'Admin Verified' },
-    { id: 2, value: `${(treesMaintained * 0.5).toLocaleString(undefined, { maximumFractionDigits: 1 })}`, label: t('impact_stat_co2'), icon: <Leaf size={32} />, source: 'Admin Verified' },
-    { id: 3, value: `${(treesPlanted * 0.01).toLocaleString(undefined, { maximumFractionDigits: 2 })} Ha`, label: t('impact_stat_land'), icon: <MapPin size={32} />, source: 'On-Chain GIS' },
+    { id: 2, value: `${(treesMaintained * co2Factor).toLocaleString(undefined, { maximumFractionDigits: 1 })}`, label: t('impact_stat_co2'), icon: <Leaf size={32} />, source: 'Admin Verified' },
+    { id: 3, value: `${(treesPlanted * landFactor).toLocaleString(undefined, { maximumFractionDigits: 2 })} Ha`, label: t('impact_stat_land'), icon: <MapPin size={32} />, source: 'On-Chain GIS' },
     { id: 4, value: `${activeDonations.length > 0 ? activeDonations.length : 0}`, label: t('impact_stat_farmers'), icon: <Users size={32} />, source: 'Admin Verified' }
   ];
 

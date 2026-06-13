@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs, query, where, doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
 
 // 1. Hook for Partner Applications
@@ -101,3 +101,27 @@ export function usePlantationDonations(userId, username) {
   });
 }
 
+// 6. Hook for Global Environmental Settings
+export function useGlobalSettings() {
+  return useQuery({
+    queryKey: ['globalSettings'],
+    queryFn: async () => {
+      const docRef = doc(db, 'settings', 'environmental_metrics');
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        return docSnap.data();
+      } else {
+        // Default fallbacks if document does not exist yet
+        return {
+          biomassPerClump: 0.8,
+          co2PerClump: 0.5,
+          waterPerClump: 100,
+          landPerClump: 0.01,
+          carbonSpotPrice: 54.27,
+          oxygenPerClump: 1.2
+        };
+      }
+    },
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+  });
+}
