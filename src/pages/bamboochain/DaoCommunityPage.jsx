@@ -261,11 +261,11 @@ const DaoCommunityPage = () => {
   const missionDefs = [
     { id: 'vote_proposal', title: t('dao_mission_1'), reward: 0.5, color: '#845ef7' },
     { id: 'post_forum', title: t('dao_mission_2'), reward: 0.25, color: '#339af0' },
-    { id: 'play_minigame', title: t('dao_mission_3'), reward: 1.0, color: '#e03131' },
+    { id: 'play_minigame', title: 'Main BlockBamboo & Naik Level', reward: 'Progressif', color: '#e03131', isGame: true },
   ];
 
   const handleMission = async (mission) => {
-    if (completedToday.includes(mission.id)) return;
+    if (completedToday.includes(mission.id) && !mission.isGame) return;
     if (mission.id === 'vote_proposal') {
       alert('💡 Vote pada proposal di bawah untuk menyelesaikan misi ini!');
       return;
@@ -274,9 +274,10 @@ const DaoCommunityPage = () => {
       setShowForumPost(true);
       return;
     }
-    // play_minigame
-    const ok = await completeDailyMission(mission.id, mission.reward);
-    if (ok) alert(`🎮 Mini-Game BMC Tycoon sedang dalam pengembangan. Reward ${mission.reward} BMC tetap dikreditkan!`);
+    if (mission.id === 'play_minigame') {
+      window.open('https://modular-blockbamboo.vercel.app/', '_blank');
+      return;
+    }
   };
 
   const handleVote = async (proposalId, vote, currentVoters) => {
@@ -404,18 +405,29 @@ const DaoCommunityPage = () => {
                       </div>
                       <span style={{ fontSize: '0.9rem', fontWeight: isDone ? 'normal' : '500', textDecoration: isDone ? 'line-through' : 'none', color: 'var(--text-main)' }}>{mission.title}</span>
                     </div>
-                    <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: isDone ? 'var(--text-muted)' : '#f59f00', flexShrink: 0 }}>+{mission.reward} BMC</span>
+                    <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: isDone ? 'var(--text-muted)' : '#f59f00', flexShrink: 0 }}>
+                      {typeof mission.reward === 'number' ? `+${mission.reward} BMC` : mission.reward}
+                    </span>
                   </div>
                 );
               })}
             </div>
 
-            <div style={{ marginTop: 'auto', background: 'linear-gradient(135deg, #1864ab, #339af0)', borderRadius: '16px', padding: '20px', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <h4 style={{ margin: '0 0 4px 0', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '6px' }}><Gamepad2 size={18} /> {t('dao_minigame_title')}</h4>
-                <p style={{ margin: 0, fontSize: '0.8rem', color: 'rgba(255,255,255,0.8)' }}>{t('dao_minigame_desc')}</p>
+            <div style={{ marginTop: 'auto', background: 'linear-gradient(135deg, #1864ab, #339af0)', borderRadius: '16px', padding: '20px', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <img src="/logo.png" alt="enPIneering Logo" style={{ width: '56px', height: '56px', borderRadius: '12px', objectFit: 'contain', background: 'white', padding: '4px' }} />
+                <div>
+                  <h4 style={{ margin: '0 0 4px 0', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Gamepad2 size={18} /> enPIneering BlockBamboo
+                  </h4>
+                  <p style={{ margin: 0, fontSize: '0.8rem', color: 'rgba(255,255,255,0.8)' }}>
+                    Constructor v1.0. Mainkan, capai level baru, dan dapatkan hadiah BMC sesuai level Anda!
+                  </p>
+                </div>
               </div>
-              <button onClick={() => handleMission(missionDefs[2])} style={{ background: 'white', color: '#1864ab', border: 'none', padding: '10px 20px', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 10px rgba(0,0,0,0.2)', flexShrink: 0 }}>{t('dao_btn_play')}</button>
+              <button onClick={() => {
+                window.open('https://modular-blockbamboo.vercel.app/', '_blank');
+              }} style={{ background: 'white', color: '#1864ab', border: 'none', padding: '10px 20px', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 10px rgba(0,0,0,0.2)', flexShrink: 0 }}>Play Now</button>
             </div>
           </div>
 
