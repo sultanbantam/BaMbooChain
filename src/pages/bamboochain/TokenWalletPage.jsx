@@ -527,9 +527,6 @@ const WalletDashboardTab = ({ initialModal, setInitialModal }) => {
             </div>
 
             <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-              <button onClick={() => { addReward(1000, 'Dev Mint (Testing)', 'Earn'); alert(t('tw_alert_dev_mint')); }} style={{ flex: '1 1 100%', padding: '10px', background: '#fcc419', color: '#b00020', border: 'none', borderRadius: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.85rem', boxShadow: '0 4px 10px rgba(0,0,0,0.2)' }}>
-                🚀 Suntik 1000 BMC (Mode Dev)
-              </button>
               <button onClick={() => setModalType('receive')} style={{ flex: 1, padding: '12px', background: 'white', color: 'var(--primary)', border: 'none', borderRadius: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.9rem' }}>
                 <ArrowDownToLine size={18} /> Receive
               </button>
