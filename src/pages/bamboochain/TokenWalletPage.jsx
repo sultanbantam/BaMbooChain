@@ -8,8 +8,10 @@ import { useWeb3 } from '../../context/Web3Context';
 import { useAuth } from '../../context/AuthContext';
 import { Link, useLocation } from 'react-router-dom';
 import BackButton from '../../components/BackButton';
-import { useValidations, usePlantationDonations } from '../../hooks/useFirestoreQueries';
+import { useValidations, usePlantationDonations, useLocationProposals } from '../../hooks/useFirestoreQueries';
 import { useLanguage } from '../../context/LanguageContext';
+import { updateDoc, doc } from 'firebase/firestore';
+import { db } from '../../firebase/config';
 
 const formatBalance = (val) => {
   const num = Number(val || 0);
@@ -1314,8 +1316,31 @@ const ValidatorBMC = () => {
   const { t } = useLanguage();
   const { data: pendingValidations = [] } = useValidations(user?.id);
   const { data: plantationDonations = [] } = usePlantationDonations();
+  const { data: allLocationProposals = [] } = useLocationProposals(user?.id, user?.username);
   
   const pendingDonations = plantationDonations.filter(d => d.status === 'pending');
+  const pendingLocationProposals = allLocationProposals.filter(d => d.status === 'pending' || d.status === 'Pending Verification');
+
+  const handleVerifyLocation = async (id, name) => {
+    try {
+      await updateDoc(doc(db, "location_proposals", id), { status: "Verified & Active" });
+      alert(`Berhasil memverifikasi ${name}!`);
+      // Optional: re-fetch or rely on cache invalidation/real-time updates if any
+    } catch (err) {
+      console.error(err);
+      alert('Gagal memverifikasi.');
+    }
+  };
+
+  const handleRejectLocation = async (id, name) => {
+    try {
+      await updateDoc(doc(db, "location_proposals", id), { status: "Rejected" });
+      alert(`Berhasil menolak ${name}!`);
+    } catch (err) {
+      console.error(err);
+      alert('Gagal menolak.');
+    }
+  };
   const staked = user?.stakedBalance || 0;
   
   let tierName = "Non-Validator";
@@ -1438,13 +1463,45 @@ const ValidatorBMC = () => {
           <div style={{ background: 'white', border: '1px solid #f1f3f5', borderRadius: '24px', padding: isMobile ? '24px' : '32px', boxShadow: '0 8px 24px rgba(0,0,0,0.03)' }}>
             <h4 style={{ fontSize: '1.1rem', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '900' }}><ShieldCheck size={24} color="#1864ab" /> Ruang Kerja Validator</h4>
             
-            {(user && filteredValidations.length === 0 && pendingDonations.length === 0) ? (
+            {(user && filteredValidations.length === 0 && pendingDonations.length === 0 && pendingLocationProposals.length === 0) ? (
               <div style={{ padding: '48px 24px', textAlign: 'center', background: '#f8f9fa', borderRadius: '20px', color: '#adb5bd', fontSize: '0.9rem' }}>
                  Belum ada data antrean baru untuk Tier Anda saat ini.
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                 
+                 {/* GIS Location Proposals Queue */}
+                 {pendingLocationProposals.map(s => (
+                   <div key={s.id} style={{ background: '#f8f9fa', padding: isMobile ? '20px' : '24px', borderRadius: '20px', border: '1.5px solid #f1f3f5', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
+                        <div>
+                          <div style={{ fontWeight: '900', fontSize: '1.1rem', marginBottom: '4px' }}>Usulan Lokasi Baru (GIS)</div>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>🕒 {s.date || 'Baru'}</div>
+                        </div>
+                        <span style={{ fontSize: '0.75rem', background: '#f59f00', color: 'white', padding: '6px 12px', borderRadius: '20px', fontWeight: 'bold' }}>Pending Verification</span>
+                     </div>
+
+                     <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px', fontSize: '0.85rem' }}>
+                       <div style={{ background: 'white', padding: '12px', borderRadius: '12px' }}><strong>📍 Nama Lokasi:</strong> <span style={{ color: '#1864ab', marginLeft: '4px', fontWeight: 'bold' }}>{s.name}</span></div>
+                       <div style={{ background: 'white', padding: '12px', borderRadius: '12px' }}><strong>📏 Estimasi Luas:</strong> <span style={{ marginLeft: '4px' }}>{s.size} Ha</span></div>
+                       <div style={{ background: 'white', padding: '12px', borderRadius: '12px' }}><strong>🏷️ Tipe Lahan:</strong> <span style={{ marginLeft: '4px' }}>{s.type}</span></div>
+                       <div style={{ background: 'white', padding: '12px', borderRadius: '12px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Globe size={14} color="var(--primary)" />
+                            <span>Koordinat: {s.coordinates}</span>
+                          </div>
+                          <a href={`https://www.google.com/maps?q=${s.coordinates}`} target="_blank" rel="noreferrer" style={{ color: '#4dabf7', textDecoration: 'none', display: 'inline-block', marginTop: '4px' }}>
+                            Buka di Google Maps ↗
+                          </a>
+                       </div>
+                     </div>
+
+                     <div style={{ display: 'flex', gap: '12px', marginTop: '4px' }}>
+                       <button onClick={() => handleRejectLocation(s.id, s.name)} style={{ flex: 1, background: 'white', color: '#e03131', border: '1.5px solid #e03131', padding: '12px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem' }}>Tolak</button>
+                       <button onClick={() => handleVerifyLocation(s.id, s.name)} style={{ flex: 1, background: '#16a34a', color: 'white', border: 'none', padding: '12px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem', boxShadow: '0 4px 12px rgba(22,163,74,0.3)' }}>Verifikasi Lokasi</button>
+                     </div>
+                   </div>
+                 ))}
+
                  {/* Plantation Donations Queue */}
                  {pendingDonations.map(don => (
                    <div key={don.id} style={{ background: '#f8f9fa', padding: isMobile ? '20px' : '24px', borderRadius: '20px', border: '1.5px solid #f1f3f5', display: 'flex', flexDirection: 'column', gap: '20px' }}>
