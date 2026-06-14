@@ -51,6 +51,7 @@ const BcAcademyPage = lazy(() => import('./pages/bamboochain/AcademyPage'));
 const BcDataAnalyticsPage = lazy(() => import('./pages/bamboochain/DataAnalyticsPage'));
 const BcInvestEcosystemPage = lazy(() => import('./pages/bamboochain/InvestEcosystemPage'));
 const BcValidatorDashboardPage = lazy(() => import('./pages/bamboochain/ValidatorDashboardPage'));
+const BcCentralValidatorDashboard = lazy(() => import('./pages/bamboochain/CentralValidatorDashboard'));
 const ActivityLogPage = lazy(() => import('./pages/bamboochain/ActivityLogPage'));
 const WhitepaperPage = lazy(() => import('./pages/bamboochain/WhitepaperPage'));
 const PreOrderPage = lazy(() => import('./pages/bamboochain/PreOrderPage'));
@@ -67,6 +68,7 @@ const JoinFarmerPage = lazy(() => import('./pages/bambunusa/JoinFarmerPage'));
 const JoinValidatorPage = lazy(() => import('./pages/bambunusa/JoinValidatorPage'));
 const BcLifecyclePage = lazy(() => import('./pages/bambunusa/LifecyclePage'));
 const AdminPortalPage = lazy(() => import('./pages/AdminPortalPage'));
+const TobatEkologiDashboard = lazy(() => import('./pages/bamboochain/TobatEkologiDashboard'));
 
 import ScrollToTop from './components/ScrollToTop';
 import GlobalToast from './components/GlobalToast';
@@ -278,6 +280,7 @@ function App() {
             <Route path="/bamboochain/data-analytics" element={<ProtectedRoute><BcDataAnalyticsPage /></ProtectedRoute>} />
             <Route path="/bamboochain/invest" element={<ProtectedRoute><BcInvestEcosystemPage /></ProtectedRoute>} />
             <Route path="/validator" element={<ProtectedRoute><BcValidatorDashboardPage /></ProtectedRoute>} />
+            <Route path="/central-validator" element={<ProtectedRoute><BcCentralValidatorDashboard /></ProtectedRoute>} />
             <Route path="/bamboochain/activities" element={<ProtectedRoute><ActivityLogPage /></ProtectedRoute>} />
             <Route path="/bamboochain/whitepaper" element={<ProtectedRoute><WhitepaperPage /></ProtectedRoute>} />
             <Route path="/bamboochain/kodiba" element={<ProtectedRoute><KoDiBaPage /></ProtectedRoute>} />
@@ -291,6 +294,7 @@ function App() {
             <Route path="/bambunusa/join-validator" element={<JoinValidatorPage />} />
             <Route path="/admin-portal" element={<ProtectedRoute><AdminPortalPage /></ProtectedRoute>} />
             <Route path="/admin-portal/knowledge" element={<ProtectedRoute><KnowledgeAdminPage /></ProtectedRoute>} />
+            <Route path="/tobat-ekologi" element={<TobatEkologiDashboard />} />
             
             <Route path="/faq" element={<FAQPage />} />
           </Routes>

@@ -18,5 +18,21 @@ export default defineConfig({
         secure: false,
       }
     }
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('framer-motion') || id.includes('zustand')) return 'vendor-core';
+            if (id.includes('firebase')) return 'vendor-firebase';
+            if (id.includes('leaflet')) return 'vendor-map';
+            if (id.includes('lucide-react') || id.includes('react-icons')) return 'vendor-icons';
+            return 'vendor-others';
+          }
+        }
+      }
+    },
+    chunkSizeWarningLimit: 1000
   }
 })

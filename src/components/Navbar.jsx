@@ -50,6 +50,7 @@ const Navbar = () => {
   const mobileMenuItems = [
     { label: t('nav_home'), path: '/' },
     { label: t('nav_projects'), path: '/projects' },
+    { label: 'Tobat Ekologi', path: '/tobat-ekologi' },
     { label: t('nav_insights'), path: '/insight' },
     { label: t('nav_impact'), path: '/impact' },
     { label: t('nav_partners'), path: '/partners' },
@@ -344,6 +345,7 @@ const Navbar = () => {
                {[
                  { label: t('nav_home'), path: '/' },
                  { label: t('nav_projects'), path: '/projects' },
+                 { label: 'Tobat Ekologi', path: '/tobat-ekologi' },
                  { label: t('nav_insights'), path: '/insight' },
                  { label: t('nav_impact'), path: '/impact' },
                  { label: t('nav_partners'), path: '/partners' },

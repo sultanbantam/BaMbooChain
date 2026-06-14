@@ -29,7 +29,7 @@ const PlantationPage = () => {
   // States for Suggestion Feature
   const [coords, setCoords] = useState({ lat: -6.2088, lng: 106.8456 }); // Default Jakarta
   const [showMapPicker, setShowMapPicker] = useState(false);
-  const [newLoc, setNewLoc] = useState({ name: '', area: '', type: 'Lahan Adat', vision: '' });
+  const [newLoc, setNewLoc] = useState({ name: '', area: '', type: 'Lahan Adat', vision: '', waPic: '', penanam: '', perawat: '', pemanen: '' });
 
   const getLahanTypeTranslation = (type) => {
     switch (type) {
@@ -64,6 +64,11 @@ const PlantationPage = () => {
       size: newLoc.area,
       type: newLoc.type,
       vision: newLoc.vision,
+      pengusul: user?.name || 'Guest',
+      waPic: newLoc.waPic,
+      kebutuhanPenanam: newLoc.penanam,
+      kebutuhanPerawat: newLoc.perawat,
+      kebutuhanPemanen: newLoc.pemanen,
       coordinates: `${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}`,
       owner: user?.name || 'Guest'
     };
@@ -72,7 +77,7 @@ const PlantationPage = () => {
 
     if (success) {
       alert(t('plantation_alert_suggest_success'));
-      setNewLoc({ name: '', area: '', type: 'Lahan Adat', vision: '' });
+      setNewLoc({ name: '', area: '', type: 'Lahan Adat', vision: '', waPic: '', penanam: '', perawat: '', pemanen: '' });
     } else {
       alert(t('plantation_alert_suggest_failed'));
     }
@@ -341,6 +346,52 @@ const PlantationPage = () => {
                     <option value="Lahan Konservasi">{t('plantation_type_konservasi')}</option>
                   </select>
                 </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginBottom: '30px' }}>
+                <div>
+                  <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '8px', fontSize: '0.9rem' }}>Nama Pengusul (Otomatis)</label>
+                  <input 
+                    type="text" 
+                    value={user?.name || 'Guest'}
+                    disabled
+                    style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #ddd', background: '#e9ecef', color: '#6c757d', fontWeight: 'bold' }} 
+                  />
+                  <div style={{ fontSize: '0.75rem', color: 'var(--primary)', marginTop: '6px' }}>Terhubung dengan profil BaMbooChain Anda</div>
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '8px', fontSize: '0.9rem' }}>Nomor WhatsApp (PIC)</label>
+                  <input 
+                    type="text" 
+                    value={newLoc.waPic}
+                    onChange={(e) => setNewLoc({...newLoc, waPic: e.target.value})}
+                    placeholder="Contoh: 081234567890" 
+                    style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #eee', background: '#f8f9fa' }} 
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '8px', fontSize: '0.9rem' }}>Kebutuhan SDM Penanam (Orang)</label>
+                  <input 
+                    type="number" 
+                    value={newLoc.penanam}
+                    onChange={(e) => setNewLoc({...newLoc, penanam: e.target.value})}
+                    placeholder="Contoh: 50" 
+                    style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #eee', background: '#f8f9fa' }} 
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '8px', fontSize: '0.9rem' }}>Kebutuhan SDM Perawat & Panen</label>
+                  <input 
+                    type="number" 
+                    value={newLoc.perawat}
+                    onChange={(e) => setNewLoc({...newLoc, perawat: e.target.value})}
+                    placeholder="Contoh: 20" 
+                    style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #eee', background: '#f8f9fa' }} 
+                  />
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(51, 154, 240, 0.1)', color: '#339af0', padding: '12px 16px', borderRadius: '12px', marginBottom: '30px', fontSize: '0.85rem' }}>
+                <Info size={18} />
+                <span>Dengan opsi <strong>Sistem Terbuka (Gig Economy)</strong>, kebutuhan SDM di atas akan masuk ke "Peluang Kerja" agar Mitra/Petani BaMbooChain dapat bergabung ke proyek ini.</span>
               </div>
               <div style={{ marginBottom: '30px' }}>
                 <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '8px', fontSize: '0.9rem' }}>{t('plantation_form_label_vision')}</label>
