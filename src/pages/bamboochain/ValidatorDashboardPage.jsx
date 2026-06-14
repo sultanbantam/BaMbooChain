@@ -290,7 +290,7 @@ const ValidatorDashboardPage = () => {
                       <Globe size={14} color="var(--primary)" />
                       <span>Koordinat: {s.coordinates}</span>
                     </div>
-                    <a href={`https://www.google.com/maps?q=${s.coordinates}`} target="_blank" rel="noreferrer" style={{ color: '#4dabf7', textDecoration: 'none', display: 'inline-block', marginTop: '4px' }}>
+                    <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s.name)}`} target="_blank" rel="noreferrer" style={{ color: '#4dabf7', textDecoration: 'none', display: 'inline-block', marginTop: '4px' }}>
                       Buka di Google Maps ↗
                     </a>
                   </div>

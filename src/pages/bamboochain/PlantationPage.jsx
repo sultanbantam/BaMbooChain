@@ -53,11 +53,15 @@ const PlantationPage = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
+  const [isSuggesting, setIsSuggesting] = useState(false);
+
   const handleSuggest = async () => {
     if (!newLoc.name || !newLoc.area) {
       alert(t('plantation_alert_fill_fields'));
       return;
     }
+    
+    setIsSuggesting(true);
 
     const proposalData = {
       name: newLoc.name,
@@ -81,6 +85,7 @@ const PlantationPage = () => {
     } else {
       alert(t('plantation_alert_suggest_failed'));
     }
+    setIsSuggesting(false);
   };
 
   const openExample = (imgNum) => {
@@ -406,8 +411,9 @@ const PlantationPage = () => {
               <div style={{ textAlign: 'center' }}>
                 <button 
                   onClick={handleSuggest}
-                  style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '16px 50px', borderRadius: '30px', fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer', boxShadow: '0 10px 20px rgba(12, 166, 120, 0.2)' }}>
-                  {t('plantation_form_btn_submit')}
+                  disabled={isSuggesting}
+                  style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '16px 50px', borderRadius: '30px', fontWeight: 'bold', fontSize: '1rem', cursor: isSuggesting ? 'not-allowed' : 'pointer', opacity: isSuggesting ? 0.7 : 1, boxShadow: '0 10px 20px rgba(12, 166, 120, 0.2)' }}>
+                  {isSuggesting ? 'Mengirim...' : t('plantation_form_btn_submit')}
                 </button>
               </div>
             </div>
