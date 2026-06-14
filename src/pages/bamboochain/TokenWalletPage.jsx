@@ -1491,6 +1491,14 @@ const ValidatorBMC = () => {
                             Buka di Google Maps ↗
                           </a>
                        </div>
+                       <div style={{ background: 'white', padding: '12px', borderRadius: '12px' }}>
+                         <strong>👤 Pengusul:</strong> <span style={{ marginLeft: '4px' }}>{s.pengusul || s.owner || '-'}</span><br/>
+                         <strong style={{ display: 'inline-block', marginTop: '4px' }}>📞 PIC (WA):</strong> <span style={{ marginLeft: '4px' }}>{s.waPic || '-'}</span>
+                       </div>
+                       <div style={{ background: 'white', padding: '12px', borderRadius: '12px' }}>
+                         <strong>🧑‍🌾 Kebutuhan SDM:</strong><br/>
+                         <span style={{ color: 'var(--text-muted)', display: 'inline-block', marginTop: '4px' }}>Tanam: {s.kebutuhanPenanam || 0} | Rawat: {s.kebutuhanPerawat || 0} | Panen: {s.kebutuhanPemanen || 0}</span>
+                       </div>
                      </div>
 
                      <div style={{ display: 'flex', gap: '12px', marginTop: '4px' }}>

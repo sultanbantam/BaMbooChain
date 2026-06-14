@@ -285,7 +285,7 @@ const ValidatorDashboardPage = () => {
                   <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '5px' }}>{s.name}</h3>
                   <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '15px' }}>Estimasi Luas: {s.size} Ha • {s.type}</p>
                   
-                  <div style={{ background: 'white', padding: '12px', borderRadius: '12px', marginBottom: '20px', fontSize: '0.8rem', border: '1px solid #dee2e6' }}>
+                  <div style={{ background: 'white', padding: '12px', borderRadius: '12px', marginBottom: '10px', fontSize: '0.8rem', border: '1px solid #dee2e6' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
                       <Globe size={14} color="var(--primary)" />
                       <span>Koordinat: {s.coordinates}</span>
@@ -293,6 +293,16 @@ const ValidatorDashboardPage = () => {
                     <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s.name)}`} target="_blank" rel="noreferrer" style={{ color: '#4dabf7', textDecoration: 'none', display: 'inline-block', marginTop: '4px' }}>
                       Buka di Google Maps ↗
                     </a>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '20px', fontSize: '0.8rem' }}>
+                    <div style={{ background: 'white', padding: '12px', borderRadius: '12px', border: '1px solid #dee2e6' }}>
+                      <strong>👤 Pengusul:</strong> <span style={{ marginLeft: '4px' }}>{s.pengusul || s.owner || '-'}</span><br/>
+                      <strong style={{ display: 'inline-block', marginTop: '4px' }}>📞 PIC (WA):</strong> <span style={{ marginLeft: '4px' }}>{s.waPic || '-'}</span>
+                    </div>
+                    <div style={{ background: 'white', padding: '12px', borderRadius: '12px', border: '1px solid #dee2e6' }}>
+                      <strong>🧑‍🌾 Kebutuhan SDM:</strong><br/>
+                      <span style={{ color: 'var(--text-muted)', display: 'inline-block', marginTop: '4px' }}>Tanam: {s.kebutuhanPenanam || 0} | Rawat: {s.kebutuhanPerawat || 0} | Panen: {s.kebutuhanPemanen || 0}</span>
+                    </div>
                   </div>
 
                   <div style={{ display: 'flex', gap: '10px' }}>
