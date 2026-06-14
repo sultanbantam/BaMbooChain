@@ -620,8 +620,9 @@ const HomePage = () => {
                     </Link>
                   ))}
                 </div>
-              )}
-              
+              </>
+            )}
+            
               <p style={{ textAlign: 'center', fontSize: '0.7rem', color: '#adb5bd', marginTop: '12px' }}>
                 {t('welcome_footer')}
               </p>
