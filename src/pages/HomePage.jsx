@@ -560,7 +560,29 @@ const HomePage = () => {
                   </button>
                 </>
               ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px' }}>
+                <>
+                  {/* Two Main Big Buttons */}
+                  <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
+                    <Link to="/bamboochain/plantation" onClick={closeWelcome} style={{
+                      flex: 1, textDecoration: 'none', background: 'white', border: '1px solid #333', 
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#111', 
+                      fontWeight: '800', fontSize: '1.15rem', padding: '40px 20px',
+                      transition: 'all 0.2s ease', cursor: 'pointer'
+                    }} onMouseEnter={e => { e.currentTarget.style.background = '#f8f9fa'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'; }} onMouseLeave={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.boxShadow = 'none'; }}>
+                      TOBAT EKOLOGI
+                    </Link>
+                    <Link to="/bamboochain/dao" onClick={closeWelcome} style={{
+                      flex: 1, textDecoration: 'none', background: 'white', border: '1px solid #333', 
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#111', 
+                      fontWeight: '800', fontSize: '1.15rem', padding: '40px 20px',
+                      transition: 'all 0.2s ease', cursor: 'pointer'
+                    }} onMouseEnter={e => { e.currentTarget.style.background = '#f8f9fa'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'; }} onMouseLeave={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.boxShadow = 'none'; }}>
+                      GAME BLOCKBAMBOO
+                    </Link>
+                  </div>
+
+                  {/* Existing Grid */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px' }}>
                   {[
                     { id: 1, icon: <Database />, color: '#0ca678', bg: '#ebfbee', label: t('guide_opt1'), path: '/bambupedia/tracker' },
                     { id: 2, icon: <Briefcase />, color: '#228be6', bg: '#e7f5ff', label: t('guide_opt2'), path: '/careers' },
