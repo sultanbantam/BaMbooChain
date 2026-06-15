@@ -596,10 +596,7 @@ const MarketplacePage = () => {
     else setViewMode(mode);
   };
 
-  const updateOrderStatus = (id, newStatus) => {
-    setPendingOrders(prev => prev.map(o => o.id === id ? { ...o, status: newStatus } : o));
-    showToast(t('market_toast_order_updated').replace('{id}', id).replace('{status}', newStatus));
-  };
+
 
   const filteredProducts = activeCategoryIndex === 0 ? visibleProducts : visibleProducts.filter(p => getProductField(p, 'category') === activeCategory);
   const cartTotalIdr = cart.reduce((sum, item) => sum + (item.priceIdr * item.qty), 0);
