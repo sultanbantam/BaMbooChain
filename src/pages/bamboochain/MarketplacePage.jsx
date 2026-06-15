@@ -469,6 +469,7 @@ const MarketplacePage = () => {
     { id: 'pickup', name: t('market_ship_pickup_name'), desc: t('market_ship_pickup_desc'), price: 0 },
   ];
 
+  const cartTotalIdr = cart.reduce((sum, item) => sum + (item.priceIdr * item.qty), 0);
   const selectedShipping = shippingOptions.find(o => o.id === shippingMethod);
   const shippingCost = selectedShipping ? selectedShipping.price : 0;
   const finalTotalIdr = cartTotalIdr + shippingCost;
@@ -605,7 +606,6 @@ const MarketplacePage = () => {
 
 
   const filteredProducts = activeCategoryIndex === 0 ? visibleProducts : visibleProducts.filter(p => getProductField(p, 'category') === activeCategory);
-  const cartTotalIdr = cart.reduce((sum, item) => sum + (item.priceIdr * item.qty), 0);
 
 
 
