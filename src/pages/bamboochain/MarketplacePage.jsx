@@ -1414,7 +1414,7 @@ const MarketplacePage = () => {
          const subtitle = isNew ? activeChat.product.name : (chatDoc ? `Produk: ${chatDoc.productName}` : '');
 
          return (
-         <div style={{ position: 'fixed', bottom: '90px', right: '20px', width: '350px', background: 'var(--bg-card)', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.3)', border: '1px solid var(--border-color)', zIndex: 2100, display: 'flex', flexDirection: 'column' }}>
+         <div style={{ position: 'fixed', bottom: '90px', right: '20px', width: '350px', background: 'var(--bg-card)', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.3)', border: '1px solid var(--border-color)', zIndex: 95000, display: 'flex', flexDirection: 'column' }}>
             <div style={{ background: '#228be6', padding: '15px 20px', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                <div>
                   <div style={{ fontWeight: 'bold', fontSize: '1rem' }}>{title}</div>
