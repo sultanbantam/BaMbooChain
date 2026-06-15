@@ -1473,8 +1473,8 @@ const MarketplacePage = () => {
 
               {/* SIDEBAR */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                 <AdSpace directAd={{ image: "gambar/Iklan/iklan.jpeg", title: t('market_ad_1_title'), description: t('market_ad_1_desc'), link: "#" }} />
-                 <AdSpace directAd={{ image: "gambar/Iklan/iklan2.png", title: t('market_ad_2_title'), description: t('market_ad_2_desc'), link: "#" }} />
+                 <AdSpace type="vertical" />
+                 <AdSpace type="vertical" />
               </div>
             </div>
           </div>
