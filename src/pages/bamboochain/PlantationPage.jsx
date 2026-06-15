@@ -210,10 +210,13 @@ const PlantationPage = () => {
     ...loc,
     id: loc.id,
     name: loc.name,
-    image: getAssetUrl('gambar/bambu_hutan.jpg'), // Default image for user-suggested locations
+    image: getAssetUrl('gambar/gmap.jpg'), // Default fallback
     area: `${loc.size} Ha`,
-    farmers: loc.kebutuhanPenanam || 'Estimating...', // Or get from loc if available
-    desc: loc.vision || `Area konservasi tipe ${loc.type} yang diusulkan oleh komunitas untuk direstorasi.`
+    farmers: loc.kebutuhanPenanam || 'Estimating...',
+    desc: loc.vision || `Area konservasi tipe ${loc.type} yang diusulkan oleh komunitas untuk direstorasi.`,
+    isDynamic: true,
+    lat: loc.coordinates ? parseFloat(loc.coordinates.split(',')[0]) : null,
+    lng: loc.coordinates ? parseFloat(loc.coordinates.split(',')[1]) : null
   }));
 
   const locations = [...staticLocations, ...dynamicLocations];
@@ -331,7 +334,21 @@ const PlantationPage = () => {
                   onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-10px)'}
                   onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                 >
-                  <div style={{ height: '250px', background: `url("${loc.image}") center/cover` }} />
+                  <div style={{ height: '250px', background: `url("${loc.image}") center/cover`, position: 'relative' }}>
+                    {loc.isDynamic && loc.lat && loc.lng && (
+                      <iframe 
+                        title={`Map for ${loc.name}`}
+                        width="100%" 
+                        height="100%" 
+                        frameBorder="0" 
+                        scrolling="no" 
+                        marginHeight="0" 
+                        marginWidth="0" 
+                        src={`https://www.openstreetmap.org/export/embed.html?bbox=${loc.lng-0.02}%2C${loc.lat-0.02}%2C${loc.lng+0.02}%2C${loc.lat+0.02}&layer=mapnik&marker=${loc.lat}%2C${loc.lng}`}
+                        style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}
+                      />
+                    )}
+                  </div>
                   <div style={{ padding: '30px' }}>
                     <h3 style={{ fontSize: '1.5rem', fontWeight: '800', marginBottom: '10px' }}>{getLocationField(loc, 'name')}</h3>
                     <p style={{ color: 'var(--text-muted)', marginBottom: '20px' }}>{getLocationField(loc, 'desc')}</p>
