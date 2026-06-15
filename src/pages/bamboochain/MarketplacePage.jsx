@@ -535,6 +535,7 @@ const MarketplacePage = () => {
         if (data.redirect_url) {
            // Arahkan halaman saat ini ke Midtrans (menghindari blokir popup browser)
            window.location.href = data.redirect_url;
+           return; // Hentikan eksekusi React agar browser punya waktu untuk berpindah halaman
         } else {
            throw new Error(data.error || "Gagal memuat sistem Midtrans");
         }
