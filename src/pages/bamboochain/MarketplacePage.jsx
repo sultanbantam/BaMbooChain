@@ -4,7 +4,7 @@ import {
   Image as ImageIcon, ArrowRightLeft, BarChart3, Info, 
   TrendingUp, TrendingDown, X, CheckCircle, Upload, Shield, ShieldCheck, ShoppingBag,
   Eye, EyeOff, Video, Zap, Heart, MessageCircle, Truck, 
-  CreditCard, Sparkles, Play, ChevronLeft, ChevronRight
+  CreditCard, Sparkles, Play, ChevronLeft, ChevronRight, Landmark, Wallet
 } from 'lucide-react';
 import AdSpace from '../../components/AdSpace';
 import BackButton from '../../components/BackButton';
@@ -952,20 +952,20 @@ const MarketplacePage = () => {
       {/* CART MODAL */}
       {showCartModal && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.8)', zIndex: 35000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-          <div className="glass" style={{ width: '100%', maxWidth: '500px', background: 'white', borderRadius: '24px', padding: '30px', position: 'relative' }}>
+          <div className="glass" style={{ width: '100%', maxWidth: '500px', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '30px', position: 'relative' }}>
             <button onClick={() => setShowCartModal(false)} style={{ position: 'absolute', top: '20px', right: '20px', background: '#eee', border: 'none', borderRadius: '50%', padding: '8px', cursor: 'pointer' }}><X size={20} /></button>
             
             {cartStatus === 'success' ? (
               <div style={{ textAlign: 'center', padding: '30px 0' }}>
                 <CheckCircle size={80} color="var(--primary)" style={{ marginBottom: '20px' }} />
                 <h2>{t('market_checkout_success')}</h2>
-                <div style={{ background: '#f8f9fa', padding: '15px', borderRadius: '15px', margin: '20px 0' }}>
-                   <div style={{ fontSize: '0.8rem', color: '#888' }}>{t('market_checkout_tx_id')}</div>
+                <div style={{ background: 'var(--bg-secondary)', padding: '15px', borderRadius: '15px', margin: '20px 0', border: '1px solid var(--border-color)' }}>
+                   <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{t('market_checkout_tx_id')}</div>
                    <div style={{ fontWeight: 'bold', color: 'var(--primary)' }}>{orderTracking?.id}</div>
                 </div>
-                <div style={{ textAlign: 'left', background: '#f8f9fa', padding: '20px', borderRadius: '15px' }}>
-                   <h4 style={{ fontSize: '0.9rem', marginBottom: '10px' }}>{t('market_checkout_smart_tracking')}</h4>
-                   <div style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>• {orderTracking?.statusKey ? t(orderTracking.statusKey) : orderTracking?.status}</div>
+                <div style={{ textAlign: 'left', background: 'var(--bg-secondary)', padding: '20px', borderRadius: '15px', border: '1px solid var(--border-color)' }}>
+                   <h4 style={{ fontSize: '0.9rem', marginBottom: '10px', color: 'var(--text-main)' }}>{t('market_checkout_smart_tracking')}</h4>
+                   <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)' }}>• {orderTracking?.statusKey ? t(orderTracking.statusKey) : orderTracking?.status}</div>
                 </div>
                 <div style={{ display: 'flex', gap: '10px', marginTop: '24px' }}>
                    <button onClick={() => { setShowCartModal(false); setCart([]); setCartStatus(''); }} className="btn btn-primary" style={{ flex: 1, padding: '16px' }}>{t('market_checkout_btn_finish')}</button>
@@ -986,11 +986,29 @@ const MarketplacePage = () => {
               <>
                 <h2 style={{ marginBottom: '24px' }}>{t('market_checkout_payment')}</h2>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '30px' }}>
-                  <div onClick={() => setPaymentMethod('bank')} style={{ padding: '16px', borderRadius: '15px', border: paymentMethod === 'bank' ? '2px solid var(--primary)' : '1px solid #ddd', cursor: 'pointer' }}>{t('market_checkout_bank')}</div>
-                  <div onClick={() => setPaymentMethod('bmc')} style={{ padding: '16px', borderRadius: '15px', border: paymentMethod === 'bmc' ? '2px solid var(--primary)' : '1px solid #ddd', cursor: 'pointer' }}>{t('market_checkout_bmc')}</div>
-                  <div onClick={() => setPaymentMethod('credit')} style={{ padding: '16px', borderRadius: '15px', border: paymentMethod === 'credit' ? '2px solid var(--primary)' : '1px solid #ddd', cursor: 'pointer' }}>{t('market_checkout_credit')}</div>
+                  <div className="glass" onClick={() => setPaymentMethod('bank')} style={{ padding: '20px', borderRadius: '20px', border: paymentMethod === 'bank' ? '2px solid var(--primary)' : '1px solid var(--border-color)', cursor: 'pointer', background: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', gap: '15px' }}>
+                     <Landmark size={24} color="#00529C" />
+                     <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 'bold', color: 'var(--text-main)' }}>Transfer Bank</div>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Pembayaran instan VA / QRIS</div>
+                     </div>
+                  </div>
+                  <div className="glass" onClick={() => setPaymentMethod('bmc')} style={{ padding: '20px', borderRadius: '20px', border: paymentMethod === 'bmc' ? '2px solid var(--primary)' : '1px solid var(--border-color)', cursor: 'pointer', background: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', gap: '15px' }}>
+                     <Wallet size={24} color="#f59f00" />
+                     <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 'bold', color: 'var(--text-main)' }}>BMC Token (Web3)</div>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Bayar dengan dompet MetaMask/TrustWallet</div>
+                     </div>
+                  </div>
+                  <div className="glass" onClick={() => setPaymentMethod('credit')} style={{ padding: '20px', borderRadius: '20px', border: paymentMethod === 'credit' ? '2px solid var(--primary)' : '1px solid var(--border-color)', cursor: 'pointer', background: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', gap: '15px' }}>
+                     <ShieldCheck size={24} color="var(--primary)" />
+                     <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 'bold', color: 'var(--text-main)' }}>bambuPAY Credit (Escrow)</div>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Potong saldo BaMbooChain Wallet Anda</div>
+                     </div>
+                  </div>
                 </div>
-                <div style={{ background: '#f8f9fa', padding: '15px', borderRadius: '12px', marginBottom: '20px' }}>
+                <div style={{ background: 'var(--bg-secondary)', padding: '15px', borderRadius: '12px', marginBottom: '20px', border: '1px solid var(--border-color)', color: 'var(--text-main)' }}>
                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
                       <span>Subtotal</span>
                       <span>{formatIdr(cartTotalIdr)}</span>
@@ -999,7 +1017,7 @@ const MarketplacePage = () => {
                       <span>Ongkos Kirim</span>
                       <span>{formatIdr(shippingCost)}</span>
                    </div>
-                   <div style={{ height: '1px', background: '#ddd', margin: '10px 0' }} />
+                   <div style={{ height: '1px', background: 'var(--border-color)', margin: '10px 0' }} />
                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
                       <span>{t('market_checkout_total_idr')}</span>
                       <span style={{ fontWeight: 'bold' }}>{formatIdr(finalTotalIdr)}</span>
@@ -1026,9 +1044,12 @@ const MarketplacePage = () => {
                 <h2 style={{ marginBottom: '24px' }}>{t('market_checkout_shipping')}</h2>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '30px' }}>
                   {shippingOptions.map(opt => (
-                    <div key={opt.id} onClick={() => setShippingMethod(opt.id)} style={{ padding: '16px', borderRadius: '15px', border: shippingMethod === opt.id ? '2px solid var(--primary)' : '1px solid #ddd', cursor: 'pointer' }}>
-                       <div style={{ fontWeight: 'bold' }}>{opt.name}</div>
-                       <div style={{ fontSize: '0.8rem', color: '#888' }}>{opt.desc}</div>
+                    <div key={opt.id} className="glass" onClick={() => setShippingMethod(opt.id)} style={{ padding: '20px', borderRadius: '20px', border: shippingMethod === opt.id ? '2px solid var(--primary)' : '1px solid var(--border-color)', cursor: 'pointer', background: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', gap: '15px' }}>
+                       <Truck size={24} color={shippingMethod === opt.id ? "var(--primary)" : "var(--text-muted)"} />
+                       <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: 'bold', color: 'var(--text-main)' }}>{opt.name}</div>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{opt.desc}</div>
+                       </div>
                     </div>
                   ))}
                 </div>
