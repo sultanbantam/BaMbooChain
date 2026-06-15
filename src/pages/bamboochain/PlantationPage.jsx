@@ -29,7 +29,7 @@ const PlantationPage = () => {
   const { user, submitLocationProposal, submitPlantationDonation } = useAuth(); // Need to import useAuth
   
   // States for Suggestion Feature
-  const [coords, setCoords] = useState({ lat: -6.2088, lng: 106.8456 }); // Default Jakarta
+  const [coords, setCoords] = useState(null);
   const [showMapPicker, setShowMapPicker] = useState(false);
   const [newLoc, setNewLoc] = useState({ name: '', area: '', type: 'Lahan Adat', vision: '', waPic: '', penanam: '', perawat: '', pemanen: '' });
 
@@ -117,7 +117,7 @@ const PlantationPage = () => {
       kebutuhanPenanam: newLoc.penanam,
       kebutuhanPerawat: newLoc.perawat,
       kebutuhanPemanen: newLoc.pemanen,
-      coordinates: `${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}`,
+      coordinates: coords ? `${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}` : null,
       owner: user?.name || 'Guest'
     };
 
@@ -353,8 +353,8 @@ const PlantationPage = () => {
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px', alignItems: 'center' }}>
                   <div style={{ flex: 1, minWidth: '200px' }}>
                     <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{t('plantation_form_detected_coords')}</div>
-                    <div style={{ fontWeight: 'bold', fontSize: '1.1rem', color: newLoc.name.length > 2 ? 'var(--text-main)' : 'var(--text-muted)' }}>
-                      {newLoc.name.length > 2 ? `${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}` : 'Menunggu input lokasi...'}
+                    <div style={{ fontWeight: 'bold', fontSize: '1.1rem', color: coords ? 'var(--text-main)' : 'var(--text-muted)' }}>
+                      {isGeocoding ? 'Mencari koordinat...' : coords ? `${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}` : (newLoc.name.length > 3 ? 'Koordinat belum dipilih/tidak ditemukan' : 'Menunggu input lokasi...')}
                     </div>
                   </div>
                   <button 
@@ -756,13 +756,13 @@ const PlantationPage = () => {
 
               {/* Coordinates Readout */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '20px' }}>
-                <div style={{ background: '#f8f9fa', padding: '12px', borderRadius: '16px', border: '1px solid #eee' }}>
+                <div style={{ background: 'var(--bg-body)', padding: '12px', borderRadius: '16px', border: '1px solid var(--border-color)' }}>
                   <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>{t('plantation_map_lat')}</div>
-                  <div style={{ fontWeight: 'bold', fontSize: '1rem' }}>{coords.lat.toFixed(6)}</div>
+                  <div style={{ fontWeight: 'bold', fontSize: '1rem', color: 'var(--text-main)' }}>{(coords?.lat || -6.2088).toFixed(6)}</div>
                 </div>
-                <div style={{ background: '#f8f9fa', padding: '12px', borderRadius: '16px', border: '1px solid #eee' }}>
+                <div style={{ background: 'var(--bg-body)', padding: '12px', borderRadius: '16px', border: '1px solid var(--border-color)' }}>
                   <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>{t('plantation_map_lng')}</div>
-                  <div style={{ fontWeight: 'bold', fontSize: '1rem' }}>{coords.lng.toFixed(6)}</div>
+                  <div style={{ fontWeight: 'bold', fontSize: '1rem', color: 'var(--text-main)' }}>{(coords?.lng || 106.8456).toFixed(6)}</div>
                 </div>
               </div>
 
