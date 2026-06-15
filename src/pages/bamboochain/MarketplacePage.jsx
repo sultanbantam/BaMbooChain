@@ -463,6 +463,12 @@ const MarketplacePage = () => {
     if (cartStatus === '') setCartStatus('shipping');
   };
 
+  const shippingOptions = [
+    { id: 'express', name: t('market_ship_express_name'), desc: t('market_ship_express_desc'), price: 55000 },
+    { id: 'regular', name: t('market_ship_regular_name'), desc: t('market_ship_regular_desc'), price: 25000 },
+    { id: 'pickup', name: t('market_ship_pickup_name'), desc: t('market_ship_pickup_desc'), price: 0 },
+  ];
+
   const selectedShipping = shippingOptions.find(o => o.id === shippingMethod);
   const shippingCost = selectedShipping ? selectedShipping.price : 0;
   const finalTotalIdr = cartTotalIdr + shippingCost;
@@ -601,11 +607,7 @@ const MarketplacePage = () => {
   const filteredProducts = activeCategoryIndex === 0 ? visibleProducts : visibleProducts.filter(p => getProductField(p, 'category') === activeCategory);
   const cartTotalIdr = cart.reduce((sum, item) => sum + (item.priceIdr * item.qty), 0);
 
-  const shippingOptions = [
-    { id: 'express', name: t('market_ship_express_name'), desc: t('market_ship_express_desc'), price: 55000 },
-    { id: 'regular', name: t('market_ship_regular_name'), desc: t('market_ship_regular_desc'), price: 25000 },
-    { id: 'pickup', name: t('market_ship_pickup_name'), desc: t('market_ship_pickup_desc'), price: 0 },
-  ];
+
 
   const [activeStreams, setActiveStreams] = useState([
     { id: 1, titleKey: "market_live_title_1", viewers: "1.2k", seller: "Koperasi Cibarani", img: "https://images.unsplash.com/photo-1588614959060-4d144f28b207?auto=format&fit=crop&w=400" },
