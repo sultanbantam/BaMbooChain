@@ -15,7 +15,7 @@ import { useMarketplace } from '../../context/MarketplaceContext';
 const MarketplacePage = () => {
   const { t } = useLanguage();
   const { user } = useAuth();
-  const { chats, sendMessage } = useMarketplace();
+  const { chats, sendMessage, products: fbProducts, addProduct: fbAddProduct, updateProduct: fbUpdateProduct } = useMarketplace();
   
   const categories = [
     t('market_cat_all'), 
@@ -251,7 +251,7 @@ const MarketplacePage = () => {
   const [activeChat, setActiveChat] = useState(null); // replaces old mock chat state
 
 
-  const [products, setProducts] = useState([
+  const [mockProducts, setMockProducts] = useState([
     { 
       id: 1, 
       nameKey: "market_prod_1_name", 
@@ -387,6 +387,8 @@ const MarketplacePage = () => {
     }
   ]);
 
+  const products = [...fbProducts, ...mockProducts];
+
   // Simulation: Global Market & Forex Sync
   useEffect(() => {
     const interval = setInterval(() => {
@@ -477,7 +479,11 @@ const MarketplacePage = () => {
       storyTelling: newProduct.storyTelling,
       status: 'Pending Curation'
     };
-    setProducts([productToAdd, ...products]);
+    
+    // Save to Firebase Database
+    fbAddProduct(productToAdd);
+    
+    setMockProducts([productToAdd, ...mockProducts]);
     setShowSellModal(false);
     setNewProduct({ name: '', category: t('market_cat_material'), customCategory: '', price: '', images: [], description: '', storyTelling: '', unit: t('market_unit_stem'), customUnit: '', specs: '', whatsapp: '' });
     showToast(t('market_toast_product_registered').replace('{name}', newProduct.name));
@@ -504,14 +510,22 @@ const MarketplacePage = () => {
     setNewComment('');
   };
 
-  const handleApproveProduct = (id) => {
-    setProducts(prev => prev.map(p => p.id === id ? { ...p, status: 'Approved', verified: true } : p));
+  const handleApproveProduct = async (id) => {
+    if (typeof id === 'string') {
+      await fbUpdateProduct(id, { status: 'Approved', verified: true });
+    } else {
+      setMockProducts(prev => prev.map(p => p.id === id ? { ...p, status: 'Approved', verified: true } : p));
+    }
     setSelectedProduct(null);
     showToast(t('market_toast_product_approved'));
   };
 
-  const handleRejectProduct = (id) => {
-    setProducts(prev => prev.filter(p => p.id !== id));
+  const handleRejectProduct = async (id) => {
+    if (typeof id === 'string') {
+      await fbUpdateProduct(id, { status: 'Rejected' });
+    } else {
+      setMockProducts(prev => prev.filter(p => p.id !== id));
+    }
     setSelectedProduct(null);
     showToast(t('market_toast_product_rejected'));
   };
