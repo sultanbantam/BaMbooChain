@@ -489,7 +489,8 @@ const MarketplacePage = () => {
           setShippingMethod(apiOptions.length > 0 ? apiOptions[0].id : 'pickup');
         }
       } catch (err) {
-        console.error(err);
+        console.error("Shipping Fetch Error:", err);
+        showToast("Gagal mengambil tarif pengiriman: " + err.message);
       } finally {
         setIsLoadingRates(false);
       }
