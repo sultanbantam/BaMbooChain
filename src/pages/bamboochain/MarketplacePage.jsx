@@ -505,22 +505,46 @@ const MarketplacePage = () => {
     setIsCheckingOut(true);
     setCartStatus('processing');
     
-    // Simulate Smart Contract Escrow Lock Delay for visual effect
-    await new Promise(r => setTimeout(r, 2000));
+    try {
+      const orderData = {
+        items: cart,
+        totalIdr: finalTotalIdr,
+        shippingAddress: { city: 'Alamat Pengiriman' },
+        paymentMethod: paymentMethod,
+        shippingMethod: shippingMethod
+      };
 
-    const orderData = {
-      items: cart,
-      totalIdr: finalTotalIdr,
-      shippingAddress: { city: 'Alamat Pengiriman' },
-      paymentMethod: paymentMethod,
-      shippingMethod: shippingMethod
-    };
+      const newOrder = await createOrder(orderData);
+      
+      if (!newOrder) throw new Error("Gagal membuat pesanan di database");
 
-    const newOrder = await createOrder(orderData);
-    
-    setIsCheckingOut(false);
-    
-    if (newOrder) {
+      if (paymentMethod === 'bank') {
+        // Panggil Midtrans API
+        const res = await fetch('/api/payment/midtrans-charge', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+             order_id: newOrder.id,
+             gross_amount: finalTotalIdr,
+             items: cart.map(item => ({ id: item.id.toString(), price: item.priceIdr, quantity: item.qty, name: getProductField(item, 'name').substring(0, 50) }))
+          })
+        });
+        const data = await res.json();
+        
+        if (data.redirect_url) {
+           // Buka halaman pembayaran Midtrans di tab baru
+           window.open(data.redirect_url, '_blank');
+        } else {
+           throw new Error(data.error || "Gagal memuat sistem Midtrans");
+        }
+      } else if (paymentMethod === 'bmc') {
+        // Simulasi Web3 / Smart Contract Delay
+        await new Promise(r => setTimeout(r, 2000));
+      } else if (paymentMethod === 'credit') {
+        // Simulasi bambuPAY
+        await new Promise(r => setTimeout(r, 1000));
+      }
+
       setOrderTracking({
         id: newOrder.id,
         statusKey: 'market_checkout_awaiting_verification',
@@ -528,9 +552,13 @@ const MarketplacePage = () => {
       });
       setCartStatus('success');
       showToast(t('market_toast_order_success').replace('{id}', newOrder.id));
-    } else {
-      showToast("Checkout gagal, silakan coba lagi");
+      
+    } catch (err) {
+      console.error(err);
+      showToast("Checkout gagal: " + err.message);
       setCartStatus('payment');
+    } finally {
+      setIsCheckingOut(false);
     }
   };
 
