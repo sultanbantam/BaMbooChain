@@ -1432,12 +1432,12 @@ const MarketplacePage = () => {
 
           {/* BURSA BAMBU */}
           <div className="container" style={{ marginBottom: '60px' }}>
-             <div style={{ background: '#f8f9fa', borderRadius: '24px', padding: '30px', border: '1px solid #e9ecef' }}>
+             <div style={{ background: 'var(--bg-secondary)', borderRadius: '24px', padding: '30px', border: '1px solid var(--border-color)' }}>
                 <h3 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}><BarChart3 color="var(--primary)" /> {t('market_bursa_title')}</h3>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
                    {bursaData.slice(0, 4).map((item, idx) => (
-                     <div key={idx} style={{ background: 'white', padding: '15px', borderRadius: '15px', display: 'flex', justifyContent: 'space-between' }}>
-                        <div><div style={{ fontSize: '0.7rem', color: '#888' }}>{item.typeKey ? t(item.typeKey) : item.type}</div><div style={{ fontWeight: 'bold' }}>Rp {item.price.toLocaleString()}</div></div>
+                     <div key={idx} style={{ background: 'var(--bg-card)', padding: '15px', borderRadius: '15px', display: 'flex', justifyContent: 'space-between', border: '1px solid var(--border-color)' }}>
+                        <div><div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{item.typeKey ? t(item.typeKey) : item.type}</div><div style={{ fontWeight: 'bold' }}>Rp {item.price.toLocaleString()}</div></div>
                         <div style={{ color: item.up ? 'var(--primary)' : '#fa5252', fontSize: '0.8rem' }}>{item.trend}</div>
                      </div>
                    ))}
@@ -1451,13 +1451,13 @@ const MarketplacePage = () => {
               <div>
                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '30px' }}>
                     {filteredProducts.map(product => (
-                      <div key={product.id} onClick={() => setSelectedProduct(product)} style={{ background: 'white', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.05)', cursor: 'pointer', transition: '0.3s' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-10px)'} onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
+                      <div key={product.id} className="glass" onClick={() => setSelectedProduct(product)} style={{ background: 'var(--bg-card)', borderRadius: '24px', overflow: 'hidden', cursor: 'pointer', transition: '0.3s', border: '1px solid var(--border-color)' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-10px)'} onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
                          <div style={{ height: '220px', position: 'relative' }}>
                             <img src={product.img} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
-                            <div style={{ position: 'absolute', top: '15px', left: '15px', background: 'rgba(255,255,255,0.9)', padding: '5px 10px', borderRadius: '8px', fontSize: '0.7rem', fontWeight: 'bold' }}>{getProductField(product, 'category')}</div>
+                            <div style={{ position: 'absolute', top: '15px', left: '15px', background: 'var(--bg-secondary)', color: 'var(--text-main)', padding: '5px 10px', borderRadius: '8px', fontSize: '0.7rem', fontWeight: 'bold', border: '1px solid var(--border-color)' }}>{getProductField(product, 'category')}</div>
                          </div>
                          <div style={{ padding: '24px' }}>
-                            <h3 style={{ fontSize: '1.1rem', margin: '0 0 10px 0', minHeight: '2.8rem' }}>{getProductField(product, 'name')}</h3>
+                            <h3 style={{ fontSize: '1.1rem', margin: '0 0 10px 0', minHeight: '2.8rem', color: 'var(--text-main)' }}>{getProductField(product, 'name')}</h3>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                                <div>
                                   <div style={{ fontWeight: 'bold', color: 'var(--primary)', fontSize: '1.1rem' }}>{formatIdr(product.priceIdr)}</div>
