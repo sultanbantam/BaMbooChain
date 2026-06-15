@@ -250,6 +250,9 @@ const MarketplacePage = () => {
 
   const [activeChat, setActiveChat] = useState(null); // replaces old mock chat state
 
+  const [showStartLiveModal, setShowStartLiveModal] = useState(false);
+  const [newLiveStream, setNewLiveStream] = useState({ title: '', productId: '' });
+
 
   const [mockProducts, setMockProducts] = useState([
     { 
@@ -566,10 +569,26 @@ const MarketplacePage = () => {
     { id: 'pickup', name: t('market_ship_pickup_name'), desc: t('market_ship_pickup_desc'), price: 0 },
   ];
 
-  const liveStreams = [
+  const [activeStreams, setActiveStreams] = useState([
     { id: 1, titleKey: "market_live_title_1", viewers: "1.2k", seller: "Koperasi Cibarani", img: "https://images.unsplash.com/photo-1588614959060-4d144f28b207?auto=format&fit=crop&w=400" },
     { id: 2, titleKey: "market_live_title_2", viewers: "850", seller: "EcoFurn Jabar", img: "https://images.unsplash.com/photo-1592078615290-033ee584e267?auto=format&fit=crop&w=400" },
-  ];
+  ]);
+
+  const handleStartLiveStream = (e) => {
+    e.preventDefault();
+    const product = products.find(p => p.id.toString() === newLiveStream.productId.toString());
+    const stream = {
+      id: Date.now(),
+      title: newLiveStream.title,
+      viewers: "0",
+      seller: user?.username || "Penjual",
+      img: product?.images?.[0] || product?.img || "https://images.unsplash.com/photo-1618331835717-801e976710b2?auto=format&fit=crop&w=400"
+    };
+    setActiveStreams([stream, ...activeStreams]);
+    setShowStartLiveModal(false);
+    setNewLiveStream({ title: '', productId: '' });
+    showToast("Berhasil memulai Live Commerce!");
+  };
 
   return (
     <div style={{ paddingTop: 'var(--navbar-height)', paddingBottom: '80px', minHeight: '100vh', background: '#f8f9fa' }}>
@@ -1068,7 +1087,11 @@ const MarketplacePage = () => {
             <BackButton />
             <h1 style={{ fontSize: windowWidth < 768 ? '2rem' : '3.5rem', fontWeight: '900', color: 'var(--text-main)', marginBottom: '16px', lineHeight: '1.1' }}>{t('market_title')}</h1>
             <p style={{ fontSize: '1.2rem', color: 'var(--text-muted)', maxWidth: '600px', marginBottom: '32px' }}>{t('market_subtitle')}</p>
-            <button onClick={() => setShowSellModal(true)} className="btn btn-crypto" style={{ padding: '16px 40px', borderRadius: '30px', marginBottom: '30px' }}><PlusCircle size={20} /> {t('market_btn_sell')}</button>
+            
+            <div style={{ display: 'flex', gap: '15px', marginBottom: '30px', flexWrap: 'wrap', justifyContent: 'center' }}>
+               <button onClick={() => setShowSellModal(true)} className="btn btn-crypto" style={{ padding: '16px 40px', borderRadius: '30px' }}><PlusCircle size={20} /> {t('market_btn_sell')}</button>
+               <button onClick={() => setShowStartLiveModal(true)} style={{ padding: '16px 40px', borderRadius: '30px', background: '#fa5252', color: 'white', border: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', boxShadow: '0 4px 15px rgba(250,82,82,0.4)' }}><Video size={20} /> Mulai Live Commerce</button>
+            </div>
             
             <div style={{ display: 'inline-flex', background: 'white', padding: '5px', borderRadius: '30px', boxShadow: '0 5px 20px rgba(0,0,0,0.05)', border: '1px solid var(--primary)' }}>
               <button onClick={() => setViewMode('buyer')} style={{ padding: '8px 24px', borderRadius: '25px', border: 'none', background: viewMode === 'buyer' ? 'var(--primary)' : 'transparent', color: viewMode === 'buyer' ? 'white' : 'var(--text-main)', fontWeight: 'bold', cursor: 'pointer' }}>{t('market_mode_buyer')}</button>
@@ -1128,6 +1151,38 @@ const MarketplacePage = () => {
                    )}
                 </div>
              </div>
+          )}
+
+          {/* START LIVE COMMERCE MODAL */}
+          {showStartLiveModal && (
+            <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.8)', zIndex: 45000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+              <div className="glass" style={{ width: '100%', maxWidth: '500px', background: 'white', borderRadius: '30px', padding: '40px', position: 'relative' }}>
+                <button onClick={() => setShowStartLiveModal(false)} style={{ position: 'absolute', top: '20px', right: '20px', background: '#eee', border: 'none', borderRadius: '50%', padding: '8px', cursor: 'pointer' }}><X size={20} /></button>
+                <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+                   <Video size={40} color="#fa5252" style={{ marginBottom: '15px' }} />
+                   <h2>Mulai Live Commerce</h2>
+                   <p style={{ color: '#888', fontSize: '0.9rem' }}>Promosikan produk bambu Anda secara langsung kepada pembeli di seluruh dunia!</p>
+                </div>
+                
+                <form onSubmit={handleStartLiveStream}>
+                   <div style={{ marginBottom: '20px' }}>
+                      <label style={{ fontSize: '0.85rem', color: '#555', display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>Judul Live Stream</label>
+                      <input required type="text" placeholder="Contoh: Lelang Kursi Wulung Spesial!" value={newLiveStream.title} onChange={e => setNewLiveStream({...newLiveStream, title: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '15px', border: '1px solid #ddd', fontSize: '1rem' }} />
+                   </div>
+                   <div style={{ marginBottom: '30px' }}>
+                      <label style={{ fontSize: '0.85rem', color: '#555', display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>Pilih Produk untuk Dipromosikan (Opsional)</label>
+                      <select value={newLiveStream.productId} onChange={e => setNewLiveStream({...newLiveStream, productId: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '15px', border: '1px solid #ddd', fontSize: '1rem', background: '#f8f9fa' }}>
+                         <option value="">-- Pilih Produk Anda --</option>
+                         {products.filter(p => p.vendor === user?.username || p.vendor === 'admin').map(p => (
+                            <option key={p.id} value={p.id}>{getProductField(p, 'name')}</option>
+                         ))}
+                      </select>
+                   </div>
+                   
+                   <button type="submit" style={{ width: '100%', padding: '18px', borderRadius: '15px', background: '#fa5252', color: 'white', border: 'none', fontWeight: 'bold', fontSize: '1.1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}><Play size={20} fill="white" /> Mulai Siaran Langsung!</button>
+                </form>
+              </div>
+            </div>
           )}
 
           {/* SELL PRODUCT MODAL */}
@@ -1233,7 +1288,7 @@ const MarketplacePage = () => {
           <div className="container" style={{ marginBottom: '50px' }}>
              <h3 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}><Video color="#fa5252" /> {t('market_live_commerce_title')}</h3>
              <div style={{ display: 'flex', gap: '20px', overflowX: 'auto', paddingBottom: '10px' }}>
-                {liveStreams.map(live => (
+                {activeStreams.map(live => (
                   <div key={live.id} onClick={() => setSelectedLive(live)} style={{ minWidth: '280px', height: '180px', borderRadius: '24px', overflow: 'hidden', position: 'relative', cursor: 'pointer' }}>
                      <img src={live.img} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
                      <div style={{ position: 'absolute', top: '15px', left: '15px', background: '#fa5252', color: 'white', padding: '4px 10px', borderRadius: '8px', fontSize: '0.7rem', fontWeight: 'bold' }}>{t('market_live_badge')}</div>
