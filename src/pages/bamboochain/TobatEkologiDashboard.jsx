@@ -48,7 +48,6 @@ const TobatEkologiDashboard = () => {
     { id: 2, name: "Hutan Bambu Sabumi Jabar", coords: [-7.0909, 107.6688], count: 120000, status: "Verified" },
     { id: 3, name: "Restorasi Lahan Kritis Jatim", coords: [-7.9666, 112.6326], count: 350000, status: "Pending" },
     { id: 4, name: "Project Lestari Bali", coords: [-8.4095, 115.1889], count: 85000, status: "Verified" },
-    { id: 5, name: "Penanaman Massal Sumut", coords: [-3.5952, 98.6722], count: 210000, status: "Verified" },
     { id: 6, name: "Inisiatif Bambu Sulsel", coords: [-5.1477, 119.4327], count: 110000, status: "Verified" },
     { id: 7, name: "Reboisasi DAS Mahakam", coords: [-0.5022, 117.1536], count: 420000, status: "Verified" },
     { id: 8, name: "Zona Penyangga IKN", coords: [-1.2227, 116.8402], count: 105200, status: "Verified" },
