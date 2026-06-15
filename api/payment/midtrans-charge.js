@@ -43,7 +43,11 @@ export default async function handler(req, res) {
     // Encode Server Key to Base64
     const authString = Buffer.from(serverKey + ':').toString('base64');
 
-    const response = await fetch('https://app.sandbox.midtrans.com/snap/v1/transactions', {
+    // Menentukan URL endpoint berdasarkan environment
+    const isProduction = process.env.MIDTRANS_IS_PRODUCTION === 'true';
+    const baseUrl = isProduction ? 'https://app.midtrans.com' : 'https://app.sandbox.midtrans.com';
+
+    const response = await fetch(`${baseUrl}/snap/v1/transactions`, {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
