@@ -69,7 +69,7 @@ const AuthModal = () => {
   }, [isAuthModalOpen, authModalInitialTab]);
 
   const isPiBrowser = window.Pi && (
-    window.location.hostname.includes('vercel.app') || 
+    navigator.userAgent.includes('PiBrowser') || 
     window.location.hostname.includes('bambu.pi') || 
     window.location.search.includes('sandbox=true')
   );
