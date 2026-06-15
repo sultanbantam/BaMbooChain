@@ -458,16 +458,43 @@ const MarketplacePage = () => {
     return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(bmcVal) + ' BMC';
   };
 
-  const handleCheckout = (e) => {
-    e.preventDefault();
-    if (cartStatus === '') setCartStatus('shipping');
-  };
+  const [shippingOptions, setShippingOptions] = useState([
+    { id: 'pickup', name: t('market_ship_pickup_name'), desc: t('market_ship_pickup_desc'), price: 0 }
+  ]);
+  const [isLoadingRates, setIsLoadingRates] = useState(false);
 
-  const shippingOptions = [
-    { id: 'express', name: t('market_ship_express_name'), desc: t('market_ship_express_desc'), price: 55000 },
-    { id: 'regular', name: t('market_ship_regular_name'), desc: t('market_ship_regular_desc'), price: 25000 },
-    { id: 'pickup', name: t('market_ship_pickup_name'), desc: t('market_ship_pickup_desc'), price: 0 },
-  ];
+  const handleCheckout = async (e) => {
+    e.preventDefault();
+    if (cartStatus === '') {
+      setCartStatus('shipping');
+      setIsLoadingRates(true);
+      try {
+        const res = await fetch('/api/shipping/rates', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ destination_postal_code: '12110' })
+        });
+        const data = await res.json();
+        if (data.pricing) {
+          const apiOptions = data.pricing.map(p => ({
+            id: p.id || p.courier_name + '_' + p.courier_service_name,
+            name: `${p.courier_name} ${p.courier_service_name}`,
+            desc: `Estimasi ${p.duration}`,
+            price: p.price
+          }));
+          setShippingOptions([
+            ...apiOptions,
+            { id: 'pickup', name: t('market_ship_pickup_name'), desc: t('market_ship_pickup_desc'), price: 0 }
+          ]);
+          setShippingMethod(apiOptions.length > 0 ? apiOptions[0].id : 'pickup');
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoadingRates(false);
+      }
+    }
+  };
 
   const cartTotalIdr = cart.reduce((sum, item) => sum + (item.priceIdr * item.qty), 0);
   const selectedShipping = shippingOptions.find(o => o.id === shippingMethod);
@@ -1042,17 +1069,27 @@ const MarketplacePage = () => {
             ) : cartStatus === 'shipping' ? (
               <>
                 <h2 style={{ marginBottom: '24px' }}>{t('market_checkout_shipping')}</h2>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '30px' }}>
-                  {shippingOptions.map(opt => (
-                    <div key={opt.id} className="glass" onClick={() => setShippingMethod(opt.id)} style={{ padding: '20px', borderRadius: '20px', border: shippingMethod === opt.id ? '2px solid var(--primary)' : '1px solid var(--border-color)', cursor: 'pointer', background: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', gap: '15px' }}>
-                       <Truck size={24} color={shippingMethod === opt.id ? "var(--primary)" : "var(--text-muted)"} />
-                       <div style={{ flex: 1 }}>
-                          <div style={{ fontWeight: 'bold', color: 'var(--text-main)' }}>{opt.name}</div>
-                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{opt.desc}</div>
-                       </div>
-                    </div>
-                  ))}
-                </div>
+                {isLoadingRates ? (
+                  <div style={{ textAlign: 'center', padding: '30px' }}>
+                     <div className="spinner" style={{ margin: '0 auto 20px', width: '40px', height: '40px', border: '4px solid var(--bg-secondary)', borderTop: '4px solid var(--primary)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+                     <p style={{ color: 'var(--text-muted)' }}>Mencari tarif kurir terbaik (Biteship API)...</p>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '30px' }}>
+                    {shippingOptions.map(opt => (
+                      <div key={opt.id} className="glass" onClick={() => setShippingMethod(opt.id)} style={{ padding: '20px', borderRadius: '20px', border: shippingMethod === opt.id ? '2px solid var(--primary)' : '1px solid var(--border-color)', cursor: 'pointer', background: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', gap: '15px' }}>
+                         <Truck size={24} color={shippingMethod === opt.id ? "var(--primary)" : "var(--text-muted)"} />
+                         <div style={{ flex: 1 }}>
+                            <div style={{ fontWeight: 'bold', color: 'var(--text-main)' }}>{opt.name}</div>
+                            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{opt.desc}</div>
+                         </div>
+                         <div style={{ fontWeight: 'bold', color: 'var(--primary)' }}>
+                            {opt.price === 0 ? 'Gratis' : formatIdr(opt.price)}
+                         </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
                 <button onClick={() => setCartStatus('payment')} className="btn btn-primary" style={{ width: '100%', padding: '16px' }}>{t('market_checkout_btn_next')}</button>
               </>
             ) : (
