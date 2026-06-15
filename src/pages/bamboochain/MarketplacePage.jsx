@@ -252,6 +252,37 @@ const MarketplacePage = () => {
 
   const [showStartLiveModal, setShowStartLiveModal] = useState(false);
   const [newLiveStream, setNewLiveStream] = useState({ title: '', productId: '' });
+  const [isWebcamActive, setIsWebcamActive] = useState(false);
+  const videoRef = useRef(null);
+
+  // Auto-start webcam when viewing a live stream
+  useEffect(() => {
+    let stream = null;
+    const startWebcam = async () => {
+      if (selectedLive) {
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+            setIsWebcamActive(true);
+          }
+        } catch (err) {
+          console.log("Webcam access denied or unavailable", err);
+          setIsWebcamActive(false);
+        }
+      }
+    };
+    
+    startWebcam();
+    
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+      setIsWebcamActive(false);
+    };
+  }, [selectedLive]);
+
 
 
   const [mockProducts, setMockProducts] = useState([
@@ -645,11 +676,17 @@ const MarketplacePage = () => {
             <button onClick={() => setSelectedLive(null)} style={{ position: 'absolute', top: '20px', right: '20px', background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '50%', padding: '10px', color: 'white', cursor: 'pointer', zIndex: 10 }}><X size={24} /></button>
             
             <div style={{ flex: 2, background: '#000', position: 'relative' }}>
-               <img src={selectedLive.img} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.6 }} alt="" />
-               <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', color: 'white' }}>
-                  <Play size={60} fill="white" style={{ marginBottom: '20px' }} />
-                  <h2 style={{ fontSize: '1.5rem' }}>{t('market_live_streaming_status')}</h2>
-               </div>
+               <video ref={videoRef} autoPlay playsInline muted style={{ width: '100%', height: '100%', objectFit: 'cover', display: isWebcamActive ? 'block' : 'none' }} />
+               
+               {!isWebcamActive && (
+                 <>
+                   <img src={selectedLive.img} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.6 }} alt="" />
+                   <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', color: 'white' }}>
+                      <Play size={60} fill="white" style={{ marginBottom: '20px' }} />
+                      <h2 style={{ fontSize: '1.5rem' }}>{t('market_live_streaming_status')}</h2>
+                   </div>
+                 </>
+               )}
                <div style={{ position: 'absolute', bottom: '30px', left: '30px', display: 'flex', gap: '15px' }}>
                   <div style={{ background: '#fa5252', color: 'white', padding: '6px 12px', borderRadius: '10px', fontWeight: 'bold', fontSize: '0.8rem' }}>LIVE</div>
                   <div style={{ background: 'rgba(255,255,255,0.2)', color: 'white', padding: '6px 12px', borderRadius: '10px', fontSize: '0.8rem' }}>{selectedLive.viewers} {t('market_live_viewers')}</div>
