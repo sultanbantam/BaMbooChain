@@ -102,9 +102,9 @@ const AdSpace = ({ type = 'horizontal', size = 'normal', adSlot, directAd, heigh
     <div style={{ 
       width: '100%', 
       height: height || (type === 'horizontal' ? '120px' : '300px'),
-      background: 'white',
+      background: 'var(--bg-card)',
       borderRadius: '24px',
-      border: '2px dashed #dee2e6',
+      border: '2px dashed var(--border-color)',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
@@ -114,8 +114,8 @@ const AdSpace = ({ type = 'horizontal', size = 'normal', adSlot, directAd, heigh
       transition: 'all 0.2s',
       cursor: 'pointer'
     }}
-    onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.background = 'rgba(12,166,120,0.02)'; }}
-    onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#dee2e6'; e.currentTarget.style.background = 'white'; }}>
+    onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.background = 'rgba(12,166,120,0.05)'; }}
+    onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.background = 'var(--bg-card)'; }}>
       
       <div style={{ background: 'rgba(12,166,120,0.1)', color: 'var(--primary)', padding: '12px', borderRadius: '50%', marginBottom: '12px' }}>
         <DollarSign size={24} />
@@ -134,7 +134,7 @@ const AdSpace = ({ type = 'horizontal', size = 'normal', adSlot, directAd, heigh
           <MessageCircle size={14} /> Sewa via WA
         </a>
         <Link to="/contact" style={{ 
-          background: 'var(--text-main)', color: 'white', padding: '8px 16px', borderRadius: '20px', 
+          background: 'var(--bg-secondary)', color: 'var(--text-main)', border: '1px solid var(--border-color)', padding: '7px 15px', borderRadius: '20px', 
           fontSize: '0.85rem', fontWeight: 'bold', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' 
         }}>
           <Info size={14} /> Info Detail
