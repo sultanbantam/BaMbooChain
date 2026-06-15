@@ -8,6 +8,8 @@ import { useLanguage } from '../../context/LanguageContext';
 import { ethers } from 'ethers';
 import { escrowConfig } from '../../utils/escrowConfig';
 import { useVerifiedLocations } from '../../hooks/useFirestoreQueries';
+import { db } from '../../firebase/config';
+import { collection, getDocs, updateDoc, doc, query, where } from 'firebase/firestore';
 
 const PlantationPage = () => {
   const { t } = useLanguage();
@@ -54,6 +56,48 @@ const PlantationPage = () => {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
   const [isSuggesting, setIsSuggesting] = useState(false);
+  const [isGeocoding, setIsGeocoding] = useState(false);
+
+  // Temporary fix for coordinates
+  useEffect(() => {
+    const fixCoords = async () => {
+      try {
+        const q = query(collection(db, "location_proposals"), where("name", "==", "Desa Gunung leutik kec Ciparay"));
+        const snap = await getDocs(q);
+        snap.forEach(async (d) => {
+          if (d.data().coordinates !== "-7.0519012660424245, 107.6938387934335") {
+            await updateDoc(doc(db, "location_proposals", d.id), {
+              coordinates: "-7.0519012660424245, 107.6938387934335"
+            });
+            console.log("Updated coordinate for Gunung leutik");
+          }
+        });
+      } catch (e) {
+        console.error("Failed to fix coords", e);
+      }
+    };
+    fixCoords();
+  }, []);
+
+  // Geocoding based on input
+  useEffect(() => {
+    if (newLoc.name.length > 3) {
+      const timer = setTimeout(async () => {
+        setIsGeocoding(true);
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(newLoc.name)}`);
+          const data = await res.json();
+          if (data && data.length > 0) {
+            setCoords({ lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) });
+          }
+        } catch (e) {
+          console.error('Geocoding error', e);
+        }
+        setIsGeocoding(false);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [newLoc.name]);
 
   const handleSuggest = async () => {
     if (!newLoc.name || !newLoc.area) {
@@ -433,27 +477,27 @@ const PlantationPage = () => {
               <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', marginBottom: '20px' }} dangerouslySetInnerHTML={{ __html: t('plantation_support_at').replace('{location}', `<strong>${getLocationField(selectedLocation, 'name')}</strong>`) }} />
               
               {selectedLocation && (
-                <div className="glass" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '24px', borderRadius: '24px', display: 'flex', flexDirection: 'column', textAlign: 'left', fontSize: '0.95rem', color: '#e9ecef', boxShadow: '0 10px 30px rgba(0,0,0,0.2)', width: '100%', maxWidth: '750px', margin: '0 auto 20px auto' }}>
+                <div className="glass" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-color)', padding: '24px', borderRadius: '24px', display: 'flex', flexDirection: 'column', textAlign: 'left', fontSize: '0.95rem', color: 'var(--text-main)', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', width: '100%', maxWidth: '750px', margin: '0 auto 20px auto' }}>
                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
                       <div>
-                        <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'flex-start', gap: '10px' }}><span style={{ color: 'var(--primary)' }}>📍</span> <div><strong style={{ color: 'white' }}>Lokasi:</strong><br/>{getLocationField(selectedLocation, 'name')}</div></div>
-                        <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'flex-start', gap: '10px' }}><span style={{ color: 'var(--primary)' }}>📏</span> <div><strong style={{ color: 'white' }}>Estimasi Luas:</strong><br/>{selectedLocation.area || '-'}</div></div>
-                        <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'flex-start', gap: '10px' }}><span style={{ color: 'var(--primary)' }}>🏷️</span> <div><strong style={{ color: 'white' }}>Tipe Lahan:</strong><br/>{selectedLocation.type || 'Lahan Konservasi'}</div></div>
+                        <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'flex-start', gap: '10px' }}><span style={{ color: 'var(--primary)' }}>📍</span> <div><strong style={{ color: 'var(--text-main)' }}>Lokasi:</strong><br/>{getLocationField(selectedLocation, 'name')}</div></div>
+                        <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'flex-start', gap: '10px' }}><span style={{ color: 'var(--primary)' }}>📏</span> <div><strong style={{ color: 'var(--text-main)' }}>Estimasi Luas:</strong><br/>{selectedLocation.area || '-'}</div></div>
+                        <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'flex-start', gap: '10px' }}><span style={{ color: 'var(--primary)' }}>🏷️</span> <div><strong style={{ color: 'var(--text-main)' }}>Tipe Lahan:</strong><br/>{selectedLocation.type || 'Lahan Konservasi'}</div></div>
                         {(selectedLocation.lat || selectedLocation.coordinates) && (
-                          <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'flex-start', gap: '10px' }}><span style={{ color: 'var(--primary)' }}>🌐</span> <div><strong style={{ color: 'white' }}>Koordinat:</strong><br/><span style={{ color: '#4dabf7' }}>{selectedLocation.coordinates || `${selectedLocation.lat}, ${selectedLocation.lng}`}</span></div></div>
+                          <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'flex-start', gap: '10px' }}><span style={{ color: 'var(--primary)' }}>🌐</span> <div><strong style={{ color: 'var(--text-main)' }}>Koordinat:</strong><br/><span style={{ color: '#4dabf7' }}>{selectedLocation.coordinates || `${selectedLocation.lat}, ${selectedLocation.lng}`}</span></div></div>
                         )}
                       </div>
                       <div>
-                        <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'flex-start', gap: '10px' }}><span style={{ color: 'var(--primary)' }}>👤</span> <div><strong style={{ color: 'white' }}>Pengusul:</strong><br/>{selectedLocation.pengusul || selectedLocation.owner || 'Sabumi (Admin)'}</div></div>
-                        <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'flex-start', gap: '10px' }}><span style={{ color: 'var(--primary)' }}>📞</span> <div><strong style={{ color: 'white' }}>PIC (WA):</strong><br/>{selectedLocation.waPic || '-'}</div></div>
+                        <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'flex-start', gap: '10px' }}><span style={{ color: 'var(--primary)' }}>👤</span> <div><strong style={{ color: 'var(--text-main)' }}>Pengusul:</strong><br/>{selectedLocation.pengusul || selectedLocation.owner || 'Sabumi (Admin)'}</div></div>
+                        <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'flex-start', gap: '10px' }}><span style={{ color: 'var(--primary)' }}>📞</span> <div><strong style={{ color: 'var(--text-main)' }}>PIC (WA):</strong><br/>{selectedLocation.waPic || '-'}</div></div>
                         <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
                           <span style={{ color: 'var(--primary)' }}>🧑‍🌾</span>
                           <div style={{ width: '100%' }}>
-                            <strong style={{ color: 'white' }}>Kebutuhan SDM:</strong><br/>
+                            <strong style={{ color: 'var(--text-main)' }}>Kebutuhan SDM:</strong><br/>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginTop: '8px' }}>
-                              <div style={{ background: 'rgba(255,255,255,0.05)', padding: '8px', borderRadius: '10px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.05)' }}><div style={{ fontSize: '0.75rem', color: '#adb5bd', marginBottom: '2px' }}>Tanam</div><div style={{ fontWeight: 'bold', color: 'white' }}>{selectedLocation.kebutuhanPenanam || '-'}</div></div>
-                              <div style={{ background: 'rgba(255,255,255,0.05)', padding: '8px', borderRadius: '10px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.05)' }}><div style={{ fontSize: '0.75rem', color: '#adb5bd', marginBottom: '2px' }}>Rawat</div><div style={{ fontWeight: 'bold', color: 'white' }}>{selectedLocation.kebutuhanPerawat || '-'}</div></div>
-                              <div style={{ background: 'rgba(255,255,255,0.05)', padding: '8px', borderRadius: '10px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.05)' }}><div style={{ fontSize: '0.75rem', color: '#adb5bd', marginBottom: '2px' }}>Panen</div><div style={{ fontWeight: 'bold', color: 'white' }}>{selectedLocation.kebutuhanPemanen || '-'}</div></div>
+                              <div style={{ background: 'var(--bg-body)', padding: '8px', borderRadius: '10px', textAlign: 'center', border: '1px solid var(--border-color)' }}><div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '2px' }}>Tanam</div><div style={{ fontWeight: 'bold', color: 'var(--text-main)' }}>{selectedLocation.kebutuhanPenanam || '-'}</div></div>
+                              <div style={{ background: 'var(--bg-body)', padding: '8px', borderRadius: '10px', textAlign: 'center', border: '1px solid var(--border-color)' }}><div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '2px' }}>Rawat</div><div style={{ fontWeight: 'bold', color: 'var(--text-main)' }}>{selectedLocation.kebutuhanPerawat || '-'}</div></div>
+                              <div style={{ background: 'var(--bg-body)', padding: '8px', borderRadius: '10px', textAlign: 'center', border: '1px solid var(--border-color)' }}><div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '2px' }}>Panen</div><div style={{ fontWeight: 'bold', color: 'var(--text-main)' }}>{selectedLocation.kebutuhanPemanen || '-'}</div></div>
                             </div>
                           </div>
                         </div>
