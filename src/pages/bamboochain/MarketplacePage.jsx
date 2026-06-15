@@ -352,6 +352,38 @@ const MarketplacePage = () => {
       descKey: "market_prod_6_desc",
       storyKey: "market_prod_6_story",
       specKeys: ["market_prod_6_spec_1", "market_prod_6_spec_2", "market_prod_6_spec_3", "market_prod_6_spec_4", "market_prod_6_spec_5"]
+    },
+    { 
+      id: 7, 
+      name: "Bambu Tali Super", 
+      category: "Material konstruksi", 
+      priceIdr: 15000, 
+      vendor: "Rose Bambu Marzuni", 
+      rating: 5.0, 
+      reviews: 0, 
+      verified: false,
+      img: "https://images.unsplash.com/photo-1598928376916-2fd125c192bd?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", 
+      images: ["https://images.unsplash.com/photo-1598928376916-2fd125c192bd?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"],
+      status: 'Pending Curation',
+      unit: "Batang", 
+      description: "Bambu tali kualitas super untuk berbagai keperluan.",
+      specs: ["Kuat", "Tahan lama"]
+    },
+    { 
+      id: 8, 
+      name: "Keranjang Bambu Anyam", 
+      category: "Kerajinan", 
+      priceIdr: 75000, 
+      vendor: "Rose Bambu Marzuni", 
+      rating: 5.0, 
+      reviews: 0, 
+      verified: false,
+      img: "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", 
+      images: ["https://images.unsplash.com/photo-1513519245088-0e12902e5a38?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"],
+      status: 'Pending Curation',
+      unit: "Unit", 
+      description: "Keranjang bambu anyaman tangan yang indah.",
+      specs: ["Handmade", "Estetik"]
     }
   ]);
 
@@ -951,6 +983,40 @@ const MarketplacePage = () => {
                </div>
                <button onClick={() => { setViewMode('buyer'); setIsAdminAuthenticated(false); setAuthPassword(''); }} className="btn" style={{ background: '#eee' }}>{t('market_admin_exit')}</button>
             </div>
+            
+            <h3 style={{ marginBottom: '20px' }}>Validasi Produk Baru</h3>
+            <div style={{ overflowX: 'auto', marginBottom: '40px' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                     <tr style={{ borderBottom: '2px solid #f1f3f5', textAlign: 'left' }}>
+                        <th style={{ padding: '15px', color: '#888' }}>Penjual</th>
+                        <th style={{ padding: '15px', color: '#888' }}>Produk</th>
+                        <th style={{ padding: '15px', color: '#888' }}>Kategori</th>
+                        <th style={{ padding: '15px', color: '#888' }}>Status</th>
+                        <th style={{ padding: '15px', color: '#888' }}>Aksi</th>
+                     </tr>
+                  </thead>
+                  <tbody>
+                     {pendingProducts.length === 0 ? (
+                        <tr><td colSpan="5" style={{ padding: '20px', textAlign: 'center', color: '#888' }}>Tidak ada produk yang menunggu validasi</td></tr>
+                     ) : pendingProducts.map(product => (
+                       <tr key={product.id} style={{ borderBottom: '1px solid #f1f3f5' }}>
+                          <td style={{ padding: '20px', fontWeight: 'bold' }}>{product.vendor}</td>
+                          <td style={{ padding: '20px' }}>{getProductField(product, 'name')}</td>
+                          <td style={{ padding: '20px' }}>{getProductField(product, 'category')}</td>
+                          <td style={{ padding: '20px' }}>
+                             <span style={{ padding: '5px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 'bold', background: '#fff4e6', color: '#e67700' }}>{product.status}</span>
+                          </td>
+                          <td style={{ padding: '20px' }}>
+                             <button onClick={() => setSelectedProduct(product)} style={{ padding: '8px 15px', borderRadius: '10px', background: 'var(--primary)', color: 'white', border: 'none', cursor: 'pointer' }}>Review & Validasi</button>
+                          </td>
+                       </tr>
+                     ))}
+                  </tbody>
+               </table>
+            </div>
+
+            <h3 style={{ marginBottom: '20px' }}>Manajemen Pesanan</h3>
             <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
