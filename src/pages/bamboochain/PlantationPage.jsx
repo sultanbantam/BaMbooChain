@@ -79,25 +79,24 @@ const PlantationPage = () => {
     fixCoords();
   }, []);
 
-  // Geocoding based on input
-  useEffect(() => {
+  // Geocoding based on input (Wait until completely written)
+  const handleGeocode = async () => {
     if (newLoc.name.length > 3) {
-      const timer = setTimeout(async () => {
-        setIsGeocoding(true);
-        try {
-          const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(newLoc.name)}`);
-          const data = await res.json();
-          if (data && data.length > 0) {
-            setCoords({ lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) });
-          }
-        } catch (e) {
-          console.error('Geocoding error', e);
+      setIsGeocoding(true);
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(newLoc.name)}`);
+        const data = await res.json();
+        if (data && data.length > 0) {
+          setCoords({ lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) });
+        } else {
+          setCoords(null); // Reset if not found
         }
-        setIsGeocoding(false);
-      }, 1500);
-      return () => clearTimeout(timer);
+      } catch (e) {
+        console.error('Geocoding error', e);
+      }
+      setIsGeocoding(false);
     }
-  }, [newLoc.name]);
+  };
 
   const handleSuggest = async () => {
     if (!newLoc.name || !newLoc.area) {
@@ -372,6 +371,8 @@ const PlantationPage = () => {
                     type="text" 
                     value={newLoc.name}
                     onChange={(e) => setNewLoc({...newLoc, name: e.target.value})}
+                    onBlur={handleGeocode}
+                    onKeyDown={(e) => { if (e.key === 'Enter') handleGeocode(); }}
                     placeholder={t('plantation_form_plc_loc_name')} 
                     style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #eee', background: '#f8f9fa' }} 
                   />
