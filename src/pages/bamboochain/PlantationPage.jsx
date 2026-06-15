@@ -84,8 +84,28 @@ const PlantationPage = () => {
     if (newLoc.name.length > 3) {
       setIsGeocoding(true);
       try {
-        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(newLoc.name)}`);
-        const data = await res.json();
+        let queryStr = newLoc.name.toLowerCase();
+        // Remove common Indonesian prefixes that confuse OSM
+        queryStr = queryStr.replace(/^(desa|kampung|kasepuhan|hutan|kebun|lahan|proyek|project|kecamatan|kabupaten|provinsi)\s+/gi, '');
+        
+        let res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(queryStr)}`);
+        let data = await res.json();
+        
+        // Fallback 1: If not found, try stripping the first word entirely (in case it's an unknown local prefix)
+        if ((!data || data.length === 0) && queryStr.split(' ').length > 2) {
+          const fallback1 = queryStr.split(' ').slice(1).join(' ');
+          res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(fallback1)}`);
+          data = await res.json();
+        }
+
+        // Fallback 2: If STILL not found, just use the last two words (e.g. "Lebak Banten") for a rough region estimate
+        if ((!data || data.length === 0) && queryStr.split(' ').length > 2) {
+          const words = queryStr.split(' ');
+          const fallback2 = words.slice(-2).join(' ');
+          res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(fallback2)}`);
+          data = await res.json();
+        }
+
         if (data && data.length > 0) {
           setCoords({ lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) });
         } else {
