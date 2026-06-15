@@ -15,7 +15,7 @@ import { useMarketplace } from '../../context/MarketplaceContext';
 const MarketplacePage = () => {
   const { t } = useLanguage();
   const { user } = useAuth();
-  const { chats, sendMessage, products: fbProducts, addProduct: fbAddProduct, updateProduct: fbUpdateProduct } = useMarketplace();
+  const { chats, sendMessage, products: fbProducts, addProduct: fbAddProduct, updateProduct: fbUpdateProduct, orders, createOrder, updateOrderStatus } = useMarketplace();
   
   const categories = [
     t('market_cat_all'), 
@@ -196,10 +196,7 @@ const MarketplacePage = () => {
     { user: 'Agus', text: 'Kualitas mantap gan!', time: '11:57' }
   ]);
   const [likes, setLikes] = useState(1240);
-  const [pendingOrders, setPendingOrders] = useState([
-    { id: 'BC-92831', customer: 'Bapak Ahmad', product: 'Bambu Betung', status: 'Pending Curation', total: 812500, date: '07/05/2026' },
-    { id: 'BC-92835', customer: 'Igu Siti', product: 'Kursi Wulung', status: 'Paid', total: 7312500, date: '07/05/2026' },
-  ]);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [toast, setToast] = useState({ show: false, message: '' });
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
@@ -466,28 +463,41 @@ const MarketplacePage = () => {
     if (cartStatus === '') setCartStatus('shipping');
   };
 
-  const confirmOrder = () => {
-    const orderId = `BC-${Math.floor(Math.random() * 90000) + 10000}`;
-    const newOrder = {
-      id: orderId,
-      customer: 'Saya (Pembeli)',
-      product: cart.map(item => getProductField(item, 'name')).join(', '),
-      status: 'Pending Curation',
-      total: cartTotalIdr,
-      date: new Date().toLocaleDateString()
+  const selectedShipping = shippingOptions.find(o => o.id === shippingMethod);
+  const shippingCost = selectedShipping ? selectedShipping.price : 0;
+  const finalTotalIdr = cartTotalIdr + shippingCost;
+
+  const confirmOrder = async () => {
+    setIsCheckingOut(true);
+    setCartStatus('processing');
+    
+    // Simulate Smart Contract Escrow Lock Delay for visual effect
+    await new Promise(r => setTimeout(r, 2000));
+
+    const orderData = {
+      items: cart,
+      totalIdr: finalTotalIdr,
+      shippingAddress: { city: 'Alamat Pengiriman' },
+      paymentMethod: paymentMethod,
+      shippingMethod: shippingMethod
     };
+
+    const newOrder = await createOrder(orderData);
     
-    setOrderTracking({
-      id: orderId,
-      statusKey: 'market_checkout_awaiting_verification',
-      date: new Date().toLocaleString()
-    });
+    setIsCheckingOut(false);
     
-    // Add to admin dashboard
-    setPendingOrders(prev => [newOrder, ...prev]);
-    
-    setCartStatus('success');
-    showToast(t('market_toast_order_success').replace('{id}', orderId));
+    if (newOrder) {
+      setOrderTracking({
+        id: newOrder.id,
+        statusKey: 'market_checkout_awaiting_verification',
+        date: new Date().toLocaleString()
+      });
+      setCartStatus('success');
+      showToast(t('market_toast_order_success').replace('{id}', newOrder.id));
+    } else {
+      showToast("Checkout gagal, silakan coba lagi");
+      setCartStatus('payment');
+    }
   };
 
   const handleAddProduct = (e) => {
@@ -983,12 +993,21 @@ const MarketplacePage = () => {
                 </div>
                 <div style={{ background: '#f8f9fa', padding: '15px', borderRadius: '12px', marginBottom: '20px' }}>
                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                      <span>Subtotal</span>
+                      <span>{formatIdr(cartTotalIdr)}</span>
+                   </div>
+                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                      <span>Ongkos Kirim</span>
+                      <span>{formatIdr(shippingCost)}</span>
+                   </div>
+                   <div style={{ height: '1px', background: '#ddd', margin: '10px 0' }} />
+                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
                       <span>{t('market_checkout_total_idr')}</span>
-                      <span style={{ fontWeight: 'bold' }}>{formatIdr(cartTotalIdr)}</span>
+                      <span style={{ fontWeight: 'bold' }}>{formatIdr(finalTotalIdr)}</span>
                    </div>
                    <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--primary)' }}>
                       <span>{t('market_checkout_est_bmc')}</span>
-                      <span style={{ fontWeight: 'bold' }}>{formatBmc(cartTotalIdr)}</span>
+                      <span style={{ fontWeight: 'bold' }}>{formatBmc(finalTotalIdr)}</span>
                    </div>
                 </div>
                 <div style={{ display: 'flex', gap: '10px' }}>
@@ -996,6 +1015,13 @@ const MarketplacePage = () => {
                    <button onClick={confirmOrder} className="btn btn-primary" style={{ flex: 2, padding: '14px' }}>{t('market_checkout_btn_pay')}</button>
                 </div>
               </>
+            ) : cartStatus === 'processing' ? (
+              <div style={{ textAlign: 'center', padding: '40px 0' }}>
+                 <div className="spinner" style={{ margin: '0 auto 20px', width: '50px', height: '50px', border: '4px solid #f3f3f3', borderTop: '4px solid var(--primary)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+                 <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+                 <h3 style={{ marginBottom: '10px' }}>Mengamankan Dana...</h3>
+                 <p style={{ color: '#888', fontSize: '0.9rem' }}>Mentransfer dana ke Smart Contract Escrow BaMbooChain</p>
+              </div>
             ) : cartStatus === 'shipping' ? (
               <>
                 <h2 style={{ marginBottom: '24px' }}>{t('market_checkout_shipping')}</h2>
@@ -1099,16 +1125,16 @@ const MarketplacePage = () => {
                      </tr>
                   </thead>
                   <tbody>
-                     {pendingOrders.map(order => (
+                     {orders.map(order => (
                        <tr key={order.id} style={{ borderBottom: '1px solid #f1f3f5' }}>
                           <td style={{ padding: '20px', fontWeight: 'bold' }}>{order.id}</td>
-                          <td style={{ padding: '20px' }}>{order.customer}</td>
-                          <td style={{ padding: '20px' }}>{order.product}</td>
+                          <td style={{ padding: '20px' }}>{order.userName || order.userId || 'Guest'}</td>
+                          <td style={{ padding: '20px' }}>{order.items?.map(i => getProductField(i, 'name')).join(', ') || 'Produk'}</td>
                           <td style={{ padding: '20px' }}>
-                             <span style={{ padding: '5px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 'bold', background: order.status === 'Paid' ? '#e7f5ff' : '#fff4e6', color: order.status === 'Paid' ? '#1971c2' : '#e67700' }}>{order.status}</span>
+                             <span style={{ padding: '5px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 'bold', background: order.status === 'completed' ? '#e7f5ff' : '#fff4e6', color: order.status === 'completed' ? '#1971c2' : '#e67700' }}>{order.status}</span>
                           </td>
                           <td style={{ padding: '20px' }}>
-                             <button onClick={() => updateOrderStatus(order.id, 'Validated')} style={{ padding: '8px 15px', borderRadius: '10px', background: 'var(--primary)', color: 'white', border: 'none', cursor: 'pointer' }}>{t('market_admin_btn_validate')}</button>
+                             {order.status === 'pending' && <button onClick={() => updateOrderStatus(order.id, 'completed')} style={{ padding: '8px 15px', borderRadius: '10px', background: 'var(--primary)', color: 'white', border: 'none', cursor: 'pointer' }}>{t('market_admin_btn_validate')}</button>}
                           </td>
                        </tr>
                      ))}
@@ -1132,6 +1158,7 @@ const MarketplacePage = () => {
             
             <div style={{ display: 'inline-flex', background: 'white', padding: '5px', borderRadius: '30px', boxShadow: '0 5px 20px rgba(0,0,0,0.05)', border: '1px solid var(--primary)' }}>
               <button onClick={() => setViewMode('buyer')} style={{ padding: '8px 24px', borderRadius: '25px', border: 'none', background: viewMode === 'buyer' ? 'var(--primary)' : 'transparent', color: viewMode === 'buyer' ? 'white' : 'var(--text-main)', fontWeight: 'bold', cursor: 'pointer' }}>{t('market_mode_buyer')}</button>
+              <button onClick={() => setViewMode('history')} style={{ padding: '8px 24px', borderRadius: '25px', border: 'none', background: viewMode === 'history' ? 'var(--primary)' : 'transparent', color: viewMode === 'history' ? 'white' : 'var(--text-main)', fontWeight: 'bold', cursor: 'pointer' }}>Riwayat Pesanan Saya</button>
               <button onClick={() => setViewMode('inbox')} style={{ padding: '8px 24px', borderRadius: '25px', border: 'none', background: viewMode === 'inbox' ? 'var(--primary)' : 'transparent', color: viewMode === 'inbox' ? 'white' : 'var(--text-main)', fontWeight: 'bold', cursor: 'pointer', position: 'relative' }}>
                  {t('market_btn_inbox')}
                  {chats.filter(c => c.vendor === user?.username && c.messages?.some(m => !m.isMe)).length > 0 && (
@@ -1189,6 +1216,35 @@ const MarketplacePage = () => {
                 </div>
              </div>
           )}
+
+           {viewMode === 'history' && (
+              <div className="container" style={{ marginBottom: '50px' }}>
+                 <div style={{ background: 'var(--bg-card)', borderRadius: '30px', padding: '40px', border: '1px solid var(--border-color)', minHeight: '500px' }}>
+                    <h2 style={{ marginBottom: '30px', display: 'flex', alignItems: 'center', gap: '15px' }}><ShoppingCart size={32} color="var(--primary)" /> Riwayat Pesanan Saya</h2>
+                    {orders.length === 0 ? (
+                       <div style={{ textAlign: 'center', padding: '50px 0', color: 'var(--text-muted)' }}>
+                          Belum ada riwayat pesanan.
+                       </div>
+                    ) : (
+                       <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                          {orders.map(order => (
+                             <div key={order.id} style={{ padding: '20px', borderRadius: '20px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
+                                <div>
+                                   <div style={{ fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '5px' }}>Pesanan #{order.id.slice(0, 8)}</div>
+                                   <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{order.createdAt?.seconds ? new Date(order.createdAt.seconds * 1000).toLocaleDateString() : new Date().toLocaleDateString()}</div>
+                                   <div style={{ marginTop: '10px', fontSize: '0.9rem' }}>{order.items?.map(i => getProductField(i, 'name')).join(', ')}</div>
+                                </div>
+                                <div style={{ textAlign: 'right' }}>
+                                   <div style={{ fontWeight: 'bold', color: 'var(--primary)', fontSize: '1.2rem', marginBottom: '8px' }}>{formatIdr(order.totalIdr)}</div>
+                                   <span style={{ padding: '5px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 'bold', background: order.status === 'completed' ? '#e7f5ff' : '#fff4e6', color: order.status === 'completed' ? '#1971c2' : '#e67700' }}>Status: {order.status}</span>
+                                </div>
+                             </div>
+                          ))}
+                       </div>
+                    )}
+                 </div>
+              </div>
+           )}
 
           {/* START LIVE COMMERCE MODAL */}
           {showStartLiveModal && (
