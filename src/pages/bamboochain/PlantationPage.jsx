@@ -58,18 +58,20 @@ const PlantationPage = () => {
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [isGeocoding, setIsGeocoding] = useState(false);
 
-  // Temporary fix for coordinates
+  // Temporary fix for Green Nagan Cafe coordinates
   useEffect(() => {
     const fixCoords = async () => {
       try {
-        const q = query(collection(db, "location_proposals"), where("name", "==", "Desa Gunung leutik kec Ciparay"));
-        const snap = await getDocs(q);
+        const snap = await getDocs(collection(db, "location_proposals"));
         snap.forEach(async (d) => {
-          if (d.data().coordinates !== "-7.0519012660424245, 107.6938387934335") {
-            await updateDoc(doc(db, "location_proposals", d.id), {
-              coordinates: "-7.0519012660424245, 107.6938387934335"
-            });
-            console.log("Updated coordinate for Gunung leutik");
+          const data = d.data();
+          if (data.name && data.name.includes("Green Nagan Cafe")) {
+            if (data.coordinates !== "4.112494, 96.289584") {
+              await updateDoc(doc(db, "location_proposals", d.id), {
+                coordinates: "4.112494, 96.289584"
+              });
+              console.log("Updated coordinate for Green Nagan Cafe");
+            }
           }
         });
       } catch (e) {
