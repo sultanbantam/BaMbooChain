@@ -532,8 +532,8 @@ const MarketplacePage = () => {
         const data = await res.json();
         
         if (data.redirect_url) {
-           // Buka halaman pembayaran Midtrans di tab baru
-           window.open(data.redirect_url, '_blank');
+           // Arahkan halaman saat ini ke Midtrans (menghindari blokir popup browser)
+           window.location.href = data.redirect_url;
         } else {
            throw new Error(data.error || "Gagal memuat sistem Midtrans");
         }
