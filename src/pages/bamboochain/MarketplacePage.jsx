@@ -475,6 +475,11 @@ const MarketplacePage = () => {
           body: JSON.stringify({ destination_postal_code: '12110' })
         });
         const data = await res.json();
+        
+        if (!res.ok) {
+           throw new Error(data.error || "Gagal menghubungi server ongkir");
+        }
+
         if (data.pricing) {
           const apiOptions = data.pricing.map(p => ({
             id: p.id || p.courier_name + '_' + p.courier_service_name,
