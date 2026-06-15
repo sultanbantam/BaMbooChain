@@ -144,11 +144,12 @@ const PlantationPage = () => {
   ];
 
   const dynamicLocations = verifiedLocations.map(loc => ({
+    ...loc,
     id: loc.id,
     name: loc.name,
     image: getAssetUrl('gambar/bambu_hutan.jpg'), // Default image for user-suggested locations
     area: `${loc.size} Ha`,
-    farmers: 'Estimating...', // Or get from loc if available
+    farmers: loc.kebutuhanPenanam || 'Estimating...', // Or get from loc if available
     desc: loc.vision || `Area konservasi tipe ${loc.type} yang diusulkan oleh komunitas untuk direstorasi.`
   }));
 
@@ -427,7 +428,30 @@ const PlantationPage = () => {
             <div style={{ marginBottom: '40px' }}><button onClick={prevStep} className="btn-back">{t('plantation_btn_back')}</button></div>
             <div style={{ textAlign: 'center', marginBottom: '50px' }}>
               <h1 style={{ fontSize: '2.5rem', fontWeight: '900', color: 'var(--text-main)', marginBottom: '16px' }}>{t('plantation_title_choose_package')}</h1>
-              <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }} dangerouslySetInnerHTML={{ __html: t('plantation_support_at').replace('{location}', `<strong>${getLocationField(selectedLocation, 'name')}</strong>`) }} />
+              <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', marginBottom: '20px' }} dangerouslySetInnerHTML={{ __html: t('plantation_support_at').replace('{location}', `<strong>${getLocationField(selectedLocation, 'name')}</strong>`) }} />
+              
+              {selectedLocation && (
+                <div style={{ background: 'rgba(255,255,255,0.7)', border: '1px solid #e9ecef', padding: '24px', borderRadius: '24px', display: 'inline-block', textAlign: 'left', fontSize: '0.9rem', color: 'var(--text-main)', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
+                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
+                      <div>
+                        <div style={{ marginBottom: '8px' }}><strong>📍 Lokasi:</strong> {getLocationField(selectedLocation, 'name')}</div>
+                        <div style={{ marginBottom: '8px' }}><strong>📏 Estimasi Luas:</strong> {selectedLocation.area || '-'}</div>
+                        <div style={{ marginBottom: '8px' }}><strong>🏷️ Tipe Lahan:</strong> {selectedLocation.type || 'Lahan Konservasi'}</div>
+                        {(selectedLocation.lat || selectedLocation.coordinates) && (
+                          <div style={{ marginBottom: '8px' }}><strong>🌐 Koordinat:</strong> {selectedLocation.coordinates || `${selectedLocation.lat}, ${selectedLocation.lng}`}</div>
+                        )}
+                      </div>
+                      <div>
+                        <div style={{ marginBottom: '8px' }}><strong>👤 Pengusul:</strong> {selectedLocation.pengusul || selectedLocation.owner || 'Sabumi (Admin)'}</div>
+                        <div style={{ marginBottom: '8px' }}><strong>📞 PIC (WA):</strong> {selectedLocation.waPic || '-'}</div>
+                        <div style={{ marginBottom: '8px' }}>
+                          <strong>🧑‍🌾 Kebutuhan SDM:</strong><br/>
+                          <span style={{ color: 'var(--text-muted)' }}>Tanam: {selectedLocation.kebutuhanPenanam || '-'} | Rawat: {selectedLocation.kebutuhanPerawat || '-'} | Panen: {selectedLocation.kebutuhanPemanen || '-'}</span>
+                        </div>
+                      </div>
+                   </div>
+                </div>
+              )}
               
               {/* CURRENCY CONVERSION INFO */}
               <div style={{ display: 'inline-flex', alignItems: 'center', background: 'rgba(12, 166, 120, 0.05)', padding: '10px 20px', borderRadius: '15px', marginTop: '20px', border: '1px solid rgba(12, 166, 120, 0.1)', color: 'var(--primary)', fontWeight: 'bold' }}>
