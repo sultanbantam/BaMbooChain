@@ -176,7 +176,7 @@ const MarketplacePage = () => {
   const [chatInput, setChatInput] = useState('');
   const [showCartModal, setShowCartModal] = useState(false);
   const [cartStatus, setCartStatus] = useState(''); // '', 'shipping', 'payment', 'success'
-  const [paymentMethod, setPaymentMethod] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('bank'); // Default ke Transfer Bank
   const [shippingMethod, setShippingMethod] = useState('');
   const [orderTracking, setOrderTracking] = useState(null);
   const [viewMode, setViewMode] = useState('buyer'); 
@@ -508,6 +508,11 @@ const MarketplacePage = () => {
   const finalTotalIdr = cartTotalIdr + shippingCost;
 
   const confirmOrder = async () => {
+    if (!paymentMethod) {
+      showToast("Silakan pilih metode pembayaran terlebih dahulu");
+      return;
+    }
+    
     setIsCheckingOut(true);
     setCartStatus('processing');
     
