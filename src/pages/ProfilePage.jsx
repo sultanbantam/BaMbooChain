@@ -6,11 +6,12 @@ import { useLanguage } from '../context/LanguageContext';
 import { db } from '../firebase/config';
 import { useArticles, usePlantationDonations } from '../hooks/useFirestoreQueries';
 import { doc, onSnapshot, updateDoc, collection, query, where, getDoc, getDocs, addDoc, arrayUnion, arrayRemove, increment } from 'firebase/firestore';
+import { requestForToken } from '../utils/NotificationService';
 import ShareModal from '../components/ShareModal';
 import { 
   User, Camera, Save, Copy, Share2, Award, Shield, CheckCircle, 
   TreeDeciduous, GraduationCap, Heart, MessageSquare, Gift, Edit3, X, Eye,
-  UploadCloud, FileText, Trash2, Send, ChevronRight, PlayCircle, Search, Leaf
+  UploadCloud, FileText, Trash2, Send, ChevronRight, PlayCircle, Search, Leaf, Bell
 } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
@@ -111,6 +112,25 @@ const ProfilePage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+
+  const handleEnableNotifications = async () => {
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission === 'granted') {
+        const token = await requestForToken(user?.id);
+        if (token) {
+          alert('✅ Notifikasi berhasil diaktifkan! Anda akan menerima pembaruan dan pengingat dari BaMbooChain.');
+        } else {
+          alert('⚠️ Gagal mendapatkan token notifikasi. Pastikan Anda tidak berada di mode Incognito/Private.');
+        }
+      } else {
+        alert('❌ Izin notifikasi ditolak. Anda bisa mengaktifkannya secara manual melalui icon gembok di sebelah kiri alamat (URL) browser Anda.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('❌ Terjadi kesalahan saat meminta izin notifikasi.');
+    }
+  };
 
   useEffect(() => {
     if (!searchQuery.trim()) {
@@ -720,6 +740,21 @@ const ProfilePage = () => {
                     <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '5px', fontWeight: 'bold' }}>Wallet Address</label>
                     <div style={{ padding: '10px 14px', background: 'var(--bg-color)', borderRadius: '10px', border: '1px solid var(--border-color)', color: 'var(--text-main)', fontFamily: 'monospace', fontSize: '0.8rem', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {user.walletAddress}
+                    </div>
+                  </div>
+                  <div style={{ marginTop: '10px' }}>
+                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '5px', fontWeight: 'bold' }}>Notifikasi Perangkat</label>
+                    <div style={{ padding: '14px', background: 'var(--bg-color)', borderRadius: '10px', border: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)' }}>Terima Pembaruan & Promo</span>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Menerima notifikasi langsung ke layar Anda.</span>
+                      </div>
+                      <button 
+                        onClick={handleEnableNotifications}
+                        style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '6px 14px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                      >
+                        <Bell size={14} /> Nyalakan
+                      </button>
                     </div>
                   </div>
                 </div>

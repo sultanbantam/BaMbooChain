@@ -1211,51 +1211,51 @@ const ContributeDataBMC = () => {
         </div>
       )}
 
-      <h3 style={{ fontSize: isMobile ? '1.3rem' : '1.5rem', marginBottom: '8px', fontWeight: '900' }}>{t('wallet_contribute_title')}</h3>
-      <p style={{ color: 'var(--text-muted)', marginBottom: '24px', fontSize: '0.9rem' }}>{t('wallet_contribute_reward_desc').replace('{amount}', '0.5')}</p>
+      <h3 style={{ fontSize: isMobile ? '1.3rem' : '1.5rem', marginBottom: '8px', fontWeight: '900' }}>{t('tw_contribute_title')}</h3>
+      <p style={{ color: 'var(--text-muted)', marginBottom: '24px', fontSize: '0.9rem' }}>{t('tw_contribute_desc')}</p>
 
       <div style={{ background: 'white', borderRadius: '24px', padding: isMobile ? '24px' : '32px', boxShadow: '0 8px 24px rgba(0,0,0,0.04)', border: '1px solid #f1f3f5' }}>
         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? '16px' : '20px', marginBottom: '24px' }}>
           <div>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 'bold' }}>{t('wallet_contribute_local_name')}</label>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 'bold' }}>{t('tw_lbl_local_name')}</label>
             <input type="text" value={localName} onChange={e => setLocalName(e.target.value)} placeholder="Contoh: Bambu Apus" style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1.5px solid #e9ecef', fontSize: '0.95rem', boxSizing: 'border-box' }} />
           </div>
           <div>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 'bold' }}>{t('wallet_contribute_gps')}</label>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 'bold' }}>{t('tw_lbl_gps')}</label>
             <div style={{ display: 'flex', gap: '8px' }}>
               <input type="text" value={gps} onChange={e => setGps(e.target.value)} placeholder="-6.1214, 106.123" style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1.5px solid #e9ecef', fontSize: '0.95rem' }} />
               <button onClick={locateGps} style={{ padding: '0 16px', background: '#f8f9fa', border: '1.5px solid #e9ecef', borderRadius: '12px', cursor: 'pointer', color: 'var(--primary)' }}><MapPin size={18} /></button>
             </div>
           </div>
           <div>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 'bold' }}>{t('wallet_contribute_est_amount')}</label>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 'bold' }}>{t('tw_lbl_est_clumps')}</label>
             <div style={{ display: 'flex', gap: '8px' }}>
-              <input type="number" placeholder={t('wallet_contribute_clump')} style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1.5px solid #e9ecef', fontSize: '0.95rem' }} />
-              <input type="number" placeholder={t('wallet_contribute_stem')} style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1.5px solid #e9ecef', fontSize: '0.95rem' }} />
+              <input type="number" placeholder={t('tw_plc_clumps')} style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1.5px solid #e9ecef', fontSize: '0.95rem' }} />
+              <input type="number" placeholder={t('tw_plc_stems')} style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1.5px solid #e9ecef', fontSize: '0.95rem' }} />
             </div>
           </div>
           <div>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 'bold' }}>{t('wallet_contribute_road_access')}</label>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 'bold' }}>{t('tw_lbl_distance')}</label>
             <input type="text" value={aksesJalan} onChange={e => setAksesJalan(e.target.value)} placeholder="Contoh: 50 meter" style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1.5px solid #e9ecef', fontSize: '0.95rem', boxSizing: 'border-box' }} />
           </div>
           <div>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 'bold' }}>{t('wallet_contribute_shoot_count')}</label>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 'bold' }}>{t('tw_lbl_shoots')}</label>
             <input type="number" value={jmlRebung} onChange={e => setJmlRebung(e.target.value)} placeholder="0" style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1.5px solid #e9ecef', fontSize: '0.95rem', boxSizing: 'border-box' }} />
           </div>
           <div>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 'bold' }}>{t('wallet_contribute_owner_name')}</label>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 'bold' }}>{t('tw_lbl_owner_name')}</label>
             <input type="text" value={pemilik} onChange={e => setPemilik(e.target.value)} placeholder="Nama Lengkap Pemilik" style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1.5px solid #e9ecef', fontSize: '0.95rem', boxSizing: 'border-box' }} />
           </div>
           <div>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 'bold' }}>{t('wallet_contribute_owner_address')}</label>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 'bold' }}>{t('tw_lbl_owner_address')}</label>
             <input type="text" value={alamatPemilik} onChange={e => setAlamatPemilik(e.target.value)} placeholder="Alamat Detail" style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1.5px solid #e9ecef', fontSize: '0.95rem', boxSizing: 'border-box' }} />
           </div>
           <div>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 'bold' }}>{t('wallet_contribute_owner_wa')}</label>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 'bold' }}>{t('tw_lbl_owner_wa')}</label>
             <input type="text" value={waPemilik} onChange={e => setWaPemilik(e.target.value)} placeholder="08123XXX" style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1.5px solid #e9ecef', fontSize: '0.95rem', boxSizing: 'border-box' }} />
           </div>
           <div style={{ gridColumn: isMobile ? 'auto' : 'span 2' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 'bold' }}>{t('wallet_contribute_add_potential')}</label>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 'bold' }}>{t('tw_lbl_potential')}</label>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: activeTags.includes('Lainnya') ? '12px' : '0' }}>
               {['BUMDES', 'KMP', 'Kuliner', 'Pariwisata', 'Industri Bambu', 'Pasar Bambu', 'SPPG', 'Akses Jalan', 'Lainnya'].map(tag => (
                 <span key={tag} onClick={() => handleTagClick(tag)} style={{ padding: '6px 14px', background: activeTags.includes(tag) ? 'var(--primary)' : '#f1f3f5', color: activeTags.includes(tag) ? 'white' : 'var(--text-main)', borderRadius: '20px', fontSize: '0.8rem', cursor: 'pointer', transition: 'all 0.2s', fontWeight: 'bold' }}>{tag}</span>
@@ -1268,8 +1268,8 @@ const ContributeDataBMC = () => {
         </div>
 
         <div style={{ background: '#f8f9fa', padding: isMobile ? '20px' : '24px', borderRadius: '20px', marginBottom: '24px', border: '1px dashed #dee2e6' }}>
-          <h4 style={{ margin: '0 0 8px 0', fontSize: '1rem', fontWeight: 'bold' }}>{t('wallet_contribute_upload_photo')}</h4>
-          <p style={{ margin: '0 0 20px 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>{t('wallet_contribute_upload_desc')}</p>
+          <h4 style={{ margin: '0 0 8px 0', fontSize: '1rem', fontWeight: 'bold' }}>{t('tw_lbl_upload_photo')}</h4>
+          <p style={{ margin: '0 0 20px 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>{t('tw_desc_upload_photo')}</p>
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px' }}>
             {photoRequirements.map((req, i) => (
               <div key={i} style={{ background: 'white', padding: '16px', borderRadius: '16px', border: '1px solid #e9ecef', display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -1301,7 +1301,7 @@ const ContributeDataBMC = () => {
         </div>
 
         <button onClick={handleSubmit} disabled={loading} style={{ background: '#2ecc71', color: 'white', border: 'none', padding: '20px', borderRadius: '20px', fontWeight: '900', width: '100%', cursor: loading ? 'not-allowed' : 'pointer', fontSize: '1.1rem', boxShadow: '0 10px 25px rgba(46,204,113,0.3)', transition: 'all 0.2s' }}>
-          {loading ? t('wallet_contribute_btn_submitting') : t('wallet_contribute_btn_submit')}
+          {loading ? 'Mengirim Data...' : 'Kirim Data (Dapatkan BMC)'}
         </button>
       </div>
     </div>
