@@ -39,7 +39,7 @@ export const MarketplaceProvider = ({ children }) => {
     if (!db) return;
     const q = query(collection(db, "marketplace_products"), orderBy("createdAt", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const prods = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const prods = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
       setProducts(prods);
     }, (err) => console.error("Products Sync Error:", err));
     return () => unsubscribe();
@@ -57,7 +57,7 @@ export const MarketplaceProvider = ({ children }) => {
       : query(collection(db, "marketplace_orders"), where("userId", "==", user.id), orderBy("createdAt", "desc"));
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const ords = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const ords = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
       setOrders(ords);
     }, (err) => console.error("Orders Sync Error:", err));
     return () => unsubscribe();
@@ -72,7 +72,7 @@ export const MarketplaceProvider = ({ children }) => {
     
     const q = query(collection(db, "marketplace_chats"), orderBy("updatedAt", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const allChats = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const allChats = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
       // Filter manually since OR queries require specific Firestore SDK versions
       const myChats = allChats.filter(c => c.buyerId === user.id || c.vendor === user.username);
       setChats(myChats);
