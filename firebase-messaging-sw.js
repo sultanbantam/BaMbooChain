@@ -2,7 +2,7 @@ importScripts('https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js'
 importScripts('https://www.gstatic.com/firebasejs/10.7.0/firebase-messaging-compat.js');
 
 firebase.initializeApp({
-  apiKey: "AIzaSyA9LcSM4BdF9jCeyzAMMO3aCXnfq11V4iE",
+  apiKey: "AIzaSyBIQMO46OwZ-TzdK0QJx2Az3DMowIVYYcQ",
   authDomain: "bamboochain-official.firebaseapp.com",
   projectId: "bamboochain-official",
   storageBucket: "bamboochain-official.firebasestorage.app",
