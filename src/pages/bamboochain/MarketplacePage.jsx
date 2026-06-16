@@ -12,6 +12,39 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { useMarketplace } from '../../context/MarketplaceContext';
 
+const compressImage = (file) => {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.src = e.target.result;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const max_size = 600;
+        let width = img.width;
+        let height = img.height;
+        if (width > height) {
+          if (width > max_size) {
+            height = Math.round((height * max_size) / width);
+            width = max_size;
+          }
+        } else {
+          if (height > max_size) {
+            width = Math.round((width * max_size) / height);
+            height = max_size;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', 0.8));
+      };
+    };
+    reader.readAsDataURL(file);
+  });
+};
+
 const MarketplacePage = () => {
   const { t } = useLanguage();
   const { user } = useAuth();
@@ -651,14 +684,15 @@ const MarketplacePage = () => {
   const visibleProducts = products.filter(p => p.status === 'Approved');
   const pendingProducts = products.filter(p => p.status === 'Pending Curation');
 
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     const files = Array.from(e.target.files);
     if (newProduct.images.length + files.length > 5) {
       showToast(t('market_toast_max_photos'));
       return;
     }
     
-    const newImageUrls = files.map(file => URL.createObjectURL(file));
+    // Compress and convert to base64 so it can be saved to Firestore
+    const newImageUrls = await Promise.all(files.map(file => compressImage(file)));
     setNewProduct(prev => ({ ...prev, images: [...prev.images, ...newImageUrls] }));
     showToast(t('market_toast_photos_selected').replace('{count}', files.length));
   };
