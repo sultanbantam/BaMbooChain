@@ -87,13 +87,15 @@ export const MarketplaceProvider = ({ children }) => {
       description: newProduct.description || '',
       priceIdr: newProduct.priceIdr,
       category: newProduct.category,
-      image: newProduct.image || '',
+      image: newProduct.img || newProduct.image || (newProduct.images && newProduct.images[0]) || '',
       stock: newProduct.stock || 10,
       vendor: user?.username || 'Unknown Vendor'
     };
 
     const firestoreData = {
       ...newProduct,
+      img: newProduct.img || newProduct.image || (newProduct.images && newProduct.images[0]) || '',
+      images: newProduct.images || (newProduct.img ? [newProduct.img] : []),
       vendor: user?.username || 'Unknown Vendor',
       createdAt: serverTimestamp(),
       isProduct: true

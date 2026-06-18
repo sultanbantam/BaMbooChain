@@ -634,7 +634,6 @@ const MarketplacePage = () => {
     // Save to Firebase Database
     fbAddProduct(productToAdd);
     
-    setMockProducts([productToAdd, ...mockProducts]);
     setShowSellModal(false);
     setNewProduct({ name: '', category: t('market_cat_material'), customCategory: '', price: '', images: [], description: '', storyTelling: '', unit: t('market_unit_stem'), customUnit: '', specs: '', whatsapp: '' });
     showToast(t('market_toast_product_registered').replace('{name}', newProduct.name));
@@ -723,7 +722,7 @@ const MarketplacePage = () => {
       title: newLiveStream.title,
       viewers: "0",
       seller: user?.username || "Penjual",
-      img: product?.images?.[0] || product?.img || "https://images.unsplash.com/photo-1618331835717-801e976710b2?auto=format&fit=crop&w=400"
+      img: product?.images?.[0] || product?.img || product?.image || "https://images.unsplash.com/photo-1618331835717-801e976710b2?auto=format&fit=crop&w=400"
     };
     setActiveStreams([stream, ...activeStreams]);
     setShowStartLiveModal(false);
@@ -895,7 +894,7 @@ const MarketplacePage = () => {
                           ))
                        ) : (
                           <div style={{ minWidth: '100%', height: '100%', scrollSnapAlign: 'start', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#fdfdfd' }}>
-                             <img src={selectedProduct.img} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} alt="" />
+                             <img src={selectedProduct.img || selectedProduct.image} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} alt="" />
                           </div>
                        )}
                     </div>
@@ -1172,7 +1171,7 @@ const MarketplacePage = () => {
                 <div style={{ maxHeight: '300px', overflowY: 'auto', marginBottom: '20px' }}>
                    {cart.length === 0 ? <p style={{ textAlign: 'center', color: '#888' }}>{t('market_cart_empty')}</p> : cart.map(item => (
                      <div key={item.id} style={{ display: 'flex', gap: '15px', padding: '10px 0', borderBottom: '1px solid #eee' }}>
-                        <img src={item.img} style={{ width: '50px', height: '50px', borderRadius: '10px', objectFit: 'cover' }} alt="" />
+                        <img src={item.img || item.image} style={{ width: '50px', height: '50px', borderRadius: '10px', objectFit: 'cover' }} alt="" />
                         <div style={{ flex: 1 }}>
                            <div style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>{getProductField(item, 'name')}</div>
                            <div style={{ color: 'var(--primary)', fontSize: '0.85rem' }}>{formatIdr(item.priceIdr)}</div>
@@ -1533,7 +1532,7 @@ const MarketplacePage = () => {
                 <div style={{ display: 'flex', gap: '20px', overflowX: 'auto' }}>
                    {visibleProducts.slice(0, 4).map(p => (
                      <div key={p.id} onClick={() => setSelectedProduct(p)} style={{ minWidth: '200px', background: 'rgba(255,255,255,0.1)', borderRadius: '20px', padding: '15px', border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer' }}>
-                        <img src={p.img} style={{ width: '100%', height: '120px', borderRadius: '12px', objectFit: 'cover', marginBottom: '10px' }} alt="" />
+                        <img src={p.img || p.image} style={{ width: '100%', height: '120px', borderRadius: '12px', objectFit: 'cover', marginBottom: '10px' }} alt="" />
                         <div style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>{getProductField(p, 'name')}</div>
                      </div>
                    ))}
@@ -1564,7 +1563,7 @@ const MarketplacePage = () => {
                     {filteredProducts.map(product => (
                       <div key={product.id} className="glass" onClick={() => setSelectedProduct(product)} style={{ background: 'var(--bg-card)', borderRadius: '24px', overflow: 'hidden', cursor: 'pointer', transition: '0.3s', border: '1px solid var(--border-color)' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-10px)'} onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
                          <div style={{ height: '220px', position: 'relative' }}>
-                            <img src={product.img} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
+                            <img src={product.img || product.image} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
                             <div style={{ position: 'absolute', top: '15px', left: '15px', background: 'var(--bg-secondary)', color: 'var(--text-main)', padding: '5px 10px', borderRadius: '8px', fontSize: '0.7rem', fontWeight: 'bold', border: '1px solid var(--border-color)' }}>{getProductField(product, 'category')}</div>
                          </div>
                          <div style={{ padding: '24px' }}>
