@@ -4,7 +4,7 @@ import {
   Image as ImageIcon, ArrowRightLeft, BarChart3, Info, 
   TrendingUp, TrendingDown, X, CheckCircle, Upload, Shield, ShieldCheck, ShoppingBag,
   Eye, EyeOff, Video, Zap, Heart, MessageCircle, Truck, 
-  CreditCard, Sparkles, Play, ChevronLeft, ChevronRight, Landmark, Wallet
+  CreditCard, Sparkles, Play, ChevronLeft, ChevronRight, Landmark, Wallet, Trash2
 } from 'lucide-react';
 import AdSpace from '../../components/AdSpace';
 import BackButton from '../../components/BackButton';
@@ -48,7 +48,7 @@ const compressImage = (file) => {
 const MarketplacePage = () => {
   const { t } = useLanguage();
   const { user } = useAuth();
-  const { chats, sendMessage, products: fbProducts, addProduct: fbAddProduct, updateProduct: fbUpdateProduct, orders, createOrder, updateOrderStatus } = useMarketplace();
+  const { chats, sendMessage, products: fbProducts, addProduct: fbAddProduct, updateProduct: fbUpdateProduct, deleteProduct: fbDeleteProduct, orders, createOrder, updateOrderStatus } = useMarketplace();
   
   const categories = [
     t('market_cat_all'), 
@@ -680,6 +680,18 @@ const MarketplacePage = () => {
     showToast(t('market_toast_product_rejected'));
   };
 
+  const handleDeleteProduct = async (id) => {
+    if (window.confirm("Apakah Anda yakin ingin menghapus produk ini?")) {
+      if (typeof id === 'string') {
+        await fbDeleteProduct(id);
+      } else {
+        setMockProducts(prev => prev.filter(p => p.id !== id));
+      }
+      setSelectedProduct(null);
+      showToast("Produk berhasil dihapus");
+    }
+  };
+
   const visibleProducts = products.filter(p => p.status === 'Approved');
   const pendingProducts = products.filter(p => p.status === 'Pending Curation');
 
@@ -1022,6 +1034,10 @@ const MarketplacePage = () => {
                       <div style={{ display: 'flex', gap: '15px', marginTop: 'auto' }}>
                          <button onClick={() => handleApproveProduct(selectedProduct.id)} style={{ flex: 1, padding: windowWidth < 900 ? '14px' : '16px', borderRadius: '15px', background: 'var(--primary)', color: 'white', border: 'none', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}><CheckCircle size={20} /> {t('market_btn_approve')}</button>
                          <button onClick={() => handleRejectProduct(selectedProduct.id)} style={{ padding: windowWidth < 900 ? '14px 20px' : '16px 25px', borderRadius: '15px', background: '#fa5252', color: 'white', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}><X size={20} /></button>
+                      </div>
+                   ) : selectedProduct.vendor === user?.username ? (
+                      <div style={{ marginTop: 'auto', display: 'flex', gap: '15px' }}>
+                         <button onClick={() => handleDeleteProduct(selectedProduct.id)} style={{ flex: 1, padding: windowWidth < 900 ? '14px' : '18px', background: '#fa5252', color: 'white', border: 'none', borderRadius: '20px', fontSize: windowWidth < 900 ? '1rem' : '1.1rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', boxShadow: '0 10px 20px rgba(250, 82, 82, 0.2)' }}><Trash2 size={22} /> Hapus Produk Saya</button>
                       </div>
                    ) : (
                       <div style={{ marginTop: 'auto', display: 'flex', gap: '15px' }}>
