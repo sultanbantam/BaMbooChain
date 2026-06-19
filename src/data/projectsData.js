@@ -28,7 +28,8 @@ export const PROJECTS = [
     location_ja: 'バンテン',
     impact: '490 Ha Lindung, 100+ Tenaga Kerja',
     impact_en: '490 Ha Protected, 100+ Workforce',
-    impact_ja: '490ヘクタール保護、100人以上の労働力'
+    impact_ja: '490ヘクタール保護、100人以上の労働力',
+    project_code: 'PEH-001'
   },
   {
     id: 2,
@@ -179,5 +180,31 @@ export const PROJECTS = [
     impact: 'Pusat Ekonomi Maritim, Konservasi Lingkungan, Wisata Heritage',
     impact_en: 'Maritime Economic Center, Environment Conservation, Heritage Tourism',
     impact_ja: '海洋経済センター、環境保全、遺産観光'
+  },
+  {
+    id: 8,
+    status: 'Berjalan',
+    status_en: 'Ongoing',
+    status_ja: '進行中',
+    category: 'Wisata',
+    category_en: 'Ecotourism',
+    category_ja: 'エコツーリズム',
+    title: 'Whale of Savu (Levanuang) – Lembata',
+    title_en: 'Whale of Savu (Levanuang) – Lembata',
+    title_ja: 'ホエール・オブ・サヴ（レヴァヌアン）– レンバタ',
+    shortDesc: 'Platform digital wisata budaya terintegrasi untuk pelestarian adat dan ekowisata bahari di Lembata.',
+    shortDesc_en: 'Integrated cultural tourism digital platform for customary preservation and marine ecotourism in Lembata.',
+    shortDesc_ja: 'レンバタにおける慣習的な保存と海洋エコツーリズムのための統合された文化観光デジタルプラットフォーム。',
+    fullDesc: 'Proyek ini merupakan inisiatif pengembangan pariwisata berbasis pelestarian budaya laut dan kearifan lokal di Lembata, NTT, dengan dukungan ekosistem keuangan terdesentralisasi.',
+    fullDesc_en: 'This project is a tourism development initiative based on marine culture preservation and local wisdom in Lembata, NTT, supported by a decentralized financial ecosystem.',
+    fullDesc_ja: 'このプロジェクトは、分散型金融エコシステムのサポートを受け、NTT州レンバタにおける海洋文化の保存と地域の知恵に基づいた観光開発イニシアチブです。',
+    image: getAssetUrl('gambar/pehcibarani.png'),
+    location: 'Lembata, NTT',
+    location_en: 'Lembata, NTT',
+    location_ja: 'レンバタ、NTT',
+    impact: 'Transparansi Keuangan, Konservasi Budaya Maritim',
+    impact_en: 'Financial Transparency, Maritime Cultural Conservation',
+    impact_ja: '財務の透明性、海洋文化保全',
+    project_code: 'WOF-001'
   }
 ];
