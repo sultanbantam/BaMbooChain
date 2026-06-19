@@ -66,7 +66,7 @@ const AuthorizePage = () => {
       <div style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
         <div style={{ width: '40px', height: '40px', border: '4px solid rgba(16, 185, 129, 0.2)', borderTopColor: '#10b981', borderRadius: '50%', animation: 'spin 1s linear infinite', marginBottom: '16px' }} />
         <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--text-main)' }}>
-          Otorisasi Game
+          Otorisasi BMC
         </h2>
         <p style={{ color: 'var(--text-muted)', marginTop: '8px' }}>
           Silakan login untuk melanjutkan proses otorisasi.
@@ -125,7 +125,7 @@ const AuthorizePage = () => {
               <span style={{ color: '#10b981', fontWeight: 'bold' }}>✓</span> Mengecek saldo Dompet BMC Anda
             </li>
             <li style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ color: '#10b981', fontWeight: 'bold' }}>✓</span> Meminta persetujuan transaksi di dalam game
+              <span style={{ color: '#10b981', fontWeight: 'bold' }}>✓</span> Meminta persetujuan transaksi di aplikasi terkait
             </li>
           </ul>
         </div>
