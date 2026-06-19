@@ -57,31 +57,26 @@ const ProjectsPage = () => {
       8: { // Whale of Savu (Levanuang) - WOF-001
         project_id: "WOF-001",
         target_dana: 100000000,
-        total_dana_masuk: 75000000,
-        total_pengeluaran: 12500000,
-        saldo: 62500000,
-        progress: 75,
+        total_dana_masuk: 2000000,
+        total_pengeluaran: 2000000,
+        saldo: 0,
+        progress: 2,
         wallet_address: "0xWOF773a98211b981665aef449c20",
         sub_ledgers: {
-          ai: { name: "Kuota AI & LLM", budget: 10000000, spent: 1500000 },
+          ai: { name: "Kuota AI & LLM", budget: 10000000, spent: 0 },
           domain: { name: "Domain & Hosting", budget: 2000000, spent: 300000 },
-          dev: { name: "Development Platform", budget: 25000000, spent: 2000000 },
-          ops: { name: "Operasional Lapangan", budget: 20000000, spent: 8700000 },
+          dev: { name: "Development Platform", budget: 25000000, spent: 0 },
+          ops: { name: "Operasional Lapangan", budget: 20000000, spent: 1700000 },
           legal: { name: "Legal & Administrasi", budget: 10000000, spent: 0 },
           marketing: { name: "Promosi & Hubungan", budget: 10000000, spent: 0 },
           riset: { name: "Riset Sosial-Budaya", budget: 13000000, spent: 0 }
         },
         funding: [
-          { id: "FND-001", name: "John Doe", amount: 5000000, currency: "IDR", method: "Transfer Bank", tx: "0x3a2ef89c...", status: "Success", date: "2026-06-10", notes: "Dukungan awal" },
-          { id: "FND-002", name: "Ahmad Yani", amount: 25500000, currency: "BMC", method: "MetaMask", tx: "0x98bbc120...", status: "Success", date: "2026-06-12", notes: "Dukungan Web3 (1500 BMC)" },
-          { id: "FND-003", name: "Sarah Connor", amount: 20000000, currency: "IDR", method: "bambuPAY", tx: "0xecbbd892...", status: "Success", date: "2026-06-14", notes: "Zakat Ekowisata" },
-          { id: "FND-004", name: "Mukoddas (Owner)", amount: 24500000, currency: "IDR", method: "Transfer Bank", tx: "0xabcfe890...", status: "Success", date: "2026-06-15", notes: "Inisiasi awal tim" }
+          { id: "FND-001", name: "Mukoddas (Owner)", amount: 2000000, currency: "IDR", method: "Transfer Bank", tx: "0xabcfe890...", status: "Success", date: "2026-06-15", notes: "Modal awal untuk domain & operasional" }
         ],
         expenses: [
           { id: "EXP-001", category: "Digital", subcategory: "Domain", amount: 300000, desc: "Beli domain levanuang.id", vendor: "CV Digital Indo", invoice: "invoice_dom.pdf", paymentProof: "receipt_dom.png", date: "2026-06-10", creator: "Mukoddas", approver: "John", status: "Approved" },
-          { id: "EXP-002", category: "Digital", subcategory: "AI", amount: 1500000, desc: "Kuota GPT-4 & RAG Assistant", vendor: "OpenAI Inc.", invoice: "invoice_ai.pdf", paymentProof: "receipt_ai.png", date: "2026-06-11", creator: "Mukoddas", approver: "John", status: "Approved" },
-          { id: "EXP-003", category: "Digital", subcategory: "Hosting", amount: 2000000, desc: "Sewa Server VPS 1 Tahun", vendor: "Niagahoster", invoice: "invoice_vps.pdf", paymentProof: "receipt_vps.png", date: "2026-06-12", creator: "Mukoddas", approver: "John", status: "Approved" },
-          { id: "EXP-004", category: "Operasional", subcategory: "Lapangan", amount: 8700000, desc: "Koordinasi masyarakat Lembata", vendor: "Masyarakat Adat", invoice: "invoice_ops.pdf", paymentProof: "receipt_ops.png", date: "2026-06-14", creator: "Mukoddas", approver: "John", status: "Approved" }
+          { id: "EXP-002", category: "Operasional", subcategory: "Lapangan", amount: 1700000, desc: "Sewa koordinasi lapangan & administrasi", vendor: "Masyarakat Adat", invoice: "invoice_ops.pdf", paymentProof: "receipt_ops.png", date: "2026-06-14", creator: "Mukoddas", approver: "John", status: "Approved" }
         ],
         milestones: [
           { id: "M1", name: "Domain & Hosting", desc: "Registrasi domain dan hosting dasar", progress: 100, startDate: "2026-06-01", endDate: "2026-06-05", status: "Selesai" },
@@ -105,12 +100,11 @@ const ProjectsPage = () => {
         ],
         audit_logs: [
           { text: "Mukoddas menginisiasi proyek Whale of Savu (Levanuang)", timestamp: "2026-06-01 10:00", actor: "Mukoddas" },
-          { text: "John Doe memberikan dukungan dana Rp 5.000.000 (FND-001)", timestamp: "2026-06-10 14:30", actor: "John Doe" },
+          { text: "Mukoddas memberikan dukungan dana awal Rp 2.000.000 (FND-001)", timestamp: "2026-06-10 14:30", actor: "Mukoddas" },
           { text: "Mukoddas mengajukan pengeluaran Domain Rp 300.000 (EXP-001)", timestamp: "2026-06-10 15:00", actor: "Mukoddas" },
           { text: "John (Bendahara) menyetujui pengeluaran Domain Rp 300.000", timestamp: "2026-06-10 16:00", actor: "John" },
-          { text: "Ahmad Yani mengirimkan dukungan dana 1500 BMC (FND-002)", timestamp: "2026-06-12 11:20", actor: "Ahmad Yani" },
-          { text: "Mukoddas mengajukan pengeluaran kuota AI Rp 1.500.000 (EXP-002)", timestamp: "2026-06-12 13:00", actor: "Mukoddas" },
-          { text: "John (Bendahara) menyetujui pengeluaran kuota AI Rp 1.500.000", timestamp: "2026-06-12 14:00", actor: "John" }
+          { text: "Mukoddas mengajukan pengeluaran Operasional Rp 1.700.000 (EXP-002)", timestamp: "2026-06-14 13:00", actor: "Mukoddas" },
+          { text: "John (Bendahara) menyetujui pengeluaran Operasional Rp 1.700.000", timestamp: "2026-06-14 14:00", actor: "John" }
         ]
       },
       1: { // Perkebunan Emas Hijau Cibarani - PEH-001
