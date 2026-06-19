@@ -198,7 +198,7 @@ export const PROJECTS = [
     fullDesc: 'Proyek ini merupakan inisiatif pengembangan pariwisata berbasis pelestarian budaya laut dan kearifan lokal di Lembata, NTT, dengan dukungan ekosistem keuangan terdesentralisasi.',
     fullDesc_en: 'This project is a tourism development initiative based on marine culture preservation and local wisdom in Lembata, NTT, supported by a decentralized financial ecosystem.',
     fullDesc_ja: 'このプロジェクトは、分散型金融エコシステムのサポートを受け、NTT州レンバタにおける海洋文化の保存と地域の知恵に基づいた観光開発イニシアチブです。',
-    image: getAssetUrl('gambar/pehcibarani.png'),
+    image: getAssetUrl('wos.jpeg'),
     location: 'Lembata, NTT',
     location_en: 'Lembata, NTT',
     location_ja: 'レンバタ、NTT',
