@@ -7,9 +7,9 @@ import { getAssetUrl } from '../utils/assets';
 export const PROJECTS = [
   {
     id: 1,
-    status: 'Berjalan',
-    status_en: 'Ongoing',
-    status_ja: '進行中',
+    status: 'Diusulkan',
+    status_en: 'Proposed',
+    status_ja: '提案済',
     category: 'Restorasi & Produksi',
     category_en: 'Restoration & Production',
     category_ja: '修復と生産',
@@ -183,9 +183,9 @@ export const PROJECTS = [
   },
   {
     id: 8,
-    status: 'Berjalan',
-    status_en: 'Ongoing',
-    status_ja: '進行中',
+    status: 'Diusulkan',
+    status_en: 'Proposed',
+    status_ja: '提案済',
     category: 'Wisata',
     category_en: 'Ecotourism',
     category_ja: 'エコツーリズム',

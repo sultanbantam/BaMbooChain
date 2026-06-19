@@ -28,16 +28,21 @@ const BSC_CHAIN = {
 };
 
 const getReadOnlyProvider = async () => {
-  for (const rpcUrl of BSC_RPCS) {
-    try {
-      const provider = new JsonRpcProvider(rpcUrl, 56);
-      await provider.getBlockNumber();
-      return provider;
-    } catch (err) {
-      console.warn(`Fallback RPC failed: ${rpcUrl}. Trying next...`, err.message);
-    }
+  try {
+    const provider = await Promise.any(
+      BSC_RPCS.map(async (rpcUrl) => {
+        const p = new JsonRpcProvider(rpcUrl, 56);
+        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 3000));
+        await Promise.race([p.getBlockNumber(), timeoutPromise]);
+        return p;
+      })
+    );
+    return provider;
+  } catch (err) {
+    console.warn('All fallback RPCs failed or timed out.', err);
+    // Return the first one as a last resort
+    return new JsonRpcProvider(BSC_RPCS[0], 56);
   }
-  throw new Error('All fallback RPCs failed.');
 };
 
 const Web3Context = createContext();

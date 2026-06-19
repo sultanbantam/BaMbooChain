@@ -315,6 +315,7 @@ const Navbar = () => {
                     <div style={{ position: 'absolute', top: '40px', right: '0', width: '200px', background: 'var(--bg-card)', boxShadow: '0 10px 40px rgba(0,0,0,0.1)', borderRadius: '16px', overflow: 'hidden', zIndex: 10006, border: '1px solid var(--border-color)' }}>
                       <Link to="/profile" style={{ display: 'block', padding: '12px 16px', color: '#333', textDecoration: 'none', borderBottom: '1px solid #eee' }}>👤 {t('nav_profile')}</Link>
                       <Link to={`/portfolio/${user?.username || user?.id}`} style={{ display: 'block', padding: '12px 16px', color: '#333', textDecoration: 'none', borderBottom: '1px solid #eee' }}>🌿 {t('nav_passport')}</Link>
+                      <Link to="/settings" style={{ display: 'block', padding: '12px 16px', color: '#333', textDecoration: 'none', borderBottom: '1px solid #eee' }}>⚙️ Settings / Developer</Link>
                       <button onClick={(e) => { e.stopPropagation(); logout(); setShowProfileMenu(false); }} style={{ width: '100%', textAlign: 'left', padding: '12px 16px', background: 'white', border: 'none', color: '#e03131', cursor: 'pointer', fontWeight: 'bold' }}>🚪 {t('nav_logout')}</button>
                     </div>
                   )}

@@ -11,6 +11,7 @@ const AuthorizePage = () => {
   const queryParams = new URLSearchParams(location.search);
   const clientId = queryParams.get('client_id');
   const redirectUri = queryParams.get('redirect_uri');
+  const [isAuthorizing, setIsAuthorizing] = useState(false);
 
   useEffect(() => {
     // Show login modal if not authenticated
@@ -19,18 +20,36 @@ const AuthorizePage = () => {
     }
   }, [isAuthenticated, openLoginModal]);
 
-  const handleAuthorize = () => {
-    if (!user) return;
+  const handleAuthorize = async () => {
+    if (!user || !clientId) {
+      alert("Missing user or client_id");
+      return;
+    }
     
-    // Simulate auth code generation based on UID
-    // In a real OAuth system, this is stored in a DB with short expiration
-    const mockAuthCode = `auth_bmc_${user.id}_${Date.now()}`;
+    setIsAuthorizing(true);
     
-    // Redirect back to the client application
-    if (redirectUri) {
-      window.location.href = `${redirectUri}?code=${mockAuthCode}`;
-    } else {
-      alert("Redirect URI tidak valid atau tidak disediakan.");
+    try {
+      const res = await fetch('/api/oauth/authorize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ client_id: clientId, uid: user.id })
+      });
+      const data = await res.json();
+      
+      if (data.success && data.code) {
+        if (redirectUri) {
+          window.location.href = `${redirectUri}?code=${data.code}`;
+        } else {
+          alert("Redirect URI tidak valid atau tidak disediakan.");
+        }
+      } else {
+        alert("Otorisasi Gagal: " + (data.message || 'Unknown error'));
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Terjadi kesalahan koneksi ke server.");
+    } finally {
+      setIsAuthorizing(false);
     }
   };
 
@@ -122,11 +141,12 @@ const AuthorizePage = () => {
           </button>
           <button 
             onClick={handleAuthorize}
-            style={{ flex: 1, padding: '12px', background: '#10b981', border: 'none', color: 'white', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)' }}
-            onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'}
+            style={{ flex: 1, padding: '12px', background: isAuthorizing ? '#9ca3af' : '#10b981', border: 'none', color: 'white', borderRadius: '12px', cursor: isAuthorizing ? 'not-allowed' : 'pointer', fontWeight: 'bold', transition: 'all 0.2s', boxShadow: isAuthorizing ? 'none' : '0 4px 12px rgba(16, 185, 129, 0.3)' }}
+            disabled={isAuthorizing}
+            onMouseOver={(e) => { if (!isAuthorizing) e.target.style.transform = 'translateY(-2px)' }}
             onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}
           >
-            Izinkan
+            {isAuthorizing ? 'Memproses...' : 'Izinkan'}
           </button>
         </div>
       </motion.div>
