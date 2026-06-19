@@ -214,6 +214,61 @@ const ProjectsPage = () => {
     };
   };
 
+  const getDynamicStats = () => {
+    const totalProjectsCount = PROJECTS.length;
+    const baseDanaTerkelola = 3500000000; // Rp 3,5 Miliar
+    const baseTotalPendukung = 2456;
+    const baseBmcDigunakan = 1250000;
+
+    let additionalDana = 0;
+    let additionalBackersCount = 0;
+    let additionalBmc = 0;
+
+    const baselineWofDana = 75000000;
+    const baselineCibDana = 320000000;
+    const baselineDefaultDana = 50000000;
+
+    const baselineWofFundingCount = 4;
+    const baselineCibFundingCount = 2;
+    const baselineDefaultFundingCount = 1;
+
+    Object.entries(treasuryData).forEach(([projIdStr, tr]) => {
+      const projId = parseInt(projIdStr);
+      let defaultDana = baselineDefaultDana;
+      let defaultFundingCount = baselineDefaultFundingCount;
+
+      if (projId === 8) {
+        defaultDana = baselineWofDana;
+        defaultFundingCount = baselineWofFundingCount;
+      } else if (projId === 1) {
+        defaultDana = baselineCibDana;
+        defaultFundingCount = baselineCibFundingCount;
+      }
+
+      if (tr.total_dana_masuk > defaultDana) {
+        additionalDana += (tr.total_dana_masuk - defaultDana);
+      }
+
+      if (tr.funding && tr.funding.length > defaultFundingCount) {
+        additionalBackersCount += (tr.funding.length - defaultFundingCount);
+        tr.funding.slice(0, tr.funding.length - defaultFundingCount).forEach(f => {
+          if (f.currency === 'BMC') {
+            additionalBmc += f.amount;
+          }
+        });
+      }
+    });
+
+    return {
+      totalProjects: totalProjectsCount,
+      danaTerkelola: baseDanaTerkelola + additionalDana,
+      totalPendukung: baseTotalPendukung + additionalBackersCount,
+      bmcDigunakan: baseBmcDigunakan + additionalBmc,
+      activeProjectsCount: 87,
+      completedProjectsCount: 41
+    };
+  };
+
   // ----------------------------------------------------
   // INTERACTIVE SIMULATION ACTIONS
   // ----------------------------------------------------
@@ -376,13 +431,19 @@ const ProjectsPage = () => {
   };
 
   const handleViewDetail = (project) => {
-    if (hasAccess) {
+    if (project.id === 8) {
+      window.open("https://whaleofsavu.vercel.app/", "_blank");
+      setSelectedProject(project);
+      setActiveTab('explore');
+    } else if (hasAccess) {
       setSelectedProject(project);
       setActiveTab('explore');
     } else {
       setShowLockModal(true);
     }
   };
+
+  const stats = getDynamicStats();
 
   return (
     <div style={{ 
@@ -434,27 +495,31 @@ const ProjectsPage = () => {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '20px' }}>
             <div style={{ padding: '20px', background: 'rgba(0,0,0,0.01)', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '5px' }}>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Jumlah Proyek</div>
-              <div style={{ fontSize: '1.6rem', fontWeight: '900', color: 'var(--text-main)' }}>8 <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)' }}>(Total 128)</span></div>
+              <div style={{ fontSize: '1.6rem', fontWeight: '900', color: 'var(--text-main)' }}>{stats.totalProjects} <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)' }}>(Total 128)</span></div>
             </div>
             <div style={{ padding: '20px', background: 'rgba(0,0,0,0.01)', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '5px' }}>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Dana Terkelola</div>
-              <div style={{ fontSize: '1.6rem', fontWeight: '900', color: '#10b981' }}>Rp 3,5M</div>
+              <div style={{ fontSize: '1.6rem', fontWeight: '900', color: '#10b981' }}>
+                Rp {(stats.danaTerkelola / 1000000000).toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 3 })}M
+              </div>
             </div>
             <div style={{ padding: '20px', background: 'rgba(0,0,0,0.01)', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '5px' }}>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Pendukung</div>
-              <div style={{ fontSize: '1.6rem', fontWeight: '900', color: 'var(--primary)' }}>2.456</div>
+              <div style={{ fontSize: '1.6rem', fontWeight: '900', color: 'var(--primary)' }}>{stats.totalPendukung.toLocaleString('id-ID')}</div>
             </div>
             <div style={{ padding: '20px', background: 'rgba(0,0,0,0.01)', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '5px' }}>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>BMC Digunakan</div>
-              <div style={{ fontSize: '1.6rem', fontWeight: '900', color: '#e67700' }}>1.25M <span style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>BMC</span></div>
+              <div style={{ fontSize: '1.6rem', fontWeight: '900', color: '#e67700' }}>
+                {(stats.bmcDigunakan / 1000000).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 3 })}M <span style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>BMC</span>
+              </div>
             </div>
             <div style={{ padding: '20px', background: 'rgba(0,0,0,0.01)', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '5px' }}>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Proyek Aktif</div>
-              <div style={{ fontSize: '1.6rem', fontWeight: '900', color: 'var(--text-main)' }}>87</div>
+              <div style={{ fontSize: '1.6rem', fontWeight: '900', color: 'var(--text-main)' }}>{stats.activeProjectsCount}</div>
             </div>
             <div style={{ padding: '20px', background: 'rgba(0,0,0,0.01)', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '5px' }}>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Proyek Selesai</div>
-              <div style={{ fontSize: '1.6rem', fontWeight: '900', color: 'var(--text-main)' }}>41</div>
+              <div style={{ fontSize: '1.6rem', fontWeight: '900', color: 'var(--text-main)' }}>{stats.completedProjectsCount}</div>
             </div>
           </div>
         </div>
@@ -535,7 +600,7 @@ const ProjectsPage = () => {
                   onClick={() => handleViewDetail(project)}
                   style={{ 
                     width: '100%', padding: '14px', borderRadius: '14px',
-                    border: 'none', background: 'var(--text-main)', color: 'var(--bg-color)',
+                    border: 'none', background: project.id === 8 ? 'var(--primary)' : 'var(--text-main)', color: project.id === 8 ? 'white' : 'var(--bg-color)',
                     fontWeight: 'bold', cursor: 'pointer', display: 'flex', 
                     alignItems: 'center', justifyContent: 'center', gap: '10px',
                     transition: 'opacity 0.2s'
@@ -543,8 +608,8 @@ const ProjectsPage = () => {
                   onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
                   onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                 >
-                  {hasAccess ? "Detail & Treasury" : t('projects_btn_locked')}
-                  {hasAccess ? <ArrowRight size={18} /> : <Lock size={18} />}
+                  {project.id === 8 ? "Kunjungi Situs & Treasury" : hasAccess ? "Detail & Treasury" : t('projects_btn_locked')}
+                  {project.id === 8 ? <ArrowRight size={18} /> : hasAccess ? <ArrowRight size={18} /> : <Lock size={18} />}
                 </button>
               </div>
             </div>
