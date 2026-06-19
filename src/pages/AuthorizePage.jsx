@@ -14,11 +14,15 @@ const AuthorizePage = () => {
   const [isAuthorizing, setIsAuthorizing] = useState(false);
 
   useEffect(() => {
-    // Show login modal if not authenticated
-    if (!isAuthenticated) {
-      openLoginModal();
-    }
-  }, [isAuthenticated, openLoginModal]);
+    // Show login modal if not authenticated after Firebase has had time to initialize
+    const timer = setTimeout(() => {
+      if (!isAuthenticated && !user) {
+        openLoginModal();
+      }
+    }, 1500); // 1.5 second delay to let Firebase Auth restore the session
+
+    return () => clearTimeout(timer);
+  }, [isAuthenticated, user, openLoginModal]);
 
   const handleAuthorize = async () => {
     if (!user || !clientId) {
