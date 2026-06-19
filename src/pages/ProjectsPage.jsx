@@ -216,57 +216,57 @@ const ProjectsPage = () => {
 
   const getDynamicStats = () => {
     const totalProjectsCount = PROJECTS.length;
-    const baseDanaTerkelola = 3500000000; // Rp 3,5 Miliar
-    const baseTotalPendukung = 2456;
-    const baseBmcDigunakan = 1250000;
+    
+    let totalDanaMasuk = 0;
+    let totalPendukung = 0;
+    let totalBmcDigunakan = 0;
+    let activeProjectsCount = 0;
+    let proposedProjectsCount = 0;
 
-    let additionalDana = 0;
-    let additionalBackersCount = 0;
-    let additionalBmc = 0;
-
-    const baselineWofDana = 75000000;
-    const baselineCibDana = 320000000;
-    const baselineDefaultDana = 50000000;
-
-    const baselineWofFundingCount = 4;
-    const baselineCibFundingCount = 2;
-    const baselineDefaultFundingCount = 1;
-
-    Object.entries(treasuryData).forEach(([projIdStr, tr]) => {
-      const projId = parseInt(projIdStr);
-      let defaultDana = baselineDefaultDana;
-      let defaultFundingCount = baselineDefaultFundingCount;
-
-      if (projId === 8) {
-        defaultDana = baselineWofDana;
-        defaultFundingCount = baselineWofFundingCount;
-      } else if (projId === 1) {
-        defaultDana = baselineCibDana;
-        defaultFundingCount = baselineCibFundingCount;
-      }
-
-      if (tr.total_dana_masuk > defaultDana) {
-        additionalDana += (tr.total_dana_masuk - defaultDana);
-      }
-
-      if (tr.funding && tr.funding.length > defaultFundingCount) {
-        additionalBackersCount += (tr.funding.length - defaultFundingCount);
-        tr.funding.slice(0, tr.funding.length - defaultFundingCount).forEach(f => {
+    PROJECTS.forEach(proj => {
+      const tr = getProjectTreasury(proj.id);
+      totalDanaMasuk += tr.total_dana_masuk;
+      totalPendukung += tr.funding ? tr.funding.length : 0;
+      
+      if (tr.funding) {
+        tr.funding.forEach(f => {
           if (f.currency === 'BMC') {
-            additionalBmc += f.amount;
+            totalBmcDigunakan += f.amount;
           }
         });
+      }
+
+      if (proj.status === 'Berjalan') {
+        activeProjectsCount++;
+      } else if (proj.status === 'Diusulkan' || proj.status === 'Selesai') {
+        proposedProjectsCount++;
       }
     });
 
     return {
       totalProjects: totalProjectsCount,
-      danaTerkelola: baseDanaTerkelola + additionalDana,
-      totalPendukung: baseTotalPendukung + additionalBackersCount,
-      bmcDigunakan: baseBmcDigunakan + additionalBmc,
-      activeProjectsCount: 87,
-      completedProjectsCount: 41
+      danaTerkelola: totalDanaMasuk,
+      totalPendukung: totalPendukung,
+      bmcDigunakan: totalBmcDigunakan,
+      activeProjectsCount,
+      proposedProjectsCount
     };
+  };
+
+  const formatGlobalDana = (num) => {
+    if (num >= 1000000000) {
+      return "Rp " + (num / 1000000000).toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 2 }) + "M";
+    } else {
+      return "Rp " + (num / 1000000).toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 1 }) + " Jt";
+    }
+  };
+
+  const formatGlobalBmc = (num) => {
+    if (num >= 1000000) {
+      return (num / 1000000).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "M";
+    } else {
+      return num.toLocaleString('id-ID');
+    }
   };
 
   // ----------------------------------------------------
@@ -500,7 +500,7 @@ const ProjectsPage = () => {
             <div style={{ padding: '20px', background: 'rgba(0,0,0,0.01)', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '5px' }}>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Dana Terkelola</div>
               <div style={{ fontSize: '1.6rem', fontWeight: '900', color: '#10b981' }}>
-                Rp {(stats.danaTerkelola / 1000000000).toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 3 })}M
+                {formatGlobalDana(stats.danaTerkelola)}
               </div>
             </div>
             <div style={{ padding: '20px', background: 'rgba(0,0,0,0.01)', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '5px' }}>
@@ -510,7 +510,7 @@ const ProjectsPage = () => {
             <div style={{ padding: '20px', background: 'rgba(0,0,0,0.01)', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '5px' }}>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>BMC Digunakan</div>
               <div style={{ fontSize: '1.6rem', fontWeight: '900', color: '#e67700' }}>
-                {(stats.bmcDigunakan / 1000000).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 3 })}M <span style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>BMC</span>
+                {formatGlobalBmc(stats.bmcDigunakan)} <span style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>BMC</span>
               </div>
             </div>
             <div style={{ padding: '20px', background: 'rgba(0,0,0,0.01)', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '5px' }}>
