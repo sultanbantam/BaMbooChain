@@ -178,14 +178,14 @@ const AuthModal = () => {
       // Final step signup
       const success = await signup(userData);
       if (success) {
-        alert("✅ Pendaftaran Berhasil!");
         closeModal();
+        setTimeout(() => alert("✅ Pendaftaran Berhasil!"), 100);
       }
     } else {
       const success = await login(userData);
       if (success) {
-        alert("✅ Berhasil Masuk!");
         closeModal();
+        setTimeout(() => alert("✅ Berhasil Masuk!"), 100);
       }
     }
   };
@@ -194,8 +194,8 @@ const AuthModal = () => {
     if (provider === 'Google') {
       const success = await loginWithGoogle();
       if (success) {
-        alert("✅ Berhasil Masuk dengan Google!");
         closeModal();
+        setTimeout(() => alert("✅ Berhasil Masuk dengan Google!"), 100);
       }
     } else {
       alert(`Simulasi login ${provider} belum tersedia. Gunakan Google atau Email.`);
