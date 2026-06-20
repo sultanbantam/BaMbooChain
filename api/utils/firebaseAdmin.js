@@ -17,7 +17,7 @@ export function getFirebaseAdmin() {
         credential: admin.credential.cert({
           projectId: process.env.FIREBASE_PROJECT_ID,
           clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-          privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n')
+          privateKey: (process.env.FIREBASE_PRIVATE_KEY || '').replace(/\\n/g, '\n')
         })
       });
       return admin.app();
@@ -26,7 +26,7 @@ export function getFirebaseAdmin() {
       return null;
     }
   } catch (error) {
-    console.error("Error initializing Firebase Admin:", error);
+    console.warn("Firebase Admin failed to initialize (Mock Mode will be used):", error.message);
     return null;
   }
 }
