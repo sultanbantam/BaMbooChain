@@ -426,7 +426,7 @@ const ProjectsPage = () => {
 
   const handleViewDetail = (project) => {
     if (project.id === 8) {
-      window.open("https://whaleofsavu.vercel.app/", "_blank");
+      window.open("https://www.whaleofsavu.org/" + (language === 'id' ? 'id' : 'en'), "_blank");
       setSelectedProject(project);
       setActiveTab('explore');
     } else if (hasAccess) {
