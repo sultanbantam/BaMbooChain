@@ -429,6 +429,10 @@ const ProjectsPage = () => {
       window.open("https://www.whaleofsavu.org/" + (language === 'id' ? 'id' : 'en'), "_blank");
       setSelectedProject(project);
       setActiveTab('explore');
+    } else if (project.id === 1) {
+      window.open("https://youtu.be/uLew2KmoZT4", "_blank");
+      setSelectedProject(project);
+      setActiveTab('explore');
     } else if (hasAccess) {
       setSelectedProject(project);
       setActiveTab('explore');
@@ -594,7 +598,7 @@ const ProjectsPage = () => {
                   onClick={() => handleViewDetail(project)}
                   style={{ 
                     width: '100%', padding: '14px', borderRadius: '14px',
-                    border: 'none', background: project.id === 8 ? 'var(--primary)' : 'var(--text-main)', color: project.id === 8 ? 'white' : 'var(--bg-color)',
+                    border: 'none', background: (project.id === 8 || project.id === 1) ? 'var(--primary)' : 'var(--text-main)', color: (project.id === 8 || project.id === 1) ? 'white' : 'var(--bg-color)',
                     fontWeight: 'bold', cursor: 'pointer', display: 'flex', 
                     alignItems: 'center', justifyContent: 'center', gap: '10px',
                     transition: 'opacity 0.2s'
@@ -602,8 +606,8 @@ const ProjectsPage = () => {
                   onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
                   onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                 >
-                  {project.id === 8 ? "Kunjungi Situs & Treasury" : hasAccess ? "Detail & Treasury" : t('projects_btn_locked')}
-                  {project.id === 8 ? <ArrowRight size={18} /> : hasAccess ? <ArrowRight size={18} /> : <Lock size={18} />}
+                  {project.id === 8 ? "Kunjungi Situs & Treasury" : project.id === 1 ? "Tonton Video & Treasury" : hasAccess ? "Detail & Treasury" : t('projects_btn_locked')}
+                  {project.id === 8 || project.id === 1 ? <ArrowRight size={18} /> : hasAccess ? <ArrowRight size={18} /> : <Lock size={18} />}
                 </button>
               </div>
             </div>
