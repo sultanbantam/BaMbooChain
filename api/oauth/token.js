@@ -19,7 +19,17 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { client_id, client_secret, code, grant_type, auth_code } = req.body || {};
+    let { client_id, client_secret, code, grant_type, auth_code } = req.body || {};
+    
+    // Check Basic Auth header if client_id is not in body
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Basic ')) {
+      const base64Credentials = authHeader.split(' ')[1];
+      const credentials = Buffer.from(base64Credentials, 'base64').toString('utf-8');
+      const [parsedId, parsedSecret] = credentials.split(':');
+      if (!client_id) client_id = parsedId;
+      if (!client_secret) client_secret = parsedSecret;
+    }
 
     const app = getFirebaseAdmin();
     
