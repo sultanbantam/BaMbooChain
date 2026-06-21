@@ -19,7 +19,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    let { client_id, client_secret, code, grant_type, auth_code } = req.body || {};
+    let { client_id, client_secret, code, grant_type, auth_code, redirect_uri } = req.body || {};
     
     // Check Basic Auth header if client_id is not in body
     const authHeader = req.headers.authorization;
@@ -92,8 +92,15 @@ export default async function handler(req, res) {
     const WHALE_OF_SAVU_SECRET = "secret_087eaa28a0feef4be7fa236b38d383cb";
     
     let isValidClient = false;
+    let allowedRedirectUris = [];
+
     if (client_id === WHALE_OF_SAVU_CLIENT && client_secret === WHALE_OF_SAVU_SECRET) {
       isValidClient = true;
+      allowedRedirectUris = [
+        "https://analis-wine.vercel.app/api/auth/bamboo/callback",
+        "https://whaleofsavu.vercel.app/api/auth/bamboo/callback",
+        "http://localhost:3000/api/auth/bamboo/callback"
+      ];
     } else {
       const clientSnapshot = await db.collection('oauth_clients').where('client_id', '==', client_id).limit(1).get();
       if (clientSnapshot.empty) {
@@ -107,6 +114,13 @@ export default async function handler(req, res) {
         return res.status(401).json({ success: false, message: 'Invalid client_secret' });
       }
       isValidClient = true;
+      allowedRedirectUris = clientData.redirect_uris || [];
+    }
+
+    if (redirect_uri && allowedRedirectUris.length > 0) {
+      if (!allowedRedirectUris.includes(redirect_uri)) {
+        return res.status(401).json({ success: false, message: 'Unauthorized redirect_uri' });
+      }
     }
 
     // 2. Verify Auth Code

@@ -16,7 +16,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { client_id, uid } = req.body || {};
+    const { client_id, uid, redirect_uri } = req.body || {};
 
     if (!client_id || !uid) {
       return res.status(400).json({ success: false, message: 'Missing client_id or uid' });
@@ -40,15 +40,31 @@ export default async function handler(req, res) {
     const WHALE_OF_SAVU_CLIENT = "client_4e0f61e19c1855c5";
     
     let isClientValid = false;
+    let allowedRedirectUris = [];
+
     if (client_id === WHALE_OF_SAVU_CLIENT) {
       isClientValid = true;
+      allowedRedirectUris = [
+        "https://analis-wine.vercel.app/api/auth/bamboo/callback",
+        "https://whaleofsavu.vercel.app/api/auth/bamboo/callback",
+        "http://localhost:3000/api/auth/bamboo/callback"
+      ];
     } else {
       const clientSnapshot = await db.collection('oauth_clients').where('client_id', '==', client_id).limit(1).get();
-      if (!clientSnapshot.empty) isClientValid = true;
+      if (!clientSnapshot.empty) {
+        isClientValid = true;
+        allowedRedirectUris = clientSnapshot.docs[0].data().redirect_uris || [];
+      }
     }
     
     if (!isClientValid) {
       return res.status(400).json({ success: false, message: 'Invalid client_id' });
+    }
+
+    if (redirect_uri && allowedRedirectUris.length > 0) {
+      if (!allowedRedirectUris.includes(redirect_uri)) {
+        return res.status(401).json({ success: false, message: 'Unauthorized redirect_uri' });
+      }
     }
 
     // 2. Generate Auth Code (expires in 5 minutes)

@@ -18,11 +18,14 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { name, uid } = req.body || {};
+    const { name, uid, redirectUris } = req.body || {};
 
     if (!name || !uid) {
       return res.status(400).json({ success: false, message: 'Missing name or uid' });
     }
+
+    // Default to empty array if not provided
+    const validRedirectUris = Array.isArray(redirectUris) ? redirectUris : [];
 
     const app = getFirebaseAdmin();
     if (!app) {
@@ -41,6 +44,7 @@ export default async function handler(req, res) {
           owner_uid: uid,
           clientId: mockClientId,
           clientSecret: mockClientSecret, // Only returned once
+          redirectUris: validRedirectUris,
           createdAt: new Date().toISOString()
         }
       });
@@ -61,6 +65,7 @@ export default async function handler(req, res) {
       owner_uid: uid,
       client_id: clientId,
       client_secret_hash: clientSecretHash,
+      redirect_uris: validRedirectUris,
       created_at: new Date().toISOString(),
       status: 'active'
     };
@@ -77,6 +82,7 @@ export default async function handler(req, res) {
         owner_uid: uid,
         clientId,
         clientSecret, // PLAIN TEXT - only shown once!
+        redirectUris: validRedirectUris,
         createdAt: new Date().toISOString()
       }
     });

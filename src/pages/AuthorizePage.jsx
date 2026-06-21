@@ -36,7 +36,7 @@ const AuthorizePage = () => {
       const res = await fetch('/api/oauth/authorize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ client_id: clientId, uid: user.id })
+        body: JSON.stringify({ client_id: clientId, uid: user.id, redirect_uri: redirectUri })
       });
       const data = await res.json();
       

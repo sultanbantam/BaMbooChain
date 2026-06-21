@@ -10,6 +10,7 @@ const SettingsPage = () => {
   const { user, isAuthenticated } = useAuth();
   const [apps, setApps] = useState([]);
   const [newAppName, setNewAppName] = useState('');
+  const [newAppRedirects, setNewAppRedirects] = useState('');
   const [showSecret, setShowSecret] = useState({});
   const [copiedId, setCopiedId] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -39,13 +40,18 @@ const SettingsPage = () => {
       const res = await fetch('/api/oauth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: newAppName, uid: user.id })
+        body: JSON.stringify({ 
+          name: newAppName, 
+          uid: user.id,
+          redirectUris: newAppRedirects.split(',').map(u => u.trim()).filter(u => u)
+        })
       });
       const data = await res.json();
       
       if (data.success && data.app) {
         saveApps([data.app, ...apps]);
         setNewAppName('');
+        setNewAppRedirects('');
         if (data.message) {
           alert(data.message);
         }
@@ -146,6 +152,20 @@ const SettingsPage = () => {
                     required
                   />
                 </div>
+                <div style={{ marginBottom: '24px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: 'var(--text-main)', fontSize: '0.9rem' }}>Authorized Redirect URIs (Pisahkan dengan koma)</label>
+                  <input 
+                    type="text" 
+                    value={newAppRedirects}
+                    onChange={(e) => setNewAppRedirects(e.target.value)}
+                    placeholder="Misal: https://myapp.com/callback, https://test.app/auth"
+                    style={{ 
+                      width: '100%', padding: '14px 16px', borderRadius: '12px',
+                      border: '1px solid var(--border-color)', background: 'var(--bg-secondary)',
+                      color: 'var(--text-main)', fontSize: '1rem', outline: 'none'
+                    }}
+                  />
+                </div>
                 <button 
                   type="submit"
                   style={{
@@ -227,6 +247,20 @@ const SettingsPage = () => {
                             <span style={{ fontWeight: 'bold' }}>Peringatan:</span> Rahasiakan Client Secret Anda.
                           </div>
                         </div>
+
+                        {/* Redirect URIs */}
+                        {app.redirectUris && app.redirectUris.length > 0 && (
+                          <div>
+                            <div style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--text-muted)', marginBottom: '6px', textTransform: 'uppercase' }}>Redirect URIs</div>
+                            <div style={{ background: 'rgba(0,0,0,0.05)', padding: '10px 14px', borderRadius: '8px' }}>
+                              <ul style={{ margin: 0, paddingLeft: '20px', color: 'var(--text-main)', fontSize: '0.9rem', wordBreak: 'break-all' }}>
+                                {app.redirectUris.map((uri, idx) => (
+                                  <li key={idx}>{uri}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          </div>
+                        )}
                       </div>
 
                     </div>
