@@ -1135,13 +1135,13 @@ Mari berdiskusi bersama untuk membangun ekosistem bambu berkelanjutan! 🌱`;
                       }}
                       style={{ 
                         width: '100%', 
-                        padding: '12px', 
+                        padding: '14px', 
                         borderRadius: '12px', 
-                        background: 'none',
-                        border: '1.5px solid var(--primary)',
-                        color: 'var(--primary)',
+                        background: 'var(--primary)',
+                        border: 'none',
+                        color: 'white',
                         fontWeight: '800', 
-                        fontSize: '0.9rem',
+                        fontSize: '0.95rem',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -1150,10 +1150,10 @@ Mari berdiskusi bersama untuk membangun ekosistem bambu berkelanjutan! 🌱`;
                         transition: 'all 0.2s'
                       }}
                       onMouseEnter={e => {
-                        e.currentTarget.style.background = 'rgba(12, 166, 120, 0.05)';
+                        e.currentTarget.style.opacity = '0.9';
                       }}
                       onMouseLeave={e => {
-                        e.currentTarget.style.background = 'none';
+                        e.currentTarget.style.opacity = '1';
                       }}
                     >
                       <Share2 size={16} />
@@ -1162,20 +1162,29 @@ Mari berdiskusi bersama untuk membangun ekosistem bambu berkelanjutan! 🌱`;
 
                     <button 
                       type="submit" 
-                      className="btn btn-primary"
                       disabled={!jitsiLoaded}
                       style={{ 
                         width: '100%', 
-                        padding: '14px', 
-                        borderRadius: '12px', 
+                        padding: '12px', 
+                        borderRadius: '12px',
+                        background: 'none',
+                        border: '1.5px solid #f59f00',
+                        color: '#f59f00',
                         fontWeight: '800', 
-                        fontSize: '0.95rem',
+                        fontSize: '0.9rem',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         gap: '8px',
                         opacity: jitsiLoaded ? 1 : 0.6,
-                        cursor: jitsiLoaded ? 'pointer' : 'not-allowed'
+                        cursor: jitsiLoaded ? 'pointer' : 'not-allowed',
+                        transition: 'all 0.2s'
+                      }}
+                      onMouseEnter={e => {
+                        if (jitsiLoaded) e.currentTarget.style.background = 'rgba(245, 159, 0, 0.05)';
+                      }}
+                      onMouseLeave={e => {
+                        if (jitsiLoaded) e.currentTarget.style.background = 'none';
                       }}
                     >
                       <Video size={18} />
