@@ -59,9 +59,9 @@ export const PROJECTS = [
   },
   {
     id: 2,
-    status: 'Diusulkan',
-    status_en: 'Proposed',
-    status_ja: '提案済',
+    status: 'Berjalan',
+    status_en: 'Active',
+    status_ja: '進行中',
     category: 'Ekowisata',
     category_en: 'Ecotourism',
     category_ja: 'エコツーリズム',
