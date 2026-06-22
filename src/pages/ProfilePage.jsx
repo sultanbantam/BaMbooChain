@@ -11,8 +11,9 @@ import ShareModal from '../components/ShareModal';
 import { 
   User, Camera, Save, Copy, Share2, Award, Shield, CheckCircle, 
   TreeDeciduous, GraduationCap, Heart, MessageSquare, Gift, Edit3, X, Eye,
-  UploadCloud, FileText, Trash2, Send, ChevronRight, PlayCircle, Search, Leaf, Bell
+  UploadCloud, FileText, Trash2, Send, ChevronRight, PlayCircle, Search, Leaf, Bell, Smile
 } from 'lucide-react';
+import EmojiPicker from 'emoji-picker-react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -112,6 +113,8 @@ const ProfilePage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [showStatusEmojiPicker, setShowStatusEmojiPicker] = useState(false);
+  const [showCommentEmojiPicker, setShowCommentEmojiPicker] = useState(false);
 
   const handleEnableNotifications = async () => {
     try {
@@ -927,16 +930,36 @@ const ProfilePage = () => {
                         style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-card)', color: 'var(--text-main)', fontSize: '0.85rem', resize: 'vertical' }}
                       />
                     </div>
-                    <div>
+                    <div style={{ position: 'relative' }}>
                       <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '5px', fontWeight: 'bold' }}>Status Hari Ini ("Apa yang Anda pikirkan tentang ekosistem hijau?")</label>
-                      <textarea 
-                        name="statusText" 
-                        value={formData.statusText} 
-                        onChange={handleChange}
-                        placeholder="Bagikan pemikiran, aktivitas menanam, atau ide hijau Anda hari ini..."
-                        rows={2}
-                        style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-card)', color: 'var(--text-main)', fontSize: '0.85rem', resize: 'vertical' }}
-                      />
+                      <div style={{ position: 'relative' }}>
+                        <textarea 
+                          name="statusText" 
+                          value={formData.statusText} 
+                          onChange={handleChange}
+                          placeholder="Bagikan pemikiran, aktivitas menanam, atau ide hijau Anda hari ini..."
+                          rows={2}
+                          style={{ width: '100%', padding: '10px 40px 10px 10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-card)', color: 'var(--text-main)', fontSize: '0.85rem', resize: 'vertical' }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowStatusEmojiPicker(!showStatusEmojiPicker)}
+                          style={{ position: 'absolute', right: '10px', bottom: '15px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
+                        >
+                          <Smile size={18} />
+                        </button>
+                      </div>
+                      {showStatusEmojiPicker && (
+                        <div style={{ position: 'absolute', zIndex: 100, right: 0, top: '100%' }}>
+                          <EmojiPicker 
+                            onEmojiClick={(emojiData) => {
+                              setFormData(prev => ({ ...prev, statusText: prev.statusText + emojiData.emoji }));
+                              setShowStatusEmojiPicker(false);
+                            }} 
+                            theme="auto" 
+                          />
+                        </div>
+                      )}
                     </div>
 
                     {/* ── MEDIA UPLOAD SECTION ── */}
@@ -1181,15 +1204,36 @@ const ProfilePage = () => {
 
                         {/* Comment input form */}
                         {activeCommentStatusId === status.id && (
-                          <form onSubmit={(e) => handleAddComment(e, status)} style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
-                            <input 
-                              type="text" 
-                              value={commentText} 
-                              onChange={(e) => setCommentText(e.target.value)}
-                              placeholder="Tulis balasan..."
-                              style={{ flex: 1, padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-card)', color: 'var(--text-main)', fontSize: '0.85rem' }}
-                            />
+                          <form onSubmit={(e) => handleAddComment(e, status)} style={{ marginTop: '12px', display: 'flex', gap: '8px', position: 'relative' }}>
+                            <div style={{ flex: 1, position: 'relative' }}>
+                              <input 
+                                type="text" 
+                                value={commentText} 
+                                onChange={(e) => setCommentText(e.target.value)}
+                                placeholder="Tulis balasan..."
+                                style={{ width: '100%', padding: '8px 36px 8px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-card)', color: 'var(--text-main)', fontSize: '0.85rem' }}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setShowCommentEmojiPicker(!showCommentEmojiPicker)}
+                                style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
+                              >
+                                <Smile size={18} />
+                              </button>
+                            </div>
                             <button type="submit" style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 'bold', cursor: 'pointer' }}>Kirim</button>
+                            
+                            {showCommentEmojiPicker && (
+                              <div style={{ position: 'absolute', zIndex: 100, bottom: '100%', right: '0', marginBottom: '5px' }}>
+                                <EmojiPicker 
+                                  onEmojiClick={(emojiData) => {
+                                    setCommentText(prev => prev + emojiData.emoji);
+                                    setShowCommentEmojiPicker(false);
+                                  }} 
+                                  theme="auto" 
+                                />
+                              </div>
+                            )}
                           </form>
                         )}
 
