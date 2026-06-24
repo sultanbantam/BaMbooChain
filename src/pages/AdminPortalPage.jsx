@@ -4,7 +4,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { Shield, Users, MapPin, CheckCircle, XCircle, Clock, Eye, Filter, Download, Search, BookOpen, Leaf, Settings, Save, Wind, Droplets, DollarSign, Activity } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import BackButton from '../components/BackButton';
-import { usePartnerApplications, useLocationProposals, usePlantationDonations, useGlobalSettings } from '../hooks/useFirestoreQueries';
+import { usePartnerApplications, useLocationProposals, usePlantationDonations, useGlobalSettings, useEventRegistrations, useEventAttendance } from '../hooks/useFirestoreQueries';
 import { db } from '../firebase/config';
 import { doc, setDoc } from 'firebase/firestore';
 
@@ -21,9 +21,12 @@ const AdminPortalPage = () => {
   const { data: partnerApps = [] } = usePartnerApplications(user?.id, user?.username);
   const { data: locationProposals = [] } = useLocationProposals(user?.id, user?.username);
   const { data: plantationDonations = [] } = usePlantationDonations(user?.id, user?.username);
+  const { data: eventRegistrations = [] } = useEventRegistrations();
+  const { data: eventAttendance = [] } = useEventAttendance();
   
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('partners'); // 'partners', 'locations', 'donations', or 'settings'
+  const [activeTab, setActiveTab] = useState('partners'); // 'partners', 'locations', 'donations', 'events', or 'settings'
+  const [eventViewType, setEventViewType] = useState('registrations'); // 'registrations' or 'attendance'
   
   const { data: globalSettings, isLoading: isSettingsLoading } = useGlobalSettings();
   const [settingsForm, setSettingsForm] = useState({
@@ -146,6 +149,12 @@ const AdminPortalPage = () => {
             <Leaf size={18} /> Dukungan Penanaman
           </button>
           <button 
+            onClick={() => setActiveTab('events')}
+            style={{ padding: '12px 24px', borderRadius: '14px', border: 'none', background: activeTab === 'events' ? '#1c7ed6' : 'transparent', color: activeTab === 'events' ? 'white' : '#495057', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}
+          >
+            <BookOpen size={18} /> Manajemen Event
+          </button>
+          <button 
             onClick={() => setActiveTab('settings')}
             style={{ padding: '12px 24px', borderRadius: '14px', border: 'none', background: activeTab === 'settings' ? '#1c7ed6' : 'transparent', color: activeTab === 'settings' ? 'white' : '#495057', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}
           >
@@ -158,7 +167,7 @@ const AdminPortalPage = () => {
           
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
             <h2 style={{ fontSize: '1.25rem', margin: 0, fontWeight: '800' }}>
-              {activeTab === 'partners' ? t('admin_portal_tab_partners') : activeTab === 'locations' ? t('admin_portal_tab_locations') : activeTab === 'settings' ? 'Pengaturan AI & Variabel Global' : 'Dukungan Penanaman'}
+              {activeTab === 'partners' ? t('admin_portal_tab_partners') : activeTab === 'locations' ? t('admin_portal_tab_locations') : activeTab === 'events' ? 'Manajemen Event & Absensi' : activeTab === 'settings' ? 'Pengaturan AI & Variabel Global' : 'Dukungan Penanaman'}
             </h2>
             {activeTab !== 'settings' && (
               <div style={{ display: 'flex', gap: '10px' }}>
@@ -210,6 +219,78 @@ const AdminPortalPage = () => {
                 >
                   <Save size={18} /> Simpan Pengaturan Global
                 </button>
+              </div>
+            </div>
+          ) : activeTab === 'events' ? (
+            <div>
+              <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+                <button 
+                  onClick={() => setEventViewType('registrations')}
+                  style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', background: eventViewType === 'registrations' ? '#1c7ed6' : '#e9ecef', color: eventViewType === 'registrations' ? 'white' : '#495057', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  Pendaftar (Registrasi)
+                </button>
+                <button 
+                  onClick={() => setEventViewType('attendance')}
+                  style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', background: eventViewType === 'attendance' ? '#1c7ed6' : '#e9ecef', color: eventViewType === 'attendance' ? 'white' : '#495057', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  Daftar Hadir (Absensi)
+                </button>
+              </div>
+
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ textAlign: 'left', borderBottom: '2px solid #f1f3f5' }}>
+                      <th style={{ padding: '16px', color: '#868e96', fontSize: '0.85rem' }}>{eventViewType === 'registrations' ? 'Nama Pendaftar' : 'Nama Peserta Hadir'}</th>
+                      <th style={{ padding: '16px', color: '#868e96', fontSize: '0.85rem' }}>Event</th>
+                      <th style={{ padding: '16px', color: '#868e96', fontSize: '0.85rem' }}>{eventViewType === 'registrations' ? 'Detail Kontak' : 'Waktu Hadir'}</th>
+                      {eventViewType === 'registrations' && <th style={{ padding: '16px', color: '#868e96', fontSize: '0.85rem' }}>Status</th>}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {eventViewType === 'registrations' ? (
+                      eventRegistrations.map((reg) => (
+                        <tr key={reg.id} style={{ borderBottom: '1px solid #f1f3f5' }}>
+                          <td style={{ padding: '20px 16px' }}>
+                            <div style={{ fontWeight: 'bold' }}>{reg.identity?.fullName || 'Anonim'}</div>
+                            <div style={{ fontSize: '0.8rem', color: '#868e96' }}>{reg.arrival?.originCity || '-'}</div>
+                          </td>
+                          <td style={{ padding: '20px 16px', fontSize: '0.9rem', fontWeight: '600' }}>
+                            {reg.eventTitle}
+                          </td>
+                          <td style={{ padding: '20px 16px' }}>
+                            <div style={{ fontSize: '0.85rem' }}>{reg.identity?.email}</div>
+                            <div style={{ fontSize: '0.85rem', color: '#1c7ed6' }}>{reg.identity?.phone}</div>
+                          </td>
+                          <td style={{ padding: '20px 16px' }}>
+                            <span style={{ 
+                              padding: '4px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 'bold',
+                              background: reg.status === 'verified' ? '#ebfbee' : '#fff9db',
+                              color: reg.status === 'verified' ? '#2b8a3e' : '#e67700'
+                            }}>
+                              {reg.status?.toUpperCase() || 'PENDING'}
+                            </span>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      eventAttendance.map((att) => (
+                        <tr key={att.id} style={{ borderBottom: '1px solid #f1f3f5' }}>
+                          <td style={{ padding: '20px 16px', fontWeight: 'bold' }}>
+                            {att.username || 'Anonim'}
+                          </td>
+                          <td style={{ padding: '20px 16px', fontSize: '0.9rem', fontWeight: '600' }}>
+                            {att.eventTitle}
+                          </td>
+                          <td style={{ padding: '20px 16px', fontSize: '0.9rem', color: '#495057' }}>
+                            {att.timestamp ? new Date(att.timestamp.toDate()).toLocaleString('id-ID') : '-'}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
               </div>
             </div>
           ) : (

@@ -125,3 +125,29 @@ export function useGlobalSettings() {
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   });
 }
+
+// 7. Hook for Event Registrations
+export function useEventRegistrations() {
+  return useQuery({
+    queryKey: ['eventRegistrations'],
+    queryFn: async () => {
+      const registrationsRef = collection(db, 'event_registrations');
+      const snapshot = await getDocs(registrationsRef);
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+}
+
+// 8. Hook for Event Attendance
+export function useEventAttendance() {
+  return useQuery({
+    queryKey: ['eventAttendance'],
+    queryFn: async () => {
+      const attendanceRef = collection(db, 'event_attendance');
+      const snapshot = await getDocs(attendanceRef);
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+}

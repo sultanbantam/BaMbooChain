@@ -5,11 +5,18 @@ import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { X, CheckCircle, UploadCloud, ChevronRight, ChevronLeft, CreditCard } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
-const EventRegistrationModal = ({ isOpen, onClose, eventTitle }) => {
+const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
   const { user, addNotification } = useAuth();
+  const [activeModalTab, setActiveModalTab] = useState('info'); // 'info', 'register', 'attendance'
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [attendanceSuccess, setAttendanceSuccess] = useState(false);
+
+  const eventTitle = eventData?.title || "";
+  const eventId = eventData?.id || "unknown";
+  const speakers = eventData?.speakers || [];
+  const materials = eventData?.materials || [];
 
   const [formData, setFormData] = useState({
     fullName: user?.name || '',
@@ -140,6 +147,33 @@ const EventRegistrationModal = ({ isOpen, onClose, eventTitle }) => {
     }
   };
 
+  const handleAttendance = async () => {
+    if (!user) {
+      alert("Anda harus login terlebih dahulu untuk melakukan absensi.");
+      return;
+    }
+    
+    setIsSubmitting(true);
+    try {
+      await addDoc(collection(db, "event_attendance"), {
+        eventId,
+        eventTitle,
+        userId: user.id,
+        username: user.username || user.name,
+        timestamp: serverTimestamp()
+      });
+      setAttendanceSuccess(true);
+      if(addNotification) {
+        addNotification("Absensi kehadiran berhasil dicatat!", "success");
+      }
+    } catch (error) {
+      console.error("Error submitting attendance:", error);
+      alert("Terjadi kesalahan saat menyimpan absensi. Silakan coba lagi.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const styles = {
     overlay: {
       position: 'fixed',
@@ -234,6 +268,23 @@ const EventRegistrationModal = ({ isOpen, onClose, eventTitle }) => {
       height: '12px',
       borderRadius: '50%',
       backgroundColor: isActive ? '#51cf66' : '#444'
+    }),
+    tabContainer: {
+      display: 'flex',
+      gap: '10px',
+      marginBottom: '20px',
+      borderBottom: '1px solid #333',
+      paddingBottom: '10px'
+    },
+    tabBtn: (isActive) => ({
+      background: isActive ? 'rgba(81, 207, 102, 0.1)' : 'transparent',
+      color: isActive ? '#51cf66' : '#adb5bd',
+      border: 'none',
+      padding: '8px 16px',
+      borderRadius: '8px',
+      fontWeight: 'bold',
+      cursor: 'pointer',
+      fontSize: '0.9rem'
     })
   };
 
@@ -380,6 +431,90 @@ const EventRegistrationModal = ({ isOpen, onClose, eventTitle }) => {
     }
   };
 
+  const renderInfoTab = () => (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+      <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '20px', color: '#51cf66' }}>Informasi Acara</h3>
+      <p style={{ color: '#adb5bd', fontSize: '0.95rem', marginBottom: '25px', lineHeight: '1.6' }}>
+        Pelajari lebih lanjut tentang acara ini, unduh materi, dan lihat profil narasumber sebelum melakukan pendaftaran atau absensi.
+      </p>
+
+      {speakers.length > 0 && (
+        <div style={{ marginBottom: '30px' }}>
+          <h4 style={{ fontSize: '1rem', fontWeight: 'bold', marginBottom: '15px', color: 'white' }}>Narasumber</h4>
+          <div style={{ display: 'grid', gap: '15px' }}>
+            {speakers.map((speaker, idx) => (
+              <div key={idx} style={{ backgroundColor: 'rgba(255,255,255,0.05)', padding: '15px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <div style={{ fontWeight: 'bold', color: 'white' }}>{speaker.name}</div>
+                  <div style={{ fontSize: '0.85rem', color: '#adb5bd' }}>{speaker.role}</div>
+                </div>
+                {speaker.cvUrl && (
+                  <a href={speaker.cvUrl} target="_blank" rel="noreferrer" style={{ backgroundColor: '#1c7ed6', color: 'white', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', textDecoration: 'none', fontWeight: 'bold' }}>
+                    Download CV
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {materials.length > 0 && (
+        <div>
+          <h4 style={{ fontSize: '1rem', fontWeight: 'bold', marginBottom: '15px', color: 'white' }}>Materi Acara</h4>
+          <div style={{ display: 'grid', gap: '15px' }}>
+            {materials.map((mat, idx) => (
+              <div key={idx} style={{ backgroundColor: 'rgba(81, 207, 102, 0.05)', border: '1px solid rgba(81, 207, 102, 0.2)', padding: '15px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ fontWeight: 'bold', color: 'white', fontSize: '0.9rem' }}>{mat.title}</div>
+                {mat.fileUrl && (
+                  <a href={mat.fileUrl} target="_blank" rel="noreferrer" style={{ backgroundColor: '#51cf66', color: 'black', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', textDecoration: 'none', fontWeight: 'bold' }}>
+                    Unduh File
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </motion.div>
+  );
+
+  const renderAttendanceTab = () => (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ textAlign: 'center', padding: '20px 0' }}>
+      <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '20px', color: '#51cf66' }}>Daftar Hadir (Check-in)</h3>
+      
+      {attendanceSuccess ? (
+        <div>
+          <CheckCircle size={60} color="#51cf66" style={{ margin: '0 auto 15px' }} />
+          <p style={{ color: 'white', fontSize: '1.1rem', fontWeight: 'bold' }}>Absensi Berhasil!</p>
+          <p style={{ color: '#adb5bd', fontSize: '0.9rem' }}>Kehadiran Anda telah tercatat di sistem pada {new Date().toLocaleString('id-ID')}.</p>
+        </div>
+      ) : (
+        <div>
+          <p style={{ color: '#adb5bd', fontSize: '0.95rem', marginBottom: '30px', lineHeight: '1.6' }}>
+            Bagi peserta yang telah hadir di lokasi atau sudah tergabung dalam ruangan rapat *online*, silakan klik tombol di bawah ini untuk mencatat kehadiran Anda secara digital.
+          </p>
+          {!user ? (
+            <div style={{ backgroundColor: '#fff4e6', border: '1px solid #fab005', padding: '15px', borderRadius: '12px', marginBottom: '20px' }}>
+              <p style={{ color: '#d9480f', margin: 0, fontSize: '0.9rem' }}>Anda harus masuk (login) ke platform BaMbooChain terlebih dahulu untuk dapat melakukan absensi.</p>
+            </div>
+          ) : (
+            <button 
+              onClick={handleAttendance}
+              disabled={isSubmitting}
+              style={{ 
+                backgroundColor: '#1c7ed6', color: 'white', border: 'none', padding: '15px 30px', 
+                borderRadius: '12px', fontSize: '1rem', fontWeight: 'bold', cursor: isSubmitting ? 'not-allowed' : 'pointer' 
+              }}
+            >
+              {isSubmitting ? 'Memproses...' : 'Klik untuk Absen Kehadiran'}
+            </button>
+          )}
+        </div>
+      )}
+    </motion.div>
+  );
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -401,7 +536,17 @@ const EventRegistrationModal = ({ isOpen, onClose, eventTitle }) => {
             </div>
 
             <div style={styles.content}>
-              {isSuccess ? (
+              <div style={styles.tabContainer}>
+                <button onClick={() => setActiveModalTab('info')} style={styles.tabBtn(activeModalTab === 'info')}>Informasi & Materi</button>
+                <button onClick={() => setActiveModalTab('register')} style={styles.tabBtn(activeModalTab === 'register')}>Pendaftaran</button>
+                <button onClick={() => setActiveModalTab('attendance')} style={styles.tabBtn(activeModalTab === 'attendance')}>Absensi</button>
+              </div>
+
+              {activeModalTab === 'info' && renderInfoTab()}
+              {activeModalTab === 'attendance' && renderAttendanceTab()}
+              
+              {activeModalTab === 'register' && (
+                isSuccess ? (
                 <div style={{ textAlign: 'center', padding: '40px 20px' }}>
                   <CheckCircle size={80} color="#51cf66" style={{ margin: '0 auto 20px' }} />
                   <h2 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '15px' }}>Pendaftaran Berhasil!</h2>
@@ -412,7 +557,7 @@ const EventRegistrationModal = ({ isOpen, onClose, eventTitle }) => {
                   <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', padding: '20px', borderRadius: '15px', marginBottom: '30px' }}>
                     <p style={{ margin: '0 0 15px 0', color: '#fff' }}>Konfirmasi pembayaran beserta bukti transfer melalui WhatsApp ke:</p>
                     <a 
-                      href={`https://wa.me/628174139994?text=${encodeURIComponent(`Halo Panitia ${waEventName}, saya ${formData.fullName} ingin mengonfirmasi pembayaran pendaftaran peserta.\nJalur: ${isKodibaMember ? 'Member VIP KoDiBa (Diskon 20%)' : 'Reguler'}\nTotal Pembayaran: ${eventCostDisplay}`)}`}
+                      href={'https://wa.me/628174139994?text=' + encodeURIComponent(`Halo Panitia ${waEventName}, saya ${formData.fullName} ingin mengonfirmasi pembayaran pendaftaran peserta.\nJalur: ${isKodibaMember ? 'Member VIP KoDiBa (Diskon 20%)' : 'Reguler'}\nTotal Pembayaran: ${eventCostDisplay}`)}
                       target="_blank" 
                       rel="noreferrer"
                       style={{ 
@@ -434,10 +579,11 @@ const EventRegistrationModal = ({ isOpen, onClose, eventTitle }) => {
                   
                   {renderStep()}
                 </form>
+                )
               )}
             </div>
 
-            {!isSuccess && (
+            {activeModalTab === 'register' && !isSuccess && (
               <div style={styles.footer}>
                 {step > 1 ? (
                   <button type="button" onClick={handlePrev} style={styles.btnSecondary}>
@@ -454,6 +600,14 @@ const EventRegistrationModal = ({ isOpen, onClose, eventTitle }) => {
                     {isSubmitting ? 'Memproses...' : 'Selesaikan Pendaftaran'} <CheckCircle size={18} />
                   </button>
                 )}
+              </div>
+            )}
+            
+            {(activeModalTab === 'info' || activeModalTab === 'attendance') && (
+              <div style={styles.footer}>
+                <button type="button" onClick={onClose} style={styles.btnSecondary}>
+                  Tutup
+                </button>
               </div>
             )}
           </motion.div>

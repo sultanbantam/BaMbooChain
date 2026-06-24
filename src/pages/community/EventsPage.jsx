@@ -6,37 +6,75 @@ import EventRegistrationModal from '../../components/community/EventRegistration
 
 const EventsPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedEventTitle, setSelectedEventTitle] = useState("");
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
   const events = [
     {
+      id: 'hbd-2026',
       title: 'Peringatan Hari Bambu Dunia 2026',
       date: '18-20 September 2026',
       time: '08:00 - 16:00 WIB',
       location: 'Wewengkon Adat Kasepuhan Cibarani, Lebak Banten',
       category: 'Peringatan',
       image: getAssetUrl('event/hbd.png'),
-      color: '#0ca678'
+      color: '#0ca678',
+      speakers: [
+        { name: 'Dr. Taufikurahman', role: 'Dewan Pakar Yayasan', cvUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
+        { name: 'Abah Jaro', role: 'Ketua Adat Kasepuhan Cibarani', cvUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' }
+      ],
+      materials: [
+        { title: 'Buku Panduan Hari Bambu Dunia', fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
+        { title: 'Peta Lokasi & Jadwal Acara', fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' }
+      ]
     },
     {
+      id: 'fdv-2026',
       title: 'Festival Diburuan Jilid IV 2026',
       date: '18-20 September 2026',
       time: '08:00 - 16:00 WIB',
       location: 'Halaman Rumah sekitar RW. 07 Desa Cimareme, Bandung Barat',
       category: 'Festival',
       image: getAssetUrl('event/fdv.jpeg'),
-      color: '#228be6'
+      color: '#228be6',
+      speakers: [
+        { name: 'Sultan Bantam', role: 'Pendiri BaMbooChain', cvUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' }
+      ],
+      materials: [
+        { title: 'Materi Ekonomi Sirkular', fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' }
+      ]
     },
     {
+      id: 'hbn-2026',
       title: 'Hari Bambu Nasional 2026',
       date: '26-29 November 2026',
       time: '08:00 - 16:00 WIB',
       location: 'Kota Tangsel, Banten',
       category: 'Peringatan',
       image: getAssetUrl('event/hbn.png'),
-      color: '#fab005'
+      color: '#fab005',
+      speakers: [
+        { name: 'Walikota Tangsel', role: 'Pejabat Daerah', cvUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' }
+      ],
+      materials: [
+        { title: 'Draft Resolusi Bambu Nasional', fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' }
+      ]
     }
   ];
+
+  const featuredEvent = {
+    id: 'seren-taun-2026',
+    title: 'Seren Taun Kasepuhan Cibarani 2026',
+    date: '2-6 September 2026',
+    time: '08:00 - Selesai',
+    location: 'Wewengkon Adat Kasepuhan Cibarani, Lebak Banten',
+    speakers: [
+      { name: 'Abah Jaro', role: 'Ketua Adat Kasepuhan Cibarani', cvUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
+      { name: 'Sultan Bantam', role: 'Penggiat Konservasi Web3', cvUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' }
+    ],
+    materials: [
+      { title: 'Rangkaian Ritual Seren Taun', fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' }
+    ]
+  };
 
   const styles = {
     container: {
@@ -212,11 +250,11 @@ const EventsPage = () => {
                 border: 'none', borderRadius: '15px', fontWeight: '900', cursor: 'pointer' 
               }}
               onClick={() => {
-                setSelectedEventTitle("Seren Taun Kasepuhan Cibarani 2026");
+                setSelectedEvent(featuredEvent);
                 setIsModalOpen(true);
               }}
             >
-              DAFTAR SEKARANG
+              IKUTI EVENT / INFORMASI
             </button>
           </div>
         </motion.div>
@@ -249,11 +287,11 @@ const EventsPage = () => {
                   onMouseEnter={(e) => { e.target.style.backgroundColor = event.color; e.target.style.color = 'white'; }}
                   onMouseLeave={(e) => { e.target.style.backgroundColor = 'rgba(255,255,255,0.1)'; e.target.style.color = 'white'; }}
                   onClick={() => {
-                    setSelectedEventTitle(event.title);
+                    setSelectedEvent(event);
                     setIsModalOpen(true);
                   }}
                 >
-                  DAFTAR SEKARANG
+                  IKUTI EVENT / INFORMASI
                 </button>
               </div>
             </motion.div>
@@ -264,7 +302,7 @@ const EventsPage = () => {
       <EventRegistrationModal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
-        eventTitle={selectedEventTitle}
+        eventData={selectedEvent}
       />
     </div>
   );
