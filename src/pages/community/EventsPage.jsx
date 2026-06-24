@@ -64,7 +64,7 @@ const EventsPage = () => {
   const featuredEvent = {
     id: 'seren-taun-2026',
     title: 'Seren Taun Kasepuhan Cibarani 2026',
-    date: '2-6 September 2026',
+    date: '26-30 Agustus 2026',
     time: '08:00 - Selesai',
     location: 'Wewengkon Adat Kasepuhan Cibarani, Lebak Banten',
     speakers: [
@@ -238,7 +238,7 @@ const EventsPage = () => {
             </h2>
             <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', marginBottom: '30px' }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <FaCalendarAlt color="#51cf66" /> 2-6 September 2026
+                <FaCalendarAlt color="#51cf66" /> 26-30 Agustus 2026
               </span>
               <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <FaMapMarkerAlt color="#51cf66" /> Wewengkon Adat Kasepuhan Cibarani, Lebak Banten
