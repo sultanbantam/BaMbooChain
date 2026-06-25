@@ -19,9 +19,9 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
   const materials = eventData?.materials || [];
 
   const [formData, setFormData] = useState({
-    fullName: user?.name || '',
-    phone: user?.phone || '',
-    email: user?.email || '',
+    fullName: '',
+    phone: '',
+    email: '',
     originCity: '',
     arrivalDate: '',
     arrivalTime: '',
@@ -432,11 +432,71 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
   };
 
   const renderInfoTab = () => (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-      <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '20px', color: '#51cf66' }}>Informasi Acara</h3>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ padding: '10px 0' }}>
       <p style={{ color: '#adb5bd', fontSize: '0.95rem', marginBottom: '25px', lineHeight: '1.6' }}>
         Pelajari lebih lanjut tentang acara ini, unduh materi, dan lihat profil narasumber sebelum melakukan pendaftaran atau absensi.
       </p>
+
+      {eventId === 'fgd-rumah-modular-2026' && (
+        <div style={{ marginBottom: '30px', backgroundColor: 'rgba(255,255,255,0.05)', padding: '20px', borderRadius: '15px' }}>
+          <h4 style={{ fontSize: '1.1rem', fontWeight: 'bold', marginBottom: '15px', color: '#51cf66' }}>RUNDOWN ACARA</h4>
+          <p style={{ color: 'white', marginBottom: '15px', fontSize: '0.9rem' }}>Durasi: 2 hari</p>
+          
+          <div style={{ marginBottom: '20px' }}>
+            <div style={{ backgroundColor: '#111', padding: '10px', borderRadius: '8px', marginBottom: '10px' }}>
+              <h5 style={{ color: '#fab005', margin: 0, fontSize: '0.95rem' }}>Hari Pertama</h5>
+              <p style={{ color: '#adb5bd', fontSize: '0.8rem', margin: '5px 0 0 0' }}>Rabu, 1 Juli 2026</p>
+            </div>
+            <table style={{ width: '100%', fontSize: '0.85rem', color: 'white' }}>
+              <tbody>
+                <tr><td style={{ width: '110px', padding: '6px 0', color: '#adb5bd', verticalAlign: 'top' }}>08.00 – 08.30</td><td style={{ padding: '6px 0' }}>Registrasi peserta</td></tr>
+                <tr><td style={{ padding: '6px 0', color: '#adb5bd', verticalAlign: 'top' }}>08.30 – 08.45</td><td style={{ padding: '6px 0' }}>Pembukaan</td></tr>
+                <tr><td style={{ padding: '6px 0', color: '#adb5bd', verticalAlign: 'top' }}>08.45 – 08.55</td><td style={{ padding: '6px 0' }}>Menyanyikan Lagu Indonesia Raya</td></tr>
+                <tr><td style={{ padding: '6px 0', color: '#adb5bd', verticalAlign: 'top' }}>08.55 – 09.05</td><td style={{ padding: '6px 0' }}>Doa</td></tr>
+                <tr><td style={{ padding: '6px 0', color: '#adb5bd', verticalAlign: 'top' }}>09.05 – 09.20</td><td style={{ padding: '6px 0' }}>Sambutan Ketua PKR Bambu</td></tr>
+                <tr><td style={{ padding: '6px 0', color: '#adb5bd', verticalAlign: 'top' }}>09.20 – 09.35</td><td style={{ padding: '6px 0' }}>Sambutan perwakilan Kementerian/Instansi Terkait</td></tr>
+                <tr><td style={{ padding: '6px 0', color: '#adb5bd', verticalAlign: 'top' }}>09.35 – 09.50</td><td style={{ padding: '6px 0' }}>Foto bersama</td></tr>
+                <tr><td style={{ padding: '6px 0', color: '#adb5bd', verticalAlign: 'top' }}>09.50 – 10.10</td><td style={{ padding: '6px 0' }}>Ekspos singkat Super Apps BaMbooChain</td></tr>
+                <tr><td style={{ padding: '6px 0', color: '#adb5bd', verticalAlign: 'top' }}>10.10 – 10.30</td><td style={{ padding: '6px 0' }}>Demo Game Modular BlockBamboo Constructor v.1.0</td></tr>
+                <tr><td style={{ padding: '6px 0', color: '#adb5bd', verticalAlign: 'top' }}>10.30 – 11.15</td><td style={{ padding: '6px 0' }}>Narasumber 1: Program Kredit Perumahan dan Potensi Rumah Subsidi</td></tr>
+                <tr><td style={{ padding: '6px 0', color: '#adb5bd', verticalAlign: 'top' }}>11.15 – 12.00</td><td style={{ padding: '6px 0' }}>Narasumber 2: Uji Kelaikan dan Aspek Struktur Rumah Modular Bambu</td></tr>
+                <tr><td style={{ padding: '6px 0', color: '#adb5bd', verticalAlign: 'top' }}>12.00 – 13.00</td><td style={{ padding: '6px 0' }}>Ishoma</td></tr>
+                <tr><td style={{ padding: '6px 0', color: '#adb5bd', verticalAlign: 'top' }}>13.00 – 13.45</td><td style={{ padding: '6px 0' }}>Narasumber 3: PBG untuk Konstruksi Bangunan Bambu</td></tr>
+                <tr><td style={{ padding: '6px 0', color: '#adb5bd', verticalAlign: 'top' }}>13.45 – 14.30</td><td style={{ padding: '6px 0' }}>Narasumber 4: Kesiapan Industri Bambu Laminasi untuk Rumah Modular Blockbamboo</td></tr>
+                <tr><td style={{ padding: '6px 0', color: '#adb5bd', verticalAlign: 'top' }}>14.30 – 15.15</td><td style={{ padding: '6px 0' }}>Sesi diskusi panel dan tanya jawab</td></tr>
+                <tr><td style={{ padding: '6px 0', color: '#adb5bd', verticalAlign: 'top' }}>15.15 – 16.00</td><td style={{ padding: '6px 0' }}>FGD sesi 1: Isu teknis prototype dan arah standar</td></tr>
+                <tr><td style={{ padding: '6px 0', color: '#adb5bd', verticalAlign: 'top' }}>16.00 – 16.30</td><td style={{ padding: '6px 0' }}>Rangkum hasil hari pertama</td></tr>
+                <tr><td style={{ padding: '6px 0', color: '#adb5bd', verticalAlign: 'top' }}>16.30 – 17.00</td><td style={{ padding: '6px 0' }}>Penutupan hari pertama</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div>
+            <div style={{ backgroundColor: '#111', padding: '10px', borderRadius: '8px', marginBottom: '10px' }}>
+              <h5 style={{ color: '#fab005', margin: 0, fontSize: '0.95rem' }}>Hari Kedua</h5>
+              <p style={{ color: '#adb5bd', fontSize: '0.8rem', margin: '5px 0 0 0' }}>Kamis, 2 Juli 2026</p>
+            </div>
+            <table style={{ width: '100%', fontSize: '0.85rem', color: 'white' }}>
+              <tbody>
+                <tr><td style={{ width: '110px', padding: '6px 0', color: '#adb5bd', verticalAlign: 'top' }}>08.00 – 08.30</td><td style={{ padding: '6px 0' }}>Registrasi ulang peserta</td></tr>
+                <tr><td style={{ padding: '6px 0', color: '#adb5bd', verticalAlign: 'top' }}>08.30 – 08.45</td><td style={{ padding: '6px 0' }}>Pembukaan hari kedua</td></tr>
+                <tr><td style={{ padding: '6px 0', color: '#adb5bd', verticalAlign: 'top' }}>08.45 – 09.30</td><td style={{ padding: '6px 0' }}>Narasumber 5: Rumah Modular Blockwood dan Blockbamboo</td></tr>
+                <tr><td style={{ padding: '6px 0', color: '#adb5bd', verticalAlign: 'top' }}>09.30 – 10.15</td><td style={{ padding: '6px 0' }}>Narasumber 6: RISHAM sebagai Referensi Inovasi Rumah Ramah Gempa</td></tr>
+                <tr><td style={{ padding: '6px 0', color: '#adb5bd', verticalAlign: 'top' }}>10.15 – 11.00</td><td style={{ padding: '6px 0' }}>Diskusi panel: kesiapan industri, material, dan supply chain</td></tr>
+                <tr><td style={{ padding: '6px 0', color: '#adb5bd', verticalAlign: 'top' }}>11.00 – 12.00</td><td style={{ padding: '6px 0' }}>FGD sesi 2: penyusunan kerangka draft RSNI konstruksi bangunan bambu</td></tr>
+                <tr><td style={{ padding: '6px 0', color: '#adb5bd', verticalAlign: 'top' }}>12.00 – 13.00</td><td style={{ padding: '6px 0' }}>Ishoma</td></tr>
+                <tr><td style={{ padding: '6px 0', color: '#adb5bd', verticalAlign: 'top' }}>13.00 – 14.00</td><td style={{ padding: '6px 0' }}>FGD sesi 3: rumusan poin-poin untuk draft Kepmen PU prototype rumah modular bambu</td></tr>
+                <tr><td style={{ padding: '6px 0', color: '#adb5bd', verticalAlign: 'top' }}>14.00 – 14.45</td><td style={{ padding: '6px 0' }}>Presentasi hasil kelompok FGD</td></tr>
+                <tr><td style={{ padding: '6px 0', color: '#adb5bd', verticalAlign: 'top' }}>14.45 – 15.15</td><td style={{ padding: '6px 0' }}>Penyusunan kesimpulan dan rekomendasi tindak lanjut</td></tr>
+                <tr><td style={{ padding: '6px 0', color: '#adb5bd', verticalAlign: 'top' }}>15.15 – 15.45</td><td style={{ padding: '6px 0' }}>Pembacaan hasil forum / executive summary</td></tr>
+                <tr><td style={{ padding: '6px 0', color: '#adb5bd', verticalAlign: 'top' }}>15.45 – 16.00</td><td style={{ padding: '6px 0' }}>Penandatanganan berita acara / komitmen bersama</td></tr>
+                <tr><td style={{ padding: '6px 0', color: '#adb5bd', verticalAlign: 'top' }}>16.00 – 16.30</td><td style={{ padding: '6px 0' }}>Closing statement</td></tr>
+                <tr><td style={{ padding: '6px 0', color: '#adb5bd', verticalAlign: 'top' }}>16.30 – 17.00</td><td style={{ padding: '6px 0' }}>Foto bersama dan penutupan</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {speakers.length > 0 && (
         <div style={{ marginBottom: '30px' }}>
@@ -497,6 +557,10 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
           {!user ? (
             <div style={{ backgroundColor: '#fff4e6', border: '1px solid #fab005', padding: '15px', borderRadius: '12px', marginBottom: '20px' }}>
               <p style={{ color: '#d9480f', margin: 0, fontSize: '0.9rem' }}>Anda harus masuk (login) ke platform BaMbooChain terlebih dahulu untuk dapat melakukan absensi.</p>
+            </div>
+          ) : (eventId === 'fgd-rumah-modular-2026' && new Date() < new Date('2026-07-01T00:00:00')) ? (
+            <div style={{ backgroundColor: '#fff4e6', border: '1px solid #fab005', padding: '15px', borderRadius: '12px', marginBottom: '20px' }}>
+              <p style={{ color: '#d9480f', margin: 0, fontSize: '0.9rem' }}>Fitur absensi untuk acara ini baru akan diaktifkan pada tanggal 1-2 Juli 2026.</p>
             </div>
           ) : (
             <button 
