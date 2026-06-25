@@ -15,11 +15,14 @@ const SpeakerPortalPage = () => {
   
   const [cvFile, setCvFile] = useState(null);
   const [materialFile, setMaterialFile] = useState(null);
+  const [customSpeakerName, setCustomSpeakerName] = useState('');
   
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+
+  const isAdmin = user?.role === 'admin' || user?.role === 'superadmin' || user?.username === 'albantani' || user?.email === 'sultanbantam@gmail.com';
 
   // Fetch materials for selected event
   const { data: uploadedMaterials = [], refetch } = useSpeakerMaterials(selectedEvent?.id);
@@ -27,16 +30,22 @@ const SpeakerPortalPage = () => {
   useEffect(() => {
     if (user) {
       const allEvents = [...eventsData, featuredEventData];
-      const assignedEvents = allEvents.filter(ev => 
-        ev.speakers?.some(s => 
-          s.name.toLowerCase() === user.name?.toLowerCase() || 
-          s.name.toLowerCase() === user.username?.toLowerCase() ||
-          user.name?.toLowerCase().includes(s.name.toLowerCase())
-        )
-      );
+      let assignedEvents = [];
+      
+      if (isAdmin) {
+        assignedEvents = allEvents; // Admin dapat melihat seluruh event
+      } else {
+        assignedEvents = allEvents.filter(ev => 
+          ev.speakers?.some(s => 
+            s.name.toLowerCase() === user.name?.toLowerCase() || 
+            s.name.toLowerCase() === user.username?.toLowerCase() ||
+            user.name?.toLowerCase().includes(s.name.toLowerCase())
+          )
+        );
+      }
       setMyEvents(assignedEvents);
     }
-  }, [user]);
+  }, [user, isAdmin]);
 
   const handleUpload = async (e, type) => {
     e.preventDefault();
@@ -56,21 +65,25 @@ const SpeakerPortalPage = () => {
     setErrorMsg('');
     setSuccessMsg('');
     
-    try {
-      // Simulate progress for UI
-      const progressInterval = setInterval(() => {
-        setUploadProgress(prev => Math.min(prev + 10, 90));
-      }, 200);
+    const progressInterval = setInterval(() => {
+      setUploadProgress(prev => Math.min(prev + 10, 90));
+    }, 200);
 
-      const speakerObj = selectedEvent.speakers.find(s => 
-        s.name.toLowerCase() === user.name?.toLowerCase() || 
-        s.name.toLowerCase() === user.username?.toLowerCase() ||
-        user.name?.toLowerCase().includes(s.name.toLowerCase())
-      );
+    try {
+      let finalSpeakerName = user.name || user.username || 'User';
       
-      const speakerName = speakerObj?.name || user.name;
+      if (isAdmin) {
+        finalSpeakerName = customSpeakerName || 'Admin';
+      } else {
+        const speakerObj = selectedEvent.speakers?.find(s => 
+          s.name.toLowerCase() === user.name?.toLowerCase() || 
+          s.name.toLowerCase() === user.username?.toLowerCase() ||
+          user.name?.toLowerCase().includes(s.name.toLowerCase())
+        );
+        if (speakerObj) finalSpeakerName = speakerObj.name;
+      }
       
-      await uploadSpeakerMaterial(file, selectedEvent.id, speakerName, type);
+      await uploadSpeakerMaterial(file, selectedEvent.id, finalSpeakerName, type);
       
       clearInterval(progressInterval);
       setUploadProgress(100);
@@ -87,19 +100,23 @@ const SpeakerPortalPage = () => {
       
     } catch (err) {
       console.error(err);
-      setErrorMsg("Gagal mengunggah file. Pastikan koneksi stabil.");
+      clearInterval(progressInterval);
+      setErrorMsg(err.message || "Gagal mengunggah file. Pastikan koneksi stabil.");
     } finally {
       setIsUploading(false);
     }
   };
 
   const getMyUploadedFiles = (type) => {
-    const speakerObj = selectedEvent?.speakers.find(s => 
+    if (isAdmin) {
+      return uploadedMaterials.filter(m => m.type === type);
+    }
+    const speakerObj = selectedEvent?.speakers?.find(s => 
       s.name.toLowerCase() === user.name?.toLowerCase() || 
       s.name.toLowerCase() === user.username?.toLowerCase() ||
       user.name?.toLowerCase().includes(s.name.toLowerCase())
     );
-    const speakerName = speakerObj?.name || user.name;
+    const speakerName = speakerObj?.name || user.name || user.username;
     return uploadedMaterials.filter(m => m.speakerName === speakerName && m.type === type);
   };
 
@@ -233,14 +250,14 @@ const SpeakerPortalPage = () => {
             </div>
           ) : (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ marginTop: '30px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '25px' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '15px', marginBottom: '25px' }}>
                 <button 
-                  onClick={() => { setSelectedEvent(null); setSuccessMsg(''); setErrorMsg(''); }}
-                  style={{ background: 'none', border: 'none', color: '#adb5bd', cursor: 'pointer', padding: 0 }}
+                  onClick={() => { setSelectedEvent(null); setSuccessMsg(''); setErrorMsg(''); setCustomSpeakerName(''); }}
+                  style={{ background: 'none', border: 'none', color: '#adb5bd', cursor: 'pointer', padding: 0, minWidth: 'max-content', marginTop: '4px' }}
                 >
                   &larr; Kembali
                 </button>
-                <h3 style={{ margin: 0, color: '#fab005' }}>{selectedEvent.title}</h3>
+                <h3 style={{ margin: 0, color: '#fab005', lineHeight: '1.4' }}>{selectedEvent.title}</h3>
               </div>
 
               {errorMsg && (
@@ -252,6 +269,20 @@ const SpeakerPortalPage = () => {
               {successMsg && (
                 <div style={{ backgroundColor: 'rgba(43, 138, 62, 0.1)', border: '1px solid #2b8a3e', padding: '15px', borderRadius: '8px', marginBottom: '20px', color: '#d3f9d8', display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <CheckCircle size={18} /> {successMsg}
+                </div>
+              )}
+
+              {isAdmin && (
+                <div style={{ marginBottom: '30px', backgroundColor: 'rgba(28, 126, 214, 0.1)', padding: '20px', borderRadius: '12px', border: '1px solid rgba(28, 126, 214, 0.3)' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', color: '#a5d8ff', fontSize: '0.95rem', fontWeight: 'bold' }}>Upload Atas Nama (Mode Admin):</label>
+                  <p style={{ fontSize: '0.8rem', color: '#adb5bd', margin: '0 0 10px 0' }}>Sebagai Admin, Anda dapat mengunggah file untuk narasumber tertentu dengan mengetikkan nama mereka, atau kosongkan untuk diunggah sebagai 'Admin'. Anda juga dapat mengunggah banyak file satu per satu.</p>
+                  <input 
+                    type="text" 
+                    placeholder="Contoh: Abah Jaro, atau Umum" 
+                    value={customSpeakerName}
+                    onChange={(e) => setCustomSpeakerName(e.target.value)}
+                    style={{ width: '100%', padding: '12px 15px', borderRadius: '8px', backgroundColor: '#000', border: '1px solid #333', color: 'white' }}
+                  />
                 </div>
               )}
 
