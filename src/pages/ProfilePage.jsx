@@ -74,7 +74,7 @@ const formatBalance = (val) => {
 const ProfilePage = () => {
   const { t } = useLanguage();
   const { user, updateProfile } = useAuth();
-  const { articles: publicArticles } = useArticles();
+  const { data: articles = [] } = useArticles();
   const { plantings, maintenances, harvests } = useBambupedia();
   const { data: plantationDonations = [] } = usePlantationDonations(user?.id, user?.username);
   const { data: eventTransactions = [] } = useEventTransactions();
