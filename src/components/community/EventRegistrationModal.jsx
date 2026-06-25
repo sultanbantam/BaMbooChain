@@ -51,6 +51,7 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
   const isHBN = eventTitle?.includes('Nasional');
   const isDiburuan = eventTitle?.includes('Diburuan') || eventTitle?.includes('DIBURUAN');
   const isSerenTaun = eventTitle?.includes('Seren Taun');
+  const isFGD = eventId === 'fgd-rumah-modular-2026';
   
   const isKodibaMember = user && ((user.stakedBalance || 0) >= 10 || (user.transactions || []).some(t => t.type === 'Fiat'));
 
@@ -71,6 +72,7 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
   if (isHBD) statementText = "Saya menyatakan bersedia mengikuti seluruh rangkaian kegiatan Hari Bambu Dunia di Kasepuhan Cibarani dan mematuhi aturan adat, menjaga kebersihan lingkungan, serta menghormati masyarakat setempat.";
   if (isDiburuan) statementText = "Saya menyatakan bersedia mengikuti seluruh rangkaian kegiatan DIBURUAN FESTIVAL JILID IV 2026 dan mematuhi aturan, menjaga kebersihan lingkungan, serta menghormati masyarakat setempat.";
   if (isHBN) statementText = "Saya menyatakan bersedia mengikuti seluruh rangkaian kegiatan HARI BAMBU NASIONAL 2026 dan mematuhi aturan, menjaga kebersihan lingkungan, serta menghormati masyarakat setempat.";
+  if (isFGD) statementText = "Saya menyatakan bersedia mengikuti seluruh rangkaian kegiatan Workshop dan FGD Capacity Building Perancangan Prototype Rumah Modular Bambu dan mematuhi aturan, menjaga kebersihan lingkungan, serta menghormati masyarakat setempat.";
 
   let waEventName = 'Seren Taun';
   if (isHBD) waEventName = 'Hari Bambu Dunia';
@@ -381,7 +383,7 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
             <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '25px', color: '#51cf66' }}>D. Pernyataan & Pembayaran</h3>
             
-            {!isTba && (
+            {!isTba && !isFGD && (
               isKodibaMember ? (
                 <div style={{ backgroundColor: '#ebfbee', border: '1px solid #51cf66', padding: '15px', borderRadius: '15px', marginBottom: '25px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <CheckCircle color="#2b8a3e" size={32} />
@@ -421,24 +423,41 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
               <h4 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <CreditCard color="#51cf66" /> Informasi Pembayaran
               </h4>
-              <p style={{ color: '#adb5bd', fontSize: '0.9rem', marginBottom: '20px' }}>
-                Biaya kontribusi peserta sebesar <strong style={{ color: '#fff', fontSize: '1.1rem' }}>{eventCostDisplay}</strong> dapat ditransfer ke salah satu metode berikut:
-              </p>
               
-              <div style={{ marginBottom: '15px', padding: '15px', backgroundColor: '#111', borderRadius: '10px' }}>
-                <div style={{ fontSize: '0.8rem', color: '#888', marginBottom: '5px' }}>Bank Transfer (Rupiah)</div>
-                <div style={{ fontSize: '1.1rem', fontWeight: 'bold', letterSpacing: '1px' }}>BRI 1411 0100 0456 562</div>
-                <div style={{ fontSize: '0.9rem', color: '#adb5bd' }}>a.n Yayasan Sabumi Nusantara Jaya</div>
-              </div>
+              {isFGD ? (
+                <>
+                  <div style={{ backgroundColor: 'rgba(81, 207, 102, 0.1)', border: '1px solid #51cf66', padding: '15px', borderRadius: '10px', marginBottom: '15px' }}>
+                    <p style={{ color: '#51cf66', margin: 0, fontWeight: 'bold' }}>Event Tidak Berbayar (Gratis)</p>
+                    <p style={{ color: '#adb5bd', fontSize: '0.85rem', margin: '5px 0 0' }}>Seluruh pembiayaan kegiatan ini didukung sepenuhnya oleh anggaran kas <strong>PKR Bambu</strong>.</p>
+                  </div>
+                  <div style={{ padding: '15px', backgroundColor: '#111', borderRadius: '10px' }}>
+                    <div style={{ fontSize: '0.8rem', color: '#888', marginBottom: '5px' }}>Rekening Penampung Kas (Untuk Transparansi):</div>
+                    <div style={{ fontSize: '1.1rem', fontWeight: 'bold', letterSpacing: '1px' }}>BRI 1411 0100 0456 562</div>
+                    <div style={{ fontSize: '0.9rem', color: '#adb5bd' }}>a.n Yayasan Sabumi Nusantara Jaya</div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p style={{ color: '#adb5bd', fontSize: '0.9rem', marginBottom: '20px' }}>
+                    Biaya kontribusi peserta sebesar <strong style={{ color: '#fff', fontSize: '1.1rem' }}>{eventCostDisplay}</strong> dapat ditransfer ke salah satu metode berikut:
+                  </p>
+                  
+                  <div style={{ marginBottom: '15px', padding: '15px', backgroundColor: '#111', borderRadius: '10px' }}>
+                    <div style={{ fontSize: '0.8rem', color: '#888', marginBottom: '5px' }}>Bank Transfer (Rupiah)</div>
+                    <div style={{ fontSize: '1.1rem', fontWeight: 'bold', letterSpacing: '1px' }}>BRI 1411 0100 0456 562</div>
+                    <div style={{ fontSize: '0.9rem', color: '#adb5bd' }}>a.n Yayasan Sabumi Nusantara Jaya</div>
+                  </div>
 
-              <div style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#111', borderRadius: '10px' }}>
-                <div style={{ fontSize: '0.8rem', color: '#888', marginBottom: '5px' }}>Crypto (USDT BEP20)</div>
-                <div style={{ fontSize: '0.9rem', fontWeight: 'bold', wordBreak: 'break-all' }}>0xcb66199ea24746a7917a8dc171b0583cd7420e10</div>
-              </div>
+                  <div style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#111', borderRadius: '10px' }}>
+                    <div style={{ fontSize: '0.8rem', color: '#888', marginBottom: '5px' }}>Crypto (USDT BEP20)</div>
+                    <div style={{ fontSize: '0.9rem', fontWeight: 'bold', wordBreak: 'break-all' }}>0xcb66199ea24746a7917a8dc171b0583cd7420e10</div>
+                  </div>
 
-              <p style={{ fontSize: '0.85rem', color: '#fab005', fontStyle: 'italic', textAlign: 'center' }}>
-                *Mohon selesaikan pendaftaran untuk mendapatkan petunjuk konfirmasi pembayaran via WhatsApp.
-              </p>
+                  <p style={{ fontSize: '0.85rem', color: '#fab005', fontStyle: 'italic', textAlign: 'center' }}>
+                    *Mohon selesaikan pendaftaran untuk mendapatkan petunjuk konfirmasi pembayaran via WhatsApp.
+                  </p>
+                </>
+              )}
             </div>
           </motion.div>
         );
