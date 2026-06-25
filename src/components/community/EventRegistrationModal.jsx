@@ -4,6 +4,7 @@ import { db } from '../../firebase/config';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { X, CheckCircle, UploadCloud, ChevronRight, ChevronLeft, CreditCard } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useSpeakerMaterials } from '../../hooks/useFirestoreQueries';
 
 const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
   const { user, addNotification } = useAuth();
@@ -17,6 +18,21 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
   const eventId = eventData?.id || "unknown";
   const speakers = eventData?.speakers || [];
   const materials = eventData?.materials || [];
+
+  const { data: uploadedMaterials = [] } = useSpeakerMaterials(eventId === 'unknown' ? null : eventId);
+
+  const getSpeakerCvUrl = (speakerName, defaultUrl) => {
+    const uploadedCv = uploadedMaterials.find(m => m.type === 'cv' && m.speakerName === speakerName);
+    return uploadedCv ? uploadedCv.fileUrl : defaultUrl;
+  };
+
+  const allMaterials = [
+    ...materials,
+    ...uploadedMaterials.filter(m => m.type === 'material').map(m => ({
+      title: `${m.fileName} (Oleh: ${m.speakerName})`,
+      fileUrl: m.fileUrl
+    }))
+  ];
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -502,28 +518,30 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
         <div style={{ marginBottom: '30px' }}>
           <h4 style={{ fontSize: '1rem', fontWeight: 'bold', marginBottom: '15px', color: 'white' }}>Narasumber</h4>
           <div style={{ display: 'grid', gap: '15px' }}>
-            {speakers.map((speaker, idx) => (
+            {speakers.map((speaker, idx) => {
+              const cvLink = getSpeakerCvUrl(speaker.name, speaker.cvUrl);
+              return (
               <div key={idx} style={{ backgroundColor: 'rgba(255,255,255,0.05)', padding: '15px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <div style={{ fontWeight: 'bold', color: 'white' }}>{speaker.name}</div>
                   <div style={{ fontSize: '0.85rem', color: '#adb5bd' }}>{speaker.role}</div>
                 </div>
-                {speaker.cvUrl && (
-                  <a href={speaker.cvUrl} target="_blank" rel="noreferrer" style={{ backgroundColor: '#1c7ed6', color: 'white', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', textDecoration: 'none', fontWeight: 'bold' }}>
+                {cvLink && (
+                  <a href={cvLink} target="_blank" rel="noreferrer" style={{ backgroundColor: '#1c7ed6', color: 'white', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', textDecoration: 'none', fontWeight: 'bold' }}>
                     Download CV
                   </a>
                 )}
               </div>
-            ))}
+            )})}
           </div>
         </div>
       )}
 
-      {materials.length > 0 && (
+      {allMaterials.length > 0 && (
         <div>
           <h4 style={{ fontSize: '1rem', fontWeight: 'bold', marginBottom: '15px', color: 'white' }}>Materi Acara</h4>
           <div style={{ display: 'grid', gap: '15px' }}>
-            {materials.map((mat, idx) => (
+            {allMaterials.map((mat, idx) => (
               <div key={idx} style={{ backgroundColor: 'rgba(81, 207, 102, 0.05)', border: '1px solid rgba(81, 207, 102, 0.2)', padding: '15px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ fontWeight: 'bold', color: 'white', fontSize: '0.9rem' }}>{mat.title}</div>
                 {mat.fileUrl && (

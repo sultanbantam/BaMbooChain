@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import { collection, getDocs, query, where, doc, getDoc } from 'firebase/firestore';
-import { db } from '../firebase/config';
+import { collection, getDocs, query, where, doc, getDoc, addDoc, serverTimestamp } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, storage } from '../firebase/config';
 
 // 1. Hook for Partner Applications
 export function usePartnerApplications(userId, username) {
@@ -163,4 +164,48 @@ export function useEventTransactions() {
     },
     staleTime: 1000 * 60 * 5,
   });
+}
+
+// 10. Hook for Speaker Materials
+export function useSpeakerMaterials(eventId) {
+  return useQuery({
+    queryKey: ['speakerMaterials', eventId],
+    queryFn: async () => {
+      if (!eventId) return [];
+      const materialsRef = collection(db, 'speaker_materials');
+      const q = query(materialsRef, where('eventId', '==', eventId));
+      const snapshot = await getDocs(q);
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    },
+    enabled: !!eventId,
+    staleTime: 1000 * 60 * 5,
+  });
+}
+
+// Helper to upload speaker material
+export async function uploadSpeakerMaterial(file, eventId, speakerName, type) {
+  if (!file) throw new Error("No file provided");
+  
+  // Create a unique filename
+  const fileExt = file.name.split('.').pop();
+  const safeSpeakerName = speakerName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+  const uniqueName = `${eventId}_${safeSpeakerName}_${type}_${Date.now()}.${fileExt}`;
+  
+  // Upload to Storage
+  const storageRef = ref(storage, `events/materials/${uniqueName}`);
+  const snapshot = await uploadBytes(storageRef, file);
+  const downloadUrl = await getDownloadURL(snapshot.ref);
+  
+  // Save record to Firestore
+  const materialsRef = collection(db, 'speaker_materials');
+  const docRef = await addDoc(materialsRef, {
+    eventId,
+    speakerName,
+    type, // 'cv' or 'material'
+    fileName: file.name,
+    fileUrl: downloadUrl,
+    timestamp: serverTimestamp()
+  });
+  
+  return { id: docRef.id, url: downloadUrl };
 }
