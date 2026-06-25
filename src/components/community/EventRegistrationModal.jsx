@@ -515,6 +515,97 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
     </motion.div>
   );
 
+  const renderFinanceTab = () => (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ padding: '10px 0' }}>
+      <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '15px', color: '#fab005' }}>Anggaran & Transparansi Keuangan</h3>
+      {eventId === 'fgd-rumah-modular-2026' ? (
+        <div>
+          <p style={{ color: '#adb5bd', fontSize: '0.9rem', marginBottom: '20px', lineHeight: '1.6' }}>
+            Sebagai bentuk transparansi ekosistem BaMbooChain, berikut adalah Rencana Anggaran Biaya (RAB) kegiatan ini yang didanai sepenuhnya melalui kas <strong>PKR Bambu</strong> ke rekening <strong>BRI Yayasan Sabumi Nusantara Jaya</strong>.
+          </p>
+          <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '15px', overflowX: 'auto' }}>
+            <table style={{ width: '100%', fontSize: '0.85rem', color: 'white', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid #444', color: '#adb5bd' }}>
+                  <th style={{ padding: '10px', textAlign: 'left' }}>No</th>
+                  <th style={{ padding: '10px', textAlign: 'left' }}>Uraian</th>
+                  <th style={{ padding: '10px', textAlign: 'center' }}>Vol</th>
+                  <th style={{ padding: '10px', textAlign: 'center' }}>Satuan</th>
+                  <th style={{ padding: '10px', textAlign: 'right' }}>Harga Satuan</th>
+                  <th style={{ padding: '10px', textAlign: 'right' }}>Jumlah</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style={{ borderBottom: '1px solid #333' }}>
+                  <td style={{ padding: '10px' }}>1</td>
+                  <td style={{ padding: '10px' }}>
+                    <strong>Honorarium:</strong><br/>
+                    1. Penerima tamu (2 orang x 2 hari)<br/>
+                    2. MC (1 orang x 2 hari)<br/>
+                    3. Moderator (1 orang x 2 hari)<br/>
+                    4. Narasumber di luar PKR (6 orang)
+                  </td>
+                  <td style={{ padding: '10px', textAlign: 'center' }}>4<br/>2<br/>2<br/>6</td>
+                  <td style={{ padding: '10px', textAlign: 'center' }}>OH<br/>OH<br/>OH<br/>OK</td>
+                  <td style={{ padding: '10px', textAlign: 'right' }}>100.000<br/>200.000<br/>500.000<br/>1.020.000</td>
+                  <td style={{ padding: '10px', textAlign: 'right' }}>400.000<br/>400.000<br/>1.000.000<br/>6.120.000</td>
+                </tr>
+                <tr style={{ borderBottom: '1px solid #333' }}>
+                  <td style={{ padding: '10px' }}>2</td>
+                  <td style={{ padding: '10px' }}>Uang harian peserta (11 orang × 2 hari)</td>
+                  <td style={{ padding: '10px', textAlign: 'center' }}>22</td>
+                  <td style={{ padding: '10px', textAlign: 'center' }}>OH</td>
+                  <td style={{ padding: '10px', textAlign: 'right' }}>100.000</td>
+                  <td style={{ padding: '10px', textAlign: 'right' }}>2.200.000</td>
+                </tr>
+                <tr style={{ borderBottom: '1px solid #333' }}>
+                  <td style={{ padding: '10px' }}>3</td>
+                  <td style={{ padding: '10px' }}>Biaya penginapan eselon III (3 orang × 2 hari)</td>
+                  <td style={{ padding: '10px', textAlign: 'center' }}>6</td>
+                  <td style={{ padding: '10px', textAlign: 'center' }}>OH</td>
+                  <td style={{ padding: '10px', textAlign: 'right' }}>900.000</td>
+                  <td style={{ padding: '10px', textAlign: 'right' }}>5.400.000</td>
+                </tr>
+                <tr style={{ borderBottom: '1px solid #333' }}>
+                  <td style={{ padding: '10px' }}>4</td>
+                  <td style={{ padding: '10px' }}>Konsumsi makan (40 orang)</td>
+                  <td style={{ padding: '10px', textAlign: 'center' }}>40</td>
+                  <td style={{ padding: '10px', textAlign: 'center' }}>OK</td>
+                  <td style={{ padding: '10px', textAlign: 'right' }}>35.000</td>
+                  <td style={{ padding: '10px', textAlign: 'right' }}>1.400.000</td>
+                </tr>
+                <tr style={{ borderBottom: '1px solid #333' }}>
+                  <td style={{ padding: '10px' }}>5</td>
+                  <td style={{ padding: '10px' }}>Konsumsi kudapan (42 orang)</td>
+                  <td style={{ padding: '10px', textAlign: 'center' }}>42</td>
+                  <td style={{ padding: '10px', textAlign: 'center' }}>OK</td>
+                  <td style={{ padding: '10px', textAlign: 'right' }}>15.000</td>
+                  <td style={{ padding: '10px', textAlign: 'right' }}>630.000</td>
+                </tr>
+                <tr style={{ borderBottom: '1px solid #333' }}>
+                  <td style={{ padding: '10px' }}>6</td>
+                  <td style={{ padding: '10px' }}>Cetak Backdrop</td>
+                  <td style={{ padding: '10px', textAlign: 'center' }}>1</td>
+                  <td style={{ padding: '10px', textAlign: 'center' }}>LS</td>
+                  <td style={{ padding: '10px', textAlign: 'right' }}>441.000</td>
+                  <td style={{ padding: '10px', textAlign: 'right' }}>441.000</td>
+                </tr>
+                <tr style={{ backgroundColor: 'rgba(250, 176, 5, 0.2)' }}>
+                  <td colSpan="5" style={{ padding: '12px', fontWeight: 'bold', textAlign: 'right' }}>Jumlah Total</td>
+                  <td style={{ padding: '12px', fontWeight: 'bold', textAlign: 'right', color: '#fab005' }}>17.991.000</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : (
+        <div style={{ textAlign: 'center', padding: '30px' }}>
+          <p style={{ color: '#adb5bd' }}>Laporan keuangan untuk event ini belum tersedia atau didanai secara mandiri.</p>
+        </div>
+      )}
+    </motion.div>
+  );
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -538,11 +629,13 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
             <div style={styles.content}>
               <div style={styles.tabContainer}>
                 <button onClick={() => setActiveModalTab('info')} style={styles.tabBtn(activeModalTab === 'info')}>Informasi & Materi</button>
+                <button onClick={() => setActiveModalTab('finance')} style={styles.tabBtn(activeModalTab === 'finance')}>Anggaran & Laporan</button>
                 <button onClick={() => setActiveModalTab('register')} style={styles.tabBtn(activeModalTab === 'register')}>Pendaftaran</button>
                 <button onClick={() => setActiveModalTab('attendance')} style={styles.tabBtn(activeModalTab === 'attendance')}>Absensi</button>
               </div>
 
               {activeModalTab === 'info' && renderInfoTab()}
+              {activeModalTab === 'finance' && renderFinanceTab()}
               {activeModalTab === 'attendance' && renderAttendanceTab()}
               
               {activeModalTab === 'register' && (
@@ -603,7 +696,7 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
               </div>
             )}
             
-            {(activeModalTab === 'info' || activeModalTab === 'attendance') && (
+            {(activeModalTab === 'info' || activeModalTab === 'attendance' || activeModalTab === 'finance') && (
               <div style={styles.footer}>
                 <button type="button" onClick={onClose} style={styles.btnSecondary}>
                   Tutup

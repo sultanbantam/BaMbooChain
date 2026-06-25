@@ -58,6 +58,22 @@ const EventsPage = () => {
       materials: [
         { title: 'Draft Resolusi Bambu Nasional', fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' }
       ]
+    },
+    {
+      id: 'fgd-rumah-modular-2026',
+      title: 'Workshop & FGD Capacity Building Perancangan Prototype Rumah Modular Bambu',
+      date: 'TBA',
+      time: '09:00 - 16:00 WIB',
+      location: 'Sekretariat Yayasan Sabumi Nusantara Jaya',
+      category: 'Workshop',
+      image: getAssetUrl('event/fgd.jpg'),
+      color: '#e03131',
+      speakers: [
+        { name: 'Narasumber Ahli PKR', role: 'Pakar Arsitektur Bambu', cvUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' }
+      ],
+      materials: [
+        { title: 'Modul Perancangan Rumah Modular', fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' }
+      ]
     }
   ];
 

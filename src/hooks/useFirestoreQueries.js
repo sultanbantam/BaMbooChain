@@ -151,3 +151,16 @@ export function useEventAttendance() {
     staleTime: 1000 * 60 * 5,
   });
 }
+
+// 9. Hook for Event Transactions
+export function useEventTransactions() {
+  return useQuery({
+    queryKey: ['eventTransactions'],
+    queryFn: async () => {
+      const txRef = collection(db, 'event_transactions');
+      const snapshot = await getDocs(txRef);
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+}

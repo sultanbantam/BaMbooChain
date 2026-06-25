@@ -4,9 +4,9 @@ import { useLanguage } from '../context/LanguageContext';
 import { Shield, Users, MapPin, CheckCircle, XCircle, Clock, Eye, Filter, Download, Search, BookOpen, Leaf, Settings, Save, Wind, Droplets, DollarSign, Activity } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import BackButton from '../components/BackButton';
-import { usePartnerApplications, useLocationProposals, usePlantationDonations, useGlobalSettings, useEventRegistrations, useEventAttendance } from '../hooks/useFirestoreQueries';
+import { usePartnerApplications, useLocationProposals, usePlantationDonations, useGlobalSettings, useEventRegistrations, useEventAttendance, useEventTransactions } from '../hooks/useFirestoreQueries';
 import { db } from '../firebase/config';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
 
 const AdminPortalPage = () => {
   const { t } = useLanguage();
@@ -23,10 +23,12 @@ const AdminPortalPage = () => {
   const { data: plantationDonations = [] } = usePlantationDonations(user?.id, user?.username);
   const { data: eventRegistrations = [] } = useEventRegistrations();
   const { data: eventAttendance = [] } = useEventAttendance();
+  const { data: eventTransactions = [], refetch: refetchEventTransactions } = useEventTransactions();
   
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('partners'); // 'partners', 'locations', 'donations', 'events', or 'settings'
-  const [eventViewType, setEventViewType] = useState('registrations'); // 'registrations' or 'attendance'
+  const [eventViewType, setEventViewType] = useState('registrations'); // 'registrations', 'attendance', or 'finance'
+  const [isProcessingTx, setIsProcessingTx] = useState(false);
   
   const { data: globalSettings, isLoading: isSettingsLoading } = useGlobalSettings();
   const [settingsForm, setSettingsForm] = useState({
@@ -47,10 +49,36 @@ const AdminPortalPage = () => {
   const handleSaveSettings = async () => {
     try {
       await setDoc(doc(db, 'settings', 'environmental_metrics'), settingsForm);
-      alert('Pengaturan Variabel Lingkungan Global berhasil disimpan!');
+      alert('Pengaturan global berhasil disimpan ke database!');
     } catch (error) {
-      console.error("Gagal menyimpan:", error);
-      alert('Terjadi kesalahan saat menyimpan pengaturan.');
+      console.error("Error saving settings:", error);
+      alert('Gagal menyimpan pengaturan. Periksa koneksi atau izin (rules) Firebase.');
+    }
+  };
+
+  const handleDisburseFunds = async () => {
+    if (!window.confirm("Apakah Anda yakin ingin mencairkan dana treasury sebesar Rp 17.991.000 ke rekening BRI Yayasan? Tindakan ini akan tercatat permanen di ekosistem.")) return;
+    
+    setIsProcessingTx(true);
+    try {
+      await addDoc(collection(db, "event_transactions"), {
+        eventId: 'fgd-rumah-modular-2026',
+        eventTitle: 'Workshop & FGD Capacity Building Perancangan Prototype Rumah Modular Bambu',
+        type: 'TREASURY_DISBURSEMENT',
+        amountIDR: 17991000,
+        source: 'PKR Bambu Ecosystem Fund',
+        destination: 'BRI 1411 0100 0456 562 (Yayasan Sabumi Nusantara Jaya)',
+        timestamp: serverTimestamp(),
+        adminId: user.id,
+        adminUsername: user.username || user.name
+      });
+      alert('Pencairan dana treasury berhasil dicatat di sistem.');
+      refetchEventTransactions();
+    } catch (error) {
+      console.error(error);
+      alert('Gagal mencatat transaksi pencairan dana.');
+    } finally {
+      setIsProcessingTx(false);
     }
   };
   
@@ -236,8 +264,70 @@ const AdminPortalPage = () => {
                 >
                   Daftar Hadir (Absensi)
                 </button>
+                <button 
+                  onClick={() => setEventViewType('finance')}
+                  style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', background: eventViewType === 'finance' ? '#1c7ed6' : '#e9ecef', color: eventViewType === 'finance' ? 'white' : '#495057', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <DollarSign size={16} /> Laporan Keuangan
+                </button>
               </div>
 
+              {eventViewType === 'finance' ? (
+                <div>
+                  <div style={{ backgroundColor: 'rgba(255,255,255,0.8)', padding: '20px', borderRadius: '15px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
+                    <div>
+                      <h3 style={{ margin: '0 0 5px 0', fontSize: '1.2rem', color: '#111' }}>Workshop & FGD Capacity Building Perancangan Prototype Rumah Modular Bambu</h3>
+                      <p style={{ margin: 0, color: '#495057', fontSize: '0.9rem' }}>Rencana Anggaran Biaya (RAB): <strong style={{ color: '#e03131' }}>Rp 17.991.000</strong></p>
+                    </div>
+                    <button 
+                      onClick={handleDisburseFunds}
+                      disabled={isProcessingTx || eventTransactions.some(tx => tx.eventId === 'fgd-rumah-modular-2026' && tx.type === 'TREASURY_DISBURSEMENT')}
+                      style={{ 
+                        backgroundColor: eventTransactions.some(tx => tx.eventId === 'fgd-rumah-modular-2026' && tx.type === 'TREASURY_DISBURSEMENT') ? '#51cf66' : '#fab005', 
+                        color: 'black', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 'bold', cursor: isProcessingTx ? 'not-allowed' : 'pointer',
+                        display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 10px rgba(0,0,0,0.1)'
+                      }}
+                    >
+                      {isProcessingTx ? 'Memproses...' : eventTransactions.some(tx => tx.eventId === 'fgd-rumah-modular-2026' && tx.type === 'TREASURY_DISBURSEMENT') ? <><CheckCircle size={18} /> Dana Telah Dicairkan</> : <><Activity size={18} /> Cairkan Dana Treasury (PKR Bambu)</>}
+                    </button>
+                  </div>
+
+                  <h4 style={{ marginBottom: '15px', fontSize: '1.1rem' }}>Riwayat Transaksi Treasury</h4>
+                  <div style={{ overflowX: 'auto', backgroundColor: 'white', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <thead>
+                        <tr style={{ textAlign: 'left', borderBottom: '2px solid #f1f3f5', backgroundColor: '#f8f9fa' }}>
+                          <th style={{ padding: '16px', color: '#495057', fontSize: '0.85rem' }}>Tanggal & Waktu</th>
+                          <th style={{ padding: '16px', color: '#495057', fontSize: '0.85rem' }}>Tipe Transaksi</th>
+                          <th style={{ padding: '16px', color: '#495057', fontSize: '0.85rem' }}>Admin Eksekutor</th>
+                          <th style={{ padding: '16px', color: '#495057', fontSize: '0.85rem' }}>Sumber → Tujuan</th>
+                          <th style={{ padding: '16px', color: '#495057', fontSize: '0.85rem', textAlign: 'right' }}>Jumlah (IDR)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {eventTransactions.filter(tx => tx.eventId === 'fgd-rumah-modular-2026').length === 0 ? (
+                          <tr>
+                            <td colSpan="5" style={{ padding: '20px', textAlign: 'center', color: '#868e96' }}>Belum ada transaksi pencairan dana untuk event ini.</td>
+                          </tr>
+                        ) : (
+                          eventTransactions.filter(tx => tx.eventId === 'fgd-rumah-modular-2026').map(tx => (
+                            <tr key={tx.id} style={{ borderBottom: '1px solid #f1f3f5' }}>
+                              <td style={{ padding: '16px', fontSize: '0.9rem' }}>{tx.timestamp ? new Date(tx.timestamp.toDate()).toLocaleString('id-ID') : 'Baru saja'}</td>
+                              <td style={{ padding: '16px' }}><span style={{ backgroundColor: '#ebfbee', color: '#2b8a3e', padding: '4px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 'bold' }}>{tx.type}</span></td>
+                              <td style={{ padding: '16px', fontSize: '0.9rem', fontWeight: 'bold' }}>@{tx.adminUsername}</td>
+                              <td style={{ padding: '16px', fontSize: '0.85rem' }}>
+                                <div style={{ color: '#e03131', fontWeight: 'bold' }}>Dari: {tx.source}</div>
+                                <div style={{ color: '#1c7ed6', fontWeight: 'bold' }}>Ke: {tx.destination}</div>
+                              </td>
+                              <td style={{ padding: '16px', fontSize: '1rem', fontWeight: 'bold', textAlign: 'right', color: '#2b8a3e' }}>Rp {tx.amountIDR.toLocaleString('id-ID')}</td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ) : (
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
@@ -292,6 +382,7 @@ const AdminPortalPage = () => {
                   </tbody>
                 </table>
               </div>
+              )}
             </div>
           ) : (
             <div style={{ overflowX: 'auto' }}>

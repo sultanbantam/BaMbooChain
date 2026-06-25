@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useBambupedia } from '../context/BambupediaContext';
 import { useLanguage } from '../context/LanguageContext';
 import { db } from '../firebase/config';
-import { useArticles, usePlantationDonations } from '../hooks/useFirestoreQueries';
+import { useArticles, usePlantationDonations, useEventTransactions } from '../hooks/useFirestoreQueries';
 import { doc, onSnapshot, updateDoc, collection, query, where, getDoc, getDocs, addDoc, arrayUnion, arrayRemove, increment } from 'firebase/firestore';
 import { requestForToken } from '../utils/NotificationService';
 import ShareModal from '../components/ShareModal';
@@ -74,9 +74,13 @@ const formatBalance = (val) => {
 const ProfilePage = () => {
   const { t } = useLanguage();
   const { user, updateProfile } = useAuth();
-  const { data: articles = [] } = useArticles();
+  const { articles: publicArticles } = useArticles();
   const { plantings, maintenances, harvests } = useBambupedia();
-  const { data: myDonations = [] } = usePlantationDonations(user?.id, user?.username);
+  const { data: plantationDonations = [] } = usePlantationDonations(user?.id, user?.username);
+  const { data: eventTransactions = [] } = useEventTransactions();
+
+  const myDonations = plantationDonations.filter(d => d.donorId === user?.id || d.username === user?.username);
+  const myTreasuryTxs = eventTransactions.filter(tx => tx.adminId === user?.id);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -1355,6 +1359,26 @@ const ProfilePage = () => {
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Dukungan Penanaman</div>
                     </div>
                   </div>
+
+                  {myTreasuryTxs.length > 0 && (
+                    <div style={{ background: 'rgba(224, 49, 49, 0.05)', border: '1px solid rgba(224, 49, 49, 0.1)', padding: '16px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '12px', gridColumn: '1 / -1' }}>
+                      <div style={{ background: 'rgba(224, 49, 49, 0.1)', width: '40px', height: '40px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#e03131' }}>
+                        <Shield size={20} />
+                      </div>
+                      <div style={{ width: '100%' }}>
+                        <div style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--text-main)' }}>Admin Pengelola Keuangan</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '8px' }}>Telah memverifikasi {myTreasuryTxs.length} pencairan treasury kegiatan.</div>
+                        <div style={{ display: 'grid', gap: '5px' }}>
+                          {myTreasuryTxs.map(tx => (
+                            <div key={tx.id} style={{ fontSize: '0.75rem', display: 'flex', justifyContent: 'space-between', borderBottom: '1px dashed var(--border-color)', paddingBottom: '4px' }}>
+                              <span style={{ color: 'var(--text-main)' }}>{tx.eventTitle}</span>
+                              <strong style={{ color: '#e03131' }}>Rp {tx.amountIDR.toLocaleString('id-ID')}</strong>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                 </div>
               </div>
