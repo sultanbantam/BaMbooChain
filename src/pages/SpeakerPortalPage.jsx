@@ -83,7 +83,12 @@ const SpeakerPortalPage = () => {
         if (speakerObj) finalSpeakerName = speakerObj.name;
       }
       
-      await uploadSpeakerMaterial(file, selectedEvent.id, finalSpeakerName, type);
+      const uploadPromise = uploadSpeakerMaterial(file, selectedEvent.id, finalSpeakerName, type);
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error("Timeout: Koneksi ke Firebase lambat atau Firebase Storage belum diaktifkan di console.")), 20000)
+      );
+      
+      await Promise.race([uploadPromise, timeoutPromise]);
       
       clearInterval(progressInterval);
       setUploadProgress(100);
@@ -250,12 +255,12 @@ const SpeakerPortalPage = () => {
             </div>
           ) : (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ marginTop: '30px' }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '15px', marginBottom: '25px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '10px', marginBottom: '25px' }}>
                 <button 
                   onClick={() => { setSelectedEvent(null); setSuccessMsg(''); setErrorMsg(''); setCustomSpeakerName(''); }}
-                  style={{ background: 'none', border: 'none', color: '#adb5bd', cursor: 'pointer', padding: 0, minWidth: 'max-content', marginTop: '4px' }}
+                  style={{ background: '#222', border: '1px solid #444', borderRadius: '8px', color: '#adb5bd', cursor: 'pointer', padding: '6px 12px', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '5px' }}
                 >
-                  &larr; Kembali
+                  &larr; Kembali ke Daftar
                 </button>
                 <h3 style={{ margin: 0, color: '#fab005', lineHeight: '1.4' }}>{selectedEvent.title}</h3>
               </div>
