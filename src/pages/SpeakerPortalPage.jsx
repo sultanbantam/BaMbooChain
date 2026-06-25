@@ -22,7 +22,7 @@ const SpeakerPortalPage = () => {
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
-  const isAdmin = user?.role === 'admin' || user?.role === 'superadmin' || user?.username === 'albantani' || user?.email === 'sultanbantam@gmail.com';
+  const isAdmin = user?.role === 'admin' || user?.role === 'superadmin' || user?.username === 'albantani' || user?.name === 'albantani' || user?.email === 'sultanbantam@gmail.com';
 
   // Fetch materials for selected event
   const { data: uploadedMaterials = [], refetch } = useSpeakerMaterials(selectedEvent?.id);
