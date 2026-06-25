@@ -5,6 +5,8 @@ import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { X, CheckCircle, UploadCloud, ChevronRight, ChevronLeft, CreditCard } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useSpeakerMaterials } from '../../hooks/useFirestoreQueries';
+import EventGallery from './EventGallery';
+import SocialInteractions from '../SocialInteractions';
 
 const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
   const { user, addNotification } = useAuth();
@@ -707,6 +709,20 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
     </motion.div>
   );
 
+  const renderSocialTab = () => (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ padding: '10px 0' }}>
+      <p style={{ color: '#adb5bd', fontSize: '0.95rem', marginBottom: '25px', lineHeight: '1.6' }}>
+        Bagikan momen, foto, video, dan berikan komentar atau apresiasi (Gift) untuk acara ini bersama komunitas.
+      </p>
+      
+      <EventGallery eventId={eventId} />
+      
+      <div style={{ marginTop: '20px', margin: '0 -30px' }}>
+        <SocialInteractions entityId={eventId} />
+      </div>
+    </motion.div>
+  );
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -729,14 +745,16 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
 
             <div style={styles.content}>
               <div style={styles.tabContainer}>
-                <button onClick={() => setActiveModalTab('info')} style={styles.tabBtn(activeModalTab === 'info')}>Informasi & Materi</button>
-                <button onClick={() => setActiveModalTab('finance')} style={styles.tabBtn(activeModalTab === 'finance')}>Anggaran & Laporan</button>
-                <button onClick={() => setActiveModalTab('register')} style={styles.tabBtn(activeModalTab === 'register')}>Pendaftaran</button>
-                <button onClick={() => setActiveModalTab('attendance')} style={styles.tabBtn(activeModalTab === 'attendance')}>Absensi</button>
+                <button onClick={() => setActiveModalTab('info')} style={styles.tabBtn(activeModalTab === 'info')}>Informasi</button>
+                <button onClick={() => setActiveModalTab('finance')} style={styles.tabBtn(activeModalTab === 'finance')}>Laporan</button>
+                <button onClick={() => setActiveModalTab('social')} style={styles.tabBtn(activeModalTab === 'social')}>Galeri & Diskusi</button>
+                <button onClick={() => setActiveModalTab('register')} style={styles.tabBtn(activeModalTab === 'register')}>Daftar</button>
+                <button onClick={() => setActiveModalTab('attendance')} style={styles.tabBtn(activeModalTab === 'attendance')}>Absen</button>
               </div>
 
               {activeModalTab === 'info' && renderInfoTab()}
               {activeModalTab === 'finance' && renderFinanceTab()}
+              {activeModalTab === 'social' && renderSocialTab()}
               {activeModalTab === 'attendance' && renderAttendanceTab()}
               
               {activeModalTab === 'register' && (
@@ -797,7 +815,7 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
               </div>
             )}
             
-            {(activeModalTab === 'info' || activeModalTab === 'attendance' || activeModalTab === 'finance') && (
+            {(activeModalTab === 'info' || activeModalTab === 'attendance' || activeModalTab === 'finance' || activeModalTab === 'social') && (
               <div style={styles.footer}>
                 <button type="button" onClick={onClose} style={styles.btnSecondary}>
                   Tutup

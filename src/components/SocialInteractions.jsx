@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Heart, MessageSquare, Share2, Send, X, Gift } from 'lucide-react';
+import { Heart, MessageSquare, Share2, Send, X, Gift, Smile, Trash2, Edit2 } from 'lucide-react';
+import EmojiPicker from 'emoji-picker-react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useLocation } from 'react-router-dom';
@@ -19,11 +20,11 @@ import {
 import { db } from '../firebase/config';
 import ShareModal from './ShareModal';
 
-const SocialInteractions = () => {
+const SocialInteractions = ({ entityId }) => {
   const { user, isAuthenticated, openLoginModal, giftBmc } = useAuth();
   const { t } = useLanguage();
   const location = useLocation();
-  const pageId = location.pathname.replace(/\//g, '_') || 'home';
+  const pageId = entityId || location.pathname.replace(/\//g, '_') || 'home';
   
   const [likes, setLikes] = useState(0);
   const [hasLiked, setHasLiked] = useState(false);
@@ -31,6 +32,10 @@ const SocialInteractions = () => {
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(false);
+  
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [editingCommentId, setEditingCommentId] = useState(null);
+  const [editCommentText, setEditCommentText] = useState('');
 
   // New States for Tipping and Sharing
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
@@ -174,6 +179,27 @@ const SocialInteractions = () => {
       console.error("Comment Error:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId) => {
+    if (window.confirm("Apakah Anda yakin ingin menghapus komentar ini?")) {
+      try {
+        await deleteDoc(doc(db, 'page_comments', commentId));
+      } catch (err) {
+        console.error("Delete Error:", err);
+      }
+    }
+  };
+
+  const submitEditComment = async (e, commentId) => {
+    e.preventDefault();
+    if (!editCommentText.trim()) return;
+    try {
+      await setDoc(doc(db, 'page_comments', commentId), { text: editCommentText }, { merge: true });
+      setEditingCommentId(null);
+    } catch (err) {
+      console.error("Edit Error:", err);
     }
   };
 
@@ -347,25 +373,35 @@ const SocialInteractions = () => {
               <button onClick={() => setShowComments(false)} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer' }}><X size={20} /></button>
             </div>
 
-            <form onSubmit={handleAddComment} style={{ display: 'flex', gap: '10px', marginBottom: '25px' }}>
-              <input 
-                type="text" 
-                placeholder={isAuthenticated ? "Tulis pendapat Anda..." : "Login untuk berkomentar..."} 
-                value={newComment}
-                onChange={e => setNewComment(e.target.value)}
-                style={{ 
-                  flex: 1, padding: '12px 20px', borderRadius: '15px', border: '1px solid var(--border-color)',
-                  background: 'var(--bg-secondary)', color: 'var(--text-main)', outline: 'none'
-                }} 
-              />
-              <button disabled={loading} type="submit" style={{ 
-                padding: '12px 20px', borderRadius: '15px', border: 'none', 
-                background: 'var(--primary)', color: 'white', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center'
-              }}>
-                <Send size={20} />
-              </button>
-            </form>
+            <div style={{ position: 'relative' }}>
+              <form onSubmit={handleAddComment} style={{ display: 'flex', gap: '10px', marginBottom: '25px', position: 'relative' }}>
+                <button type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)} style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '15px', padding: '0 15px', color: 'var(--text-main)', cursor: 'pointer' }}>
+                  <Smile size={20} />
+                </button>
+                <input 
+                  type="text" 
+                  placeholder={isAuthenticated ? "Tulis pendapat Anda..." : "Login untuk berkomentar..."} 
+                  value={newComment}
+                  onChange={e => setNewComment(e.target.value)}
+                  style={{ 
+                    flex: 1, padding: '12px 20px', borderRadius: '15px', border: '1px solid var(--border-color)',
+                    background: 'var(--bg-secondary)', color: 'var(--text-main)', outline: 'none'
+                  }} 
+                />
+                <button disabled={loading} type="submit" style={{ 
+                  padding: '12px 20px', borderRadius: '15px', border: 'none', 
+                  background: 'var(--primary)', color: 'white', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}>
+                  <Send size={20} />
+                </button>
+              </form>
+              {showEmojiPicker && (
+                <div style={{ position: 'absolute', bottom: '100%', left: 0, zIndex: 10 }}>
+                  <EmojiPicker onEmojiClick={(emojiData) => setNewComment(prev => prev + emojiData.emoji)} />
+                </div>
+              )}
+            </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxHeight: '400px', overflowY: 'auto', paddingRight: '10px' }}>
               {comments.map(c => (
@@ -378,8 +414,24 @@ const SocialInteractions = () => {
                     {c.userName?.charAt(0).toUpperCase()}
                   </div>
                   <div style={{ background: 'var(--bg-secondary)', padding: '12px 18px', borderRadius: '18px', flex: 1 }}>
-                    <div style={{ fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '4px' }}>{c.userName}</div>
-                    <div style={{ fontSize: '0.9rem', color: 'var(--text-main)', lineHeight: '1.4' }}>{c.text}</div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                      <div style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>{c.userName}</div>
+                      {user && (user.uid === c.userId || user.username === 'albantani' || user.role === 'admin') && (
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button onClick={() => { setEditingCommentId(c.id); setEditCommentText(c.text); }} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', padding: 0 }}><Edit2 size={14} /></button>
+                          <button onClick={() => handleDeleteComment(c.id)} style={{ background: 'none', border: 'none', color: '#fa5252', cursor: 'pointer', padding: 0 }}><Trash2 size={14} /></button>
+                        </div>
+                      )}
+                    </div>
+                    {editingCommentId === c.id ? (
+                      <form onSubmit={(e) => submitEditComment(e, c.id)} style={{ display: 'flex', gap: '5px', marginTop: '5px' }}>
+                        <input type="text" value={editCommentText} onChange={e => setEditCommentText(e.target.value)} style={{ flex: 1, padding: '5px 10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-card)', color: 'var(--text-main)', fontSize: '0.9rem' }} />
+                        <button type="submit" style={{ background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '8px', padding: '5px 10px', cursor: 'pointer', fontSize: '0.8rem' }}>Simpan</button>
+                        <button type="button" onClick={() => setEditingCommentId(null)} style={{ background: 'none', border: '1px solid var(--border-color)', color: 'var(--text-main)', borderRadius: '8px', padding: '5px 10px', cursor: 'pointer', fontSize: '0.8rem' }}>Batal</button>
+                      </form>
+                    ) : (
+                      <div style={{ fontSize: '0.9rem', color: 'var(--text-main)', lineHeight: '1.4' }}>{c.text}</div>
+                    )}
                     <div style={{ fontSize: '0.7rem', color: '#888', marginTop: '6px' }}>
                       {c.timestamp?.seconds ? new Date(c.timestamp.seconds * 1000).toLocaleString() : 'Baru saja'}
                     </div>
