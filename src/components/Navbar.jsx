@@ -139,6 +139,19 @@ const Navbar = () => {
                  </button>
                )}
                {isAuthenticated && (
+                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '15px' }}>
+                   <Link to={`/portfolio/${user?.username || user?.id}`} onClick={() => setIsMobileMenuOpen(false)} style={{ background: 'var(--bg-secondary)', color: 'var(--text-main)', border: '1px solid var(--border-color)', padding: '12px', borderRadius: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', textDecoration: 'none', fontSize: '0.9rem' }}>
+                     🌿 Passport
+                   </Link>
+                   <Link to="/speaker-portal" onClick={() => setIsMobileMenuOpen(false)} style={{ background: 'var(--bg-secondary)', color: 'var(--text-main)', border: '1px solid var(--border-color)', padding: '12px', borderRadius: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', textDecoration: 'none', fontSize: '0.9rem' }}>
+                     🎤 Speaker
+                   </Link>
+                   <Link to="/settings" onClick={() => setIsMobileMenuOpen(false)} style={{ background: 'var(--bg-secondary)', color: 'var(--text-main)', border: '1px solid var(--border-color)', padding: '12px', borderRadius: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', textDecoration: 'none', fontSize: '0.9rem' }}>
+                     ⚙️ Settings
+                   </Link>
+                 </div>
+               )}
+               {isAuthenticated && (
                  <button onClick={() => { logout(); setIsMobileMenuOpen(false); }} style={{ width: '100%', background: '#fff0f0', color: '#e03131', border: '1px solid #ffc9c9', padding: '16px', borderRadius: '12px', fontWeight: 'bold', marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
                    {t('nav_logout')}
                  </button>
