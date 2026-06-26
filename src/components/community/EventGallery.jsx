@@ -67,7 +67,7 @@ const EventGallery = ({ eventId }) => {
         userName: user.username || user.name || 'User',
         url: downloadUrl,
         type: file.type.startsWith('video/') ? 'video' : 'image',
-        storagePath: `events/gallery/${eventId}/${uniqueName}`,
+        storagePath: `events/gallery/${eventId}/${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`,
         timestamp: serverTimestamp()
       });
     } catch (err) {

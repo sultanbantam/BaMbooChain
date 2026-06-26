@@ -316,8 +316,8 @@ const SocialInteractions = ({ entityId }) => {
               Pilih jumlah BMC Token yang ingin dikirimkan sebagai bentuk apresiasi untuk halaman ini:
             </p>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '20px' }}>
-              {["1", "5", "10", "25"].map((amt) => (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '15px' }}>
+              {["10", "50", "100", "500"].map((amt) => (
                 <button
                   key={amt}
                   onClick={() => setGiftAmount(amt)}
@@ -337,6 +337,9 @@ const SocialInteractions = ({ entityId }) => {
               ))}
             </div>
 
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-main)', marginBottom: '8px', fontWeight: 'bold' }}>
+              Atau ketik nominal kustom:
+            </p>
             <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
               <input
                 type="number"
