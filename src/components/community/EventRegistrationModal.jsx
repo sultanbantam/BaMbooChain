@@ -545,7 +545,8 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
               <div key={idx} style={{ backgroundColor: 'rgba(255,255,255,0.05)', padding: '15px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <div style={{ fontWeight: 'bold', color: 'white' }}>{speaker.name}</div>
-                  <div style={{ fontSize: '0.85rem', color: '#adb5bd' }}>{speaker.role}</div>
+                  <div style={{ fontSize: '0.85rem', color: '#adb5bd', marginBottom: speaker.topic ? '4px' : '0' }}>{speaker.role}</div>
+                  {speaker.topic && <div style={{ fontSize: '0.8rem', color: '#51cf66', fontStyle: 'italic' }}>Materi: {speaker.topic}</div>}
                 </div>
                 {cvLink && (
                   <a href={cvLink} target="_blank" rel="noreferrer" style={{ backgroundColor: '#1c7ed6', color: 'white', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', textDecoration: 'none', fontWeight: 'bold' }}>

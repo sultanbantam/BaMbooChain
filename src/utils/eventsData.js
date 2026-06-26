@@ -61,9 +61,13 @@ export const eventsData = [
     image: getAssetUrl('event/bd.png'),
     color: '#e03131',
     speakers: [
-      { name: 'Narasumber Ahli PKR', role: 'Pakar Arsitektur Bambu', cvUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
-      { name: 'Sultan Bantam', role: 'Pendiri BaMbooChain', cvUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
-      { name: 'albantani', role: 'Praktisi', cvUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' }
+      { name: 'Ir. Kreshnariza Harahap, S.T., M.Eng.Sc.', role: 'Direktur Pembiayaan Perumahan Perkotaan Ditjen Perkotaan Kementerian PKP', topic: 'Program Kredit Perumahan dan Potensi Rumah Subsidi', cvUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
+      { name: 'Kuswara, S.T., M.A.', role: 'Direktur Bina Teknik Bangunan Gedung Kementerian PU', topic: 'Uji Kelaikan dan Aspek Struktur Rumah Modular Bambu', cvUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
+      { name: 'Tengku Davis F. Hamid, ST. MT.', role: 'Direktur Bina Penataan Bangunan Kementerian PU', topic: 'PBG untuk Konstruksi Bangunan Bambu', cvUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
+      { name: 'Ir. Doddy Sudradjat Kartanegara', role: 'Narasumber', topic: 'Rumah Ramah Gempa RISHAM', cvUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
+      { name: 'Ir. Permana, M.T.', role: 'Narasumber', topic: 'Rumah Modular Blockwood dan BlockBamboo', cvUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
+      { name: 'U. Ilham, IR., S.Pd., M.Ikom. dan Erfin Setiawan, ST.', role: 'PT Bamboo Republik Indonesia', topic: 'Kesiapan Industri Bambu Laminasi untuk Mendukung Rumah Modular BlockBamboo', cvUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
+      { name: 'PKR Bambu dan PERPUBI', role: 'Tim Ahli & Komunitas', topic: 'Ekosistem Digital Bamboochain dan Demo Game Modular BlockBamboo Constructor v.1.0', cvUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' }
     ],
     materials: [
       { title: 'Modul Perancangan Rumah Modular', fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' }
