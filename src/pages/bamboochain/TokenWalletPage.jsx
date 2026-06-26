@@ -656,8 +656,8 @@ const BuyBMC = () => {
 
   const packages = [
     { bmc: 1, idr: marketPrice.toLocaleString('id-ID'), badge: "1 USDT" },
-    { bmc: 5, idr: Math.floor((5 * marketPrice) * 0.9).toLocaleString('id-ID'), badge: "Hemat 10%" },
-    { bmc: 10, idr: Math.floor((10 * marketPrice) * 0.8).toLocaleString('id-ID'), badge: "Hemat 20%" },
+    { bmc: 5, idr: Math.floor((5 * marketPrice) * 0.9).toLocaleString('id-ID'), badge: t('tw_buy_save_10') },
+    { bmc: 10, idr: Math.floor((10 * marketPrice) * 0.8).toLocaleString('id-ID'), badge: t('tw_buy_save_20') },
   ];
 
   const handleFileChange = (e) => {
@@ -702,36 +702,36 @@ const BuyBMC = () => {
   return (
     <div style={{ animation: 'fadeIn 0.2s', marginTop: '24px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
-        <h3 style={{ fontSize: isMobile ? '1.3rem' : '1.5rem', margin: 0, fontWeight: '900' }}>Buy BMC (Fiat)</h3>
+        <h3 style={{ fontSize: isMobile ? '1.3rem' : '1.5rem', margin: 0, fontWeight: '900' }}>{t('tw_subtab_buy')} (Fiat)</h3>
         <div style={{ fontSize: '0.8rem', background: '#e7f5ff', color: '#1864ab', padding: '4px 12px', borderRadius: '20px', fontWeight: 'bold', border: '1px solid #a5d8ff' }}>
-           Kurs Saat Ini: 1 USDT ≈ Rp {marketPrice.toLocaleString('id-ID')}
+           {t('tw_buy_rate_prefix')}{marketPrice.toLocaleString('id-ID')}
         </div>
       </div>
 
       {activePkg && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'fadeIn 0.2s', backdropFilter: 'blur(5px)' }}>
           <div style={{ background: 'var(--bg-card)', borderRadius: '32px', padding: isMobile ? '24px' : '32px', width: '90%', maxWidth: '440px', maxHeight: '90vh', overflowY: 'auto' }}>
-            <h3 style={{ marginTop: 0, marginBottom: '8px', fontWeight: '900', color: 'var(--text-main)' }}>Konfirmasi: {activePkg.bmc} BMC</h3>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '20px' }}>Transfer <strong>Rp {activePkg.idr}</strong> ke rekening resmi yayasan:</p>
+            <h3 style={{ marginTop: 0, marginBottom: '8px', fontWeight: '900', color: 'var(--text-main)' }}>{t('tw_buy_confirm')} {activePkg.bmc} BMC</h3>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '20px' }}>{t('tw_buy_transfer_1')}<strong>Rp {activePkg.idr}</strong>{t('tw_buy_transfer_2')}</p>
             
             <div style={{ background: 'var(--bg-secondary)', padding: '16px', borderRadius: '16px', marginBottom: '12px', fontSize: '0.8rem', border: '1px solid var(--border-color)', lineHeight: 1.5, color: 'var(--text-main)' }}>
-              <strong>Bank BRI</strong><br/>
-              An. Yayasan Sabumi Nusantara Jaya<br/>
-              NO REK: 141101000456562
+              <strong>{t('tw_buy_bank_name_label')}</strong><br/>
+              {t('tw_buy_bank_account_name')}<br/>
+              {t('tw_buy_bank_account_number')}
             </div>
 
             <div style={{ padding: '16px', background: 'rgba(18, 184, 134, 0.1)', borderRadius: '16px', marginBottom: '20px', border: '1px solid #12b886' }}>
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--text-main)' }}>Nama Lengkap di Rekening Bank:</label>
-                <input type="text" value={bankName} onChange={e => setBankName(e.target.value)} placeholder="Wajib sama dengan Nama KYC" style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', marginBottom: '8px', fontSize: '0.9rem', background: 'var(--bg-color)', color: 'var(--text-main)' }} />
-                <p style={{ margin:0, fontSize: '0.7rem', color: '#12b886' }}>Hanya diproses jika nama pengirim sama dengan profil.</p>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--text-main)' }}>{t('tw_buy_bank_name')}</label>
+                <input type="text" value={bankName} onChange={e => setBankName(e.target.value)} placeholder={t('tw_buy_bank_name_ph')} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', marginBottom: '8px', fontSize: '0.9rem', background: 'var(--bg-color)', color: 'var(--text-main)' }} />
+                <p style={{ margin:0, fontSize: '0.7rem', color: '#12b886' }}>{t('tw_buy_bank_name_note')}</p>
             </div>
 
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)' }}>Upload Bukti Transfer</label>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)' }}>{t('tw_buy_upload')}</label>
             <input type="file" accept="image/*" onChange={handleFileChange} style={{ width: '100%', padding: '10px', borderRadius: '12px', border: '1px solid var(--border-color)', marginBottom: '24px', fontSize: '0.8rem', boxSizing: 'border-box', background: 'var(--bg-color)', color: 'var(--text-main)' }} />
             {paymentProof && <div style={{ marginBottom: '16px', width: '80px', height: '80px', borderRadius: '8px', background: `url(${paymentProof}) center/cover`, border: '1px solid var(--border-color)' }} />}
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-              <button onClick={() => setActivePkg(null)} style={{ padding: '14px', borderRadius: '16px', border: '1px solid var(--border-color)', background: 'transparent', color: 'var(--text-main)', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.9rem' }}>Batal</button>
+              <button onClick={() => setActivePkg(null)} style={{ padding: '14px', borderRadius: '16px', border: '1px solid var(--border-color)', background: 'transparent', color: 'var(--text-main)', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.9rem' }}>{t('tw_buy_cancel')}</button>
               <button 
                 onClick={handlePaymentProofSubmit}
                 style={{ padding: '14px', borderRadius: '16px', border: 'none', background: '#25D366', color: 'white', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(37, 211, 102, 0.2)', fontSize: '0.9rem' }}>
@@ -748,13 +748,13 @@ const BuyBMC = () => {
             {pkg.badge && <div style={{ position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)', background: pkg.bmc === 10 ? '#12b886' : '#f59f00', color: 'white', fontSize: '0.7rem', fontWeight: 'bold', padding: '4px 14px', borderRadius: '20px', whiteSpace: 'nowrap', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}>{pkg.badge}</div>}
             <div style={{ fontSize: '2rem', fontWeight: '900', color: 'var(--text-main)', marginBottom: '4px', marginTop: 'auto' }}>{pkg.bmc} <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>BMC</span></div>
             <div style={{ fontSize: '1.1rem', color: 'var(--primary)', fontWeight: 'bold', marginBottom: '16px' }}>Rp {pkg.idr}</div>
-            <button onClick={() => setActivePkg(pkg)} style={{ width: '100%', background: 'var(--primary)', color: 'white', border: 'none', padding: '12px', borderRadius: '15px', fontWeight: '900', cursor: 'pointer', fontSize: '0.9rem', boxShadow: '0 4px 12px rgba(12, 166, 120, 0.15)', marginTop: 'auto' }}>Pesan Sekarang</button>
+            <button onClick={() => setActivePkg(pkg)} style={{ width: '100%', background: 'var(--primary)', color: 'white', border: 'none', padding: '12px', borderRadius: '15px', fontWeight: '900', cursor: 'pointer', fontSize: '0.9rem', boxShadow: '0 4px 12px rgba(12, 166, 120, 0.15)', marginTop: 'auto' }}>{t('tw_buy_order_now')}</button>
           </div>
         ))}
         
         {/* Custom BMC Amount Card */}
         <div style={{ background: 'white', borderRadius: '24px', padding: '24px', border: '2px dashed var(--primary)', position: 'relative', textAlign: 'center', transition: 'transform 0.2s', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)', background: 'var(--primary)', color: 'white', fontSize: '0.7rem', fontWeight: 'bold', padding: '4px 14px', borderRadius: '20px', whiteSpace: 'nowrap', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}>Beli Bebas</div>
+          <div style={{ position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)', background: 'var(--primary)', color: 'white', fontSize: '0.7rem', fontWeight: 'bold', padding: '4px 14px', borderRadius: '20px', whiteSpace: 'nowrap', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}>{t('tw_buy_custom')}</div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '4px', marginTop: 'auto' }}>
             <input 
               type="number" 
@@ -778,13 +778,13 @@ const BuyBMC = () => {
               }
             }} 
             style={{ width: '100%', background: 'white', color: 'var(--primary)', border: '2px solid var(--primary)', padding: '10px', borderRadius: '15px', fontWeight: '900', cursor: 'pointer', fontSize: '0.9rem', marginTop: 'auto' }}>
-            Pesan Sekarang
+            {t('tw_buy_order_now')}
           </button>
         </div>
       </div>
       <div style={{ background: '#f8f9fa', padding: '20px', borderRadius: '20px', fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.6, border: '1px solid #e9ecef' }}>
-        <strong>💳 Metode Pembayaran Terdukung:</strong><br/>
-        Transfer Bank (BRI, BCA, Mandiri), E-Wallet (OVO, Dana, ShopeePay, GoPay).
+        <strong>{t('tw_buy_payment_methods')}</strong><br/>
+        {t('tw_buy_payment_desc')}
       </div>
     </div>
   );
@@ -1687,6 +1687,7 @@ const MarketplaceActBMC = () => (
 const GetBMCTab = () => {
   const location = useLocation();
   const [subTab, setSubTab] = useState(location.search.includes('tab=validator') ? 'validator' : 'earn');
+  const { t } = useLanguage();
   
   const isPiBrowser = window.Pi && (
     window.location.hostname.includes('vercel.app') || 
@@ -1695,16 +1696,16 @@ const GetBMCTab = () => {
   );
 
   const subTabs = [
-    { id: 'earn', label: 'Earn (Gratis)' },
-    ...(!isPiBrowser ? [{ id: 'buy', label: 'Buy BMC' }] : []),
-    { id: 'contribute', label: 'Contribute Data' },
-    { id: 'validator', label: 'Validator' },
-    { id: 'marketplace', label: 'Marketplace' },
+    { id: 'earn', label: t('tw_subtab_earn') },
+    ...(!isPiBrowser ? [{ id: 'buy', label: t('tw_subtab_buy') }] : []),
+    { id: 'contribute', label: t('tw_subtab_contribute') },
+    { id: 'validator', label: t('tw_subtab_validator') },
+    { id: 'marketplace', label: t('tw_subtab_marketplace') },
   ];
 
   return (
     <div style={{ animation: 'fadeIn 0.3s ease-in-out' }}>
-      <h2 style={{ fontSize: '2.5rem', fontWeight: '900', color: 'var(--text-main)', marginBottom: '20px' }}>Get BMC</h2>
+      <h2 style={{ fontSize: '2.5rem', fontWeight: '900', color: 'var(--text-main)', marginBottom: '20px' }}>{t('tw_tab_get_bmc')}</h2>
 
       {/* Internal Navigation */}
       <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '10px', borderBottom: '1px solid #dee2e6' }}>
