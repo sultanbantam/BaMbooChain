@@ -1961,19 +1961,19 @@ const KYCCenterTab = () => {
 
   const getDocLabel = () => {
     switch (docType) {
-      case 'Passport': return 'Nomor Paspor (Passport Number)';
-      case 'SIM': return 'Nomor SIM (Driver License Number)';
-      case 'StudentCard': return 'Nomor Kartu Pelajar / Mahasiswa (Student ID)';
-      default: return 'NIK (Nomor Induk Kependudukan - KTP)';
+      case 'Passport': return t('tw_kyc_lbl_passport');
+      case 'SIM': return t('tw_kyc_lbl_sim');
+      case 'StudentCard': return t('tw_kyc_lbl_student');
+      default: return t('tw_kyc_lbl_ktp');
     }
   };
 
   const getDocPlaceholder = () => {
     switch (docType) {
-      case 'Passport': return 'Contoh: A12345678';
-      case 'SIM': return 'Contoh: 123456789012';
-      case 'StudentCard': return 'Contoh: 20260518';
-      default: return '16 digit angka NIK';
+      case 'Passport': return t('tw_kyc_ph_passport');
+      case 'SIM': return t('tw_kyc_ph_sim');
+      case 'StudentCard': return t('tw_kyc_ph_student');
+      default: return t('tw_kyc_ph_ktp');
     }
   };
 
@@ -1990,7 +1990,7 @@ const KYCCenterTab = () => {
   return (
     <div style={{ animation: 'fadeIn 0.3s ease-in-out' }}>
       <h2 style={{ fontSize: isMobile ? '1.8rem' : '2.5rem', fontWeight: '900', color: 'var(--text-main)', marginBottom: '8px' }}>KYC Center</h2>
-      <p style={{ color: 'var(--text-muted)', fontSize: '1rem', marginBottom: '32px' }}>Verifikasi identitas untuk akses penuh ekosistem.</p>
+      <p style={{ color: 'var(--text-muted)', fontSize: '1rem', marginBottom: '32px' }}>{t('tw_kyc_desc')}</p>
 
       {/* Futuristic Scanner Overlay */}
       {scanStep && (
@@ -2096,16 +2096,16 @@ const KYCCenterTab = () => {
           <form onSubmit={handleKycSubmit} style={{ flex: 1, width: '100%', background: 'white', borderRadius: '24px', padding: isMobile ? '24px' : '32px', boxShadow: '0 8px 24px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column', gap: '20px' }}>
              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px' }}>
                 <div>
-                   <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 'bold' }}>Nama Lengkap (Sesuai Identitas)</label>
+                   <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 'bold' }}>{t('tw_kyc_name')}</label>
                    <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} required style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1.5px solid #e9ecef', fontSize: '0.95rem' }} />
                 </div>
                 <div>
-                   <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 'bold' }}>Jenis Dokumen Identitas</label>
+                   <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 'bold' }}>{t('tw_kyc_doc_type')}</label>
                    <select value={docType} onChange={(e) => { setDocType(e.target.value); setNik(''); }} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1.5px solid #e9ecef', fontSize: '0.95rem', outlineColor: 'var(--primary)', background: 'white' }}>
-                      <option value="KTP">KTP (Kartu Tanda Penduduk - Indonesia)</option>
-                      <option value="Passport">Paspor (Passport - Global)</option>
-                      <option value="SIM">SIM (Surat Izin Mengemudi)</option>
-                      <option value="StudentCard">Kartu Pelajar / Kartu Mahasiswa (Student ID)</option>
+                      <option value="KTP">{t('tw_kyc_doc_ktp')}</option>
+                      <option value="Passport">{t('tw_kyc_doc_passport')}</option>
+                      <option value="SIM">{t('tw_kyc_doc_sim')}</option>
+                      <option value="StudentCard">{t('tw_kyc_doc_student')}</option>
                    </select>
                 </div>
              </div>
@@ -2116,7 +2116,7 @@ const KYCCenterTab = () => {
              </div>
              
              <div>
-                <label style={{ display: 'block', marginBottom: '12px', fontSize: '0.85rem', fontWeight: 'bold' }}>Foto Identitas & Selfie</label>
+                <label style={{ display: 'block', marginBottom: '12px', fontSize: '0.85rem', fontWeight: 'bold' }}>{t('tw_kyc_photo_selfie')}</label>
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px' }}>
                    <div style={{ background: '#f8f9fa', padding: '24px', borderRadius: '20px', border: '1.5px dashed #dee2e6', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '220px' }}>
                       {ktpPhoto ? (
@@ -2127,12 +2127,12 @@ const KYCCenterTab = () => {
                       ) : (
                         <>
                           <Camera size={28} color="#adb5bd" style={{ marginBottom: '8px' }} />
-                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>{docType} Asli</div>
-                          <div style={{ fontSize: '0.65rem', color: '#adb5bd', marginTop: '2px' }}>Belum ada foto dipilih</div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>{docType} {t('tw_kyc_original')}</div>
+                          <div style={{ fontSize: '0.65rem', color: '#adb5bd', marginTop: '2px' }}>{t('tw_kyc_no_photo')}</div>
                         </>
                       )}
                       <input type="file" accept="image/*" style={{ display: 'none' }} id="ktp-upload" onChange={handleKtpChange} />
-                      <button type="button" onClick={() => document.getElementById('ktp-upload').click()} style={{ marginTop: '12px', background: 'white', padding: '8px 16px', borderRadius: '8px', border: '1px solid #dee2e6', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', width: '100%' }}>Pilih Foto</button>
+                      <button type="button" onClick={() => document.getElementById('ktp-upload').click()} style={{ marginTop: '12px', background: 'white', padding: '8px 16px', borderRadius: '8px', border: '1px solid #dee2e6', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', width: '100%' }}>{t('tw_kyc_choose_photo')}</button>
                    </div>
                    <div style={{ background: '#f8f9fa', padding: '24px', borderRadius: '20px', border: '1.5px dashed #dee2e6', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '220px' }}>
                       {selfiePhoto ? (
@@ -2144,32 +2144,32 @@ const KYCCenterTab = () => {
                         <>
                           <Users size={28} color="#adb5bd" style={{ marginBottom: '8px' }} />
                           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>Selfie + {docType}</div>
-                          <div style={{ fontSize: '0.65rem', color: '#adb5bd', marginTop: '2px' }}>Belum ada foto dipilih</div>
+                          <div style={{ fontSize: '0.65rem', color: '#adb5bd', marginTop: '2px' }}>{t('tw_kyc_no_photo')}</div>
                         </>
                       )}
                       <input type="file" accept="image/*" style={{ display: 'none' }} id="selfie-upload" onChange={handleSelfieChange} />
-                      <button type="button" onClick={() => document.getElementById('selfie-upload').click()} style={{ marginTop: '12px', background: 'white', padding: '8px 16px', borderRadius: '8px', border: '1px solid #dee2e6', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', width: '100%' }}>Pilih Foto</button>
+                      <button type="button" onClick={() => document.getElementById('selfie-upload').click()} style={{ marginTop: '12px', background: 'white', padding: '8px 16px', borderRadius: '8px', border: '1px solid #dee2e6', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', width: '100%' }}>{t('tw_kyc_choose_photo')}</button>
                    </div>
                 </div>
              </div>
 
-             <div style={{ background: '#fff9db', padding: '16px', borderRadius: '16px', fontSize: '0.8rem', color: '#856404', display: 'flex', gap: '12px', lineHeight: 1.4 }}>
+             <div style={{ background: 'rgba(250, 176, 5, 0.1)', padding: '16px', borderRadius: '16px', fontSize: '0.8rem', color: '#f59f00', border: '1px solid #fcc419', display: 'flex', gap: '12px', lineHeight: 1.4 }}>
                 <ShieldCheck size={20} style={{ flexShrink: 0 }} />
-                <span>Saya menyatakan data ini benar dan setuju dengan kebijakan privasi.</span>
+                <span style={{ color: '#f59f00', fontWeight: 'bold' }}>{t('tw_kyc_agreement')}</span>
              </div>
 
              <button disabled={loading} type="submit" style={{ width: '100%', padding: '16px', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '16px', fontWeight: '900', cursor: loading ? 'not-allowed' : 'pointer', fontSize: '1rem', boxShadow: '0 8px 20px rgba(12,166,120,0.2)' }}>
-                {loading ? "Mengirim..." : "Kirim Pengajuan"}
+                {loading ? t('tw_kyc_sending') : t('tw_kyc_submit')}
              </button>
           </form>
 
           {!isMobile && (
             <div style={{ width: '300px', background: '#f1f3f5', borderRadius: '24px', padding: '24px' }}>
-               <h4 style={{ margin: '0 0 16px 0', fontSize: '1.1rem', fontWeight: '900' }}>Kenapa KYC?</h4>
+               <h4 style={{ margin: '0 0 16px 0', fontSize: '1.1rem', fontWeight: '900' }}>{t('tw_kyc_why')}</h4>
                <ul style={{ paddingLeft: '20px', margin: 0, display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                  <li><strong>Keamanan:</strong> Menghindari serangan bot massal.</li>
-                  <li><strong>Kepatuhan:</strong> Memenuhi regulasi aset digital.</li>
-                  <li><strong>Prioritas:</strong> Reward lebih tinggi untuk akun terverifikasi.</li>
+                  <li><strong>{t('tw_kyc_why_security')}</strong> {t('tw_kyc_why_security_desc')}</li>
+                  <li><strong>{t('tw_kyc_why_compliance')}</strong> {t('tw_kyc_why_compliance_desc')}</li>
+                  <li><strong>{t('tw_kyc_why_priority')}</strong> {t('tw_kyc_why_priority_desc')}</li>
                </ul>
             </div>
           )}
