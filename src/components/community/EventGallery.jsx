@@ -72,7 +72,7 @@ const EventGallery = ({ eventId }) => {
       });
     } catch (err) {
       console.error("Upload error:", err);
-      alert("Gagal mengunggah file. Pastikan Storage Firebase aktif.");
+      alert("Error: " + err.message);
     } finally {
       setIsUploading(false);
       setUploadProgressText('');
@@ -126,8 +126,11 @@ const EventGallery = ({ eventId }) => {
                 <img src={media.url} alt="Gallery" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               )}
               
-              <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '20px 10px 5px', background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)', color: 'white', fontSize: '0.75rem', fontWeight: 'bold' }}>
-                {media.userName}
+              <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '20px 10px 5px', background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)', color: 'white', fontSize: '0.75rem', fontWeight: 'bold', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>{media.userName}</span>
+                <button style={{ background: 'none', border: 'none', color: '#ffec99', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }} onClick={() => alert("Fitur Suka / Emoji pada foto akan segera hadir!")}>
+                  🔥
+                </button>
               </div>
 
               {user && (user.uid === media.userId || user.username === 'albantani' || user.role === 'admin') && (
