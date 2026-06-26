@@ -134,7 +134,8 @@ const SocialInteractions = ({ entityId, inCard = false, customShareTitle, custom
       return;
     }
     
-    const likeId = `${user.uid}_${pageId}`;
+    const userId = user.id || user.uid;
+    const likeId = `${userId}_${pageId}`;
     const statsRef = doc(db, 'page_stats', pageId);
     const likeRef = doc(db, 'page_likes', likeId);
 
@@ -146,7 +147,7 @@ const SocialInteractions = ({ entityId, inCard = false, customShareTitle, custom
         setHasLiked(false);
       } else {
         // Like
-        await setDoc(likeRef, { userId: user.uid, pageId, timestamp: serverTimestamp() });
+        await setDoc(likeRef, { userId: userId, pageId, timestamp: serverTimestamp() });
         await setDoc(statsRef, { likes: increment(1) }, { merge: true });
         setHasLiked(true);
       }
@@ -167,9 +168,10 @@ const SocialInteractions = ({ entityId, inCard = false, customShareTitle, custom
     
     setLoading(true);
     try {
+      const userId = user.id || user.uid;
       await addDoc(collection(db, 'page_comments'), {
         pageId,
-        userId: user.uid,
+        userId: userId,
         userName: user.displayName || user.username || 'User',
         userAvatar: user.photoURL || null,
         text: newComment,
@@ -219,7 +221,8 @@ const SocialInteractions = ({ entityId, inCard = false, customShareTitle, custom
       alert("⚠️ Gagal menemukan penerima gift. Silakan coba lagi.");
       return;
     }
-    if (user.uid === adminRecipient.uid) {
+    const userId = user.id || user.uid;
+    if (userId === adminRecipient.uid) {
       alert("⚠️ Anda tidak bisa mengirimkan Gift ke diri sendiri!");
       return;
     }
@@ -241,7 +244,7 @@ const SocialInteractions = ({ entityId, inCard = false, customShareTitle, custom
         // Add a doc in page_gifts to log the gift details
         await addDoc(collection(db, 'page_gifts'), {
           pageId,
-          senderId: user.uid,
+          senderId: userId,
           senderName: user.displayName || user.username || 'User',
           amount: val,
           timestamp: serverTimestamp()
