@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Heart, MessageSquare, Share2, Send, X, Gift, Smile, Trash2, Edit2 } from 'lucide-react';
+import { Heart, MessageSquare, Share2, Send, X, Gift, Smile, Trash2, Edit2, UserPlus, UserCheck } from 'lucide-react';
 import EmojiPicker from 'emoji-picker-react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -28,6 +28,8 @@ const SocialInteractions = ({ entityId, inCard = false, customShareTitle, custom
   
   const [likes, setLikes] = useState(0);
   const [hasLiked, setHasLiked] = useState(false);
+  const [hasFollowed, setHasFollowed] = useState(false);
+  const [followersCount, setFollowersCount] = useState(0);
   const [comments, setComments] = useState([]);
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState('');
@@ -94,9 +96,11 @@ const SocialInteractions = ({ entityId, inCard = false, customShareTitle, custom
         const data = docSnap.data();
         setLikes(data.likes || 0);
         setGiftsCount(data.gifts || 0);
+        setFollowersCount(data.followers || 0);
       } else {
         setLikes(0);
         setGiftsCount(0);
+        setFollowersCount(0);
       }
     });
 
@@ -112,13 +116,20 @@ const SocialInteractions = ({ entityId, inCard = false, customShareTitle, custom
 
     // Check if user has liked
     if (user) {
+      const userId = user.id || user.uid;
       const checkLike = async () => {
-        const likeSnap = await getDocs(query(collection(db, 'page_likes'), where('userId', '==', user.uid), where('pageId', '==', pageId)));
+        const likeSnap = await getDocs(query(collection(db, 'page_likes'), where('userId', '==', userId), where('pageId', '==', pageId)));
         setHasLiked(!likeSnap.empty);
       };
+      const checkFollow = async () => {
+        const followSnap = await getDocs(query(collection(db, 'page_followers'), where('userId', '==', userId), where('pageId', '==', pageId)));
+        setHasFollowed(!followSnap.empty);
+      };
       checkLike();
+      checkFollow();
     } else {
       setHasLiked(false);
+      setHasFollowed(false);
     }
 
     return () => {
@@ -153,6 +164,34 @@ const SocialInteractions = ({ entityId, inCard = false, customShareTitle, custom
       }
     } catch (err) {
       console.error("Social Error:", err);
+      alert("Gagal memproses. Pesan error: " + err.message);
+    }
+  };
+
+  const handleFollow = async () => {
+    if (!isAuthenticated || !user) {
+      alert("⚠️ Harap login terlebih dahulu untuk Mengikuti!");
+      openLoginModal();
+      return;
+    }
+    
+    const userId = user.id || user.uid;
+    const followId = `${userId}_${pageId}`;
+    const statsRef = doc(db, 'page_stats', pageId);
+    const followRef = doc(db, 'page_followers', followId);
+
+    try {
+      if (hasFollowed) {
+        await deleteDoc(followRef);
+        await setDoc(statsRef, { followers: increment(-1) }, { merge: true });
+        setHasFollowed(false);
+      } else {
+        await setDoc(followRef, { userId: userId, pageId, timestamp: serverTimestamp() });
+        await setDoc(statsRef, { followers: increment(1) }, { merge: true });
+        setHasFollowed(true);
+      }
+    } catch (err) {
+      console.error("Follow Error:", err);
       alert("Gagal memproses. Pesan error: " + err.message);
     }
   };
@@ -280,6 +319,13 @@ const SocialInteractions = ({ entityId, inCard = false, customShareTitle, custom
             <Heart size={24} fill={hasLiked ? '#fa5252' : 'none'} /> {likes} {t('action_like')}
           </button>
           
+          <button onClick={handleFollow} style={{
+            display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: 'none',
+            color: hasFollowed ? 'var(--primary)' : 'var(--text-muted)', cursor: 'pointer', fontSize: '1rem', fontWeight: 'bold'
+          }}>
+            {hasFollowed ? <UserCheck size={24} /> : <UserPlus size={24} />} {followersCount} Pengikut
+          </button>
+
           <button onClick={() => setShowComments(!showComments)} style={{
             display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: 'none',
             color: 'var(--text-muted)', cursor: 'pointer', fontSize: '1rem', fontWeight: 'bold'
