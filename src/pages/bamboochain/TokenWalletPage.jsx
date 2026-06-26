@@ -2008,14 +2008,14 @@ const KYCCenterTab = () => {
               </div>
             </div>
 
-            <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '900', letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--primary)' }}>🤖 AI Liveness & Fraud Engine</h3>
+            <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '900', letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--primary)' }}>{t('tw_kyc_ai_title')}</h3>
             
             <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '12px', textAlign: 'left', background: '#f8f9fa', padding: '20px', borderRadius: '20px', border: '1px solid #dee2e6' }}>
               {[
-                { key: 'analyzing', label: '1. Menganalisis metadata EXIF file asli...' },
-                { key: 'ela', label: '2. Memeriksa ELA (Error Level Analysis) editan foto...' },
-                { key: 'deepfake', label: '3. Memindai rekayasa AI & Deepfake wajah...' },
-                { key: 'facematch', label: '4. Pencocokan biometrik wajah (Kemiripan: 98.4%)...' }
+                { key: 'analyzing', label: t('tw_kyc_ai_step1') },
+                { key: 'ela', label: t('tw_kyc_ai_step2') },
+                { key: 'deepfake', label: t('tw_kyc_ai_step3') },
+                { key: 'facematch', label: t('tw_kyc_ai_step4') }
               ].map((step, idx) => {
                 const stepsOrder = ['analyzing', 'ela', 'deepfake', 'facematch', 'success'];
                 const currentIdx = stepsOrder.indexOf(scanStep);
@@ -2046,11 +2046,11 @@ const KYCCenterTab = () => {
 
             {scanStep === 'success' ? (
               <div style={{ background: '#e6fcf5', color: '#099268', padding: '12px 24px', borderRadius: '12px', fontSize: '0.85rem', fontWeight: 'bold', border: '1.5px solid #12b886', animation: 'pulse 1.5s infinite' }}>
-                🎉 AI VERDICT: DOKUMEN 100% ASLI & AMAN!
+                {t('tw_kyc_ai_success')}
               </div>
             ) : (
               <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontStyle: 'italic' }}>
-                Mohon tidak menutup jendela ini selama pemindaian AI berlangsung...
+                {t('tw_kyc_ai_wait')}
               </div>
             )}
           </div>
@@ -2081,14 +2081,14 @@ const KYCCenterTab = () => {
            <div style={{ width: '80px', height: '80px', background: user?.kycStatus === 'verified' ? '#e6fcf5' : '#fff9db', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px auto' }}>
               <ShieldCheck size={40} color={user?.kycStatus === 'verified' ? '#12b886' : '#fab005'} />
            </div>
-           <h3 style={{ fontSize: '1.5rem', marginBottom: '12px', fontWeight: '900' }}>{user?.kycStatus === 'verified' ? "Verified!" : "Under Review"}</h3>
+           <h3 style={{ fontSize: '1.5rem', marginBottom: '12px', fontWeight: '900' }}>{user?.kycStatus === 'verified' ? t('tw_kyc_status_verified_title') : t('tw_kyc_status_review_title')}</h3>
            <p style={{ color: 'var(--text-muted)', maxWidth: '400px', margin: '0 auto 24px auto', fontSize: '0.9rem' }}>
              {user?.kycStatus === 'verified' 
-               ? "Selamat! Akun Anda telah terverifikasi penuh."
-               : "Mohon tunggu, tim kami sedang memvalidasi dokumen Anda."}
+               ? t('tw_kyc_status_verified_desc')
+               : t('tw_kyc_status_review_desc')}
            </p>
            <div style={{ padding: '12px 24px', background: '#f8f9fa', borderRadius: '12px', display: 'inline-block', fontSize: '0.9rem', fontWeight: 'bold' }}>
-             Status: <span style={{ color: user?.kycStatus === 'verified' ? '#12b886' : '#fab005' }}>{(user?.kycStatus || 'pending').toUpperCase()}</span>
+             {t('tw_kyc_status_label')} <span style={{ color: user?.kycStatus === 'verified' ? '#12b886' : '#fab005' }}>{(user?.kycStatus || 'pending').toUpperCase()}</span>
            </div>
         </div>
       ) : (
