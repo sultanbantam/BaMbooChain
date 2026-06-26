@@ -623,6 +623,7 @@ export const translations = {
     tw_tab_staking: "Staking (Opsional)",
     tw_tab_utility: "Token Utility",
     tw_menu_title: "Menu Token & Wallet",
+    tw_bmc_desc: "BMC adalah token utilitas untuk mengakses layanan, mendapatkan reward, dan berpartisipasi dalam ekosistem bambu digital yang transparan.",
 
     // Token Wallet - Get BMC / Contribute Data
     tw_contribute_title: "Contribute Bamboo Data",

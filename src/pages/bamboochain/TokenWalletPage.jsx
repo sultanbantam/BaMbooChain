@@ -58,7 +58,7 @@ const OverviewTab = ({ setActiveTab, setInitialModal }) => {
     <div style={{ animation: 'fadeIn 0.3s ease-in-out', paddingTop: isMobile ? '8px' : '16px' }}>
       <h2 style={{ fontSize: isMobile ? '1.8rem' : '2.5rem', fontWeight: '900', color: 'var(--text-main)', marginTop: '0', marginBottom: '8px', letterSpacing: '-0.5px' }}>bambuNUSA (BMC)</h2>
       <p style={{ color: 'var(--text-muted)', fontSize: isMobile ? '0.9rem' : '1.1rem', marginBottom: '24px', maxWidth: '800px', lineHeight: 1.5 }}>
-        BMC adalah token utilitas untuk mengakses layanan, mendapatkan reward, dan berpartisipasi dalam ekosistem bambu digital yang transparan.
+        {t('tw_bmc_desc')}
       </p>
 
       {user?.walletAddress && (
