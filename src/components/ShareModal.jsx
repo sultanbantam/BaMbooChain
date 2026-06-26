@@ -78,12 +78,12 @@ const ShareModal = ({ isOpen, onClose, shareUrl, shareTitle, url, title }) => {
       >
         <button 
           onClick={onClose}
-          style={{ position: 'absolute', top: '20px', right: '20px', border: 'none', background: 'rgba(0,0,0,0.05)', borderRadius: '50%', width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-main)' }}
+          style={{ position: 'absolute', top: '20px', right: '20px', border: 'none', background: 'rgba(0,0,0,0.05)', borderRadius: '50%', width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-main)', zIndex: 10 }}
         >
           <X size={16} />
         </button>
 
-        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '24px', padding: '0 20px' }}>
           <h3 style={{ fontSize: '1.25rem', fontWeight: '900', margin: '0 0 8px 0', color: 'var(--text-main)' }}>Bagikan Ke Sosial Media</h3>
           <p style={{ fontSize: '0.88rem', color: 'var(--text-muted, #888888)', margin: 0 }}>
             Pilih platform untuk membagikan tautan ini.

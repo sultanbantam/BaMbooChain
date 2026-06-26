@@ -20,7 +20,7 @@ import {
 import { db } from '../firebase/config';
 import ShareModal from './ShareModal';
 
-const SocialInteractions = ({ entityId, inCard = false }) => {
+const SocialInteractions = ({ entityId, inCard = false, customShareTitle, customShareUrl }) => {
   const { user, isAuthenticated, openLoginModal, giftBmc } = useAuth();
   const { t } = useLanguage();
   const location = useLocation();
@@ -152,6 +152,7 @@ const SocialInteractions = ({ entityId, inCard = false }) => {
       }
     } catch (err) {
       console.error("Social Error:", err);
+      alert("Gagal memproses. Pesan error: " + err.message);
     }
   };
 
@@ -267,8 +268,8 @@ const SocialInteractions = ({ entityId, inCard = false }) => {
       borderTop: '1px solid var(--border-color)',
       marginTop: '40px'
     }}>
-      <div className="container" style={{ maxWidth: '800px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '24px', marginBottom: '20px' }}>
+      <div className="container" style={{ maxWidth: '800px', width: '100%' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: inCard ? '12px' : '24px', marginBottom: '20px', flexWrap: 'wrap' }}>
           <button onClick={handleLike} style={{
             display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: 'none',
             color: hasLiked ? '#fa5252' : 'var(--text-muted)', cursor: 'pointer', fontSize: '1rem', fontWeight: 'bold'
@@ -301,9 +302,10 @@ const SocialInteractions = ({ entityId, inCard = false }) => {
         {/* Collapsible Tipping/Gift Form */}
         {isGiftFormActive && (
           <div style={{
-            background: 'var(--bg-card)', padding: '25px', borderRadius: '24px', 
+            background: 'var(--bg-card)', padding: inCard ? '15px' : '25px', borderRadius: '24px', 
             border: '1px solid var(--border-color)', boxShadow: '0 10px 30px rgba(0,0,0,0.05)',
-            marginBottom: '20px'
+            marginBottom: '20px',
+            width: '100%', boxSizing: 'border-box'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <h4 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -340,7 +342,7 @@ const SocialInteractions = ({ entityId, inCard = false }) => {
             <p style={{ fontSize: '0.85rem', color: 'var(--text-main)', marginBottom: '8px', fontWeight: 'bold' }}>
               Atau ketik nominal kustom:
             </p>
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
               <input
                 type="number"
                 value={giftAmount}
@@ -368,16 +370,17 @@ const SocialInteractions = ({ entityId, inCard = false }) => {
 
         {showComments && (
           <div style={{ 
-            background: 'var(--bg-card)', padding: '25px', borderRadius: '24px', 
-            border: '1px solid var(--border-color)', boxShadow: '0 10px 30px rgba(0,0,0,0.05)'
+            background: 'var(--bg-card)', padding: inCard ? '15px' : '25px', borderRadius: '24px', 
+            border: '1px solid var(--border-color)', boxShadow: '0 10px 30px rgba(0,0,0,0.05)',
+            width: '100%', boxSizing: 'border-box'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <h4 style={{ margin: 0 }}>Komentar Komunitas</h4>
               <button onClick={() => setShowComments(false)} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer' }}><X size={20} /></button>
             </div>
 
-            <div style={{ position: 'relative' }}>
-              <form onSubmit={handleAddComment} style={{ display: 'flex', gap: '10px', marginBottom: '25px', position: 'relative' }}>
+            <div style={{ position: 'relative', width: '100%', boxSizing: 'border-box' }}>
+              <form onSubmit={handleAddComment} style={{ display: 'flex', gap: '8px', marginBottom: '25px', position: 'relative', flexWrap: 'wrap' }}>
                 <button type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)} style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '15px', padding: '0 15px', color: 'var(--text-main)', cursor: 'pointer' }}>
                   <Smile size={20} />
                 </button>
@@ -452,8 +455,8 @@ const SocialInteractions = ({ entityId, inCard = false }) => {
       <ShareModal 
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
-        shareUrl={window.location.href}
-        shareTitle="Lihat halaman menarik ini di BaMbooChain!"
+        shareUrl={customShareUrl || window.location.href}
+        shareTitle={customShareTitle || "Lihat halaman menarik ini di BaMbooChain!"}
       />
     </div>
   );

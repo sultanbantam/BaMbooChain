@@ -93,7 +93,6 @@ const EventsPage = () => {
     card: {
       backgroundColor: 'rgba(255,255,255,0.05)',
       borderRadius: '24px',
-      overflow: 'hidden',
       border: '1px solid rgba(255,255,255,0.1)',
       transition: 'all 0.3s ease',
       display: 'flex',
@@ -103,7 +102,9 @@ const EventsPage = () => {
       height: '200px',
       width: '100%',
       objectFit: 'cover',
-      objectPosition: 'top'
+      objectPosition: 'top',
+      borderTopLeftRadius: '24px',
+      borderTopRightRadius: '24px'
     },
     cardBody: {
       padding: '25px',
@@ -194,7 +195,12 @@ const EventsPage = () => {
             >
               IKUTI EVENT / INFORMASI
             </button>
-            <SocialInteractions entityId={featuredEvent.id} inCard={true} />
+            <SocialInteractions 
+              entityId={featuredEvent.id} 
+              inCard={true} 
+              customShareTitle={`Acara BaMbooChain: ${featuredEvent.title}\n📅 ${featuredEvent.date}\n📍 ${featuredEvent.location}\n\nMari ikuti acara ini!`}
+              customShareUrl={`https://www.bamboochain.id/#/events`}
+            />
           </div>
         </motion.div>
 
@@ -232,7 +238,12 @@ const EventsPage = () => {
                 >
                   IKUTI EVENT / INFORMASI
                 </button>
-                <SocialInteractions entityId={event.id} inCard={true} />
+                <SocialInteractions 
+                  entityId={event.id} 
+                  inCard={true} 
+                  customShareTitle={`Acara BaMbooChain: ${event.title}\n📅 ${event.date}\n📍 ${event.location}\n\nMari ikuti acara ini!`}
+                  customShareUrl={`https://www.bamboochain.id/#/events`}
+                />
               </div>
             </motion.div>
           ))}
