@@ -1748,6 +1748,7 @@ export const translations = {
     tw_tab_staking: "Staking (Optional)",
     tw_tab_utility: "Token Utility",
     tw_menu_title: "Token & Wallet Menu",
+    tw_bmc_desc: "BMC is a utility token to access services, earn rewards, and participate in a transparent digital bamboo ecosystem.",
 
     tw_buy_rate_prefix: "Current Rate: 1 USDT ≈ Rp ",
 
@@ -3018,6 +3019,7 @@ tw_alert_kyc_req: "To contribute, you must verify your account (KYC) first.",
     "tw_tab_staking": "ステーキング (オプション)",
     "tw_tab_utility": "トークンユーティリティ",
     "tw_menu_title": "トークンとウォレットのメニュー",
+    "tw_bmc_desc": "BMCは、サービスへのアクセス、報酬の獲得、および透明なデジタル竹エコシステムへの参加のためのユーティリティトークンです。",
 
     "tw_buy_rate_prefix": "現在のレート: 1 USDT ≈ Rp ",
 
