@@ -186,7 +186,7 @@ export function useSpeakerMaterials(eventId) {
 export async function uploadSpeakerMaterial(file, eventId, speakerName, type) {
   if (!file) throw new Error("No file provided");
   
-  const cloudName = "dslieguutz";
+  const cloudName = "dsieguutz";
   const uploadPreset = "bamboochain_upload";
   
   if (!cloudName || !uploadPreset) {

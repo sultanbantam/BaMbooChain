@@ -37,7 +37,7 @@ const EventGallery = ({ eventId }) => {
     setIsUploading(true);
     setUploadProgressText(`Mengunggah ${type}...`);
     try {
-      const cloudName = "dslieguutz";
+      const cloudName = "dsieguutz";
       const uploadPreset = "bamboochain_upload";
       
       if (!cloudName || !uploadPreset) {
