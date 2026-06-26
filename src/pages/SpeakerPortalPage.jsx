@@ -83,12 +83,7 @@ const SpeakerPortalPage = () => {
         if (speakerObj) finalSpeakerName = speakerObj.name;
       }
       
-      const uploadPromise = uploadSpeakerMaterial(file, selectedEvent.id, finalSpeakerName, type);
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error("Koneksi Firebase gagal atau lambat. Pastikan fitur Storage sudah aktif di Firebase Console.")), 8000)
-      );
-      
-      await Promise.race([uploadPromise, timeoutPromise]);
+      await uploadSpeakerMaterial(file, selectedEvent.id, finalSpeakerName, type);
       
       clearInterval(progressInterval);
       setUploadProgress(100);
