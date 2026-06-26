@@ -710,28 +710,28 @@ const BuyBMC = () => {
 
       {activePkg && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'fadeIn 0.2s', backdropFilter: 'blur(5px)' }}>
-          <div style={{ background: 'white', borderRadius: '32px', padding: isMobile ? '24px' : '32px', width: '90%', maxWidth: '440px', maxHeight: '90vh', overflowY: 'auto' }}>
-            <h3 style={{ marginTop: 0, marginBottom: '8px', fontWeight: '900' }}>Konfirmasi: {activePkg.bmc} BMC</h3>
+          <div style={{ background: 'var(--bg-card)', borderRadius: '32px', padding: isMobile ? '24px' : '32px', width: '90%', maxWidth: '440px', maxHeight: '90vh', overflowY: 'auto' }}>
+            <h3 style={{ marginTop: 0, marginBottom: '8px', fontWeight: '900', color: 'var(--text-main)' }}>Konfirmasi: {activePkg.bmc} BMC</h3>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '20px' }}>Transfer <strong>Rp {activePkg.idr}</strong> ke rekening resmi yayasan:</p>
             
-            <div style={{ background: '#f8f9fa', padding: '16px', borderRadius: '16px', marginBottom: '12px', fontSize: '0.8rem', border: '1px solid #e9ecef', lineHeight: 1.5 }}>
+            <div style={{ background: 'var(--bg-secondary)', padding: '16px', borderRadius: '16px', marginBottom: '12px', fontSize: '0.8rem', border: '1px solid var(--border-color)', lineHeight: 1.5, color: 'var(--text-main)' }}>
               <strong>Bank BRI</strong><br/>
               An. Yayasan Sabumi Nusantara Jaya<br/>
               NO REK: 141101000456562
             </div>
 
-            <div style={{ padding: '16px', background: '#e6fcf5', borderRadius: '16px', marginBottom: '20px', border: '1px solid #12b886' }}>
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.8rem', fontWeight: 'bold' }}>Nama Lengkap di Rekening Bank:</label>
-                <input type="text" value={bankName} onChange={e => setBankName(e.target.value)} placeholder="Wajib sama dengan Nama KYC" style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #ced4da', marginBottom: '8px', fontSize: '0.9rem' }} />
-                <p style={{ margin:0, fontSize: '0.7rem', color: '#099268' }}>Hanya diproses jika nama pengirim sama dengan profil.</p>
+            <div style={{ padding: '16px', background: 'rgba(18, 184, 134, 0.1)', borderRadius: '16px', marginBottom: '20px', border: '1px solid #12b886' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--text-main)' }}>Nama Lengkap di Rekening Bank:</label>
+                <input type="text" value={bankName} onChange={e => setBankName(e.target.value)} placeholder="Wajib sama dengan Nama KYC" style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', marginBottom: '8px', fontSize: '0.9rem', background: 'var(--bg-color)', color: 'var(--text-main)' }} />
+                <p style={{ margin:0, fontSize: '0.7rem', color: '#12b886' }}>Hanya diproses jika nama pengirim sama dengan profil.</p>
             </div>
 
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 'bold' }}>Upload Bukti Transfer</label>
-            <input type="file" accept="image/*" onChange={handleFileChange} style={{ width: '100%', padding: '10px', borderRadius: '12px', border: '1px solid #ced4da', marginBottom: '24px', fontSize: '0.8rem', boxSizing: 'border-box' }} />
-            {paymentProof && <div style={{ marginBottom: '16px', width: '80px', height: '80px', borderRadius: '8px', background: `url(${paymentProof}) center/cover`, border: '1px solid #ced4da' }} />}
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)' }}>Upload Bukti Transfer</label>
+            <input type="file" accept="image/*" onChange={handleFileChange} style={{ width: '100%', padding: '10px', borderRadius: '12px', border: '1px solid var(--border-color)', marginBottom: '24px', fontSize: '0.8rem', boxSizing: 'border-box', background: 'var(--bg-color)', color: 'var(--text-main)' }} />
+            {paymentProof && <div style={{ marginBottom: '16px', width: '80px', height: '80px', borderRadius: '8px', background: `url(${paymentProof}) center/cover`, border: '1px solid var(--border-color)' }} />}
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-              <button onClick={() => setActivePkg(null)} style={{ padding: '14px', borderRadius: '16px', border: '1px solid #ced4da', background: 'transparent', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.9rem' }}>Batal</button>
+              <button onClick={() => setActivePkg(null)} style={{ padding: '14px', borderRadius: '16px', border: '1px solid var(--border-color)', background: 'transparent', color: 'var(--text-main)', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.9rem' }}>Batal</button>
               <button 
                 onClick={handlePaymentProofSubmit}
                 style={{ padding: '14px', borderRadius: '16px', border: 'none', background: '#25D366', color: 'white', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(37, 211, 102, 0.2)', fontSize: '0.9rem' }}>
