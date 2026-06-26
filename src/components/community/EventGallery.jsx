@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { collection, query, where, onSnapshot, addDoc, serverTimestamp, deleteDoc, doc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { db, storage } from '../../firebase/config';
+import { db } from '../../firebase/config';
 import { useAuth } from '../../context/AuthContext';
 import { Camera, Video, Trash2, Loader } from 'lucide-react';
 
@@ -38,10 +37,29 @@ const EventGallery = ({ eventId }) => {
     setIsUploading(true);
     setUploadProgressText(`Mengunggah ${type}...`);
     try {
-      const uniqueName = `${Date.now()}_${file.name}`;
-      const storageRef = ref(storage, `events/gallery/${eventId}/${uniqueName}`);
-      const snapshot = await uploadBytes(storageRef, file);
-      const downloadUrl = await getDownloadURL(snapshot.ref);
+      const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+      const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+      
+      if (!cloudName || !uploadPreset) {
+        throw new Error("Konfigurasi Cloudinary belum diatur.");
+      }
+
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', uploadPreset);
+      const resourceType = file.type.startsWith('video/') ? 'video' : 'image';
+
+      const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error('Gagal mengunggah ke Cloudinary');
+      }
+
+      const data = await response.json();
+      const downloadUrl = data.secure_url;
 
       await addDoc(collection(db, 'event_gallery'), {
         eventId,
@@ -64,10 +82,8 @@ const EventGallery = ({ eventId }) => {
   const handleDelete = async (mediaId, storagePath) => {
     if (!window.confirm("Yakin ingin menghapus media ini?")) return;
     try {
-      if (storagePath) {
-        const storageRef = ref(storage, storagePath);
-        await deleteObject(storageRef);
-      }
+      // Karena menggunakan Cloudinary unsigned upload, kita hanya perlu menghapus datanya dari UI/Firestore.
+      // File aslinya di Cloudinary bisa dikelola via Dashboard admin Cloudinary.
       await deleteDoc(doc(db, 'event_gallery', mediaId));
     } catch (err) {
       console.error("Delete error:", err);

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { collection, getDocs, query, where, doc, getDoc, addDoc, serverTimestamp } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { ref, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../firebase/config';
 
 // 1. Hook for Partner Applications
@@ -186,15 +186,32 @@ export function useSpeakerMaterials(eventId) {
 export async function uploadSpeakerMaterial(file, eventId, speakerName, type) {
   if (!file) throw new Error("No file provided");
   
-  // Create a unique filename
-  const fileExt = file.name.split('.').pop();
-  const safeSpeakerName = speakerName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-  const uniqueName = `${eventId}_${safeSpeakerName}_${type}_${Date.now()}.${fileExt}`;
+  const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+  const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
   
-  // Upload to Storage
-  const storageRef = ref(storage, `events/materials/${uniqueName}`);
-  const snapshot = await uploadBytes(storageRef, file);
-  const downloadUrl = await getDownloadURL(snapshot.ref);
+  if (!cloudName || !uploadPreset) {
+    throw new Error("Konfigurasi Cloudinary belum diatur.");
+  }
+  
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('upload_preset', uploadPreset);
+  // Auto detect resource type for raw files (like pdf) vs images/video
+  const isImageOrVideo = file.type.startsWith('image/') || file.type.startsWith('video/');
+  const resourceType = isImageOrVideo ? 'auto' : 'raw';
+  
+  const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`, {
+    method: 'POST',
+    body: formData
+  });
+  
+  if (!response.ok) {
+    const errData = await response.json();
+    throw new Error(errData.error?.message || 'Gagal mengunggah ke Cloudinary');
+  }
+  
+  const data = await response.json();
+  const downloadUrl = data.secure_url;
   
   // Save record to Firestore
   const materialsRef = collection(db, 'speaker_materials');
