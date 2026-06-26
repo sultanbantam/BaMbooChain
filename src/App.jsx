@@ -250,6 +250,7 @@ function App() {
             <Route path="/portfolio/:username" element={<PublicPortfolioPage />} />
             <Route path="/bamboochain/meeting" element={<BambooMeetingPage />} />
             <Route path="/authorize" element={<AuthorizePage />} />
+            <Route path="/events" element={<EventsPage />} />
             
             {/* Protected Routes */}
             <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
@@ -286,8 +287,6 @@ function App() {
             <Route path="/bamboochain/activities" element={<ProtectedRoute><ActivityLogPage /></ProtectedRoute>} />
             <Route path="/bamboochain/whitepaper" element={<ProtectedRoute><WhitepaperPage /></ProtectedRoute>} />
             <Route path="/bamboochain/kodiba" element={<ProtectedRoute><KoDiBaPage /></ProtectedRoute>} />
-            <Route path="/events" element={<ProtectedRoute><EventsPage /></ProtectedRoute>} />
-            
             {/* bambuNUSA Protected Routes */}
             <Route path="/bambunusa" element={<ProtectedRoute><BcLifecyclePage /></ProtectedRoute>} />
             <Route path="/bambunusa/farmers" element={<ProtectedRoute><FarmerListPage /></ProtectedRoute>} />
