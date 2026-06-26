@@ -4,6 +4,7 @@ import { FaCalendarAlt, FaMapMarkerAlt, FaClock, FaUsers } from 'react-icons/fa'
 import { getAssetUrl } from '../../utils/assets';
 import { eventsData, featuredEventData } from '../../utils/eventsData';
 import EventRegistrationModal from '../../components/community/EventRegistrationModal';
+import SocialInteractions from '../../components/SocialInteractions';
 
 const EventsPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -183,7 +184,8 @@ const EventsPage = () => {
             <button 
               style={{ 
                 padding: '15px 30px', backgroundColor: 'white', color: 'black', 
-                border: 'none', borderRadius: '15px', fontWeight: '900', cursor: 'pointer' 
+                border: 'none', borderRadius: '15px', fontWeight: '900', cursor: 'pointer',
+                width: '100%', marginBottom: '10px'
               }}
               onClick={() => {
                 setSelectedEvent(featuredEvent);
@@ -192,6 +194,7 @@ const EventsPage = () => {
             >
               IKUTI EVENT / INFORMASI
             </button>
+            <SocialInteractions entityId={featuredEvent.id} inCard={true} />
           </div>
         </motion.div>
 
@@ -229,6 +232,7 @@ const EventsPage = () => {
                 >
                   IKUTI EVENT / INFORMASI
                 </button>
+                <SocialInteractions entityId={event.id} inCard={true} />
               </div>
             </motion.div>
           ))}

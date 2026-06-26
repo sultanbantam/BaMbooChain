@@ -149,9 +149,9 @@ const ShareModal = ({ isOpen, onClose, shareUrl, shareTitle, url, title }) => {
           <button
             onClick={handleCopy}
             style={{
-              background: copied ? 'var(--primary, #0ca678)' : 'var(--text-main, #333)',
-              color: 'white',
-              border: 'none',
+              background: copied ? 'var(--primary, #0ca678)' : 'var(--bg-secondary, #f8f9fa)',
+              color: copied ? 'white' : 'var(--text-main, #333)',
+              border: copied ? 'none' : '1px solid var(--border-color, #eeeeee)',
               padding: '8px 16px',
               borderRadius: '10px',
               fontSize: '0.85rem',

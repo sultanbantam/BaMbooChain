@@ -20,7 +20,7 @@ import {
 import { db } from '../firebase/config';
 import ShareModal from './ShareModal';
 
-const SocialInteractions = ({ entityId }) => {
+const SocialInteractions = ({ entityId, inCard = false }) => {
   const { user, isAuthenticated, openLoginModal, giftBmc } = useAuth();
   const { t } = useLanguage();
   const location = useLocation();
@@ -261,7 +261,7 @@ const SocialInteractions = ({ entityId }) => {
 
   // We show it to all users (unauthenticated too) to make it interactive globally
   return (
-    <div style={{
+    <div style={inCard ? { padding: '20px 0 0 0', marginTop: '20px', borderTop: '1px solid var(--border-color, rgba(255,255,255,0.1))' } : {
       padding: '40px 20px',
       background: 'var(--bg-secondary)',
       borderTop: '1px solid var(--border-color)',

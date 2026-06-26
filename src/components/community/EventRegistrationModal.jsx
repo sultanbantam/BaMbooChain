@@ -549,7 +549,7 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
                   {speaker.topic && <div style={{ fontSize: '0.8rem', color: '#51cf66', fontStyle: 'italic' }}>Materi: {speaker.topic}</div>}
                 </div>
                 {cvLink && (
-                  <a href={cvLink} target="_blank" rel="noreferrer" style={{ backgroundColor: '#1c7ed6', color: 'white', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', textDecoration: 'none', fontWeight: 'bold' }}>
+                  <a href={cvLink} target="_blank" rel="noreferrer" style={{ backgroundColor: '#1c7ed6', color: 'white', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', textDecoration: 'none', fontWeight: 'bold', whiteSpace: 'nowrap', textAlign: 'center' }}>
                     Download CV
                   </a>
                 )}
@@ -567,7 +567,7 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
               <div key={idx} style={{ backgroundColor: 'rgba(81, 207, 102, 0.05)', border: '1px solid rgba(81, 207, 102, 0.2)', padding: '15px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ fontWeight: 'bold', color: 'white', fontSize: '0.9rem' }}>{mat.title}</div>
                 {mat.fileUrl && (
-                  <a href={mat.fileUrl} target="_blank" rel="noreferrer" style={{ backgroundColor: '#51cf66', color: 'black', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', textDecoration: 'none', fontWeight: 'bold' }}>
+                  <a href={mat.fileUrl} target="_blank" rel="noreferrer" style={{ backgroundColor: '#51cf66', color: 'black', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', textDecoration: 'none', fontWeight: 'bold', whiteSpace: 'nowrap', textAlign: 'center' }}>
                     Unduh File
                   </a>
                 )}
