@@ -196,9 +196,8 @@ export async function uploadSpeakerMaterial(file, eventId, speakerName, type) {
   const formData = new FormData();
   formData.append('file', file);
   formData.append('upload_preset', uploadPreset);
-  // Auto detect resource type for raw files (like pdf) vs images/video
-  const isImageOrVideo = file.type.startsWith('image/') || file.type.startsWith('video/');
-  const resourceType = isImageOrVideo ? 'auto' : 'raw';
+  // Gunakan 'auto' agar Cloudinary otomatis mengenali PDF sebagai dokumen/gambar yang diizinkan untuk unsigned upload
+  const resourceType = 'auto';
   
   const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`, {
     method: 'POST',
