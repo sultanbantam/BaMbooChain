@@ -186,8 +186,8 @@ export function useSpeakerMaterials(eventId) {
 export async function uploadSpeakerMaterial(file, eventId, speakerName, type) {
   if (!file) throw new Error("No file provided");
   
-  const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-  const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+  const cloudName = "dslieguutz";
+  const uploadPreset = "bamboochain_upload";
   
   if (!cloudName || !uploadPreset) {
     throw new Error("Konfigurasi Cloudinary belum diatur.");
