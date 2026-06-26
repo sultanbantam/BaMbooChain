@@ -85,7 +85,7 @@ const SpeakerPortalPage = () => {
       
       const uploadPromise = uploadSpeakerMaterial(file, selectedEvent.id, finalSpeakerName, type);
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error("Timeout: Koneksi ke Firebase lambat atau Firebase Storage belum diaktifkan di console.")), 20000)
+        setTimeout(() => reject(new Error("Koneksi Firebase gagal atau lambat. Pastikan fitur Storage sudah aktif di Firebase Console.")), 8000)
       );
       
       await Promise.race([uploadPromise, timeoutPromise]);
@@ -130,7 +130,7 @@ const SpeakerPortalPage = () => {
       minHeight: '100vh',
       backgroundColor: '#0a0f0a',
       color: 'white',
-      paddingTop: '120px',
+      paddingTop: '170px',
       paddingBottom: '80px',
       paddingLeft: '20px',
       paddingRight: '20px',
