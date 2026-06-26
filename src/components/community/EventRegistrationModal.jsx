@@ -70,11 +70,11 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
   
   let eventCostDisplay = isTba ? 'Rp ...... (Menunggu Konfirmasi)' : formatRupiah(finalCostNum);
 
-  let statementText = "Saya menyatakan bersedia mengikuti seluruh rangkaian kegiatan Seren Taun di Kasepuhan Cibarani dan mematuhi aturan adat, menjaga kebersihan lingkungan, serta menghormati masyarakat setempat.";
-  if (isHBD) statementText = "Saya menyatakan bersedia mengikuti seluruh rangkaian kegiatan Hari Bambu Dunia di Kasepuhan Cibarani dan mematuhi aturan adat, menjaga kebersihan lingkungan, serta menghormati masyarakat setempat.";
-  if (isDiburuan) statementText = "Saya menyatakan bersedia mengikuti seluruh rangkaian kegiatan DIBURUAN FESTIVAL JILID IV 2026 dan mematuhi aturan, menjaga kebersihan lingkungan, serta menghormati masyarakat setempat.";
-  if (isHBN) statementText = "Saya menyatakan bersedia mengikuti seluruh rangkaian kegiatan HARI BAMBU NASIONAL 2026 dan mematuhi aturan, menjaga kebersihan lingkungan, serta menghormati masyarakat setempat.";
-  if (isFGD) statementText = "Saya menyatakan bersedia mengikuti seluruh rangkaian kegiatan Workshop dan FGD Capacity Building Perancangan Prototype Rumah Modular Bambu dan mematuhi aturan, menjaga kebersihan lingkungan, serta menghormati masyarakat setempat.";
+  let statementText = "Saya menyatakan bersedia mengikuti seluruh rangkaian kegiatan Seren Taun di Kasepuhan Cibarani dan mematuhi aturan adat.";
+  if (isHBD) statementText = "Saya menyatakan bersedia mengikuti seluruh rangkaian kegiatan Hari Bambu Dunia di Kasepuhan Cibarani dan mematuhi aturan adat.";
+  if (isDiburuan) statementText = "Saya menyatakan bersedia mengikuti seluruh rangkaian kegiatan DIBURUAN FESTIVAL JILID IV 2026 dan mematuhi aturan.";
+  if (isHBN) statementText = "Saya menyatakan bersedia mengikuti seluruh rangkaian kegiatan HARI BAMBU NASIONAL 2026 dan mematuhi aturan.";
+  if (isFGD) statementText = "Saya menyatakan bersedia mengikuti seluruh rangkaian kegiatan Workshop dan FGD Capacity Building Perancangan Prototype Rumah Modular Bambu dan mematuhi aturan.";
 
   let waEventName = 'Seren Taun';
   if (isHBD) waEventName = 'Hari Bambu Dunia';
@@ -90,7 +90,7 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
     'Semua kegiatan'
   ];
 
-  const meetingPoint = (isDiburuan || isHBN) ? "Lokasi Tujuan" : "Stasiun Rangkasbitung";
+  const meetingPoint = eventData?.location || "Lokasi Event";
 
   if (!isOpen) return null;
 
