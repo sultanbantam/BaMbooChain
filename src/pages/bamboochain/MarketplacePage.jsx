@@ -692,8 +692,21 @@ const MarketplacePage = () => {
     }
   };
 
-  const visibleProducts = products.filter(p => p.status === 'Approved');
-  const pendingProducts = products.filter(p => p.status === 'Pending Curation');
+  const isValidImage = (imgStr) => {
+    if (!imgStr) return false;
+    if (typeof imgStr !== 'string') return false;
+    if (imgStr.trim() === '' || imgStr === 'null' || imgStr === 'undefined') return false;
+    if (imgStr.includes('fakepath')) return false;
+    // Basic URL validation or valid relative path checking can be added if needed, but for now rejecting empty/null/fakepath is enough
+    return true;
+  };
+
+  const hasValidImage = (p) => {
+     return isValidImage(p.img) || isValidImage(p.image) || (p.images && p.images.length > 0 && isValidImage(p.images[0]));
+  };
+
+  const visibleProducts = products.filter(p => p.status === 'Approved' && hasValidImage(p));
+  const pendingProducts = products.filter(p => p.status === 'Pending Curation' && hasValidImage(p));
 
   const handleFileChange = async (e) => {
     const files = Array.from(e.target.files);
@@ -721,10 +734,7 @@ const MarketplacePage = () => {
 
 
 
-  const [activeStreams, setActiveStreams] = useState([
-    { id: 1, titleKey: "market_live_title_1", viewers: "1.2k", seller: "Koperasi Cibarani", img: "https://images.unsplash.com/photo-1588614959060-4d144f28b207?auto=format&fit=crop&w=400" },
-    { id: 2, titleKey: "market_live_title_2", viewers: "850", seller: "EcoFurn Jabar", img: "https://images.unsplash.com/photo-1592078615290-033ee584e267?auto=format&fit=crop&w=400" },
-  ]);
+  const [activeStreams, setActiveStreams] = useState([]);
 
   const handleStartLiveStream = (e) => {
     e.preventDefault();
@@ -1524,6 +1534,7 @@ const MarketplacePage = () => {
           )}
 
           {/* LIVE COMMERCE SECTION */}
+          {activeStreams.length > 0 && (
           <div className="container" style={{ marginBottom: '50px' }}>
              <h3 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}><Video color="#fa5252" /> {t('market_live_commerce_title')}</h3>
              <div style={{ display: 'flex', gap: '20px', overflowX: 'auto', paddingBottom: '10px' }}>
@@ -1539,6 +1550,7 @@ const MarketplacePage = () => {
                 ))}
              </div>
           </div>
+          )}
 
           {/* HYPER-PERSONALIZATION */}
           <div className="container" style={{ marginBottom: '50px' }}>
