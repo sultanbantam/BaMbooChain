@@ -1340,15 +1340,26 @@ const ValidatorBMC = () => {
     }
   };
   const staked = user?.stakedBalance || 0;
+  const isAdmin = user?.username === 'admin_yayasan';
   
   let tierName = "Non-Validator";
   let tierLevel = 0;
-  if (staked >= 500) { tierName = "🥇 Master Validator"; tierLevel = 3; }
-  else if (staked >= 100) { tierName = "🥈 Ecosystem Validator"; tierLevel = 2; }
-  else if (staked >= 10) { tierName = "🥉 Novice Validator"; tierLevel = 1; }
+  if (isAdmin) {
+    tierName = "🥇 Master Validator (Admin)";
+    tierLevel = 3;
+  } else if (staked >= 500) {
+    tierName = "🥇 Master Validator";
+    tierLevel = 3;
+  } else if (staked >= 100) {
+    tierName = "🥈 Ecosystem Validator";
+    tierLevel = 2;
+  } else if (staked >= 10) {
+    tierName = "🥉 Novice Validator";
+    tierLevel = 1;
+  }
 
   const hasEnough = tierLevel > 0;
-  const isStaked = user?.isValidator || false;
+  const isStaked = isAdmin || user?.isValidator || false;
   
   const [termsModal, setTermsModal] = useState(false);
   const [stakeTarget, setStakeTarget] = useState(10);

@@ -819,6 +819,7 @@ export const AuthProvider = ({ children }) => {
 
   const addPendingValidation = async (data) => {
     const newItem = {
+      status: 'pending',
       ...data,
       userId: user?.id || 'guest',
       username: user?.username || 'Guest',
