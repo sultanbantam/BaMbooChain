@@ -12,6 +12,7 @@ import { useValidations, usePlantationDonations, useLocationProposals } from '..
 import { useLanguage } from '../../context/LanguageContext';
 import { updateDoc, doc } from 'firebase/firestore';
 import { db } from '../../firebase/config';
+import { useQueryClient } from '@tanstack/react-query';
 
 const formatBalance = (val) => {
   const num = Number(val || 0);
@@ -1364,6 +1365,7 @@ const ContributeDataBMC = () => {
 };
 
 const ValidatorBMC = () => {
+  const queryClient = useQueryClient();
   const { user, stakeBmc, approveValidation, approvePlantationDonation, releaseMilestone } = useAuth();
   const { t } = useLanguage();
   const { data: pendingValidations = [] } = useValidations(user?.id);
@@ -1378,7 +1380,7 @@ const ValidatorBMC = () => {
     try {
       await updateDoc(doc(db, "location_proposals", id), { status: "Verified & Active" });
       alert(`Berhasil memverifikasi ${name}!`);
-      // Optional: re-fetch or rely on cache invalidation/real-time updates if any
+      queryClient.invalidateQueries({ queryKey: ['locationProposals'] });
     } catch (err) {
       console.error(err);
       alert('Gagal memverifikasi.');
@@ -1389,6 +1391,7 @@ const ValidatorBMC = () => {
     try {
       await updateDoc(doc(db, "location_proposals", id), { status: "Rejected" });
       alert(`Berhasil menolak ${name}!`);
+      queryClient.invalidateQueries({ queryKey: ['locationProposals'] });
     } catch (err) {
       console.error(err);
       alert('Gagal menolak.');
@@ -1593,8 +1596,8 @@ const ValidatorBMC = () => {
                      </div>
 
                      <div style={{ display: 'flex', gap: '12px', marginTop: '4px' }}>
-                       <button onClick={() => alert(t('tw_alert_rejected'))} style={{ flex: 1, background: 'white', color: '#e03131', border: '1.5px solid #e03131', padding: '12px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem' }}>Tolak</button>
-                       <button onClick={async () => { await approvePlantationDonation(don.id); alert(t('tw_alert_approved')); }} style={{ flex: 1, background: '#51cf66', color: 'white', border: 'none', padding: '12px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem', boxShadow: '0 4px 12px rgba(81,207,102,0.3)' }}>Sahkan Pembayaran</button>
+                       <button onClick={async () => { try { await updateDoc(doc(db, "plantations", don.id), { status: "rejected" }); queryClient.invalidateQueries({ queryKey: ['plantationDonations'] }); alert(t('tw_alert_rejected')); } catch (err) { console.error(err); } }} style={{ flex: 1, background: 'white', color: '#e03131', border: '1.5px solid #e03131', padding: '12px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem' }}>Tolak</button>
+                       <button onClick={async () => { await approvePlantationDonation(don.id); queryClient.invalidateQueries({ queryKey: ['plantationDonations'] }); alert(t('tw_alert_approved')); }} style={{ flex: 1, background: '#51cf66', color: 'white', border: 'none', padding: '12px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem', boxShadow: '0 4px 12px rgba(81,207,102,0.3)' }}>Sahkan Pembayaran</button>
                      </div>
                    </div>
                  ))}
@@ -1621,6 +1624,7 @@ const ValidatorBMC = () => {
                             onClick={async () => { 
                                if (!m.released) {
                                   await releaseMilestone(don.id, key); 
+                                  queryClient.invalidateQueries({ queryKey: ['plantationDonations'] });
                                   alert(`Misi ${m.name} disetujui! Dana dicairkan.`);
                                }
                             }} 
@@ -1687,8 +1691,8 @@ const ValidatorBMC = () => {
                      </div>
 
                      <div style={{ display: 'flex', gap: '12px', marginTop: '4px' }}>
-                       <button onClick={() => { approveValidation(task.id, 0, task.plantingId, task.userId); alert(t('tw_alert_rejected')); }} style={{ flex: 1, background: 'white', color: '#e03131', border: '1.5px solid #e03131', padding: '12px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem' }}>Tolak</button>
-                       <button onClick={() => { approveValidation(task.id, task.rewardAmount, task.plantingId, task.userId); alert(t('tw_alert_val_success')); }} style={{ flex: 1, background: '#51cf66', color: 'white', border: 'none', padding: '12px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem', boxShadow: '0 4px 12px rgba(81,207,102,0.3)' }}>Sahkan Data</button>
+                       <button onClick={async () => { await approveValidation(task.id, 0, task.plantingId, task.userId); queryClient.invalidateQueries({ queryKey: ['validations'] }); alert(t('tw_alert_rejected')); }} style={{ flex: 1, background: 'white', color: '#e03131', border: '1.5px solid #e03131', padding: '12px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem' }}>Tolak</button>
+                       <button onClick={async () => { await approveValidation(task.id, task.rewardAmount, task.plantingId, task.userId); queryClient.invalidateQueries({ queryKey: ['validations'] }); alert(t('tw_alert_val_success')); }} style={{ flex: 1, background: '#51cf66', color: 'white', border: 'none', padding: '12px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem', boxShadow: '0 4px 12px rgba(81,207,102,0.3)' }}>Sahkan Data</button>
                      </div>
                    </div>
                  ))}
