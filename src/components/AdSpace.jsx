@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { ExternalLink, Info, DollarSign, MessageCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getAssetUrl } from '../utils/assets';
+import { useLanguage } from '../context/LanguageContext';
 
 /**
  * AdSpace Component
@@ -13,6 +14,7 @@ import { getAssetUrl } from '../utils/assets';
  * @param {string} height - Height of the ad space
  */
 const AdSpace = ({ type = 'horizontal', size = 'normal', adSlot, directAd, height }) => {
+  const { t } = useLanguage();
   
   useEffect(() => {
     // Re-initialize AdSense if we are in AdSense mode
@@ -57,7 +59,7 @@ const AdSpace = ({ type = 'horizontal', size = 'normal', adSlot, directAd, heigh
             background: '#25D366', color: 'white', padding: '10px 16px', borderRadius: '20px', 
             fontSize: '0.85rem', fontWeight: 'bold', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' 
           }}>
-            <MessageCircle size={16} /> Hubungi Owner
+            <MessageCircle size={16} /> {t('ad_contact_owner')}
           </a>
         </div>
       </div>
@@ -72,11 +74,11 @@ const AdSpace = ({ type = 'horizontal', size = 'normal', adSlot, directAd, heigh
         gap: '12px', background: '#f8f9fa', borderRadius: '8px', border: '1px dashed #dee2e6', padding: '0 12px' 
       }}>
         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <DollarSign size={12} color="var(--primary)" /> <b>Sewa Iklan:</b> Transfer BRI / BMC
+          <DollarSign size={12} color="var(--primary)" /> <b>{t('ad_space_compact')}</b> Transfer BRI / BMC
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
           <a href={waLink} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.7rem', color: '#25D366', fontWeight: 'bold' }}>WhatsApp</a>
-          <Link to="/contact" style={{ fontSize: '0.7rem', color: 'var(--text-main)', fontWeight: 'bold' }}>Info Detail</Link>
+          <Link to="/contact" style={{ fontSize: '0.7rem', color: 'var(--text-main)', fontWeight: 'bold' }}>{t('ad_space_info')}</Link>
         </div>
       </div>
     );
@@ -121,9 +123,8 @@ const AdSpace = ({ type = 'horizontal', size = 'normal', adSlot, directAd, heigh
         <DollarSign size={24} />
       </div>
 
-      <h4 style={{ margin: '0 0 4px 0', fontSize: '1rem', color: 'var(--text-main)' }}>Ruang Iklan Tersedia</h4>
-      <p style={{ margin: '0 0 16px 0', fontSize: '0.8rem', color: 'var(--text-muted)', maxWidth: '250px' }}>
-        Pasarkan produk Anda di sini. Bayar via <b>Bank BRI</b> atau <b>BMC Token</b>.
+      <h4 style={{ margin: '0 0 4px 0', fontSize: '1rem', color: 'var(--text-main)' }}>{t('ad_space_available')}</h4>
+      <p style={{ margin: '0 0 16px 0', fontSize: '0.8rem', color: 'var(--text-muted)', maxWidth: '250px' }} dangerouslySetInnerHTML={{ __html: t('ad_space_desc').replace('{bank}', '<b>Bank BRI</b>').replace('{token}', '<b>BMC Token</b>') }}>
       </p>
 
       <div style={{ display: 'flex', gap: '8px' }}>
@@ -131,13 +132,13 @@ const AdSpace = ({ type = 'horizontal', size = 'normal', adSlot, directAd, heigh
           background: '#25D366', color: 'white', padding: '8px 16px', borderRadius: '20px', 
           fontSize: '0.85rem', fontWeight: 'bold', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' 
         }}>
-          <MessageCircle size={14} /> Sewa via WA
+          <MessageCircle size={14} /> {t('ad_space_rent_wa')}
         </a>
         <Link to="/contact" style={{ 
           background: 'var(--bg-secondary)', color: 'var(--text-main)', border: '1px solid var(--border-color)', padding: '7px 15px', borderRadius: '20px', 
           fontSize: '0.85rem', fontWeight: 'bold', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' 
         }}>
-          <Info size={14} /> Info Detail
+          <Info size={14} /> {t('ad_space_info')}
         </Link>
       </div>
 

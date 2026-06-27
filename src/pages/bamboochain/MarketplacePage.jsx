@@ -1353,9 +1353,9 @@ const MarketplacePage = () => {
             
             <div style={{ display: 'inline-flex', background: 'white', padding: '5px', borderRadius: '30px', boxShadow: '0 5px 20px rgba(0,0,0,0.05)', border: '1px solid var(--primary)' }}>
               <button onClick={() => setViewMode('buyer')} style={{ padding: '8px 24px', borderRadius: '25px', border: 'none', background: viewMode === 'buyer' ? 'var(--primary)' : 'transparent', color: viewMode === 'buyer' ? 'white' : 'var(--text-main)', fontWeight: 'bold', cursor: 'pointer' }}>{t('market_mode_buyer')}</button>
-              <button onClick={() => setViewMode('history')} style={{ padding: '8px 24px', borderRadius: '25px', border: 'none', background: viewMode === 'history' ? 'var(--primary)' : 'transparent', color: viewMode === 'history' ? 'white' : 'var(--text-main)', fontWeight: 'bold', cursor: 'pointer' }}>Riwayat Pesanan Saya</button>
+              <button onClick={() => setViewMode('history')} style={{ padding: '8px 24px', borderRadius: '25px', border: 'none', background: viewMode === 'history' ? 'var(--primary)' : 'transparent', color: viewMode === 'history' ? 'white' : 'var(--text-main)', fontWeight: 'bold', cursor: 'pointer' }}>{t('market_order_history')}</button>
               <button onClick={() => setViewMode('inbox')} style={{ padding: '8px 24px', borderRadius: '25px', border: 'none', background: viewMode === 'inbox' ? 'var(--primary)' : 'transparent', color: viewMode === 'inbox' ? 'white' : 'var(--text-main)', fontWeight: 'bold', cursor: 'pointer', position: 'relative' }}>
-                 {t('market_btn_inbox')}
+                 {t('market_inbox')}
                  {chats.filter(c => c.vendor === user?.username && c.messages?.some(m => !m.isMe)).length > 0 && (
                     <span style={{ position: 'absolute', top: '0', right: '0', background: 'red', color: 'white', width: '15px', height: '15px', borderRadius: '50%', fontSize: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>!</span>
                  )}
@@ -1415,10 +1415,10 @@ const MarketplacePage = () => {
            {viewMode === 'history' && (
               <div className="container" style={{ marginBottom: '50px' }}>
                  <div style={{ background: 'var(--bg-card)', borderRadius: '30px', padding: '40px', border: '1px solid var(--border-color)', minHeight: '500px' }}>
-                    <h2 style={{ marginBottom: '30px', display: 'flex', alignItems: 'center', gap: '15px' }}><ShoppingCart size={32} color="var(--primary)" /> Riwayat Pesanan Saya</h2>
+                    <h2 style={{ marginBottom: '30px', display: 'flex', alignItems: 'center', gap: '15px' }}><ShoppingCart size={32} color="var(--primary)" /> {t('market_order_history')}</h2>
                     {orders.length === 0 ? (
                        <div style={{ textAlign: 'center', padding: '50px 0', color: 'var(--text-muted)' }}>
-                          Belum ada riwayat pesanan.
+                          {t('market_history_empty')}
                        </div>
                     ) : (
                        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
