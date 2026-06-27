@@ -683,10 +683,10 @@ const BuyBMC = ({ setActiveTab }) => {
             <Lock size={40} color="#f59f00" />
           </div>
           <h3 style={{ fontSize: '1.4rem', fontWeight: '900', color: 'var(--text-main)', margin: '0 0 12px 0' }}>
-            ⚠️ Verifikasi KYC Diperlukan
+            {t('tw_kyc_required_title')}
           </h3>
           <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: '1.6', marginBottom: '28px' }}>
-            Untuk mematuhi regulasi keuangan, mencegah penyalahgunaan data (duplikasi nama asli profil), serta menghindari penipuan klaim bukti transfer ganda, Anda diwajibkan menyelesaikan **Verifikasi Identitas (KYC)** terlebih dahulu sebelum melakukan transaksi pembelian BMC via Fiat (Transfer Bank).
+            {t('tw_kyc_required_desc')}
           </p>
           <button 
             onClick={() => setActiveTab && setActiveTab('kyc')}
@@ -703,7 +703,7 @@ const BuyBMC = ({ setActiveTab }) => {
               transition: 'all 0.2s'
             }}
           >
-            Lakukan Verifikasi KYC Sekarang
+            {t('tw_kyc_required_btn')}
           </button>
         </div>
       </div>
