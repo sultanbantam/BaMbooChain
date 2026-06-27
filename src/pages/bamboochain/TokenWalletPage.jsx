@@ -608,7 +608,7 @@ const WalletDashboardTab = ({ initialModal, setInitialModal }) => {
 };
 
 // --- Sub-komponen Get BMC ---
-const BuyBMC = () => {
+const BuyBMC = ({ setActiveTab }) => {
   const { user, addReward, addPendingValidation } = useAuth();
   const { t } = useLanguage();
   const [activePkg, setActivePkg] = useState(null);
@@ -653,6 +653,61 @@ const BuyBMC = () => {
     const interval = setInterval(fetchPrice, 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, []);
+
+  if (user?.kycStatus !== 'verified') {
+    return (
+      <div style={{ animation: 'fadeIn 0.2s', marginTop: '24px', textAlign: 'center' }}>
+        <div style={{
+          background: 'var(--bg-card)',
+          borderRadius: '24px',
+          padding: isMobile ? '32px 20px' : '48px 32px',
+          boxShadow: '0 8px 30px rgba(0,0,0,0.05)',
+          border: '1px solid #ffe8cc',
+          maxWidth: '550px',
+          margin: '0 auto',
+          color: 'var(--text-main)'
+        }}>
+          <div style={{
+            width: '80px',
+            height: '80px',
+            background: 'rgba(245,159,0,0.1)',
+            border: '2px solid #f59f00',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 24px auto',
+            boxShadow: '0 8px 20px rgba(245,159,0,0.15)'
+          }}>
+            <Lock size={40} color="#f59f00" />
+          </div>
+          <h3 style={{ fontSize: '1.4rem', fontWeight: '900', color: 'var(--text-main)', margin: '0 0 12px 0' }}>
+            ⚠️ Verifikasi KYC Diperlukan
+          </h3>
+          <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: '1.6', marginBottom: '28px' }}>
+            Untuk mematuhi regulasi keuangan, mencegah penyalahgunaan data (duplikasi nama asli profil), serta menghindari penipuan klaim bukti transfer ganda, Anda diwajibkan menyelesaikan **Verifikasi Identitas (KYC)** terlebih dahulu sebelum melakukan transaksi pembelian BMC via Fiat (Transfer Bank).
+          </p>
+          <button 
+            onClick={() => setActiveTab && setActiveTab('kyc')}
+            style={{
+              background: 'var(--primary)',
+              color: 'white',
+              border: 'none',
+              padding: '14px 28px',
+              borderRadius: '16px',
+              fontWeight: '900',
+              cursor: 'pointer',
+              fontSize: '1rem',
+              boxShadow: '0 8px 20px rgba(12, 166, 120, 0.2)',
+              transition: 'all 0.2s'
+            }}
+          >
+            Lakukan Verifikasi KYC Sekarang
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const packages = [
     { bmc: 1, idr: marketPrice.toLocaleString('id-ID'), badge: "1 USDT" },
@@ -1695,7 +1750,7 @@ const MarketplaceActBMC = () => (
   </div>
 );
 
-const GetBMCTab = () => {
+const GetBMCTab = ({ setActiveTab }) => {
   const location = useLocation();
   const [subTab, setSubTab] = useState(location.search.includes('tab=validator') ? 'validator' : 'earn');
   const { t } = useLanguage();
@@ -1741,7 +1796,7 @@ const GetBMCTab = () => {
         ))}
       </div>
 
-      {subTab === 'buy' && <BuyBMC />}
+      {subTab === 'buy' && <BuyBMC setActiveTab={setActiveTab} />}
       {subTab === 'earn' && <EarnBMC />}
       {subTab === 'contribute' && <ContributeDataBMC />}
       {subTab === 'validator' && <ValidatorBMC />}
@@ -2359,7 +2414,7 @@ const TokenWalletPage = () => {
           {activeTab === 'overview' && <OverviewTab setActiveTab={setActiveTab} setInitialModal={setInitialModal} />}
           {activeTab === 'whitepaper' && <WhitepaperTab />}
           {activeTab === 'dashboard' && <WalletDashboardTab isConnected={isConnected} connectWallet={connectWallet} walletAddress={walletAddress} initialModal={initialModal} setInitialModal={setInitialModal} />}
-          {activeTab === 'get_bmc' && <GetBMCTab />}
+          {activeTab === 'get_bmc' && <GetBMCTab setActiveTab={setActiveTab} />}
           {activeTab === 'transactions' && <TransactionsTab />}
           {activeTab === 'kyc' && <KYCCenterTab />}
           {activeTab === 'security' && <SecuritySettingsTab />}
