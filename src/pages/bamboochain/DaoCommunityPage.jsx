@@ -276,7 +276,7 @@ const DaoCommunityPage = () => {
       return;
     }
     if (mission.id === 'play_minigame') {
-      window.open('https://modular-blockbamboo.vercel.app/', '_blank');
+      window.open('https://www.bamboogame.click/', '_blank');
       return;
     }
   };
@@ -427,7 +427,7 @@ const DaoCommunityPage = () => {
                 </div>
               </div>
               <button onClick={() => {
-                window.open('https://modular-blockbamboo.vercel.app/', '_blank');
+                window.open('https://www.bamboogame.click/', '_blank');
               }} style={{ background: 'white', color: '#1864ab', border: 'none', padding: '10px 20px', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 10px rgba(0,0,0,0.2)', flexShrink: 0 }}>Play Now</button>
             </div>
           </div>
