@@ -5,7 +5,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'fallback_bamboochain_secret_key_12
 export default async function handler(req, res) {
   // CORS Configuration - Allow the external game to call this API
   res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', 'https://modular-blockbamboo.vercel.app');
+  res.setHeader('Access-Control-Allow-Origin', 'https://www.bamboogame.click');
   res.setHeader('Access-Control-Allow-Methods', 'OPTIONS,POST');
   res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization');
 
