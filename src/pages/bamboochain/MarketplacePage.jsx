@@ -234,6 +234,15 @@ const MarketplacePage = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
   const imageContainerRef = useRef(null);
+  const [brokenImages, setBrokenImages] = useState(new Set());
+
+  const handleImageError = (productId) => {
+    setBrokenImages(prev => {
+      const newSet = new Set(prev);
+      newSet.add(productId);
+      return newSet;
+    });
+  };
 
   useEffect(() => {
     if (selectedProduct) {
@@ -705,8 +714,8 @@ const MarketplacePage = () => {
      return isValidImage(p.img) || isValidImage(p.image) || (p.images && p.images.length > 0 && isValidImage(p.images[0]));
   };
 
-  const visibleProducts = products.filter(p => p.status === 'Approved' && hasValidImage(p));
-  const pendingProducts = products.filter(p => p.status === 'Pending Curation' && hasValidImage(p));
+  const visibleProducts = products.filter(p => p.status === 'Approved' && hasValidImage(p) && !brokenImages.has(p.id));
+  const pendingProducts = products.filter(p => p.status === 'Pending Curation' && hasValidImage(p) && !brokenImages.has(p.id));
 
   const handleFileChange = async (e) => {
     const files = Array.from(e.target.files);
@@ -1558,9 +1567,9 @@ const MarketplacePage = () => {
                 <h3 style={{ marginBottom: '8px', fontWeight: '900' }}>{t('market_recom_title')} <Sparkles size={20} /></h3>
                 <p style={{ opacity: 0.9, marginBottom: '30px' }}>{t('market_recom_subtitle')}</p>
                 <div style={{ display: 'flex', gap: '20px', overflowX: 'auto' }}>
-                   {visibleProducts.slice(0, 4).map(p => (
+                    {visibleProducts.slice(0, 4).map(p => (
                      <div key={p.id} onClick={() => setSelectedProduct(p)} style={{ minWidth: '200px', background: 'rgba(255,255,255,0.1)', borderRadius: '20px', padding: '15px', border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer' }}>
-                        <img src={p.img || p.image} style={{ width: '100%', height: '120px', borderRadius: '12px', objectFit: 'cover', marginBottom: '10px' }} alt="" />
+                        <img src={p.img || p.image} onError={() => handleImageError(p.id)} style={{ width: '100%', height: '120px', borderRadius: '12px', objectFit: 'cover', marginBottom: '10px' }} alt="" />
                         <div style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>{getProductField(p, 'name')}</div>
                      </div>
                    ))}
@@ -1591,7 +1600,7 @@ const MarketplacePage = () => {
                     {filteredProducts.map(product => (
                       <div key={product.id} className="glass" onClick={() => setSelectedProduct(product)} style={{ background: 'var(--bg-card)', borderRadius: '24px', overflow: 'hidden', cursor: 'pointer', transition: '0.3s', border: '1px solid var(--border-color)' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-10px)'} onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
                          <div style={{ height: '220px', position: 'relative' }}>
-                            <img src={product.img || product.image} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
+                            <img src={product.img || product.image} onError={() => handleImageError(product.id)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
                             <div style={{ position: 'absolute', top: '15px', left: '15px', background: 'var(--bg-secondary)', color: 'var(--text-main)', padding: '5px 10px', borderRadius: '8px', fontSize: '0.7rem', fontWeight: 'bold', border: '1px solid var(--border-color)' }}>{getProductField(product, 'category')}</div>
                          </div>
                          <div style={{ padding: '24px' }}>
