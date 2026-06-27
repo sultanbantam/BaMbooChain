@@ -48,7 +48,7 @@ const compressImage = (file) => {
 const MarketplacePage = () => {
   const { t } = useLanguage();
   const { user } = useAuth();
-  const { chats, sendMessage, products: fbProducts, addProduct: fbAddProduct, updateProduct: fbUpdateProduct, deleteProduct: fbDeleteProduct, orders, createOrder, updateOrderStatus } = useMarketplace();
+  const { chats, sendMessage, products: fbProducts, addProduct: fbAddProduct, updateProduct: fbUpdateProduct, deleteProduct: fbDeleteProduct, orders, createOrder, updateOrderStatus, shops, createShop, updateShop } = useMarketplace();
   
   const categories = [
     t('market_cat_all'), 
@@ -235,6 +235,35 @@ const MarketplacePage = () => {
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
   const imageContainerRef = useRef(null);
   const [brokenImages, setBrokenImages] = useState(new Set());
+  const [storefrontId, setStorefrontId] = useState(null);
+  const [showEditShopModal, setShowEditShopModal] = useState(false);
+  const [editShopData, setEditShopData] = useState({ shopName: '', description: '' });
+
+  const getShopInfo = (vendorId) => {
+    const shop = shops?.find(s => s.shopId === vendorId || s.ownerId === vendorId);
+    if (shop) return shop;
+    return { shopName: vendorId, brandLogo: 'https://cdn-icons-png.flaticon.com/512/1909/1909848.png', description: `Toko resmi ${vendorId} di BaMbooChain.` };
+  };
+
+  const handleOpenEditShop = () => {
+    if (!user) return showToast("Silakan login terlebih dahulu.");
+    const s = getShopInfo(user?.username);
+    setEditShopData({ shopName: s.shopName === user?.username ? '' : s.shopName, description: s.description.startsWith('Toko resmi') ? '' : s.description });
+    setShowEditShopModal(true);
+  };
+
+  const handleSaveShop = async (e) => {
+    e.preventDefault();
+    if (!editShopData.shopName) return showToast("Nama Toko wajib diisi.");
+    const existing = shops?.find(s => s.shopId === user?.username);
+    if (existing) {
+       await updateShop(user?.username, { shopName: editShopData.shopName, description: editShopData.description, brandLogo: 'https://cdn-icons-png.flaticon.com/512/1909/1909848.png' });
+    } else {
+       await createShop({ shopName: editShopData.shopName, description: editShopData.description, brandLogo: 'https://cdn-icons-png.flaticon.com/512/1909/1909848.png' });
+    }
+    setShowEditShopModal(false);
+    showToast("Profil Toko berhasil diperbarui!");
+  };
 
   const handleImageError = (productId) => {
     setBrokenImages(prev => {
@@ -1317,8 +1346,9 @@ const MarketplacePage = () => {
             <p style={{ fontSize: '1.2rem', color: 'var(--text-muted)', maxWidth: '600px', marginBottom: '32px' }}>{t('market_subtitle')}</p>
             
             <div style={{ display: 'flex', gap: '15px', marginBottom: '30px', flexWrap: 'wrap', justifyContent: 'center' }}>
-               <button onClick={() => setShowSellModal(true)} className="btn btn-crypto" style={{ padding: '16px 40px', borderRadius: '30px' }}><PlusCircle size={20} /> {t('market_btn_sell')}</button>
-               <button onClick={() => setShowStartLiveModal(true)} style={{ padding: '16px 40px', borderRadius: '30px', background: '#fa5252', color: 'white', border: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', boxShadow: '0 4px 15px rgba(250,82,82,0.4)' }}><Video size={20} /> Mulai Live Commerce</button>
+               <button onClick={() => setShowSellModal(true)} className="btn btn-crypto" style={{ padding: '16px 30px', borderRadius: '30px' }}><PlusCircle size={20} /> {t('market_btn_sell')}</button>
+               <button onClick={handleOpenEditShop} style={{ padding: '16px 30px', borderRadius: '30px', background: 'transparent', color: 'var(--primary)', border: '2px solid var(--primary)', fontWeight: 'bold', cursor: 'pointer' }}>Pengaturan Toko</button>
+               <button onClick={() => setShowStartLiveModal(true)} style={{ padding: '16px 30px', borderRadius: '30px', background: '#fa5252', color: 'white', border: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', boxShadow: '0 4px 15px rgba(250,82,82,0.4)' }}><Video size={20} /> Mulai Live</button>
             </div>
             
             <div style={{ display: 'inline-flex', background: 'white', padding: '5px', borderRadius: '30px', boxShadow: '0 5px 20px rgba(0,0,0,0.05)', border: '1px solid var(--primary)' }}>
@@ -1410,6 +1440,31 @@ const MarketplacePage = () => {
                  </div>
               </div>
            )}
+
+          {/* EDIT SHOP MODAL */}
+          {showEditShopModal && (
+            <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.8)', zIndex: 45000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+              <div className="glass" style={{ width: '100%', maxWidth: '500px', background: 'white', borderRadius: '30px', padding: '40px', position: 'relative' }}>
+                <button onClick={() => setShowEditShopModal(false)} style={{ position: 'absolute', top: '20px', right: '20px', background: '#eee', border: 'none', borderRadius: '50%', padding: '8px', cursor: 'pointer' }}><X size={20} /></button>
+                <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+                   <h2>Pengaturan Toko</h2>
+                   <p style={{ color: '#888', fontSize: '0.9rem' }}>Atur nama dan deskripsi toko Anda untuk menarik lebih banyak pembeli.</p>
+                </div>
+                
+                <form onSubmit={handleSaveShop}>
+                   <div style={{ marginBottom: '20px' }}>
+                      <label style={{ fontSize: '0.85rem', color: '#555', display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>Nama Toko / Brand</label>
+                      <input required type="text" placeholder="Contoh: BambooCraft Nusantara" value={editShopData.shopName} onChange={e => setEditShopData({...editShopData, shopName: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '15px', border: '1px solid #ddd', fontSize: '1rem' }} />
+                   </div>
+                   <div style={{ marginBottom: '30px' }}>
+                      <label style={{ fontSize: '0.85rem', color: '#555', display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>Deskripsi Toko</label>
+                      <textarea placeholder="Ceritakan tentang toko atau karya Anda..." value={editShopData.description} onChange={e => setEditShopData({...editShopData, description: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '15px', border: '1px solid #ddd', fontSize: '1rem', minHeight: '100px', resize: 'vertical' }}></textarea>
+                   </div>
+                   <button type="submit" style={{ width: '100%', padding: '18px', borderRadius: '15px', background: 'var(--primary)', color: 'white', border: 'none', fontWeight: 'bold', fontSize: '1.1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Simpan Profil Toko</button>
+                </form>
+              </div>
+            </div>
+          )}
 
           {/* START LIVE COMMERCE MODAL */}
           {showStartLiveModal && (
@@ -1593,17 +1648,67 @@ const MarketplacePage = () => {
           </div>
 
           {/* MAIN PRODUCT GRID */}
+          {viewMode === 'storefront' && storefrontId ? (
+             <div className="container" style={{ marginTop: '40px', marginBottom: '50px' }}>
+               {(() => {
+                 const sInfo = getShopInfo(storefrontId);
+                 const sProducts = visibleProducts.filter(p => p.vendor === storefrontId);
+                 return (
+                   <div>
+                     <div style={{ width: '100%', height: '200px', background: 'linear-gradient(45deg, var(--primary), #12b886)', borderRadius: '30px', position: 'relative', marginBottom: '80px' }}>
+                        <img src={sInfo.brandLogo} style={{ width: '120px', height: '120px', borderRadius: '50%', border: '5px solid var(--bg-primary)', position: 'absolute', bottom: '-60px', left: '40px', objectFit: 'cover' }} alt="" />
+                     </div>
+                     <div style={{ padding: '0 20px', marginBottom: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '20px' }}>
+                        <div>
+                           <h1 style={{ margin: '0 0 10px 0', fontSize: '2.5rem', fontWeight: '900' }}>{sInfo.shopName}</h1>
+                           <p style={{ color: 'var(--text-muted)', maxWidth: '600px' }}>{sInfo.description}</p>
+                        </div>
+                        {user?.username === storefrontId && (
+                           <button onClick={handleOpenEditShop} style={{ padding: '10px 20px', borderRadius: '20px', border: '1px solid var(--primary)', background: 'transparent', color: 'var(--primary)', fontWeight: 'bold', cursor: 'pointer' }}>Edit Toko</button>
+                        )}
+                     </div>
+                     <h3 style={{ marginBottom: '20px', borderBottom: '2px solid var(--border-color)', paddingBottom: '10px' }}>Koleksi Produk</h3>
+                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '30px' }}>
+                        {sProducts.map(product => (
+                          <div key={product.id} className="glass" onClick={() => setSelectedProduct(product)} style={{ background: 'var(--bg-card)', borderRadius: '24px', overflow: 'hidden', cursor: 'pointer', transition: '0.3s', border: '1px solid var(--border-color)' }}>
+                             <div style={{ height: '220px', position: 'relative' }}>
+                                <img src={product.img || product.image} onError={() => handleImageError(product.id)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
+                             </div>
+                             <div style={{ padding: '24px' }}>
+                                <h3 style={{ fontSize: '1.1rem', margin: '0 0 10px 0', minHeight: '2.8rem', color: 'var(--text-main)' }}>{getProductField(product, 'name')}</h3>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                                   <div>
+                                      <div style={{ fontWeight: 'bold', color: 'var(--primary)', fontSize: '1.1rem' }}>{formatIdr(product.priceIdr)}</div>
+                                      <div style={{ fontSize: '0.85rem', color: '#888', fontWeight: '500' }}>{formatBmc(product.priceIdr)}</div>
+                                   </div>
+                                   <button onClick={(e) => { e.stopPropagation(); addToCart(product); }} style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '10px', borderRadius: '12px', cursor: 'pointer' }}><ShoppingCart size={18} /></button>
+                                </div>
+                             </div>
+                          </div>
+                        ))}
+                     </div>
+                   </div>
+                 );
+               })()}
+             </div>
+          ) : viewMode !== 'inbox' && viewMode !== 'history' && (
           <div className="container">
             <div style={{ display: 'grid', gridTemplateColumns: windowWidth < 1200 ? '1fr' : '1fr 350px', gap: '40px' }}>
               <div>
                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '30px' }}>
-                    {filteredProducts.map(product => (
+                    {filteredProducts.map(product => {
+                      const sInfo = getShopInfo(product.vendor);
+                      return (
                       <div key={product.id} className="glass" onClick={() => setSelectedProduct(product)} style={{ background: 'var(--bg-card)', borderRadius: '24px', overflow: 'hidden', cursor: 'pointer', transition: '0.3s', border: '1px solid var(--border-color)' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-10px)'} onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
                          <div style={{ height: '220px', position: 'relative' }}>
                             <img src={product.img || product.image} onError={() => handleImageError(product.id)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
                             <div style={{ position: 'absolute', top: '15px', left: '15px', background: 'var(--bg-secondary)', color: 'var(--text-main)', padding: '5px 10px', borderRadius: '8px', fontSize: '0.7rem', fontWeight: 'bold', border: '1px solid var(--border-color)' }}>{getProductField(product, 'category')}</div>
                          </div>
                          <div style={{ padding: '24px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px', cursor: 'pointer' }} onClick={(e) => { e.stopPropagation(); setStorefrontId(product.vendor); setViewMode('storefront'); }}>
+                               <img src={sInfo.brandLogo} style={{ width: '30px', height: '30px', borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--border-color)' }} alt="" />
+                               <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-muted)' }}>{sInfo.shopName}</span>
+                            </div>
                             <h3 style={{ fontSize: '1.1rem', margin: '0 0 10px 0', minHeight: '2.8rem', color: 'var(--text-main)' }}>{getProductField(product, 'name')}</h3>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                                <div>
@@ -1614,7 +1719,7 @@ const MarketplacePage = () => {
                             </div>
                          </div>
                       </div>
-                    ))}
+                    )})}
                  </div>
               </div>
 
@@ -1625,6 +1730,7 @@ const MarketplacePage = () => {
               </div>
             </div>
           </div>
+          )}
         </>
       )}
 

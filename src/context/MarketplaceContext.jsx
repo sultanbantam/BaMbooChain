@@ -22,6 +22,7 @@ export const useMarketplace = () => useContext(MarketplaceContext);
 export const MarketplaceProvider = ({ children }) => {
   const { user } = useAuth();
   const [products, setProducts] = useState([]);
+  const [shops, setShops] = useState([]);
   const [orders, setOrders] = useState([]);
   const [chats, setChats] = useState([]);
   const [cart, setCart] = useState(() => {
@@ -42,6 +43,17 @@ export const MarketplaceProvider = ({ children }) => {
       const prods = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
       setProducts(prods);
     }, (err) => console.error("Products Sync Error:", err));
+    return () => unsubscribe();
+  }, []);
+
+  // Firestore Sync: Shops
+  useEffect(() => {
+    if (!db) return;
+    const q = query(collection(db, "marketplace_shops"), orderBy("createdAt", "desc"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const shps = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+      setShops(shps);
+    }, (err) => console.error("Shops Sync Error:", err));
     return () => unsubscribe();
   }, []);
 
@@ -97,6 +109,7 @@ export const MarketplaceProvider = ({ children }) => {
       img: newProduct.img || newProduct.image || (newProduct.images && newProduct.images[0]) || '',
       images: newProduct.images || (newProduct.img ? [newProduct.img] : []),
       vendor: user?.username || 'Unknown Vendor',
+      shopId: user?.username || 'unknown',
       createdAt: serverTimestamp(),
       isProduct: true
     };
@@ -286,6 +299,33 @@ export const MarketplaceProvider = ({ children }) => {
     }
   };
 
+  const createShop = async (shopData) => {
+    const firestoreData = {
+      ...shopData,
+      ownerId: user?.id,
+      shopId: user?.username, // Use username as unique shop ID identifier
+      createdAt: serverTimestamp()
+    };
+    try {
+      // Use setDoc with username to ensure 1 shop per user
+      await setDoc(doc(db, "marketplace_shops", user?.username), firestoreData);
+      return true;
+    } catch (err) {
+      console.error('[MarketplaceContext] Failed to create shop:', err);
+      return false;
+    }
+  };
+
+  const updateShop = async (shopId, shopData) => {
+    try {
+      await updateDoc(doc(db, "marketplace_shops", shopId), shopData);
+      return true;
+    } catch (err) {
+      console.error('[MarketplaceContext] Failed to update shop:', err);
+      return false;
+    }
+  };
+
   const addToCart = (product) => {
     setCart(prev => {
       const existing = prev.find(item => item.id === product.id);
@@ -357,9 +397,10 @@ export const MarketplaceProvider = ({ children }) => {
 
   return (
     <MarketplaceContext.Provider value={{
-      products, orders, cart, chats,
+      products, shops, orders, cart, chats,
       addProduct, updateProduct, deleteProduct, createOrder, updateOrderStatus,
-      addToCart, removeFromCart, updateCartQty, setCart, sendMessage
+      addToCart, removeFromCart, updateCartQty, setCart, sendMessage,
+      createShop, updateShop
     }}>
       {children}
     </MarketplaceContext.Provider>
