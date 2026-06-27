@@ -242,19 +242,19 @@ const MarketplacePage = () => {
   const getShopInfo = (vendorId) => {
     const shop = shops?.find(s => s.shopId === vendorId || s.ownerId === vendorId);
     if (shop) return shop;
-    return { shopName: vendorId, brandLogo: 'https://cdn-icons-png.flaticon.com/512/1909/1909848.png', description: `Toko resmi ${vendorId} di BaMbooChain.` };
+    return { shopName: vendorId, brandLogo: 'https://cdn-icons-png.flaticon.com/512/1909/1909848.png', description: t('market_shop_official').replace('{vendor}', vendorId) };
   };
 
   const handleOpenEditShop = () => {
-    if (!user) return showToast("Silakan login terlebih dahulu.");
+    if (!user) return showToast(t('market_shop_login_required'));
     const s = getShopInfo(user?.username);
-    setEditShopData({ shopName: s.shopName === user?.username ? '' : s.shopName, description: s.description.startsWith('Toko resmi') ? '' : s.description });
+    setEditShopData({ shopName: s.shopName === user?.username ? '' : s.shopName, description: s.description.startsWith(t('market_shop_official').split('{')[0]) ? '' : s.description });
     setShowEditShopModal(true);
   };
 
   const handleSaveShop = async (e) => {
     e.preventDefault();
-    if (!editShopData.shopName) return showToast("Nama Toko wajib diisi.");
+    if (!editShopData.shopName) return showToast(t('market_shop_name_required'));
     const existing = shops?.find(s => s.shopId === user?.username);
     if (existing) {
        await updateShop(user?.username, { shopName: editShopData.shopName, description: editShopData.description, brandLogo: 'https://cdn-icons-png.flaticon.com/512/1909/1909848.png' });
@@ -262,7 +262,7 @@ const MarketplacePage = () => {
        await createShop({ shopName: editShopData.shopName, description: editShopData.description, brandLogo: 'https://cdn-icons-png.flaticon.com/512/1909/1909848.png' });
     }
     setShowEditShopModal(false);
-    showToast("Profil Toko berhasil diperbarui!");
+    showToast(t('market_shop_save_success'));
   };
 
   const handleImageError = (productId) => {
@@ -1347,8 +1347,8 @@ const MarketplacePage = () => {
             
             <div style={{ display: 'flex', gap: '15px', marginBottom: '30px', flexWrap: 'wrap', justifyContent: 'center' }}>
                <button onClick={() => setShowSellModal(true)} className="btn btn-crypto" style={{ padding: '16px 30px', borderRadius: '30px' }}><PlusCircle size={20} /> {t('market_btn_sell')}</button>
-               <button onClick={handleOpenEditShop} style={{ padding: '16px 30px', borderRadius: '30px', background: 'transparent', color: 'var(--primary)', border: '2px solid var(--primary)', fontWeight: 'bold', cursor: 'pointer' }}>Pengaturan Toko</button>
-               <button onClick={() => setShowStartLiveModal(true)} style={{ padding: '16px 30px', borderRadius: '30px', background: '#fa5252', color: 'white', border: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', boxShadow: '0 4px 15px rgba(250,82,82,0.4)' }}><Video size={20} /> Mulai Live</button>
+               <button onClick={handleOpenEditShop} style={{ padding: '16px 30px', borderRadius: '30px', background: 'transparent', color: 'var(--primary)', border: '2px solid var(--primary)', fontWeight: 'bold', cursor: 'pointer' }}>{t('market_btn_shop_settings')}</button>
+               <button onClick={() => setShowStartLiveModal(true)} style={{ padding: '16px 30px', borderRadius: '30px', background: '#fa5252', color: 'white', border: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', boxShadow: '0 4px 15px rgba(250,82,82,0.4)' }}><Video size={20} /> {t('market_btn_start_live')}</button>
             </div>
             
             <div style={{ display: 'inline-flex', background: 'white', padding: '5px', borderRadius: '30px', boxShadow: '0 5px 20px rgba(0,0,0,0.05)', border: '1px solid var(--primary)' }}>
@@ -1447,20 +1447,20 @@ const MarketplacePage = () => {
               <div className="glass" style={{ width: '100%', maxWidth: '500px', background: 'white', borderRadius: '30px', padding: '40px', position: 'relative' }}>
                 <button onClick={() => setShowEditShopModal(false)} style={{ position: 'absolute', top: '20px', right: '20px', background: '#eee', border: 'none', borderRadius: '50%', padding: '8px', cursor: 'pointer' }}><X size={20} /></button>
                 <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-                   <h2>Pengaturan Toko</h2>
-                   <p style={{ color: '#888', fontSize: '0.9rem' }}>Atur nama dan deskripsi toko Anda untuk menarik lebih banyak pembeli.</p>
+                   <h2>{t('market_shop_settings_title')}</h2>
+                   <p style={{ color: '#888', fontSize: '0.9rem' }}>{t('market_shop_settings_desc')}</p>
                 </div>
                 
                 <form onSubmit={handleSaveShop}>
                    <div style={{ marginBottom: '20px' }}>
-                      <label style={{ fontSize: '0.85rem', color: '#555', display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>Nama Toko / Brand</label>
-                      <input required type="text" placeholder="Contoh: BambooCraft Nusantara" value={editShopData.shopName} onChange={e => setEditShopData({...editShopData, shopName: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '15px', border: '1px solid #ddd', fontSize: '1rem' }} />
+                      <label style={{ fontSize: '0.85rem', color: '#555', display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>{t('market_shop_name_label')}</label>
+                      <input required type="text" placeholder={t('market_shop_name_placeholder')} value={editShopData.shopName} onChange={e => setEditShopData({...editShopData, shopName: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '15px', border: '1px solid #ddd', fontSize: '1rem' }} />
                    </div>
                    <div style={{ marginBottom: '30px' }}>
-                      <label style={{ fontSize: '0.85rem', color: '#555', display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>Deskripsi Toko</label>
-                      <textarea placeholder="Ceritakan tentang toko atau karya Anda..." value={editShopData.description} onChange={e => setEditShopData({...editShopData, description: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '15px', border: '1px solid #ddd', fontSize: '1rem', minHeight: '100px', resize: 'vertical' }}></textarea>
+                      <label style={{ fontSize: '0.85rem', color: '#555', display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>{t('market_shop_desc_label')}</label>
+                      <textarea placeholder={t('market_shop_desc_placeholder')} value={editShopData.description} onChange={e => setEditShopData({...editShopData, description: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '15px', border: '1px solid #ddd', fontSize: '1rem', minHeight: '100px', resize: 'vertical' }}></textarea>
                    </div>
-                   <button type="submit" style={{ width: '100%', padding: '18px', borderRadius: '15px', background: 'var(--primary)', color: 'white', border: 'none', fontWeight: 'bold', fontSize: '1.1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Simpan Profil Toko</button>
+                   <button type="submit" style={{ width: '100%', padding: '18px', borderRadius: '15px', background: 'var(--primary)', color: 'white', border: 'none', fontWeight: 'bold', fontSize: '1.1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{t('market_shop_save_btn')}</button>
                 </form>
               </div>
             </div>
@@ -1664,10 +1664,10 @@ const MarketplacePage = () => {
                            <p style={{ color: 'var(--text-muted)', maxWidth: '600px' }}>{sInfo.description}</p>
                         </div>
                         {user?.username === storefrontId && (
-                           <button onClick={handleOpenEditShop} style={{ padding: '10px 20px', borderRadius: '20px', border: '1px solid var(--primary)', background: 'transparent', color: 'var(--primary)', fontWeight: 'bold', cursor: 'pointer' }}>Edit Toko</button>
+                           <button onClick={handleOpenEditShop} style={{ padding: '10px 20px', borderRadius: '20px', border: '1px solid var(--primary)', background: 'transparent', color: 'var(--primary)', fontWeight: 'bold', cursor: 'pointer' }}>{t('market_shop_edit_btn')}</button>
                         )}
                      </div>
-                     <h3 style={{ marginBottom: '20px', borderBottom: '2px solid var(--border-color)', paddingBottom: '10px' }}>Koleksi Produk</h3>
+                     <h3 style={{ marginBottom: '20px', borderBottom: '2px solid var(--border-color)', paddingBottom: '10px' }}>{t('market_shop_collection')}</h3>
                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '30px' }}>
                         {sProducts.map(product => (
                           <div key={product.id} className="glass" onClick={() => setSelectedProduct(product)} style={{ background: 'var(--bg-card)', borderRadius: '24px', overflow: 'hidden', cursor: 'pointer', transition: '0.3s', border: '1px solid var(--border-color)' }}>
