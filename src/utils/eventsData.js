@@ -77,7 +77,7 @@ export const featuredEventData = {
   time: '08:00 - 16:00 WIB',
   location: 'Gedung Galeri Koperasi dan UKM Kota Tangerang Selatan',
   category: 'Workshop',
-  image: getAssetUrl('event/bdfgd.png'),
+  image: getAssetUrl('event/bfgd.png'),
   color: '#e03131',
   speakers: [
     { name: 'Ir. Kreshnariza Harahap, S.T., M.Eng.Sc.', role: 'Direktur Pembiayaan Perumahan Perkotaan Ditjen Perkotaan Kementerian PKP', topic: 'Program Kredit Perumahan dan Potensi Rumah Subsidi', cvUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
