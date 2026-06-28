@@ -586,7 +586,7 @@ const HomePage = () => {
                   {[
                     { id: 1, icon: <Database />, color: '#0ca678', bg: '#ebfbee', label: t('guide_opt1'), path: '/bambupedia/tracker' },
                     { id: 2, icon: <Briefcase />, color: '#228be6', bg: '#e7f5ff', label: t('guide_opt2'), path: '/careers' },
-                    { id: 3, icon: <UploadCloud />, color: '#fd7e14', bg: '#fff4e6', label: t('guide_opt3'), path: '/bambupedia/maintain' },
+                    { id: 3, icon: <UploadCloud />, color: '#fd7e14', bg: '#fff4e6', label: t('guide_opt3'), path: '/bamboochain/token-wallet?tab=contribute' },
                     { id: 4, icon: <HeartHandshake />, color: '#fa5252', bg: '#fff5f5', label: t('guide_opt4'), path: '/about' },
                     { id: 5, icon: <Handshake />, color: '#7950f2', bg: '#f3f0ff', label: t('guide_opt5'), path: '/bamboochain/supply-chain' },
                     { id: 6, icon: <ShoppingBag />, color: '#15aabf', bg: '#e3fafc', label: t('guide_opt6'), path: '/bamboochain/marketplace' },

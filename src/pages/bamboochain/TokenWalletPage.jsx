@@ -1833,7 +1833,10 @@ const MarketplaceActBMC = () => (
 
 const GetBMCTab = ({ setActiveTab }) => {
   const location = useLocation();
-  const [subTab, setSubTab] = useState(location.search.includes('tab=validator') ? 'validator' : 'earn');
+  const [subTab, setSubTab] = useState(
+    location.search.includes('tab=validator') ? 'validator' : 
+    location.search.includes('tab=contribute') ? 'contribute' : 'earn'
+  );
   const { t } = useLanguage();
   
   const isPiBrowser = window.Pi && (
@@ -2453,7 +2456,7 @@ const TokenWalletPage = () => {
   const { walletAddress, isConnected, connectWallet } = useWeb3();
   const location = useLocation();
   const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState(location.search.includes('tab=validator') ? 'get_bmc' : 'overview');
+  const [activeTab, setActiveTab] = useState(location.search.includes('tab=validator') || location.search.includes('tab=contribute') ? 'get_bmc' : 'overview');
   const [initialModal, setInitialModal] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 1100);
 
