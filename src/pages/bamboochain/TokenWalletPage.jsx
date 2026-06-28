@@ -1397,6 +1397,16 @@ const ValidatorBMC = () => {
       alert('Gagal menolak.');
     }
   };
+
+  const translateDbTitle = (title) => {
+    if (!title) return '';
+    if (title.startsWith("Pembelian BMC (Fiat)")) return t('tw_task_title_buy_fiat') || title;
+    if (title.includes("Verifikasi Identitas (KYC)")) return title.replace("Verifikasi Identitas (KYC)", t('tw_task_title_kyc') || "Verifikasi Identitas (KYC)");
+    if (title.startsWith("Gamification:")) return title.replace("Gamification:", t('tw_task_title_gamification') || "Gamification:");
+    if (title.startsWith("Kontribusi Data Rumpun:")) return title.replace("Kontribusi Data Rumpun:", t('tw_task_title_tracker') || "Kontribusi Data Rumpun:");
+    return title;
+  };
+
   const staked = user?.stakedBalance || 0;
   const isAdmin = user?.username === 'admin_yayasan';
   
@@ -1498,8 +1508,8 @@ const ValidatorBMC = () => {
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
         <div>
-          <h3 style={{ fontSize: isMobile ? '1.3rem' : '1.5rem', marginBottom: '8px', fontWeight: '900' }}>Dashboard Validator</h3>
-          <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: '0.9rem' }}>Bantu sistem konsensus dengan memverifikasi data lapangan.</p>
+          <h3 style={{ fontSize: isMobile ? '1.3rem' : '1.5rem', marginBottom: '8px', fontWeight: '900' }}>{t('tw_val_dashboard_title')}</h3>
+          <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: '0.9rem' }}>{t('tw_val_dashboard_desc')}</p>
         </div>
         {isStaked && tierLevel < 3 && (
           <button 
@@ -1527,175 +1537,183 @@ const ValidatorBMC = () => {
             ))}
           </div>
 
-          <div style={{ background: 'white', border: '1px solid #f1f3f5', borderRadius: '24px', padding: isMobile ? '24px' : '32px', boxShadow: '0 8px 24px rgba(0,0,0,0.03)' }}>
-            <h4 style={{ fontSize: '1.1rem', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '900' }}><ShieldCheck size={24} color="#1864ab" /> Ruang Kerja Validator</h4>
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '24px', padding: isMobile ? '24px' : '32px', boxShadow: '0 8px 24px rgba(0,0,0,0.03)' }}>
+            <h4 style={{ fontSize: '1.1rem', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '900', color: 'var(--text-main)' }}><ShieldCheck size={24} color="var(--primary)" /> {t('tw_val_workspace_title')}</h4>
             
             {(user && filteredValidations.length === 0 && pendingDonations.length === 0 && pendingLocationProposals.length === 0 && verifiedDonations.length === 0) ? (
-              <div style={{ padding: '48px 24px', textAlign: 'center', background: '#f8f9fa', borderRadius: '20px', color: '#adb5bd', fontSize: '0.9rem' }}>
-                 Belum ada data antrean baru untuk Tier Anda saat ini.
+              <div style={{ padding: '48px 24px', textAlign: 'center', background: 'var(--bg-color)', borderRadius: '20px', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                 {t('tw_val_empty_queue')}
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                  {/* GIS Location Proposals Queue */}
                  {pendingLocationProposals.map(s => (
-                   <div key={s.id} style={{ background: '#f8f9fa', padding: isMobile ? '20px' : '24px', borderRadius: '20px', border: '1.5px solid #f1f3f5', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
-                        <div>
-                          <div style={{ fontWeight: '900', fontSize: '1.1rem', marginBottom: '4px' }}>Usulan Lokasi Baru (GIS)</div>
-                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>🕒 {s.date || 'Baru'}</div>
-                        </div>
-                        <span style={{ fontSize: '0.75rem', background: '#f59f00', color: 'white', padding: '6px 12px', borderRadius: '20px', fontWeight: 'bold' }}>Pending Verification</span>
-                     </div>
-
-                     <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px', fontSize: '0.85rem' }}>
-                       <div style={{ background: 'white', padding: '12px', borderRadius: '12px' }}><strong>📍 Nama Lokasi:</strong> <span style={{ color: '#1864ab', marginLeft: '4px', fontWeight: 'bold' }}>{s.name}</span></div>
-                       <div style={{ background: 'white', padding: '12px', borderRadius: '12px' }}><strong>📏 Estimasi Luas:</strong> <span style={{ marginLeft: '4px' }}>{s.size} Ha</span></div>
-                       <div style={{ background: 'white', padding: '12px', borderRadius: '12px' }}><strong>🏷️ Tipe Lahan:</strong> <span style={{ marginLeft: '4px' }}>{s.type}</span></div>
-                       <div style={{ background: 'white', padding: '12px', borderRadius: '12px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <Globe size={14} color="var(--primary)" />
-                            <span>Koordinat: {s.coordinates}</span>
-                          </div>
-                          <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s.name)}`} target="_blank" rel="noreferrer" style={{ color: '#4dabf7', textDecoration: 'none', display: 'inline-block', marginTop: '4px' }}>
-                            Buka di Google Maps ↗
-                          </a>
-                       </div>
-                       <div style={{ background: 'white', padding: '12px', borderRadius: '12px' }}>
-                         <strong>👤 Pengusul:</strong> <span style={{ marginLeft: '4px' }}>{s.pengusul || s.owner || '-'}</span><br/>
-                         <strong style={{ display: 'inline-block', marginTop: '4px' }}>📞 PIC (WA):</strong> <span style={{ marginLeft: '4px' }}>{s.waPic || '-'}</span>
-                       </div>
-                       <div style={{ background: 'white', padding: '12px', borderRadius: '12px' }}>
-                         <strong>🧑‍🌾 Kebutuhan SDM:</strong><br/>
-                         <span style={{ color: 'var(--text-muted)', display: 'inline-block', marginTop: '4px' }}>Tanam: {s.kebutuhanPenanam || 0} | Rawat: {s.kebutuhanPerawat || 0} | Panen: {s.kebutuhanPemanen || 0}</span>
-                       </div>
-                     </div>
-
-                     <div style={{ display: 'flex', gap: '12px', marginTop: '4px' }}>
-                       <button onClick={() => handleRejectLocation(s.id, s.name)} style={{ flex: 1, background: 'white', color: '#e03131', border: '1.5px solid #e03131', padding: '12px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem' }}>Tolak</button>
-                       <button onClick={() => handleVerifyLocation(s.id, s.name)} style={{ flex: 1, background: '#16a34a', color: 'white', border: 'none', padding: '12px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem', boxShadow: '0 4px 12px rgba(22,163,74,0.3)' }}>Verifikasi Lokasi</button>
-                     </div>
-                   </div>
-                 ))}
-
-                 {/* Plantation Donations Queue */}
-                 {pendingDonations.map(don => (
-                   <div key={don.id} style={{ background: '#f8f9fa', padding: isMobile ? '20px' : '24px', borderRadius: '20px', border: '1.5px solid #f1f3f5', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
-                        <div>
-                          <div style={{ fontWeight: '900', fontSize: '1.1rem', marginBottom: '4px' }}>Verifikasi Dukungan Penanaman</div>
-                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>🕒 {don.date}</div>
-                        </div>
-                        <span style={{ fontSize: '0.75rem', background: '#f59f00', color: 'white', padding: '6px 12px', borderRadius: '20px', fontWeight: 'bold' }}>Fiat / Pembelian</span>
-                     </div>
-
-                     <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px', fontSize: '0.85rem' }}>
-                       <div style={{ background: 'white', padding: '12px', borderRadius: '12px' }}><strong>👤 Donatur:</strong> <span style={{ color: '#1864ab', marginLeft: '4px' }}>{don.name} (@{don.username})</span></div>
-                       <div style={{ background: 'white', padding: '12px', borderRadius: '12px' }}><strong>📍 Lokasi:</strong> <span style={{ marginLeft: '4px' }}>{don.location?.name || '-'}</span></div>
-                       <div style={{ background: 'white', padding: '12px', borderRadius: '12px' }}><strong>📦 Paket:</strong> <span style={{ marginLeft: '4px' }}>{don.package?.name || '-'}</span></div>
-                       <div style={{ background: 'white', padding: '12px', borderRadius: '12px' }}><strong>💵 Nominal:</strong> <span style={{ color: '#e03131', marginLeft: '4px', fontWeight: 'bold' }}>{don.amount} USDT</span> ({don.paymentMethod})</div>
-                     </div>
-
-                     <div style={{ display: 'flex', gap: '12px', marginTop: '4px' }}>
-                       <button onClick={async () => { try { await updateDoc(doc(db, "plantations", don.id), { status: "rejected" }); queryClient.invalidateQueries({ queryKey: ['plantationDonations'] }); alert(t('tw_alert_rejected')); } catch (err) { console.error(err); } }} style={{ flex: 1, background: 'white', color: '#e03131', border: '1.5px solid #e03131', padding: '12px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem' }}>Tolak</button>
-                       <button onClick={async () => { await approvePlantationDonation(don.id); queryClient.invalidateQueries({ queryKey: ['plantationDonations'] }); alert(t('tw_alert_approved')); }} style={{ flex: 1, background: '#51cf66', color: 'white', border: 'none', padding: '12px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem', boxShadow: '0 4px 12px rgba(81,207,102,0.3)' }}>Sahkan Pembayaran</button>
-                     </div>
-                   </div>
-                 ))}
-
-                 {/* Active Escrow Verification Queue */}
-                 {verifiedDonations.map(don => (
-                   <div key={don.id} style={{ background: '#f8f9fa', padding: isMobile ? '20px' : '24px', borderRadius: '20px', border: '1.5px solid #f1f3f5', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
-                        <div>
-                          <div style={{ fontWeight: '900', fontSize: '1.1rem', marginBottom: '4px' }}>Verifikasi Bukti Kerja (Escrow)</div>
-                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>📍 Lokasi: {don.location?.name || '-'} | 💵 {don.amount} USDT</div>
-                        </div>
-                        <span style={{ fontSize: '0.75rem', background: '#12b886', color: 'white', padding: '6px 12px', borderRadius: '20px', fontWeight: 'bold' }}>Active Escrow</span>
-                     </div>
-                     
-                     <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '8px' }}>
-                        Verifikasi tugas lapangan di bawah ini untuk mencairkan porsi dana ke masing-masing stakeholder.
-                     </div>
-
-                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                        {don.milestones && Object.entries(don.milestones).map(([key, m]) => (
-                          <button 
-                            key={key} 
-                            onClick={async () => { 
-                               if (!m.released) {
-                                  await releaseMilestone(don.id, key); 
-                                  queryClient.invalidateQueries({ queryKey: ['plantationDonations'] });
-                                  alert(`Misi ${m.name} disetujui! Dana dicairkan.`);
-                               }
-                            }} 
-                            style={{ 
-                              background: m.released ? '#ebfbee' : 'white', 
-                              color: m.released ? '#2b8a3e' : '#495057', 
-                              border: `1.5px solid ${m.released ? '#51cf66' : '#ced4da'}`, 
-                              padding: '8px 16px', 
-                              borderRadius: '12px', 
-                              fontWeight: 'bold', 
-                              cursor: m.released ? 'default' : 'pointer', 
-                              fontSize: '0.8rem',
-                              opacity: m.released ? 0.7 : 1,
-                              transition: 'all 0.2s'
-                            }}>
-                            {m.released ? `✓ ${m.name} Selesai` : `Sahkan: ${m.name} (${m.percent}%)`}
-                          </button>
-                        ))}
-                     </div>
-                   </div>
-                 ))}
-
-                 {/* Other Validations Queue */}
-                 {filteredValidations.map(task => (
-                   <div key={task.id} style={{ background: '#f8f9fa', padding: isMobile ? '20px' : '24px', borderRadius: '20px', border: '1.5px solid #f1f3f5', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                     
-                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
-                        <div>
-                          <div style={{ fontWeight: '900', fontSize: '1.1rem', marginBottom: '4px' }}>{task.title}</div>
-                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>🕒 {new Date(task.date).toLocaleDateString()}</div>
-                        </div>
-                        <span style={{ fontSize: '0.75rem', background: 'var(--primary)', color: 'white', padding: '6px 12px', borderRadius: '20px', fontWeight: 'bold' }}>{task.tags?.split(',')[0] || 'Observation'}</span>
-                     </div>
-
-                     <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px', fontSize: '0.85rem' }}>
-                       <div style={{ background: 'white', padding: '12px', borderRadius: '12px' }}>                        {task.tags?.includes('Artikel') ? (
-                          <strong>📝 Jenis Konten:</strong>
-                        ) : (
-                          <strong>📍 GPS:</strong>
-                        )} <span style={{ color: '#1864ab', marginLeft: '4px' }}>{task.tags?.includes('Artikel') ? 'Artikel & Esai Ilmiah (Academy)' : (task.gps || '-')}</span></div>
-                       {task.details && (
-                         <div style={{ background: 'white', padding: '12px', borderRadius: '12px' }}>{task.tags?.includes('Artikel') ? <strong>👤 Penulis Pegiat:</strong> : <strong>👤 Pemilik:</strong>} <span style={{ marginLeft: '4px' }}>{task.details.pemilik || task.details.name || 'Anonim'}</span></div>
-                       )}
-                     </div>
-
-                     {task.uploadedFiles && Object.keys(task.uploadedFiles).length > 0 && (
-                       <div>
-                         <div style={{ fontWeight: 'bold', fontSize: '0.8rem', marginBottom: '12px', color: 'var(--text-muted)' }}>📷 BERKAS LAPORAN:</div>
-                         <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '8px' }}>
-                           {Object.entries(task.uploadedFiles).map(([key, imgUrl]) => (
-                             <div key={key} onClick={() => setPreviewImgWithWatermark(imgUrl)} style={{ position: 'relative', flexShrink: 0, width: '90px', height: '90px', borderRadius: '12px', backgroundImage: `url("${imgUrl}")`, backgroundPosition: 'center', backgroundSize: 'cover', backgroundColor: '#e9ecef', border: '2.5px solid white', cursor: 'zoom-in', boxShadow: '0 4px 10px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                               {!imgUrl || typeof imgUrl !== 'string' || !imgUrl.startsWith('data:') ? <span style={{fontSize: '0.6rem', color: '#adb5bd', textAlign: 'center'}}>No Image</span> : null}
-                               <div style={{ position: 'absolute', background: 'rgba(0,0,0,0.7)', color: 'white', fontSize: '0.6rem', padding: '4px', bottom: 0, left: 0, right: 0, textAlign: 'center', borderBottomLeftRadius: '10px', borderBottomRightRadius: '10px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{key}</div>
-                             </div>
-                           ))}
+                    <div key={s.id} style={{ background: 'var(--bg-color)', padding: isMobile ? '20px' : '24px', borderRadius: '20px', border: '1.5px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
+                         <div>
+                           <div style={{ fontWeight: '900', fontSize: '1.1rem', marginBottom: '4px', color: 'var(--text-main)' }}>{t('tw_val_task_gis')}</div>
+                           <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>🕒 {s.date || 'Baru'}</div>
                          </div>
-                       </div>
-                     )}
+                         <span style={{ fontSize: '0.75rem', background: '#f59f00', color: 'white', padding: '6px 12px', borderRadius: '20px', fontWeight: 'bold' }}>Pending Verification</span>
+                      </div>
 
-                     <div style={{ background: 'var(--bg-secondary)', padding: '12px', borderRadius: '12px', marginTop: '8px', border: '1px solid var(--border-color, #e9ecef)' }}>
-                       <div style={{ fontWeight: 'bold', fontSize: '0.8rem', marginBottom: '8px', color: 'var(--text-main)' }}>💬 Chat Konfirmasi</div>
-                       <input type="text" placeholder="Tanyakan detail spesifik..." style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color, #ced4da)', background: 'var(--bg-primary, white)', color: 'var(--text-main)', fontSize: '0.85rem', marginBottom: '8px', boxSizing: 'border-box' }} />
-                       <button onClick={() => alert(t('tw_alert_msg_sent'))} style={{ background: 'var(--text-main)', color: 'var(--bg-primary, white)', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer' }}>Kirim Pesan</button>
-                     </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px', fontSize: '0.85rem', color: 'var(--text-main)' }}>
+                        <div style={{ background: 'var(--bg-card)', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)' }}><strong>📍 {t('tw_val_loc_name')}:</strong> <span style={{ color: 'var(--primary)', marginLeft: '4px', fontWeight: 'bold' }}>{s.name}</span></div>
+                        <div style={{ background: 'var(--bg-card)', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)' }}><strong>📏 {t('tw_val_loc_size')}:</strong> <span style={{ marginLeft: '4px' }}>{s.size} Ha</span></div>
+                        <div style={{ background: 'var(--bg-card)', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)' }}><strong>🏷️ {t('tw_val_land_type')}:</strong> <span style={{ marginLeft: '4px' }}>{s.type}</span></div>
+                        <div style={{ background: 'var(--bg-card)', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                             <Globe size={14} color="var(--primary)" />
+                             <span>{t('tw_val_coordinates')}: {s.coordinates}</span>
+                           </div>
+                           <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s.name)}`} target="_blank" rel="noreferrer" style={{ color: '#4dabf7', textDecoration: 'none', display: 'inline-block', marginTop: '4px', fontWeight: 'bold' }}>
+                             {t('tw_val_open_maps')} ↗
+                           </a>
+                        </div>
+                        <div style={{ background: 'var(--bg-card)', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                          <strong>👤 {t('tw_val_proposer')}:</strong> <span style={{ marginLeft: '4px' }}>{s.pengusul || s.owner || '-'}</span><br/>
+                          <strong style={{ display: 'inline-block', marginTop: '4px' }}>📞 {t('tw_val_pic_wa')}:</strong> <span style={{ marginLeft: '4px' }}>{s.waPic || '-'}</span>
+                        </div>
+                        <div style={{ background: 'var(--bg-card)', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                          <strong>🧑‍🌾 {t('tw_val_sdm_needs')}:</strong><br/>
+                          <span style={{ color: 'var(--text-muted)', display: 'inline-block', marginTop: '4px' }}>{t('tw_val_sdm_plant')}: {s.kebutuhanPenanam || 0} | {t('tw_val_sdm_maintain')}: {s.kebutuhanPerawat || 0} | {t('tw_val_sdm_harvest')}: {s.kebutuhanPemanen || 0}</span>
+                        </div>
+                      </div>
 
-                     <div style={{ display: 'flex', gap: '12px', marginTop: '4px' }}>
-                       <button onClick={async () => { await approveValidation(task.id, 0, task.plantingId, task.userId); queryClient.invalidateQueries({ queryKey: ['validations'] }); alert(t('tw_alert_rejected')); }} style={{ flex: 1, background: 'white', color: '#e03131', border: '1.5px solid #e03131', padding: '12px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem' }}>Tolak</button>
-                       <button onClick={async () => { await approveValidation(task.id, task.rewardAmount, task.plantingId, task.userId); queryClient.invalidateQueries({ queryKey: ['validations'] }); alert(t('tw_alert_val_success')); }} style={{ flex: 1, background: '#51cf66', color: 'white', border: 'none', padding: '12px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem', boxShadow: '0 4px 12px rgba(81,207,102,0.3)' }}>Sahkan Data</button>
-                     </div>
-                   </div>
-                 ))}
+                      <div style={{ display: 'flex', gap: '12px', marginTop: '4px' }}>
+                        <button onClick={() => handleRejectLocation(s.id, s.name)} style={{ flex: 1, background: 'var(--bg-card)', color: '#e03131', border: '1.5px solid #e03131', padding: '12px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem' }}>{t('tw_val_btn_reject')}</button>
+                        <button onClick={() => handleVerifyLocation(s.id, s.name)} style={{ flex: 1, background: 'var(--primary)', color: 'white', border: 'none', padding: '12px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem', boxShadow: '0 4px 12px rgba(12,166,120,0.2)' }}>{t('tw_val_task_gis').includes('GIS') ? 'Verify Location' : 'Verifikasi Lokasi'}</button>
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Plantation Donations Queue */}
+                  {pendingDonations.map(don => (
+                    <div key={don.id} style={{ background: 'var(--bg-color)', padding: isMobile ? '20px' : '24px', borderRadius: '20px', border: '1.5px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
+                         <div>
+                           <div style={{ fontWeight: '900', fontSize: '1.1rem', marginBottom: '4px', color: 'var(--text-main)' }}>{t('tw_val_task_planting_support')}</div>
+                           <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>🕒 {don.date}</div>
+                         </div>
+                         <span style={{ fontSize: '0.75rem', background: '#f59f00', color: 'white', padding: '6px 12px', borderRadius: '20px', fontWeight: 'bold' }}>Fiat / Pembelian</span>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px', fontSize: '0.85rem', color: 'var(--text-main)' }}>
+                        <div style={{ background: 'var(--bg-card)', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)' }}><strong>👤 {t('tw_val_donor')}:</strong> <span style={{ color: 'var(--primary)', marginLeft: '4px' }}>{don.name} (@{don.username})</span></div>
+                        <div style={{ background: 'var(--bg-card)', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)' }}><strong>📍 {t('tw_val_location')}:</strong> <span style={{ marginLeft: '4px' }}>{don.location?.name || '-'}</span></div>
+                        <div style={{ background: 'var(--bg-card)', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)' }}><strong>📦 {t('tw_val_package')}:</strong> <span style={{ marginLeft: '4px' }}>{don.package?.name || '-'}</span></div>
+                        <div style={{ background: 'var(--bg-card)', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)' }}><strong>💵 {t('tw_val_amount')}:</strong> <span style={{ color: '#e03131', marginLeft: '4px', fontWeight: 'bold' }}>{don.amount} USDT</span> ({don.paymentMethod})</div>
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '12px', marginTop: '4px' }}>
+                        <button onClick={async () => { try { await updateDoc(doc(db, "plantations", don.id), { status: "rejected" }); queryClient.invalidateQueries({ queryKey: ['plantationDonations'] }); alert(t('tw_alert_rejected')); } catch (err) { console.error(err); } }} style={{ flex: 1, background: 'var(--bg-card)', color: '#e03131', border: '1.5px solid #e03131', padding: '12px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem' }}>{t('tw_val_btn_reject')}</button>
+                        <button onClick={async () => { await approvePlantationDonation(don.id); queryClient.invalidateQueries({ queryKey: ['plantationDonations'] }); alert(t('tw_alert_approved')); }} style={{ flex: 1, background: 'var(--primary)', color: 'white', border: 'none', padding: '12px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem', boxShadow: '0 4px 12px rgba(12,166,120,0.2)' }}>{t('tw_val_btn_approve')}</button>
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Active Escrow Verification Queue */}
+                  {verifiedDonations.map(don => (
+                    <div key={don.id} style={{ background: 'var(--bg-color)', padding: isMobile ? '20px' : '24px', borderRadius: '20px', border: '1.5px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
+                         <div>
+                           <div style={{ fontWeight: '900', fontSize: '1.1rem', marginBottom: '4px', color: 'var(--text-main)' }}>{t('tw_val_task_escrow')}</div>
+                           <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>📍 {t('tw_val_location')}: {don.location?.name || '-'} | 💵 {don.amount} USDT</div>
+                         </div>
+                         <span style={{ fontSize: '0.75rem', background: '#12b886', color: 'white', padding: '6px 12px', borderRadius: '20px', fontWeight: 'bold' }}>Active Escrow</span>
+                      </div>
+                      
+                      <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '8px' }}>
+                         {t('tw_val_escrow_desc')}
+                      </div>
+
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                         {don.milestones && Object.entries(don.milestones).map(([key, m]) => (
+                           <button 
+                             key={key} 
+                             onClick={async () => { 
+                                if (!m.released) {
+                                   await releaseMilestone(don.id, key); 
+                                   queryClient.invalidateQueries({ queryKey: ['plantationDonations'] });
+                                   alert(`Misi ${m.name} disetujui! Dana dicairkan.`);
+                                }
+                             }} 
+                             style={{ 
+                               background: m.released ? 'var(--bg-claimed)' : 'var(--bg-card)', 
+                               color: m.released ? 'var(--primary)' : 'var(--text-main)', 
+                               border: `1.5px solid ${m.released ? 'var(--primary)' : 'var(--border-color)'}`, 
+                               padding: '8px 16px', 
+                               borderRadius: '12px', 
+                               fontWeight: 'bold', 
+                               cursor: m.released ? 'default' : 'pointer', 
+                               fontSize: '0.8rem',
+                               opacity: m.released ? 0.7 : 1,
+                               transition: 'all 0.2s'
+                             }}>
+                             {m.released ? `✓ ${m.name} ${t('tw_val_completed')}` : `${t('tw_val_approve_prefix')}: ${m.name} (${m.percent}%)`}
+                           </button>
+                         ))}
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Other Validations Queue */}
+                  {filteredValidations.map(task => (
+                    <div key={task.id} style={{ background: 'var(--bg-color)', padding: isMobile ? '20px' : '24px', borderRadius: '20px', border: '1.5px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                      
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
+                         <div>
+                           <div style={{ fontWeight: '900', fontSize: '1.1rem', marginBottom: '4px', color: 'var(--text-main)' }}>{translateDbTitle(task.title)}</div>
+                           <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>🕒 {new Date(task.date).toLocaleDateString()}</div>
+                         </div>
+                         <span style={{ fontSize: '0.75rem', background: 'var(--primary)', color: 'white', padding: '6px 12px', borderRadius: '20px', fontWeight: 'bold' }}>{task.tags?.split(',')[0] || 'Observation'}</span>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px', fontSize: '0.85rem', color: 'var(--text-main)' }}>
+                        <div style={{ background: 'var(--bg-card)', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                          {task.tags?.includes('Artikel') ? (
+                            <strong>📝 {t('tw_val_content_type')}:</strong>
+                          ) : (
+                            <strong>📍 GPS:</strong>
+                          )} 
+                          <span style={{ color: 'var(--primary)', marginLeft: '4px', fontWeight: 'bold' }}>
+                            {task.tags?.includes('Artikel') ? t('tw_val_article_essay') : (task.gps || '-')}
+                          </span>
+                        </div>
+                        {task.details && (
+                          <div style={{ background: 'var(--bg-card)', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                            {task.tags?.includes('Artikel') ? <strong>👤 {t('tw_val_writer')}:</strong> : <strong>👤 {t('tw_val_owner')}:</strong>} 
+                            <span style={{ marginLeft: '4px' }}>{task.details.pemilik || task.details.name || 'Anonim'}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {task.uploadedFiles && Object.keys(task.uploadedFiles).length > 0 && (
+                        <div>
+                          <div style={{ fontWeight: 'bold', fontSize: '0.8rem', marginBottom: '12px', color: 'var(--text-main)' }}>📷 {t('tw_val_report_files')}:</div>
+                          <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '8px' }}>
+                            {Object.entries(task.uploadedFiles).map(([key, imgUrl]) => (
+                              <div key={key} onClick={() => setPreviewImgWithWatermark(imgUrl)} style={{ position: 'relative', flexShrink: 0, width: '90px', height: '90px', borderRadius: '12px', backgroundImage: `url("${imgUrl}")`, backgroundPosition: 'center', backgroundSize: 'cover', backgroundColor: '#e9ecef', border: '2.5px solid white', cursor: 'zoom-in', boxShadow: '0 4px 10px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                {!imgUrl || typeof imgUrl !== 'string' || !imgUrl.startsWith('data:') ? <span style={{fontSize: '0.6rem', color: '#adb5bd', textAlign: 'center'}}>No Image</span> : null}
+                                <div style={{ position: 'absolute', background: 'rgba(0,0,0,0.7)', color: 'white', fontSize: '0.6rem', padding: '4px', bottom: 0, left: 0, right: 0, textAlign: 'center', borderBottomLeftRadius: '10px', borderBottomRightRadius: '10px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{key}</div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      <div style={{ background: 'var(--bg-secondary)', padding: '12px', borderRadius: '12px', marginTop: '8px', border: '1px solid var(--border-color)' }}>
+                        <div style={{ fontWeight: 'bold', fontSize: '0.8rem', marginBottom: '8px', color: 'var(--text-main)' }}>💬 {t('tw_val_chat_confirm')}</div>
+                        <input type="text" placeholder={t('tw_val_chat_ph')} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-card)', color: 'var(--text-main)', fontSize: '0.85rem', marginBottom: '8px', boxSizing: 'border-box' }} />
+                        <button onClick={() => alert(t('tw_alert_msg_sent'))} style={{ background: 'var(--text-main)', color: 'var(--bg-card)', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer' }}>{t('tw_val_send_msg')}</button>
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '12px', marginTop: '4px' }}>
+                        <button onClick={async () => { await approveValidation(task.id, 0, task.plantingId, task.userId); queryClient.invalidateQueries({ queryKey: ['validations'] }); alert(t('tw_alert_rejected')); }} style={{ flex: 1, background: 'var(--bg-card)', color: '#e03131', border: '1.5px solid #e03131', padding: '12px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem' }}>{t('tw_val_btn_reject')}</button>
+                        <button onClick={async () => { await approveValidation(task.id, task.rewardAmount, task.plantingId, task.userId); queryClient.invalidateQueries({ queryKey: ['validations'] }); alert(t('tw_alert_val_success')); }} style={{ flex: 1, background: 'var(--primary)', color: 'white', border: 'none', padding: '12px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem', boxShadow: '0 4px 12px rgba(12,166,120,0.2)' }}>{t('tw_val_btn_approve')}</button>
+                      </div>
+                    </div>
+                  ))}
               </div>
             )}
           </div>
