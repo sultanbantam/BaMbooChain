@@ -152,9 +152,9 @@ export const AuthProvider = ({ children }) => {
         unsubUserDoc = onSnapshot(userDocRef, (docSnap) => {
           if (docSnap.exists()) {
             const userData = docSnap.data();
-            setUser(userData);
+            setUser({ id: docSnap.id, ...userData });
             setIsAuthenticated(true);
-            localStorage.setItem('yayasan_user', JSON.stringify(userData));
+            localStorage.setItem('yayasan_user', JSON.stringify({ id: docSnap.id, ...userData }));
           }
         }, (err) => {
           console.error("Real-time User Profile sync error:", err);
@@ -163,7 +163,7 @@ export const AuthProvider = ({ children }) => {
         // Fetch user data from Firestore
         const userDoc = await getDoc(userDocRef);
         if (userDoc.exists()) {
-          const userData = userDoc.data();
+          const userData = { id: userDoc.id, ...userDoc.data() };
           console.log("📦 Firestore data found for user:", userData.username);
           
           // --- AUTO CLAIM REFERRAL REWARDS (Hybrid System) ---
@@ -420,7 +420,7 @@ export const AuthProvider = ({ children }) => {
       
       const userDoc = await getDoc(doc(db, "users", fbUser.uid));
       if (userDoc.exists()) {
-        const fullData = userDoc.data();
+        const fullData = { id: userDoc.id, ...userDoc.data() };
         setUser(fullData);
         setIsAuthenticated(true);
         closeModal();
@@ -601,7 +601,7 @@ export const AuthProvider = ({ children }) => {
         await setDoc(doc(db, "users", fbUser.uid), newUser);
         setUser(newUser);
       } else {
-        setUser(userDoc.data());
+        setUser({ id: userDoc.id, ...userDoc.data() });
       }
       setIsAuthenticated(true);
       return true;
@@ -835,13 +835,77 @@ export const AuthProvider = ({ children }) => {
     }
   };
   const approveValidation = async (validationId, submitterReward = 0, plantingId = null, submitterId = null) => {
+    const isApproved = submitterReward > 0;
     try {
-      const isApproved = submitterReward > 0;
       const approveValFn = httpsCallable(functions, 'approveValidationSecure');
       await approveValFn({ validationId, submitterReward, plantingId, submitterId, isApproved });
       return true;
     } catch (err) {
       console.error("Error in server-side validation approval:", err);
+
+      // FALLBACK FOR REJECTS ONLY IF CLOUD FUNCTION FAILS
+      if (!isApproved) {
+        console.log("⚠️ Cloud Function failed on Reject, attempting client-side fallback...");
+        try {
+          const validationRef = doc(db, "validations", validationId);
+          const validationDoc = await getDoc(validationRef);
+          if (validationDoc.exists()) {
+            const valData = validationDoc.data();
+            
+            // 1. Update validation document status to 'rejected'
+            await updateDoc(validationRef, {
+              status: 'rejected',
+              approvedBy: user?.username || 'admin',
+              approvedAt: new Date().toISOString()
+            });
+
+            // 2. Client-side fallback for Article rejection if applicable
+            if (valData.tags?.includes('Artikel') && valData.details?.articleId) {
+              const articleRef = doc(db, "articles", valData.details.articleId);
+              await updateDoc(articleRef, {
+                approved: 'rejected',
+                approvedAt: new Date().toISOString()
+              });
+            }
+
+            // 3. Client-side fallback for Knowledge rejection if applicable
+            if (valData.tags?.includes('Knowledge') && valData.details?.knowledgeId) {
+              const knowledgeRef = doc(db, "knowledge_items", valData.details.knowledgeId);
+              await updateDoc(knowledgeRef, {
+                status: 'rejected',
+                updatedAt: new Date().toISOString(),
+                rejectedAt: new Date().toISOString(),
+                rejectedBy: user?.username || 'validator',
+                sourceTrust: 'rejected'
+              });
+            }
+
+            // 4. Client-side fallback for KYC rejection if applicable
+            const targetUserId = submitterId || valData.userId;
+            if (valData.isKyc && targetUserId && targetUserId !== 'guest') {
+              const submitterRef = doc(db, "users", targetUserId);
+              await updateDoc(submitterRef, {
+                kycStatus: 'rejected'
+              });
+            }
+
+            // 5. Client-side fallback for Planting lifecycle rejection if applicable
+            if (plantingId) {
+              const plantingRef = doc(db, "plantings", plantingId);
+              await updateDoc(plantingRef, {
+                verified: false,
+                isVerified: false,
+                verifiedAt: null
+              });
+            }
+
+            return true; // Succeeded via client-side fallback!
+          }
+        } catch (clientErr) {
+          console.error("Client-side fallback also failed:", clientErr);
+        }
+      }
+
       alert("❌ Gagal memproses validasi: " + err.message);
       return false;
     }
