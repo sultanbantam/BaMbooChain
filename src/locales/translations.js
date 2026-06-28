@@ -919,6 +919,12 @@ export const translations = {
     tw_alert_invalid_id: "Nomor identitas harus valid!",
     tw_alert_kyc_sent: "Data KYC berhasil dipindai oleh AI & dikirim ke Antrean Validator!",
     tw_alert_retina_on: "Biometrik Retina Aktif!",
+    tx_desc_checkin: "Hadiah Check-in Harian (Hari {day})",
+    tx_desc_send_gift: "Mengirim Gift ke {user}: Gift Halaman: {page}",
+    tx_desc_validation_reward: "Imbalan Validasi Data Laporan: {title}",
+    tx_desc_commission: "Komisi Verifikasi Laporan ({id})",
+    tx_desc_transfer: "Transfer BMC ke {addr}",
+    tx_desc_receive: "Menerima BMC dari {sender}",
 
     // Dao & Community Page
     dao_header_title: "DAO & Komunitas",
@@ -2159,6 +2165,12 @@ export const translations = {
     tw_alert_invalid_id: "ID number must be valid!",
     tw_alert_kyc_sent: "KYC Data successfully scanned by AI & sent to Validator Queue!",
     tw_alert_retina_on: "Retina Biometrics Active!",
+    tx_desc_checkin: "Daily Check-in Reward (Day {day})",
+    tx_desc_send_gift: "Sent Gift to {user}: Page Gift: {page}",
+    tx_desc_validation_reward: "Validation Reward: {title}",
+    tx_desc_commission: "Verification Commission ({id})",
+    tx_desc_transfer: "Transfer BMC to {addr}",
+    tx_desc_receive: "Received BMC from {sender}",
 
     // Dao & Community Page
     dao_header_title: "DAO & Community",
@@ -2354,6 +2366,12 @@ tw_alert_kyc_req: "To contribute, you must verify your account (KYC) first.",
     tw_alert_invalid_id: "ID number must be valid!",
     tw_alert_kyc_sent: "KYC Data successfully scanned by AI & sent to Validator Queue!",
     tw_alert_retina_on: "Retina Biometrics Active!",
+    tx_desc_checkin: "Daily Check-in Reward (Day {day})",
+    tx_desc_send_gift: "Sent Gift to {user}: Page Gift: {page}",
+    tx_desc_validation_reward: "Validation Reward: {title}",
+    tx_desc_commission: "Verification Commission ({id})",
+    tx_desc_transfer: "Transfer BMC to {addr}",
+    tx_desc_receive: "Received BMC from {sender}",
 
     // Dao & Community Page
     dao_header_title: "DAO & Community",
@@ -3539,6 +3557,12 @@ tw_alert_kyc_req: "To contribute, you must verify your account (KYC) first.",
     "tw_alert_invalid_id": "ID番号は有効でなければなりません！",
     "tw_alert_kyc_sent": "KYCデータはAIによってスキャンされ、バリデーターキューに送信されました！",
     "tw_alert_retina_on": "網膜バイオメトリクスがアクティブです！",
+    "tx_desc_checkin": "デイリーチェックイン報酬 ({day}日目)",
+    "tx_desc_send_gift": "{user} にギフトを送信：ページギフト: {page}",
+    "tx_desc_validation_reward": "検証報酬: {title}",
+    "tx_desc_commission": "レポート検証手数料 ({id})",
+    "tx_desc_transfer": "{addr} へのBMC送金",
+    "tx_desc_receive": "{sender} からのBMC受信",
 
     // Dao & Community Page
     "dao_header_title": "DAOとコミュニティ",

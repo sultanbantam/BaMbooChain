@@ -10,7 +10,7 @@ import { Link, useLocation } from 'react-router-dom';
 import BackButton from '../../components/BackButton';
 import { useValidations, usePlantationDonations, useLocationProposals } from '../../hooks/useFirestoreQueries';
 import { useLanguage } from '../../context/LanguageContext';
-import { updateDoc, doc } from 'firebase/firestore';
+import { updateDoc, doc, arrayUnion } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -1371,7 +1371,47 @@ const ValidatorBMC = () => {
   const { data: pendingValidations = [] } = useValidations(user?.id);
   const { data: plantationDonations = [] } = usePlantationDonations();
   const { data: allLocationProposals = [] } = useLocationProposals(user?.id, user?.username);
+  const [chatInputs, setChatInputs] = useState({});
   
+  const handleSendConfirmChat = async (taskId, submitterId, taskTitle) => {
+    const msgText = chatInputs[taskId];
+    if (!msgText || !msgText.trim()) return alert('Tulis pesan Anda!');
+    
+    try {
+      const validationRef = doc(db, "validations", taskId);
+      await updateDoc(validationRef, {
+        chats: arrayUnion({
+          sender: 'validator',
+          message: msgText,
+          timestamp: new Date().toISOString()
+        })
+      });
+
+      // Send a real-time notification to the submitter (owner) if applicable
+      const targetUserId = submitterId;
+      if (targetUserId && targetUserId !== 'guest') {
+        const submitterRef = doc(db, "users", targetUserId);
+        const newNotif = {
+          id: 'notif_chat_' + Date.now(),
+          text: `Validator: "${msgText}" (${translateDbTitle(taskTitle)})`,
+          type: 'info',
+          isRead: false,
+          timestamp: new Date().toISOString()
+        };
+        await updateDoc(submitterRef, {
+          notifications: arrayUnion(newNotif)
+        });
+      }
+
+      setChatInputs({ ...chatInputs, [taskId]: '' });
+      queryClient.invalidateQueries({ queryKey: ['validations'] });
+      alert(t('tw_alert_msg_sent'));
+    } catch (err) {
+      console.error("Gagal mengirim pesan chat konfirmasi:", err);
+      alert("❌ Gagal mengirim pesan: " + err.message);
+    }
+  };
+
   const pendingDonations = plantationDonations.filter(d => d.status === 'pending');
   const verifiedDonations = plantationDonations.filter(d => d.status === 'verified' || d.status === 'active');
   const pendingLocationProposals = allLocationProposals.filter(d => d.status === 'pending' || d.status === 'Pending Verification');
@@ -1704,8 +1744,27 @@ const ValidatorBMC = () => {
 
                       <div style={{ background: 'var(--bg-secondary)', padding: '12px', borderRadius: '12px', marginTop: '8px', border: '1px solid var(--border-color)' }}>
                         <div style={{ fontWeight: 'bold', fontSize: '0.8rem', marginBottom: '8px', color: 'var(--text-main)' }}>💬 {t('tw_val_chat_confirm')}</div>
-                        <input type="text" placeholder={t('tw_val_chat_ph')} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-card)', color: 'var(--text-main)', fontSize: '0.85rem', marginBottom: '8px', boxSizing: 'border-box' }} />
-                        <button onClick={() => alert(t('tw_alert_msg_sent'))} style={{ background: 'var(--text-main)', color: 'var(--bg-card)', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer' }}>{t('tw_val_send_msg')}</button>
+                        
+                        {/* Chat History Log */}
+                        {task.chats && task.chats.length > 0 && (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '150px', overflowY: 'auto', background: 'var(--bg-card)', padding: '10px', borderRadius: '8px', marginBottom: '10px', border: '1px solid var(--border-color)', textAlign: 'left' }}>
+                            {task.chats.map((chat, idx) => (
+                              <div key={idx} style={{ fontSize: '0.8rem', color: 'var(--text-main)' }}>
+                                <strong>{chat.sender === 'validator' ? 'Validator' : (task.details?.pemilik || 'User')}:</strong> {chat.message}
+                                <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginLeft: '6px' }}>({new Date(chat.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        <input 
+                          type="text" 
+                          placeholder={t('tw_val_chat_ph')} 
+                          value={chatInputs[task.id] || ''}
+                          onChange={(e) => setChatInputs({ ...chatInputs, [task.id]: e.target.value })}
+                          style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-card)', color: 'var(--text-main)', fontSize: '0.85rem', marginBottom: '8px', boxSizing: 'border-box' }} 
+                        />
+                        <button onClick={() => handleSendConfirmChat(task.id, task.userId, task.title)} style={{ background: 'var(--text-main)', color: 'var(--bg-card)', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer' }}>{t('tw_val_send_msg')}</button>
                       </div>
 
                       <div style={{ display: 'flex', gap: '12px', marginTop: '4px' }}>
@@ -1830,6 +1889,7 @@ const GetBMCTab = ({ setActiveTab }) => {
 
 const TransactionsTab = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const txList = user?.transactions || [];
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
@@ -1838,11 +1898,64 @@ const TransactionsTab = () => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  const translateTxDescription = (desc) => {
+    if (!desc) return '';
+    
+    // 1. Daily Check-in
+    if (desc.startsWith("Daily Check-in Reward (Day") || desc.startsWith("Hadiah Check-in Harian")) {
+      const match = desc.match(/(?:Day|Hari)\s*(\d+)/);
+      const day = match ? match[1] : '';
+      return (t('tx_desc_checkin') || "Daily Check-in Reward (Day {day})").replace('{day}', day);
+    }
+
+    // 2. Sent Gift / Mengirim Gift
+    if (desc.startsWith("Mengirim Gift ke") || desc.startsWith("Sent Gift to") || desc.includes("Gift Halaman:") || desc.includes("Page Gift:")) {
+      const usernameMatch = desc.match(/(?:ke|to)\s+(@?[\w_]+)/);
+      const pageMatch = desc.match(/(?:Gift Halaman:|Page Gift:)\s*(.+)/);
+      const userParam = usernameMatch ? usernameMatch[1] : '@admin_yayasan';
+      const page = pageMatch ? pageMatch[1] : '';
+      return (t('tx_desc_send_gift') || "Sent Gift to {user}: Page Gift: {page}").replace('{user}', userParam).replace('{page}', page);
+    }
+
+    // 3. Validation Reward / Imbalan Validasi Data Laporan
+    if (desc.startsWith("Imbalan Validasi Data Laporan:") || desc.startsWith("Validation Reward:") || desc.startsWith("Imbalan Validasi:")) {
+      const title = desc.replace("Imbalan Validasi Data Laporan:", "").replace("Validation Reward:", "").replace("Imbalan Validasi:", "").trim();
+      // Translate the title if possible (e.g. Pembelian BMC (Fiat) -> BMC Purchase (Fiat))
+      const translatedTitle = title.startsWith("Pembelian BMC (Fiat)") 
+        ? (t('tw_task_title_buy_fiat') || title)
+        : title;
+      return (t('tx_desc_validation_reward') || "Validation Reward: {title}").replace('{title}', translatedTitle);
+    }
+
+    // 4. Commission / Komisi Verifikasi Laporan
+    if (desc.startsWith("Komisi Verifikasi Laporan") || desc.startsWith("Verification Commission")) {
+      const match = desc.match(/\(([^)]+)\)/);
+      const id = match ? match[1] : '';
+      return (t('tx_desc_commission') || "Verification Commission ({id})").replace('{id}', id);
+    }
+
+    // 5. Transfer / Transfer BMC ke
+    if (desc.startsWith("Transfer BMC ke") || desc.startsWith("Transfer BMC to")) {
+      const match = desc.match(/(?:ke|to)\s+(.+)/);
+      const addr = match ? match[1] : '';
+      return (t('tx_desc_transfer') || "Transfer BMC to {addr}").replace('{addr}', addr);
+    }
+
+    // 6. Receive / Menerima BMC dari
+    if (desc.startsWith("Menerima BMC dari") || desc.startsWith("Receive BMC from")) {
+      const match = desc.match(/(?:dari|from)\s+(.+)/);
+      const sender = match ? match[1] : '';
+      return (t('tx_desc_receive') || "Received BMC from {sender}").replace('{sender}', sender);
+    }
+
+    return desc;
+  };
   
   return (
   <div style={{ animation: 'fadeIn 0.3s ease-in-out' }}>
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '20px', marginBottom: '24px', flexWrap: 'wrap' }}>
-      <h2 style={{ fontSize: isMobile ? '1.8rem' : '2.5rem', fontWeight: '900', color: 'var(--text-main)', margin: 0 }}>Transactions</h2>
+      <h2 style={{ fontSize: isMobile ? '1.8rem' : '2.5rem', fontWeight: '900', color: 'var(--text-main)', margin: 0 }}>{t('tw_tab_transactions') || "Transactions"}</h2>
       <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
         {['All', 'Earn', 'Spend'].map(f => (
           <button key={f} style={{ padding: '6px 14px', borderRadius: '20px', border: '1px solid #dee2e6', background: 'white', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>{f}</button>
@@ -1865,7 +1978,7 @@ const TransactionsTab = () => {
           ) : txList.map((tx, idx) => (
             <tr key={tx?.id || idx} style={{ borderBottom: '1px solid #f8f9fa' }}>
               <td style={{ padding: '16px', color: 'var(--text-muted)', fontSize: '0.85rem' }}>{tx?.date}</td>
-              <td style={{ padding: '16px', fontWeight: 'bold', color: 'var(--text-main)', fontSize: '0.9rem' }}>{tx?.description}</td>
+              <td style={{ padding: '16px', fontWeight: 'bold', color: 'var(--text-main)', fontSize: '0.9rem' }}>{translateTxDescription(tx?.description)}</td>
               <td style={{ padding: '16px', fontWeight: '900', textAlign: 'right', color: String(tx?.amount || "").includes('+') ? '#12b886' : '#e03131', fontSize: '0.9rem' }}>{tx?.amount} BMC</td>
             </tr>
           ))}
