@@ -841,73 +841,157 @@ export const AuthProvider = ({ children }) => {
       await approveValFn({ validationId, submitterReward, plantingId, submitterId, isApproved });
       return true;
     } catch (err) {
-      console.error("Error in server-side validation approval:", err);
+      console.error("Error in server-side validation approval, running client-side fallback:", err);
 
-      // FALLBACK FOR REJECTS ONLY IF CLOUD FUNCTION FAILS
-      if (!isApproved) {
-        console.log("⚠️ Cloud Function failed on Reject, attempting client-side fallback...");
-        try {
-          const validationRef = doc(db, "validations", validationId);
-          const validationDoc = await getDoc(validationRef);
-          if (validationDoc.exists()) {
-            const valData = validationDoc.data();
-            
-            // 1. Update validation document status to 'rejected'
-            await updateDoc(validationRef, {
-              status: 'rejected',
-              approvedBy: user?.username || 'admin',
-              approvedAt: new Date().toISOString()
-            });
-
-            // 2. Client-side fallback for Article rejection if applicable
-            if (valData.tags?.includes('Artikel') && valData.details?.articleId) {
-              const articleRef = doc(db, "articles", valData.details.articleId);
-              await updateDoc(articleRef, {
-                approved: 'rejected',
-                approvedAt: new Date().toISOString()
-              });
-            }
-
-            // 3. Client-side fallback for Knowledge rejection if applicable
-            if (valData.tags?.includes('Knowledge') && valData.details?.knowledgeId) {
-              const knowledgeRef = doc(db, "knowledge_items", valData.details.knowledgeId);
-              await updateDoc(knowledgeRef, {
-                status: 'rejected',
-                updatedAt: new Date().toISOString(),
-                rejectedAt: new Date().toISOString(),
-                rejectedBy: user?.username || 'validator',
-                sourceTrust: 'rejected'
-              });
-            }
-
-            // 4. Client-side fallback for KYC rejection if applicable
-            const targetUserId = submitterId || valData.userId;
-            if (valData.isKyc && targetUserId && targetUserId !== 'guest') {
-              const submitterRef = doc(db, "users", targetUserId);
-              await updateDoc(submitterRef, {
-                kycStatus: 'rejected'
-              });
-            }
-
-            // 5. Client-side fallback for Planting lifecycle rejection if applicable
-            if (plantingId) {
-              const plantingRef = doc(db, "plantings", plantingId);
-              await updateDoc(plantingRef, {
-                verified: false,
-                isVerified: false,
-                verifiedAt: null
-              });
-            }
-
-            return true; // Succeeded via client-side fallback!
-          }
-        } catch (clientErr) {
-          console.error("Client-side fallback also failed:", clientErr);
+      try {
+        const validationRef = doc(db, "validations", validationId);
+        const validationDoc = await getDoc(validationRef);
+        if (!validationDoc.exists()) {
+          alert("❌ Tugas tidak ditemukan.");
+          return false;
         }
-      }
 
-      alert("❌ Gagal memproses validasi: " + err.message);
-      return false;
+        const valData = validationDoc.data();
+        if (valData.status !== 'pending') {
+          alert("❌ Tugas ini sudah diproses.");
+          return false;
+        }
+
+        const targetUserId = submitterId || valData.userId;
+        const rewardAmount = isApproved ? parseFloat(submitterReward || valData.rewardAmount || 0) : 0;
+        const validatorUsername = user?.username || 'validator';
+
+        // 1. Update validation document status
+        await updateDoc(validationRef, {
+          status: isApproved ? 'approved' : 'rejected',
+          approvedBy: validatorUsername,
+          approvedAt: new Date().toISOString()
+        });
+
+        // 2. Client-side fallback for Article rejection/approval if applicable
+        if (valData.tags?.includes('Artikel') && valData.details?.articleId) {
+          const articleRef = doc(db, "articles", valData.details.articleId);
+          await updateDoc(articleRef, {
+            approved: isApproved ? true : 'rejected',
+            approvedAt: new Date().toISOString()
+          });
+
+          // Add notification to writer
+          if (targetUserId && targetUserId !== 'guest') {
+            const writerRef = doc(db, "users", targetUserId);
+            const newNotif = {
+              id: 'notif_' + Math.random().toString(36).substr(2, 9),
+              text: isApproved 
+                ? `Selamat! Artikel Anda "${valData.title.replace('Verifikasi Artikel: ', '')}" telah disahkan oleh Validator dan dipublikasikan di Akademi BMC!`
+                : `Maaf, artikel Anda "${valData.title.replace('Verifikasi Artikel: ', '')}" belum disetujui oleh Validator karena orisinalitas ilmiah.`,
+              type: isApproved ? 'success' : 'info',
+              isRead: false,
+              timestamp: new Date().toISOString()
+            };
+            await updateDoc(writerRef, {
+              notifications: arrayUnion(newNotif)
+            });
+          }
+        }
+
+        // 3. Client-side fallback for Knowledge rejection/approval if applicable
+        if (valData.tags?.includes('Knowledge') && valData.details?.knowledgeId) {
+          const knowledgeRef = doc(db, "knowledge_items", valData.details.knowledgeId);
+          const status = isApproved ? 'approved' : 'rejected';
+          const statusFields = isApproved
+            ? {
+                approvedAt: new Date().toISOString(),
+                approvedBy: validatorUsername,
+                sourceTrust: 'verified'
+              }
+            : {
+                rejectedAt: new Date().toISOString(),
+                rejectedBy: validatorUsername,
+                sourceTrust: 'rejected'
+              };
+          
+          await updateDoc(knowledgeRef, {
+            status,
+            updatedAt: new Date().toISOString(),
+            ...statusFields
+          });
+
+          // Add notification to contributor
+          if (targetUserId && targetUserId !== 'guest') {
+            const contributorRef = doc(db, "users", targetUserId);
+            const newNotif = {
+              id: 'notif_' + Math.random().toString(36).substr(2, 9),
+              text: isApproved 
+                ? `Selamat! Kontribusi sumber pengetahuan Anda "${valData.title.replace('Verifikasi Knowledge: ', '')}" telah disahkan oleh Validator dan mendapatkan 25.0 BMC!`
+                : `Maaf, kontribusi sumber pengetahuan Anda "${valData.title.replace('Verifikasi Knowledge: ', '')}" ditolak oleh Validator.`,
+              type: isApproved ? 'success' : 'info',
+              isRead: false,
+              timestamp: new Date().toISOString()
+            };
+            await updateDoc(contributorRef, {
+              notifications: arrayUnion(newNotif)
+            });
+          }
+        }
+
+        // 4. Client-side fallback for KYC rejection/approval if applicable
+        if (valData.isKyc && targetUserId && targetUserId !== 'guest') {
+          const submitterRef = doc(db, "users", targetUserId);
+          await updateDoc(submitterRef, {
+            kycStatus: isApproved ? 'verified' : 'rejected'
+          });
+        }
+
+        // 5. Client-side fallback for Planting lifecycle rejection/approval if applicable
+        if (plantingId) {
+          const plantingRef = doc(db, "plantings", plantingId);
+          await updateDoc(plantingRef, {
+            verified: isApproved,
+            isVerified: isApproved,
+            verifiedAt: isApproved ? new Date().toISOString() : null
+          });
+        }
+
+        // 6. Submitter Reward Payout (if approved and target user is not guest)
+        if (isApproved && rewardAmount > 0 && targetUserId && targetUserId !== 'guest') {
+          const submitterRef = doc(db, "users", targetUserId);
+          const newTxSubmitter = {
+            id: 'tx_sec_rwd_' + Math.random().toString(36).substr(2, 9),
+            type: 'Earn',
+            amount: `+${rewardAmount}`,
+            date: new Date().toISOString().split('T')[0],
+            status: 'Selesai',
+            description: `Imbalan Validasi Data Laporan: ${valData.title || 'Observasi'}`
+          };
+          await updateDoc(submitterRef, {
+            bmcBalance: increment(rewardAmount),
+            transactions: arrayUnion(newTxSubmitter)
+          });
+        }
+
+        // 7. Validator Commission (+0.05 BMC if approved)
+        if (isApproved && user?.id) {
+          const validatorRef = doc(db, "users", user.id);
+          const newTxValidator = {
+            id: 'tx_sec_com_' + Math.random().toString(36).substr(2, 9),
+            type: 'Earn',
+            amount: `+0.05`,
+            date: new Date().toISOString().split('T')[0],
+            status: 'Selesai',
+            description: `Komisi Verifikasi Laporan (${validationId})`
+          };
+          await updateDoc(validatorRef, {
+            bmcBalance: increment(0.05),
+            transactions: arrayUnion(newTxValidator)
+          });
+        }
+
+        return true;
+      } catch (clientErr) {
+        console.error("Client-side fallback also failed:", clientErr);
+        alert("❌ Gagal memproses validasi: " + clientErr.message);
+        return false;
+      }
     }
   };
 
