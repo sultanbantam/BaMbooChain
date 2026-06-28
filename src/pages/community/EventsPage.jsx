@@ -164,22 +164,22 @@ const EventsPage = () => {
           whileHover={{ scale: 1.01 }}
         >
           <img 
-            src={getAssetUrl('event/serentaun.png')} 
+            src={featuredEvent.image || getAssetUrl('event/serentaun.png')} 
             style={styles.featuredImg}
-            alt="Seren Taun Kasepuhan Cibarani"
+            alt={featuredEvent.title}
           />
           <div className="featured-event-overlay"></div>
           <div style={styles.featuredContent}>
-            <div style={styles.badge}>Featured Event</div>
+            <div style={styles.badge}>{featuredEvent.category || 'Featured Event'}</div>
             <h2 style={{ fontSize: 'clamp(1.5rem, 5vw, 3rem)', fontWeight: 900, marginBottom: '20px' }}>
-              Seren Taun Kasepuhan Cibarani 2026
+              {featuredEvent.title}
             </h2>
             <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', marginBottom: '30px' }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <FaCalendarAlt color="#51cf66" /> 26-30 Agustus 2026
+                <FaCalendarAlt color="#51cf66" /> {featuredEvent.date}
               </span>
               <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <FaMapMarkerAlt color="#51cf66" /> Wewengkon Adat Kasepuhan Cibarani, Lebak Banten
+                <FaMapMarkerAlt color="#51cf66" /> {featuredEvent.location}
               </span>
             </div>
             <button 
