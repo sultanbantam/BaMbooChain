@@ -19,6 +19,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import ShareModal from './ShareModal';
+import CommentItem from './CommentItem';
 
 const SocialInteractions = ({ entityId, inCard = false, customShareTitle, customShareUrl }) => {
   const { user, isAuthenticated, openLoginModal, giftBmc } = useAuth();
@@ -460,38 +461,15 @@ const SocialInteractions = ({ entityId, inCard = false, customShareTitle, custom
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxHeight: '400px', overflowY: 'auto', paddingRight: '10px' }}>
               {comments.map(c => (
-                <div key={c.id} style={{ display: 'flex', gap: '12px' }}>
-                  <div style={{ 
-                    width: '35px', height: '35px', borderRadius: '50%', background: 'var(--primary)', 
-                    color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '0.8rem', fontWeight: 'bold', flexShrink: 0
-                  }}>
-                    {c.userName?.charAt(0).toUpperCase()}
-                  </div>
-                  <div style={{ background: 'var(--bg-secondary)', padding: '12px 18px', borderRadius: '18px', flex: 1 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                      <div style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>{c.userName}</div>
-                      {user && (user.uid === c.userId || user.username === 'albantani' || user.role === 'admin') && (
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                          <button onClick={() => { setEditingCommentId(c.id); setEditCommentText(c.text); }} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', padding: 0 }}><Edit2 size={14} /></button>
-                          <button onClick={() => handleDeleteComment(c.id)} style={{ background: 'none', border: 'none', color: '#fa5252', cursor: 'pointer', padding: 0 }}><Trash2 size={14} /></button>
-                        </div>
-                      )}
-                    </div>
-                    {editingCommentId === c.id ? (
-                      <form onSubmit={(e) => submitEditComment(e, c.id)} style={{ display: 'flex', gap: '5px', marginTop: '5px' }}>
-                        <input type="text" value={editCommentText} onChange={e => setEditCommentText(e.target.value)} style={{ flex: 1, padding: '5px 10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-card)', color: 'var(--text-main)', fontSize: '0.9rem' }} />
-                        <button type="submit" style={{ background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '8px', padding: '5px 10px', cursor: 'pointer', fontSize: '0.8rem' }}>Simpan</button>
-                        <button type="button" onClick={() => setEditingCommentId(null)} style={{ background: 'none', border: '1px solid var(--border-color)', color: 'var(--text-main)', borderRadius: '8px', padding: '5px 10px', cursor: 'pointer', fontSize: '0.8rem' }}>Batal</button>
-                      </form>
-                    ) : (
-                      <div style={{ fontSize: '0.9rem', color: 'var(--text-main)', lineHeight: '1.4' }}>{c.text}</div>
-                    )}
-                    <div style={{ fontSize: '0.7rem', color: '#888', marginTop: '6px' }}>
-                      {c.timestamp?.seconds ? new Date(c.timestamp.seconds * 1000).toLocaleString() : 'Baru saja'}
-                    </div>
-                  </div>
-                </div>
+                <CommentItem 
+                  key={c.id} 
+                  comment={c} 
+                  user={user} 
+                  isAuthenticated={isAuthenticated} 
+                  openLoginModal={openLoginModal} 
+                  giftBmc={giftBmc} 
+                  handleDeleteComment={handleDeleteComment} 
+                />
               ))}
               {comments.length === 0 && (
                 <div style={{ textAlign: 'center', color: '#888', padding: '20px' }}>Belum ada komentar. Jadilah yang pertama!</div>
