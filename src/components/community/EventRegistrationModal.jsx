@@ -782,13 +782,13 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
                   <CheckCircle size={80} color="#51cf66" style={{ margin: '0 auto 20px' }} />
                   <h2 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '15px' }}>Pendaftaran Berhasil!</h2>
                   <p style={{ color: '#adb5bd', fontSize: '1.1rem', marginBottom: '30px', lineHeight: '1.6' }}>
-                    Data pendaftaran Anda telah kami terima. Langkah selanjutnya adalah melakukan pembayaran dan mengonfirmasinya kepada panitia.
+                    Data pendaftaran Anda telah kami terima. {isFGD ? 'Langkah selanjutnya adalah mengonfirmasi kehadiran Anda kepada panitia.' : 'Langkah selanjutnya adalah melakukan pembayaran dan mengonfirmasinya kepada panitia.'}
                   </p>
                   
                   <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', padding: '20px', borderRadius: '15px', marginBottom: '30px' }}>
-                    <p style={{ margin: '0 0 15px 0', color: '#fff' }}>Konfirmasi pembayaran beserta bukti transfer melalui WhatsApp ke:</p>
+                    <p style={{ margin: '0 0 15px 0', color: '#fff' }}>{isFGD ? 'Konfirmasi pendaftaran Anda melalui WhatsApp ke:' : 'Konfirmasi pembayaran beserta bukti transfer melalui WhatsApp ke:'}</p>
                     <a 
-                      href={'https://wa.me/628174139994?text=' + encodeURIComponent(`Halo Panitia ${waEventName}, saya ${formData.fullName} ingin mengonfirmasi pembayaran pendaftaran peserta.\nJalur: ${isKodibaMember ? 'Member VIP KoDiBa (Diskon 20%)' : 'Reguler'}\nTotal Pembayaran: ${eventCostDisplay}`)}
+                      href={'https://wa.me/628174139994?text=' + encodeURIComponent(isFGD ? `Halo Panitia ${waEventName}, saya ${formData.fullName} ingin mengonfirmasi pendaftaran peserta.` : `Halo Panitia ${waEventName}, saya ${formData.fullName} ingin mengonfirmasi pembayaran pendaftaran peserta.\nJalur: ${isKodibaMember ? 'Member VIP KoDiBa (Diskon 20%)' : 'Reguler'}\nTotal Pembayaran: ${eventCostDisplay}`)}
                       target="_blank" 
                       rel="noreferrer"
                       style={{ 
