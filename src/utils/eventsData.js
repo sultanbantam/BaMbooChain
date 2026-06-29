@@ -77,6 +77,7 @@ export const featuredEventData = {
   time: '08:00 - 16:00 WIB',
   location: 'Gedung Galeri Koperasi dan UKM Kota Tangerang Selatan',
   category: 'Workshop',
+  hideTitleOnBanner: true,
   image: getAssetUrl('event/bfgd.png'),
   color: '#e03131',
   speakers: [

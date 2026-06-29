@@ -171,9 +171,11 @@ const EventsPage = () => {
           <div className="featured-event-overlay"></div>
           <div style={styles.featuredContent}>
             <div style={styles.badge}>{featuredEvent.category || 'Featured Event'}</div>
-            <h2 style={{ fontSize: 'clamp(1.5rem, 5vw, 3rem)', fontWeight: 900, marginBottom: '20px' }}>
-              {featuredEvent.title}
-            </h2>
+            {!featuredEvent.hideTitleOnBanner && (
+              <h2 style={{ fontSize: 'clamp(1.5rem, 5vw, 3rem)', fontWeight: 900, marginBottom: '20px' }}>
+                {featuredEvent.title}
+              </h2>
+            )}
             <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', marginBottom: '30px' }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <FaCalendarAlt color="#51cf66" /> {featuredEvent.date}
