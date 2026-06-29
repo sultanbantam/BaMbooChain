@@ -45,7 +45,12 @@ const PartnersPage = () => {
         { name: 'Minamoto LLC, Japan', desc: 'Penetrasi bisnis dan distribusi produk bambu unggulan antara Indonesia dan Jepang.' },
         { name: 'PT. Bamboo Republik Indonesia', desc: 'Pionir dalam manufaktur dan produksi Bambu Laminasi berstandar industri.' },
         { name: 'PERPUBI', desc: 'Perkumpulan Pelaku Usaha Bambu Indonesia.' },
-        { name: 'PT. Inakaz Internasional', desc: 'Mitra strategis dalam pengembangan dan distribusi logistik komoditas.' },
+        { 
+          name: 'PT. Inakaz Citraniaga Internasional', 
+          desc: 'Mitra strategis dalam pengembangan teknologi informasi dan platform digital.',
+          since: 'Mulai Kolaborasi: Agustus 2024',
+          focus: 'Fokus Area: Teknologi Informasi dan Platform Digital.'
+        },
         { name: 'PT. Bambu Pedoman Indonesia (BAMBUPEDIA)', desc: 'Platform pedoman dan standarisasi ekosistem bambu.' },
         { name: 'PT. Gemma Bambu Nusantara', desc: 'Inovasi pengembangan ekosistem bambu terintegrasi.' },
         { name: 'PT. Patanjala Bambu Nusa', desc: 'Pengembangan manufaktur dan produk bambu berkelanjutan.' }
@@ -238,8 +243,8 @@ const PartnersPage = () => {
               <h3 style={{ fontSize: '1rem', color: 'var(--text-main)', marginTop: '20px', marginBottom: '10px' }}>{t('partners_modal_collab')}</h3>
               <ul style={{ color: 'var(--text-muted)', paddingLeft: '20px', lineHeight: '1.8' }}>
                 <li>{t('partners_modal_status')}</li>
-                <li>{t('partners_modal_since')}</li>
-                <li>{t('partners_modal_focus')}</li>
+                <li>{selectedPartner.since || t('partners_modal_since')}</li>
+                <li>{selectedPartner.focus || t('partners_modal_focus')}</li>
               </ul>
 
               {selectedPartner.name.includes('Cibarani') && (
