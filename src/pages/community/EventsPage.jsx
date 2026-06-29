@@ -51,28 +51,24 @@ const EventsPage = () => {
       lineHeight: '1.6'
     },
     featuredCard: {
-      position: 'relative',
+      backgroundColor: 'rgba(255,255,255,0.05)',
       borderRadius: '30px',
       overflow: 'hidden',
       marginBottom: '60px',
-      minHeight: '400px',
       display: 'flex',
-      alignItems: 'flex-end',
+      flexDirection: 'column',
       border: '1px solid rgba(255,255,255,0.1)',
       cursor: 'pointer'
     },
     featuredImg: {
-      position: 'absolute',
-      top: 0, left: 0, width: '100%', height: '100%',
+      width: '100%',
+      height: 'auto',
+      maxHeight: '500px',
       objectFit: 'contain',
-      objectPosition: 'center',
-      zIndex: 0,
       backgroundColor: '#0a0a0a'
     },
     featuredContent: {
-      position: 'relative',
-      zIndex: 2,
-      padding: '40px',
+      padding: '30px',
       width: '100%'
     },
     badge: {
@@ -169,7 +165,6 @@ const EventsPage = () => {
             style={styles.featuredImg}
             alt={featuredEvent.title}
           />
-          <div className="featured-event-overlay"></div>
           <div style={styles.featuredContent}>
             <div style={styles.badge}>{featuredEvent.category || 'Featured Event'}</div>
             {!featuredEvent.hideTitleOnBanner && (
