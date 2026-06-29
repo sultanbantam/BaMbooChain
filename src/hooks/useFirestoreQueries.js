@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { collection, getDocs, query, where, doc, getDoc, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, getDocs, query, where, doc, getDoc, addDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../firebase/config';
 
@@ -224,4 +224,57 @@ export async function uploadSpeakerMaterial(file, eventId, speakerName, type) {
   });
   
   return { id: docRef.id, url: downloadUrl };
+}
+
+// 11. Hook for Community Events
+export function useCommunityEvents(userId, isAdmin) {
+  return useQuery({
+    queryKey: ['communityEvents', userId, isAdmin],
+    queryFn: async () => {
+      if (!userId) return [];
+      const eventsRef = collection(db, 'community_events');
+      let q = eventsRef;
+      if (!isAdmin) {
+        q = query(eventsRef, where('organizerId', '==', userId));
+      }
+      const snapshot = await getDocs(q);
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    },
+    enabled: !!userId,
+    staleTime: 1000 * 60 * 5,
+  });
+}
+
+// 12. Hook for Public Approved Community Events
+export function useApprovedCommunityEvents() {
+  return useQuery({
+    queryKey: ['approvedCommunityEvents'],
+    queryFn: async () => {
+      const eventsRef = collection(db, 'community_events');
+      const q = query(eventsRef, where('status', '==', 'approved'));
+      const snapshot = await getDocs(q);
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+}
+
+// 13. Create Community Event
+export async function createCommunityEvent(eventData) {
+  const eventsRef = collection(db, 'community_events');
+  const docRef = await addDoc(eventsRef, {
+    ...eventData,
+    status: 'pending',
+    timestamp: serverTimestamp()
+  });
+  return docRef.id;
+}
+
+// 14. Update Community Event Status (Approve/Reject)
+export async function updateCommunityEventStatus(eventId, newStatus) {
+  const eventRef = doc(db, 'community_events', eventId);
+  await updateDoc(eventRef, {
+    status: newStatus,
+    updatedAt: serverTimestamp()
+  });
 }

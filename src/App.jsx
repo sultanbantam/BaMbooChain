@@ -37,7 +37,7 @@ const BambupediaKnowledge = lazy(() => import('./pages/bambupedia/KnowledgePage'
 const BambooBotPage = lazy(() => import('./pages/bambupedia/BambooBotPage'));
 const KnowledgeAdminPage = lazy(() => import('./pages/bambupedia/KnowledgeAdminPage'));
 const CareersPage = lazy(() => import('./pages/CareersPage'));
-const SpeakerPortalPage = lazy(() => import('./pages/SpeakerPortalPage'));
+const EventOrganizerPage = lazy(() => import('./pages/EventOrganizerPage'));
 
 // BambooChain Modules
 const BcOverviewPage = lazy(() => import('./pages/bamboochain/OverviewPage'));
@@ -294,7 +294,7 @@ function App() {
             <Route path="/bambunusa/join-farmer" element={<JoinFarmerPage />} />
             <Route path="/bambunusa/join-validator" element={<JoinValidatorPage />} />
             <Route path="/admin-portal" element={<ProtectedRoute><AdminPortalPage /></ProtectedRoute>} />
-            <Route path="/speaker-portal" element={<ProtectedRoute><SpeakerPortalPage /></ProtectedRoute>} />
+            <Route path="/event-organizer" element={<ProtectedRoute><EventOrganizerPage /></ProtectedRoute>} />
             <Route path="/admin-portal/knowledge" element={<ProtectedRoute><KnowledgeAdminPage /></ProtectedRoute>} />
             <Route path="/tobat-ekologi" element={<TobatEkologiDashboard />} />
             <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />

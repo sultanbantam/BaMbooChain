@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { FaCalendarAlt, FaMapMarkerAlt, FaClock, FaUsers } from 'react-icons/fa';
 import { getAssetUrl } from '../../utils/assets';
 import { eventsData, featuredEventData } from '../../utils/eventsData';
+import { useApprovedCommunityEvents } from '../../hooks/useFirestoreQueries';
 import EventRegistrationModal from '../../components/community/EventRegistrationModal';
 import SocialInteractions from '../../components/SocialInteractions';
 
@@ -10,7 +11,21 @@ const EventsPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
 
-  const events = eventsData;
+  const { data: communityEvents = [], isLoading } = useApprovedCommunityEvents();
+
+  const events = [...eventsData, ...communityEvents.map(ev => ({
+    id: ev.id,
+    title: ev.title,
+    date: ev.date,
+    time: ev.time || '10:00 - 15:00 WIB',
+    location: ev.location,
+    category: ev.category,
+    description: ev.description,
+    image: ev.image || getAssetUrl('event/placeholder.jpg'),
+    color: '#fab005', // default color for community events
+    organizer: ev.organizerName
+  }))];
+
   const featuredEvent = featuredEventData;
 
   const styles = {
@@ -203,6 +218,7 @@ const EventsPage = () => {
         </motion.div>
 
         {/* Event List */}
+        {isLoading && <div style={{ textAlign: 'center', padding: '40px', color: '#51cf66' }}>Memuat daftar acara...</div>}
         <div style={styles.grid}>
           {events.map((event, index) => (
             <motion.div
