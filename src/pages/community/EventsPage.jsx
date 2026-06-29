@@ -187,9 +187,9 @@ const EventsPage = () => {
             </div>
             <button 
               style={{ 
-                padding: '15px 30px', backgroundColor: 'white', color: 'black', 
-                border: 'none', borderRadius: '15px', fontWeight: '900', cursor: 'pointer',
-                width: '100%', marginBottom: '10px'
+                padding: '15px 30px', backgroundColor: 'rgba(255, 255, 255, 0.1)', color: 'white', 
+                border: '1px solid rgba(255, 255, 255, 0.3)', borderRadius: '15px', fontWeight: '900', cursor: 'pointer',
+                width: '100%', marginBottom: '10px', backdropFilter: 'blur(5px)'
               }}
               onClick={() => {
                 setSelectedEvent(featuredEvent);
