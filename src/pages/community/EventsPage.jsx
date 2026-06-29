@@ -64,9 +64,10 @@ const EventsPage = () => {
     featuredImg: {
       position: 'absolute',
       top: 0, left: 0, width: '100%', height: '100%',
-      objectFit: 'cover',
-      objectPosition: 'top',
-      zIndex: 0
+      objectFit: 'contain',
+      objectPosition: 'center',
+      zIndex: 0,
+      backgroundColor: '#0a0a0a'
     },
     featuredContent: {
       position: 'relative',
