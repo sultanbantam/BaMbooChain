@@ -40,6 +40,7 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
     fullName: '',
     phone: '',
     email: '',
+    iaiNumber: '',
     originCity: '',
     arrivalDate: '',
     arrivalTime: '',
@@ -48,6 +49,8 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
     activities: {},
     agreement: false
   });
+
+  const [attendanceIaiNumber, setAttendanceIaiNumber] = useState('');
 
   const isHBD = eventTitle?.includes('Dunia');
   const isHBN = eventTitle?.includes('Nasional');
@@ -137,6 +140,7 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
           fullName: formData.fullName,
           phone: formData.phone,
           email: formData.email,
+          iaiNumber: formData.iaiNumber,
         },
         arrival: {
           originCity: formData.originCity,
@@ -182,6 +186,7 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
         eventTitle,
         userId: user.id,
         username: user.username || user.name,
+        iaiNumber: attendanceIaiNumber,
         timestamp: serverTimestamp()
       });
       setAttendanceSuccess(true);
@@ -324,6 +329,9 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
             
             <label style={styles.label}>Email *</label>
             <input required style={styles.input} type="email" name="email" value={formData.email} onChange={handleChange} placeholder="email@contoh.com" />
+            
+            <label style={styles.label}>Nomor Anggota IAI (Opsional)</label>
+            <input style={styles.input} name="iaiNumber" value={formData.iaiNumber} onChange={handleChange} placeholder="Masukkan No. IAI jika ada" />
           </motion.div>
         );
       case 2:
@@ -605,16 +613,24 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
               <p style={{ color: '#d9480f', margin: 0, fontSize: '0.9rem' }}>Fitur absensi untuk acara ini baru akan diaktifkan pada tanggal 1-2 Juli 2026.</p>
             </div>
           ) : (
-            <button 
-              onClick={handleAttendance}
+            <div style={{ textAlign: 'left' }}>
+              <div style={{ marginBottom: '20px' }}>
+                <label style={styles.label}>Nomor Anggota IAI (Opsional)</label>
+                <input style={styles.input} value={attendanceIaiNumber} onChange={(e) => setAttendanceIaiNumber(e.target.value)} placeholder="Masukkan No. IAI jika ada" />
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <button 
+                  onClick={handleAttendance}
               disabled={isSubmitting}
               style={{ 
                 backgroundColor: '#1c7ed6', color: 'white', border: 'none', padding: '15px 30px', 
                 borderRadius: '12px', fontSize: '1rem', fontWeight: 'bold', cursor: isSubmitting ? 'not-allowed' : 'pointer' 
               }}
             >
-              {isSubmitting ? 'Memproses...' : 'Klik untuk Absen Kehadiran'}
-            </button>
+                {isSubmitting ? 'Memproses...' : 'Klik untuk Absen Kehadiran'}
+              </button>
+            </div>
+            </div>
           )}
         </div>
       )}
