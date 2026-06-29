@@ -76,10 +76,12 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
   if (isHBN) statementText = "Saya menyatakan bersedia mengikuti seluruh rangkaian kegiatan HARI BAMBU NASIONAL 2026 dan mematuhi aturan.";
   if (isFGD) statementText = "Saya menyatakan bersedia mengikuti seluruh rangkaian kegiatan Workshop dan FGD Capacity Building Perancangan Prototype Rumah Modular Bambu dan mematuhi aturan.";
 
-  let waEventName = 'Seren Taun';
+  let waEventName = eventTitle || 'Event';
+  if (isSerenTaun) waEventName = 'Seren Taun';
   if (isHBD) waEventName = 'Hari Bambu Dunia';
   if (isDiburuan) waEventName = 'Festival Diburuan';
   if (isHBN) waEventName = 'Hari Bambu Nasional';
+  if (isFGD) waEventName = 'Workshop & FGD';
 
   const activitiesList = [
     'Penanaman bambu',
