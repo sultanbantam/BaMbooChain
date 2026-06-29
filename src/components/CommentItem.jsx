@@ -23,6 +23,9 @@ const CommentItem = ({ comment, user, isAuthenticated, openLoginModal, giftBmc, 
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [editCommentText, setEditCommentText] = useState('');
   const [loadingReply, setLoadingReply] = useState(false);
+  
+  const [editingReplyId, setEditingReplyId] = useState(null);
+  const [editReplyText, setEditReplyText] = useState('');
 
   useEffect(() => {
     // Listen to likes if user is logged in
@@ -188,6 +191,27 @@ const CommentItem = ({ comment, user, isAuthenticated, openLoginModal, giftBmc, 
     }
   };
 
+  const handleDeleteReply = async (replyId) => {
+    if (window.confirm("Apakah Anda yakin ingin menghapus balasan ini?")) {
+      try {
+        await deleteDoc(doc(db, 'comment_replies', replyId));
+      } catch (err) {
+        console.error("Delete Reply Error:", err);
+      }
+    }
+  };
+
+  const handleEditReplySubmit = async (e, replyId) => {
+    e.preventDefault();
+    if (!editReplyText.trim()) return;
+    try {
+      await setDoc(doc(db, 'comment_replies', replyId), { text: editReplyText }, { merge: true });
+      setEditingReplyId(null);
+    } catch (err) {
+      console.error("Edit Reply Error:", err);
+    }
+  };
+
   return (
     <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
       <div style={{ width: '35px', height: '35px', borderRadius: '50%', background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 'bold', flexShrink: 0 }}>
@@ -290,8 +314,24 @@ const CommentItem = ({ comment, user, isAuthenticated, openLoginModal, giftBmc, 
                     </div>
                     <div style={{ flex: 1 }}>
                       <div style={{ background: 'var(--bg-card)', padding: '8px 12px', borderRadius: '15px', border: '1px solid var(--border-color)' }}>
-                        <div style={{ fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '2px' }}>{reply.userName}</div>
-                        <div style={{ fontSize: '0.85rem', color: 'var(--text-main)', wordBreak: 'break-word' }}>{reply.text}</div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
+                          <div style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>{reply.userName}</div>
+                          {user && (user.uid === reply.userId || user.username === 'albantani' || user.role === 'admin') && (
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                              <button onClick={() => { setEditingReplyId(reply.id); setEditReplyText(reply.text); }} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', padding: 0 }}><Edit2 size={12} /></button>
+                              <button onClick={() => handleDeleteReply(reply.id)} style={{ background: 'none', border: 'none', color: '#fa5252', cursor: 'pointer', padding: 0 }}><Trash2 size={12} /></button>
+                            </div>
+                          )}
+                        </div>
+                        {editingReplyId === reply.id ? (
+                          <form onSubmit={(e) => handleEditReplySubmit(e, reply.id)} style={{ display: 'flex', gap: '5px', marginTop: '5px' }}>
+                            <input type="text" value={editReplyText} onChange={e => setEditReplyText(e.target.value)} style={{ flex: 1, padding: '5px 10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-main)', fontSize: '0.85rem' }} />
+                            <button type="submit" style={{ background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '8px', padding: '5px 10px', cursor: 'pointer', fontSize: '0.75rem' }}>Simpan</button>
+                            <button type="button" onClick={() => setEditingReplyId(null)} style={{ background: 'none', border: '1px solid var(--border-color)', color: 'var(--text-main)', borderRadius: '8px', padding: '5px 10px', cursor: 'pointer', fontSize: '0.75rem' }}>Batal</button>
+                          </form>
+                        ) : (
+                          <div style={{ fontSize: '0.85rem', color: 'var(--text-main)', wordBreak: 'break-word' }}>{reply.text}</div>
+                        )}
                       </div>
                       <div style={{ fontSize: '0.65rem', color: '#888', marginTop: '4px', marginLeft: '5px' }}>
                         {reply.timestamp?.seconds ? new Date(reply.timestamp.seconds * 1000).toLocaleString() : 'Baru saja'}
