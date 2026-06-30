@@ -63,7 +63,7 @@ const EventGallery = ({ eventId }) => {
 
       await addDoc(collection(db, 'event_gallery'), {
         eventId,
-        userId: user.uid,
+        userId: user.id,
         userName: user.username || user.name || 'User',
         url: downloadUrl,
         type: file.type.startsWith('video/') ? 'video' : 'image',
@@ -158,7 +158,7 @@ const EventGallery = ({ eventId }) => {
                 </button>
               </div>
 
-              {user && (user.uid === media.userId || user.username === 'albantani' || user.role === 'admin') && (
+              {user && (user.id === media.userId || user.username === 'albantani' || user.role === 'admin') && (
                 <button onClick={() => handleDelete(media.id, media.storagePath)} style={{ position: 'absolute', top: '5px', right: '5px', background: 'rgba(0,0,0,0.5)', color: '#fa5252', border: 'none', borderRadius: '50%', padding: '5px', cursor: 'pointer' }}>
                   <Trash2 size={14} />
                 </button>
