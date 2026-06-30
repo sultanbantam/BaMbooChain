@@ -95,14 +95,7 @@ const EventGallery = ({ eventId }) => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#fab005', margin: 0 }}>Galeri Event</h3>
     <div style={{ display: 'flex', gap: '10px' }}>
-          <label 
-            style={{ cursor: 'pointer', background: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: '10px', border: '1px solid var(--border-color)', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.9rem' }}
-            onClick={(e) => {
-              // Ensure clicking the label triggers the input on mobile correctly
-              const input = e.currentTarget.querySelector('input[type="file"]');
-              if (input) input.click();
-            }}
-          >
+          <label style={{ cursor: 'pointer', background: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: '10px', border: '1px solid var(--border-color)', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.9rem' }}>
             <Camera size={16} /> Foto
             <input 
               type="file" 
@@ -112,13 +105,7 @@ const EventGallery = ({ eventId }) => {
               disabled={isUploading} 
             />
           </label>
-          <label 
-            style={{ cursor: 'pointer', background: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: '10px', border: '1px solid var(--border-color)', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.9rem' }}
-            onClick={(e) => {
-              const input = e.currentTarget.querySelector('input[type="file"]');
-              if (input) input.click();
-            }}
-          >
+          <label style={{ cursor: 'pointer', background: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: '10px', border: '1px solid var(--border-color)', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.9rem' }}>
             <Video size={16} /> Video
             <input 
               type="file" 
