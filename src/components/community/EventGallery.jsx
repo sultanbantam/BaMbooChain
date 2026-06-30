@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { collection, query, where, onSnapshot, addDoc, serverTimestamp, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { useAuth } from '../../context/AuthContext';
-import { Camera, Video, Trash2, Loader } from 'lucide-react';
+import { Camera, Video, Trash2, Loader, X } from 'lucide-react';
 
 const EventGallery = ({ eventId }) => {
   const { user, isAuthenticated, openLoginModal } = useAuth();
@@ -11,6 +11,7 @@ const EventGallery = ({ eventId }) => {
   const [uploadProgressText, setUploadProgressText] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
   const [caption, setCaption] = useState('');
+  const [activeMedia, setActiveMedia] = useState(null);
 
   useEffect(() => {
     if (!eventId) return;
@@ -187,7 +188,11 @@ const EventGallery = ({ eventId }) => {
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '15px' }}>
           {mediaList.map(media => (
-            <div key={media.id} style={{ position: 'relative', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#111', aspectRatio: '1/1' }}>
+            <div 
+              key={media.id} 
+              style={{ position: 'relative', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#111', aspectRatio: '1/1', cursor: 'pointer' }}
+              onClick={() => setActiveMedia(media)}
+            >
               {media.type === 'video' ? (
                 <video src={media.url} controls style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               ) : (
@@ -197,7 +202,7 @@ const EventGallery = ({ eventId }) => {
               <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '25px 10px 10px', background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)', color: 'white', display: 'flex', flexDirection: 'column' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontSize: '0.75rem', fontWeight: 'bold' }}>{media.userName}</span>
-                  <button style={{ background: 'none', border: 'none', color: '#ffec99', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px', fontSize: '0.75rem', padding: 0 }} onClick={() => alert("Fitur Suka / Emoji pada foto akan segera hadir!")}>
+                  <button style={{ background: 'none', border: 'none', color: '#ffec99', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px', fontSize: '0.75rem', padding: 0 }} onClick={(e) => { e.stopPropagation(); alert("Fitur Suka / Emoji pada foto akan segera hadir!"); }}>
                     🔥
                   </button>
                 </div>
@@ -209,12 +214,42 @@ const EventGallery = ({ eventId }) => {
               </div>
 
               {user && (user.id === media.userId || user.username === 'albantani' || user.role === 'admin') && (
-                <button onClick={() => handleDelete(media.id, media.storagePath)} style={{ position: 'absolute', top: '5px', right: '5px', background: 'rgba(0,0,0,0.5)', color: '#fa5252', border: 'none', borderRadius: '50%', padding: '5px', cursor: 'pointer' }}>
+                <button onClick={(e) => { e.stopPropagation(); handleDelete(media.id, media.storagePath); }} style={{ position: 'absolute', top: '5px', right: '5px', background: 'rgba(0,0,0,0.5)', color: '#fa5252', border: 'none', borderRadius: '50%', padding: '5px', cursor: 'pointer' }}>
                   <Trash2 size={14} />
                 </button>
               )}
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Lightbox Modal */}
+      {activeMedia && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.95)', zIndex: 999999, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+          
+          <button 
+            onClick={() => setActiveMedia(null)}
+            style={{ position: 'absolute', top: '20px', right: '20px', background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', borderRadius: '50%', padding: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          >
+            <X size={24} />
+          </button>
+          
+          <div style={{ width: '100%', maxWidth: '800px', padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            {activeMedia.type === 'video' ? (
+              <video src={activeMedia.url} controls style={{ width: '100%', maxHeight: '70vh', objectFit: 'contain', borderRadius: '12px' }} />
+            ) : (
+              <img src={activeMedia.url} alt="Gallery Full" style={{ width: '100%', maxHeight: '70vh', objectFit: 'contain', borderRadius: '12px' }} />
+            )}
+            
+            <div style={{ width: '100%', marginTop: '20px', backgroundColor: '#111', padding: '20px', borderRadius: '12px', border: '1px solid #333' }}>
+              <div style={{ fontWeight: 'bold', color: '#fab005', marginBottom: '8px', fontSize: '1.1rem' }}>
+                {activeMedia.userName}
+              </div>
+              <div style={{ color: '#e9ecef', fontSize: '0.95rem', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
+                {activeMedia.caption || <i style={{ color: '#888' }}>Tidak ada keterangan</i>}
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
