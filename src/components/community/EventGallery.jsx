@@ -94,14 +94,39 @@ const EventGallery = ({ eventId }) => {
     <div style={{ marginTop: '20px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#fab005', margin: 0 }}>Galeri Event</h3>
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <label style={{ cursor: 'pointer', background: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: '10px', border: '1px solid var(--border-color)', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.9rem' }}>
+    <div style={{ display: 'flex', gap: '10px' }}>
+          <label 
+            style={{ cursor: 'pointer', background: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: '10px', border: '1px solid var(--border-color)', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.9rem' }}
+            onClick={(e) => {
+              // Ensure clicking the label triggers the input on mobile correctly
+              const input = e.currentTarget.querySelector('input[type="file"]');
+              if (input) input.click();
+            }}
+          >
             <Camera size={16} /> Foto
-            <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => handleUpload(e, 'Foto')} disabled={isUploading} />
+            <input 
+              type="file" 
+              accept="image/*" 
+              style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', whiteSpace: 'nowrap', borderWidth: 0 }} 
+              onChange={(e) => handleUpload(e, 'Foto')} 
+              disabled={isUploading} 
+            />
           </label>
-          <label style={{ cursor: 'pointer', background: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: '10px', border: '1px solid var(--border-color)', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.9rem' }}>
+          <label 
+            style={{ cursor: 'pointer', background: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: '10px', border: '1px solid var(--border-color)', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.9rem' }}
+            onClick={(e) => {
+              const input = e.currentTarget.querySelector('input[type="file"]');
+              if (input) input.click();
+            }}
+          >
             <Video size={16} /> Video
-            <input type="file" accept="video/*" style={{ display: 'none' }} onChange={(e) => handleUpload(e, 'Video')} disabled={isUploading} />
+            <input 
+              type="file" 
+              accept="video/*" 
+              style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', whiteSpace: 'nowrap', borderWidth: 0 }} 
+              onChange={(e) => handleUpload(e, 'Video')} 
+              disabled={isUploading} 
+            />
           </label>
         </div>
       </div>
