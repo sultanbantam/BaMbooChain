@@ -9,6 +9,8 @@ const EventGallery = ({ eventId }) => {
   const [mediaList, setMediaList] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgressText, setUploadProgressText] = useState('');
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [caption, setCaption] = useState('');
 
   useEffect(() => {
     if (!eventId) return;
@@ -20,7 +22,7 @@ const EventGallery = ({ eventId }) => {
     return () => unsub();
   }, [eventId]);
 
-  const handleUpload = async (e, type) => {
+  const handleFileSelect = (e, type) => {
     if (!isAuthenticated || !user) {
       alert("Harap login terlebih dahulu untuk mengunggah " + type);
       openLoginModal();
@@ -33,6 +35,14 @@ const EventGallery = ({ eventId }) => {
       alert("Ukuran file maksimal 10MB");
       return;
     }
+
+    setSelectedFile({ file, type });
+    setCaption('');
+  };
+
+  const handleConfirmUpload = async () => {
+    if (!selectedFile) return;
+    const { file, type } = selectedFile;
 
     setIsUploading(true);
     setUploadProgressText(`Mengunggah ${type}...`);
@@ -68,8 +78,11 @@ const EventGallery = ({ eventId }) => {
         url: downloadUrl,
         type: file.type.startsWith('video/') ? 'video' : 'image',
         storagePath: `events/gallery/${eventId}/${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`,
+        caption: caption,
         timestamp: serverTimestamp()
       });
+      setSelectedFile(null);
+      setCaption('');
     } catch (err) {
       console.error("Upload error:", err);
       alert("Error: " + err.message);
@@ -94,29 +107,72 @@ const EventGallery = ({ eventId }) => {
     <div style={{ marginTop: '20px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#fab005', margin: 0 }}>Galeri Event</h3>
-    <div style={{ display: 'flex', gap: '10px' }}>
-          <label style={{ cursor: 'pointer', background: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: '10px', border: '1px solid var(--border-color)', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.9rem' }}>
-            <Camera size={16} /> Foto
-            <input 
-              type="file" 
-              accept="image/*" 
-              style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', whiteSpace: 'nowrap', borderWidth: 0 }} 
-              onChange={(e) => handleUpload(e, 'Foto')} 
-              disabled={isUploading} 
-            />
-          </label>
-          <label style={{ cursor: 'pointer', background: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: '10px', border: '1px solid var(--border-color)', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.9rem' }}>
-            <Video size={16} /> Video
-            <input 
-              type="file" 
-              accept="video/*" 
-              style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', whiteSpace: 'nowrap', borderWidth: 0 }} 
-              onChange={(e) => handleUpload(e, 'Video')} 
-              disabled={isUploading} 
-            />
-          </label>
-        </div>
+        {!selectedFile && (
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <label style={{ cursor: 'pointer', background: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: '10px', border: '1px solid var(--border-color)', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.9rem' }}>
+              <Camera size={16} /> Foto
+              <input 
+                type="file" 
+                accept="image/*" 
+                style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', whiteSpace: 'nowrap', borderWidth: 0 }} 
+                onChange={(e) => handleFileSelect(e, 'Foto')} 
+                disabled={isUploading} 
+              />
+            </label>
+            <label style={{ cursor: 'pointer', background: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: '10px', border: '1px solid var(--border-color)', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.9rem' }}>
+              <Video size={16} /> Video
+              <input 
+                type="file" 
+                accept="video/*" 
+                style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', whiteSpace: 'nowrap', borderWidth: 0 }} 
+                onChange={(e) => handleFileSelect(e, 'Video')} 
+                disabled={isUploading} 
+              />
+            </label>
+          </div>
+        )}
       </div>
+
+      {selectedFile && (
+        <div style={{ background: 'rgba(255,255,255,0.05)', padding: '15px', borderRadius: '12px', marginBottom: '20px', border: '1px solid #444' }}>
+          <h4 style={{ margin: '0 0 10px 0', fontSize: '0.95rem', color: '#51cf66' }}>Pratinjau {selectedFile.type}</h4>
+          
+          {selectedFile.file.type.startsWith('video/') ? (
+            <div style={{ color: '#adb5bd', fontSize: '0.85rem', marginBottom: '10px', padding: '10px', background: '#111', borderRadius: '8px' }}>
+              🎥 {selectedFile.file.name}
+            </div>
+          ) : (
+            <img src={URL.createObjectURL(selectedFile.file)} alt="Preview" style={{ width: '100%', maxHeight: '200px', objectFit: 'contain', borderRadius: '8px', marginBottom: '10px', backgroundColor: '#000' }} />
+          )}
+
+          <input 
+            type="text" 
+            placeholder="Tulis keterangan/caption (opsional)..." 
+            value={caption}
+            onChange={(e) => setCaption(e.target.value)}
+            style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #333', background: '#111', color: 'white', marginBottom: '15px', fontSize: '0.9rem' }}
+            disabled={isUploading}
+          />
+
+          <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+            <button 
+              onClick={() => { setSelectedFile(null); setCaption(''); }}
+              disabled={isUploading}
+              style={{ padding: '8px 16px', borderRadius: '8px', background: 'transparent', color: '#adb5bd', border: '1px solid #444', cursor: isUploading ? 'not-allowed' : 'pointer', fontSize: '0.9rem' }}
+            >
+              Batal
+            </button>
+            <button 
+              onClick={handleConfirmUpload}
+              disabled={isUploading}
+              style={{ padding: '8px 16px', borderRadius: '8px', background: '#51cf66', color: 'black', border: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '5px', cursor: isUploading ? 'not-allowed' : 'pointer', fontSize: '0.9rem' }}
+            >
+              {isUploading ? <Loader size={14} className="spin" /> : null}
+              {isUploading ? 'Mengunggah...' : 'Unggah Sekarang'}
+            </button>
+          </div>
+        </div>
+      )}
 
       {isUploading && (
         <div style={{ color: '#51cf66', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px', fontSize: '0.9rem' }}>
@@ -138,11 +194,18 @@ const EventGallery = ({ eventId }) => {
                 <img src={media.url} alt="Gallery" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               )}
               
-              <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '20px 10px 5px', background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)', color: 'white', fontSize: '0.75rem', fontWeight: 'bold', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span>{media.userName}</span>
-                <button style={{ background: 'none', border: 'none', color: '#ffec99', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }} onClick={() => alert("Fitur Suka / Emoji pada foto akan segera hadir!")}>
-                  🔥
-                </button>
+              <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '25px 10px 10px', background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)', color: 'white', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 'bold' }}>{media.userName}</span>
+                  <button style={{ background: 'none', border: 'none', color: '#ffec99', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px', fontSize: '0.75rem', padding: 0 }} onClick={() => alert("Fitur Suka / Emoji pada foto akan segera hadir!")}>
+                    🔥
+                  </button>
+                </div>
+                {media.caption && (
+                  <div style={{ marginTop: '4px', fontSize: '0.75rem', color: '#e9ecef', fontWeight: 'normal', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {media.caption}
+                  </div>
+                )}
               </div>
 
               {user && (user.id === media.userId || user.username === 'albantani' || user.role === 'admin') && (
