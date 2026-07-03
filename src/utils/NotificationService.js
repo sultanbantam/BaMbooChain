@@ -4,8 +4,12 @@ import { doc, updateDoc } from 'firebase/firestore';
 
 export const requestForToken = async (userId) => {
   try {
+    // Explicitly register the service worker
+    const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+    
     const currentToken = await getToken(messaging, { 
-      vapidKey: 'BObppk1UYb40PiAnYk92Fm8I7Lw49F-n0EcvhFeo2hptMSsUQGaASwSZqzuN1ZVxdD9deKOG6OUvXF_uCJXF1Fg'
+      vapidKey: 'BObppk1UYb40PiAnYk92Fm8I7Lw49F-n0EcvhFeo2hptMSsUQGaASwSZqzuN1ZVxdD9deKOG6OUvXF_uCJXF1Fg',
+      serviceWorkerRegistration: registration
     });
     
     if (currentToken) {
