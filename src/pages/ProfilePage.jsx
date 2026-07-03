@@ -4,14 +4,14 @@ import { useAuth } from '../context/AuthContext';
 import { useBambupedia } from '../context/BambupediaContext';
 import { useLanguage } from '../context/LanguageContext';
 import { db } from '../firebase/config';
-import { useArticles, usePlantationDonations, useEventTransactions } from '../hooks/useFirestoreQueries';
+import { useArticles, usePlantationDonations, useEventTransactions, useUserEvents } from '../hooks/useFirestoreQueries';
 import { doc, onSnapshot, updateDoc, collection, query, where, getDoc, getDocs, addDoc, arrayUnion, arrayRemove, increment } from 'firebase/firestore';
 import { requestForToken } from '../utils/NotificationService';
 import ShareModal from '../components/ShareModal';
 import { 
   User, Camera, Save, Copy, Share2, Award, Shield, CheckCircle, 
   TreeDeciduous, GraduationCap, Heart, MessageSquare, Gift, Edit3, X, Eye,
-  UploadCloud, FileText, Trash2, Send, ChevronRight, PlayCircle, Search, Leaf, Bell, Smile
+  UploadCloud, FileText, Trash2, Send, ChevronRight, PlayCircle, Search, Leaf, Bell, Smile, Calendar
 } from 'lucide-react';
 import EmojiPicker from 'emoji-picker-react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
@@ -78,6 +78,7 @@ const ProfilePage = () => {
   const { plantings, maintenances, harvests } = useBambupedia();
   const { data: plantationDonations = [] } = usePlantationDonations(user?.id, user?.username);
   const { data: eventTransactions = [] } = useEventTransactions();
+  const { data: userEvents = [] } = useUserEvents(user?.id, user?.name || user?.username);
 
   const myDonations = plantationDonations.filter(d => d.donorId === user?.id || d.username === user?.username);
   const myTreasuryTxs = eventTransactions.filter(tx => tx.adminId === user?.id);
@@ -870,6 +871,58 @@ const ProfilePage = () => {
                   </button>
                 </div>
               </div>
+            </div>
+
+            {/* Riwayat Event Card */}
+            <div style={{ background: 'var(--bg-card)', borderRadius: '24px', padding: '30px', boxShadow: '0 10px 40px rgba(0,0,0,0.05)', border: '1px solid var(--border-color)', transition: 'background 0.3s' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                <h3 style={{ fontSize: '1.25rem', margin: 0, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Calendar size={20} color="var(--primary)" /> Riwayat Event
+                </h3>
+                {userEvents.some(ev => ev.userRoles.includes('Penggagas') || ev.userRoles.includes('Panitia')) && (
+                  <Link to="/event-organizer" style={{ background: 'rgba(12,166,120,0.1)', color: 'var(--primary)', padding: '6px 12px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 'bold', textDecoration: 'none' }}>
+                    Kelola Event
+                  </Link>
+                )}
+              </div>
+              <p style={{ color: 'var(--text-muted)', marginBottom: '20px', fontSize: '0.85rem', lineHeight: '1.5' }}>
+                Keterlibatan Anda dalam berbagai kegiatan ekosistem BambooChain.
+              </p>
+
+              {userEvents.length === 0 ? (
+                <div style={{ background: 'var(--bg-color)', padding: '20px', borderRadius: '16px', border: '1px solid var(--border-color)', textAlign: 'center' }}>
+                  <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.85rem' }}>Belum ada event yang tercatat.</p>
+                  <Link to="/events" style={{ display: 'inline-block', marginTop: '10px', color: 'var(--primary)', fontWeight: 'bold', textDecoration: 'none', fontSize: '0.85rem' }}>Cari Event &gt;</Link>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {userEvents.map((ev, idx) => (
+                    <div key={ev.id || idx} style={{ background: 'var(--bg-color)', padding: '16px', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <h4 style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text-main)' }}>{ev.title || 'Event Tanpa Judul'}</h4>
+                        <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                          {ev.timestamp ? new Date(ev.timestamp.seconds * 1000 || ev.timestamp).toLocaleDateString('id-ID') : 'TBA'}
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                        {ev.userRoles.map((role, roleIdx) => (
+                          <span key={roleIdx} style={{ 
+                            background: role === 'Penggagas' ? 'rgba(250,176,5,0.1)' : role === 'Narasumber' ? 'rgba(132,94,247,0.1)' : 'rgba(12,166,120,0.1)', 
+                            color: role === 'Penggagas' ? '#fab005' : role === 'Narasumber' ? '#845ef7' : 'var(--primary)', 
+                            padding: '4px 10px', 
+                            borderRadius: '20px', 
+                            fontSize: '0.7rem', 
+                            fontWeight: 'bold',
+                            border: `1px solid ${role === 'Penggagas' ? 'rgba(250,176,5,0.2)' : role === 'Narasumber' ? 'rgba(132,94,247,0.2)' : 'rgba(12,166,120,0.2)'}`
+                          }}>
+                            {role}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
           </div>

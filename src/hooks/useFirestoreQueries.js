@@ -278,3 +278,87 @@ export async function updateCommunityEventStatus(eventId, newStatus) {
     updatedAt: serverTimestamp()
   });
 }
+
+// 15. Hook for User Events (Roles: Penggagas, Peserta, Narasumber, Pendukung, Panitia)
+export function useUserEvents(userId, userName) {
+  return useQuery({
+    queryKey: ['userEvents', userId, userName],
+    queryFn: async () => {
+      if (!userId) return [];
+      
+      const userEventsList = [];
+      const eventMap = new Map(); // to prevent duplicates if user has multiple roles in the same event
+
+      const addEvent = (event, role) => {
+        if (!eventMap.has(event.id)) {
+          eventMap.set(event.id, { ...event, userRoles: [role] });
+        } else {
+          const existing = eventMap.get(event.id);
+          if (!existing.userRoles.includes(role)) {
+            existing.userRoles.push(role);
+          }
+        }
+      };
+
+      try {
+        // 1. Fetch Registrations (Peserta)
+        const regRef = collection(db, 'event_registrations');
+        const qReg = query(regRef, where('userId', '==', userId));
+        const regSnap = await getDocs(qReg);
+        
+        regSnap.forEach(docSnap => {
+          const data = docSnap.data();
+          addEvent({
+            id: data.eventId || docSnap.id,
+            title: data.eventTitle || 'Event Terdaftar',
+            timestamp: data.timestamp,
+            status: data.status
+          }, 'Peserta');
+        });
+
+        // 2. Fetch Community Events (Penggagas, Panitia, Narasumber, Pendukung)
+        const commRef = collection(db, 'community_events');
+        // Fetch all community events, or we could just fetch by organizerId first. 
+        // For broad roles (arrays), we fetch all and filter in memory to avoid complex queries limitations.
+        const commSnap = await getDocs(commRef);
+        
+        commSnap.forEach(docSnap => {
+          const data = docSnap.data();
+          const evData = { id: docSnap.id, ...data };
+          
+          // Penggagas
+          if (data.organizerId === userId) {
+            addEvent(evData, 'Penggagas');
+          }
+          // Panitia
+          if (data.committeeIds && Array.isArray(data.committeeIds) && data.committeeIds.includes(userId)) {
+            addEvent(evData, 'Panitia');
+          }
+          // Pendukung
+          if (data.supporterIds && Array.isArray(data.supporterIds) && data.supporterIds.includes(userId)) {
+            addEvent(evData, 'Pendukung');
+          }
+          // Narasumber (by ID or Name)
+          if (data.speakerIds && Array.isArray(data.speakerIds) && data.speakerIds.includes(userId)) {
+            addEvent(evData, 'Narasumber');
+          } else if (data.speakers && Array.isArray(data.speakers) && userName) {
+             const isSpeakerByName = data.speakers.some(s => s.name?.toLowerCase() === userName.toLowerCase() || userName.toLowerCase().includes(s.name?.toLowerCase()));
+             if (isSpeakerByName) {
+               addEvent(evData, 'Narasumber');
+             }
+          }
+        });
+
+        // 3. (Optional) Check Hardcoded Events from eventsData.js if needed
+        // Since hooks are pure async fetchers, we can leave hardcoded checks to the component or import eventsData here if needed.
+        
+      } catch (err) {
+        console.error("Error fetching user events:", err);
+      }
+
+      return Array.from(eventMap.values());
+    },
+    enabled: !!userId,
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+  });
+}
