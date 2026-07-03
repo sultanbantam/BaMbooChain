@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useBambupedia } from '../context/BambupediaContext';
 import { useLanguage } from '../context/LanguageContext';
-import { db } from '../firebase/config';
+import { db, storage } from '../firebase/config';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useArticles, usePlantationDonations, useEventTransactions, useUserEvents } from '../hooks/useFirestoreQueries';
 import { doc, onSnapshot, updateDoc, collection, query, where, getDoc, getDocs, addDoc, arrayUnion, arrayRemove, increment } from 'firebase/firestore';
 import { requestForToken } from '../utils/NotificationService';
@@ -460,27 +461,36 @@ const ProfilePage = () => {
     }
   };
 
-  const handleCvUpload = (e) => {
+  const handleCvUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     if (file.size > 10 * 1024 * 1024) {
       alert("⚠️ Ukuran file maksimal adalah 10MB!");
       return;
     }
-    const reader = new FileReader();
-    reader.onload = async (uploadEvent) => {
-      const base64 = uploadEvent.target.result;
+    
+    try {
+      // 1. Upload to Firebase Storage
+      const storageRef = ref(storage, `cv/${user.id}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.\-_]/g, '')}`);
+      await uploadBytes(storageRef, file);
+      const downloadUrl = await getDownloadURL(storageRef);
+      
+      // 2. Save reference to Firestore profile
       const cvFile = {
         name: file.name,
         type: file.type,
-        data: base64
+        url: downloadUrl
       };
+      
       const success = await updateProfile({ cvFile });
       if (success) {
         alert("✅ CV/Portofolio berhasil diunggah!");
       }
-    };
-    reader.readAsDataURL(file);
+    } catch (err) {
+      console.error("Error uploading CV:", err);
+      alert("❌ Gagal mengunggah dokumen: " + err.message);
+    }
+    e.target.value = ''; // Reset input
   };
 
   const handleCvDelete = async () => {
@@ -794,23 +804,31 @@ const ProfilePage = () => {
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <button 
                       onClick={() => {
-                        const dataURI = user.cvFile.data;
-                        const parts = dataURI.split(',');
-                        const byteString = atob(parts[1]);
-                        const mimeString = parts[0].split(':')[1].split(';')[0];
-                        const ab = new ArrayBuffer(byteString.length);
-                        const ia = new Uint8Array(ab);
-                        for (let i = 0; i < byteString.length; i++) {
-                          ia[i] = byteString.charCodeAt(i);
+                        if (user.cvFile.url) {
+                          // Storage URL Support
+                          window.open(user.cvFile.url, '_blank');
+                        } else if (user.cvFile.data) {
+                          // Legacy Base64 Support
+                          const dataURI = user.cvFile.data;
+                          const parts = dataURI.split(',');
+                          const byteString = atob(parts[1]);
+                          const mimeString = parts[0].split(':')[1].split(';')[0];
+                          const ab = new ArrayBuffer(byteString.length);
+                          const ia = new Uint8Array(ab);
+                          for (let i = 0; i < byteString.length; i++) {
+                            ia[i] = byteString.charCodeAt(i);
+                          }
+                          const blob = new Blob([ab], { type: mimeString });
+                          const blobUrl = URL.createObjectURL(blob);
+  
+                          const link = document.createElement('a');
+                          link.href = blobUrl;
+                          link.download = user.cvFile.name;
+                          link.click();
+                          setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+                        } else {
+                          alert('Dokumen tidak ditemukan.');
                         }
-                        const blob = new Blob([ab], { type: mimeString });
-                        const blobUrl = URL.createObjectURL(blob);
-
-                        const link = document.createElement('a');
-                        link.href = blobUrl;
-                        link.download = user.cvFile.name;
-                        link.click();
-                        setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
                       }}
                       style={{ background: 'rgba(12,166,120,0.08)', color: 'var(--primary)', border: 'none', padding: '8px 12px', borderRadius: '10px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer' }}
                     >
