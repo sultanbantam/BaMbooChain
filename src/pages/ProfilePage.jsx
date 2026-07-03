@@ -477,9 +477,9 @@ const ProfilePage = () => {
       
       // 2. Save reference to Firestore profile
       const cvFile = {
-        name: file.name,
-        type: file.type,
-        url: downloadUrl
+        name: file.name || 'Dokumen CV',
+        type: file.type || 'application/octet-stream',
+        url: downloadUrl || ''
       };
       
       const success = await updateProfile({ cvFile });

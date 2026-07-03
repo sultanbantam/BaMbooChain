@@ -565,8 +565,15 @@ export const AuthProvider = ({ children }) => {
       
       try {
         await updateDoc(doc(db, "users", user.id), profileData);
-      } catch (err) { console.error(err); }
-      return true;
+        return true;
+      } catch (err) { 
+        console.error("Firestore updateProfile error:", err); 
+        alert("Gagal memperbarui profil di database: " + err.message);
+        // Revert local state on failure
+        setUser(user);
+        localStorage.setItem('yayasan_user', JSON.stringify(user));
+        return false;
+      }
   };
 
   const loginWithGoogle = async () => {
