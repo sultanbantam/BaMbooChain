@@ -462,27 +462,43 @@ const ProfilePage = () => {
   };
 
   const handleCvUpload = async (e) => {
+    console.log("handleCvUpload triggered");
     const file = e.target.files[0];
-    if (!file) return;
+    if (!file) {
+      console.log("No file selected");
+      return;
+    }
+    console.log("File selected:", file.name, file.size, file.type);
+    
     if (file.size > 10 * 1024 * 1024) {
       alert("⚠️ Ukuran file maksimal adalah 10MB!");
       return;
     }
     
     try {
-      // 1. Upload to Firebase Storage
-      const storageRef = ref(storage, `cv/${user.id}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.\-_]/g, '')}`);
-      await uploadBytes(storageRef, file);
-      const downloadUrl = await getDownloadURL(storageRef);
+      alert("⏳ Sedang mengunggah dokumen, mohon tunggu...");
+      console.log("Starting Firebase Storage upload...");
       
-      // 2. Save reference to Firestore profile
+      const safeName = file.name ? file.name.replace(/[^a-zA-Z0-9.\-_]/g, '') : 'document.pdf';
+      const storageRef = ref(storage, `cv/${user.id}/${Date.now()}_${safeName}`);
+      
+      console.log("Storage ref created:", storageRef.fullPath);
+      await uploadBytes(storageRef, file);
+      
+      console.log("Upload completed, getting download URL...");
+      const downloadUrl = await getDownloadURL(storageRef);
+      console.log("Download URL:", downloadUrl);
+      
       const cvFile = {
         name: file.name || 'Dokumen CV',
         type: file.type || 'application/octet-stream',
         url: downloadUrl || ''
       };
       
+      console.log("Updating profile with:", cvFile);
       const success = await updateProfile({ cvFile });
+      console.log("Profile update success:", success);
+      
       if (success) {
         alert("✅ CV/Portofolio berhasil diunggah!");
       }
@@ -491,6 +507,7 @@ const ProfilePage = () => {
       alert("❌ Gagal mengunggah dokumen: " + err.message);
     }
     e.target.value = ''; // Reset input
+    console.log("Input reset");
   };
 
   const handleCvDelete = async () => {
