@@ -3,6 +3,9 @@ import { Search, Send, BookOpen, Leaf, ChevronRight, Mic, Landmark, Wallet, Arro
 import { useNavigate } from 'react-router-dom';
 import { getAssetUrl } from '../../utils/assets';
 import { useLanguage } from '../../context/LanguageContext';
+import { db } from '../../firebase/config';
+import { collection, query, getDocs, limit, orderBy } from 'firebase/firestore';
+import { PROJECTS } from '../../data/projectsData';
 
 // ─── BASIS PENGETAHUAN BAMBU ─────────────────────────────────────────────────
 const BAMBOO_KB = [
@@ -164,9 +167,10 @@ FORMAT JAWABAN:
 
 Jangan pernah membuat data palsu. Akui ketidakpastian dengan jelas.`;
 
-const callGroqAI = async (question, history) => {
+const callGroqAI = async (question, history, contextData = '') => {
+  const finalPrompt = contextData ? `${BAMBOO_SYSTEM_PROMPT}\n\n=== DATA REAL-TIME PLATFORM ===\n${contextData}` : BAMBOO_SYSTEM_PROMPT;
   const messages = [
-    { role: 'system', content: BAMBOO_SYSTEM_PROMPT },
+    { role: 'system', content: finalPrompt },
     ...history.slice(-6).map(m => ({ role: m.role, content: m.text })),
     { role: 'user', content: question },
   ];
@@ -252,8 +256,52 @@ const BambupediaPage = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [activeTab, setActiveTab] = useState('chat');
   const [usingGroq, setUsingGroq] = useState(false);
+  const [dynamicContext, setDynamicContext] = useState('');
   const messagesEndRef = useRef(null);
   const navigate = useNavigate();
+
+  // Fetch real-time data for Light RAG
+  useEffect(() => {
+    const fetchKnowledge = async () => {
+      try {
+        let text = "";
+        // 1. Projects
+        const activeProjects = PROJECTS.filter(p => p.status === 'Berjalan' || p.status_en === 'Active').slice(0, 3);
+        if (activeProjects.length > 0) {
+          text += "[Proyek Konservasi/Ekologi Berjalan]:\n";
+          activeProjects.forEach(p => text += `- ${p.title} (${p.location}): ${p.shortDesc}\n`);
+        }
+        
+        if (db) {
+          // 2. Events / Scheduled Meetings
+          const eventQ = query(collection(db, "scheduled_meetings"), orderBy("date", "desc"), limit(3));
+          const eventSnap = await getDocs(eventQ);
+          if (!eventSnap.empty) {
+            text += "\n[Event & Meeting Terbaru]:\n";
+            eventSnap.forEach(doc => {
+              const d = doc.data();
+              text += `- ${d.title} (Tanggal: ${d.date}, Peserta: ${d.participants?.length || 0} orang)\n`;
+            });
+          }
+
+          // 3. Marketplace Products
+          const marketQ = query(collection(db, "marketplace_products"), orderBy("createdAt", "desc"), limit(3));
+          const marketSnap = await getDocs(marketQ);
+          if (!marketSnap.empty) {
+            text += "\n[Produk Marketplace Terbaru]:\n";
+            marketSnap.forEach(doc => {
+              const d = doc.data();
+              text += `- ${d.name} (Harga: Rp${d.priceIdr}, Kategori: ${d.category})\n`;
+            });
+          }
+        }
+        setDynamicContext(text);
+      } catch (err) {
+        console.error("Failed to fetch dynamic context for RAG:", err);
+      }
+    };
+    fetchKnowledge();
+  }, []);
 
   useEffect(() => {
     if (GROQ_API_KEY && GROQ_API_KEY !== 'PASTE_GROQ_KEY_DISINI') {
@@ -296,7 +344,7 @@ const BambupediaPage = () => {
     try {
       let answer;
       if (usingGroq) {
-        answer = await callGroqAI(question, messages);
+        answer = await callGroqAI(question, messages, dynamicContext);
       } else {
         // Simulasi delay untuk UX yang natural
         await new Promise(r => setTimeout(r, 700 + Math.random() * 500));
