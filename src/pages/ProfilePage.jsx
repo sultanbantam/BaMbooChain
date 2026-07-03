@@ -463,8 +463,8 @@ const ProfilePage = () => {
   const handleCvUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) {
-      alert("⚠️ Ukuran file maksimal adalah 2MB!");
+    if (file.size > 10 * 1024 * 1024) {
+      alert("⚠️ Ukuran file maksimal adalah 10MB!");
       return;
     }
     const reader = new FileReader();
@@ -775,7 +775,7 @@ const ProfilePage = () => {
                 <FileText size={20} color="var(--primary)" /> CV / Portofolio Lengkap
               </h3>
               <p style={{ color: 'var(--text-muted)', marginBottom: '20px', fontSize: '0.85rem', lineHeight: '1.5' }}>
-                Unggah dokumen CV atau portofolio lengkap Anda (Maksimal 2MB, format PDF, Word, atau Gambar). Dokumen ini hanya dapat dilihat/diunduh oleh pengguna yang sudah terverifikasi KYC.
+                Unggah dokumen CV atau portofolio lengkap Anda (Maksimal 10MB, format PDF, Word, atau Gambar). Dokumen ini hanya dapat dilihat/diunduh oleh pengguna yang sudah terverifikasi KYC.
               </p>
 
               {user.cvFile ? (
