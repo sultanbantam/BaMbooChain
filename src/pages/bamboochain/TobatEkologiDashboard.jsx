@@ -64,7 +64,7 @@ const TobatEkologiDashboard = () => {
   };
 
   return (
-    <div style={{ background: 'var(--bg-color)', minHeight: '100vh', padding: '40px 20px', fontFamily: '"Inter", sans-serif' }}>
+    <div style={{ background: 'var(--bg-color)', minHeight: '100vh', padding: '100px 20px 40px 20px', fontFamily: '"Inter", sans-serif' }}>
       
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         
