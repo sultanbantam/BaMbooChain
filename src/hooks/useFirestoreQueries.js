@@ -356,6 +356,14 @@ export function useUserEvents(userId, userName) {
         console.error("Error fetching user events:", err);
       }
 
+      // Hardcode rule for Mukoddas Syuhada
+      if (userName && userName.toLowerCase() === 'mukoddas syuhada') {
+        eventMap.forEach((ev) => {
+          if (!ev.userRoles.includes('Penggagas')) ev.userRoles.push('Penggagas');
+          if (!ev.userRoles.includes('Narasumber')) ev.userRoles.push('Narasumber');
+        });
+      }
+
       return Array.from(eventMap.values());
     },
     enabled: !!userId,
