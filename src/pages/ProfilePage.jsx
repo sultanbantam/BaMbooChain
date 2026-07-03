@@ -477,16 +477,25 @@ const ProfilePage = () => {
     
     try {
       alert("⏳ Sedang mengunggah dokumen, mohon tunggu...");
-      console.log("Starting Firebase Storage upload...");
+      console.log("Starting Cloudinary upload...");
       
-      const safeName = file.name ? file.name.replace(/[^a-zA-Z0-9.\-_]/g, '') : 'document.pdf';
-      const storageRef = ref(storage, `cv/${user.id}/${Date.now()}_${safeName}`);
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', 'cv_bamboochain');
       
-      console.log("Storage ref created:", storageRef.fullPath);
-      await uploadBytes(storageRef, file);
+      const response = await fetch('https://api.cloudinary.com/v1_1/dsieguutz/auto/upload', {
+        method: 'POST',
+        body: formData
+      });
       
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || 'Gagal mengunggah ke server cloud.');
+      }
+      
+      const data = await response.json();
       console.log("Upload completed, getting download URL...");
-      const downloadUrl = await getDownloadURL(storageRef);
+      const downloadUrl = data.secure_url;
       console.log("Download URL:", downloadUrl);
       
       const cvFile = {
