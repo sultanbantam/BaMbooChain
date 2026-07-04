@@ -1,5 +1,4 @@
 import { getFirebaseAdmin } from '../_utils/firebaseAdmin.js';
-import { getAuth } from 'firebase-admin/auth';
 
 export default async function handler(req, res) {
   // CORS
@@ -28,6 +27,7 @@ export default async function handler(req, res) {
     }
 
     // 1. Verify that the user is genuinely logged into BambooChain
+    const { getAuth } = await import('firebase-admin/auth');
     const decodedToken = await getAuth(app).verifyIdToken(idToken);
     const uid = decodedToken.uid;
 
