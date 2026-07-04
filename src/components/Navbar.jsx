@@ -7,6 +7,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useWeb3 } from '../context/Web3Context';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { auth } from '../firebase/config';
 
 const Navbar = () => {
   const [showBambooMenu, setShowBambooMenu] = useState(false);
@@ -20,6 +21,32 @@ const Navbar = () => {
   const { walletAddress, connectWallet, isWalletModalOpen, closeWalletModal } = useWeb3();
   const { user, isAuthenticated, openLoginModal, logout, markAsRead, markAllAsRead, clearNotifications } = useAuth();
   const { isDark, toggleTheme } = useTheme();
+
+  const handleXignalxSSO = async (e) => {
+    e.preventDefault();
+    if (!isAuthenticated || !auth.currentUser) {
+      window.open('https://www.xignalx.click', '_blank');
+      return;
+    }
+    
+    try {
+      const idToken = await auth.currentUser.getIdToken(true);
+      const response = await fetch('/api/sso/xignalx', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken })
+      });
+      const data = await response.json();
+      if (data.customToken) {
+        window.open(`https://www.xignalx.click/auth?token=${data.customToken}`, '_blank');
+      } else {
+        window.open('https://www.xignalx.click', '_blank');
+      }
+    } catch (err) {
+      console.error('SSO failed:', err);
+      window.open('https://www.xignalx.click', '_blank');
+    }
+  };
 
   const userNotifications = user?.notifications || [];
   const unreadCount = userNotifications.filter(n => !n.isRead).length;
@@ -59,6 +86,7 @@ const Navbar = () => {
     { label: t('nav_bambupedia'), path: '/bambupedia' },
     { label: t('feature_academy'), path: '/bamboochain/academy' },
     { label: t('nav_datatools'), path: '/data-tools' },
+    { label: 'Signal Trading', path: '#', onClick: handleXignalxSSO, icon: getAssetUrl('logo2.png') },
     { label: t('nav_marketplace'), path: '/bamboochain/marketplace' },
     { label: t('nav_community'), path: '/community' },
     { label: t('nav_events'), path: '/events' },
@@ -157,8 +185,15 @@ const Navbar = () => {
                  </button>
                )}
                {mobileMenuItems.map((item, idx) => (
-                 <Link key={idx} to={item.path} onClick={() => setIsMobileMenuOpen(false)} style={{ display: 'block', padding: '15px 0', borderBottom: '1px solid #eee', color: '#333', textDecoration: 'none', fontWeight: '600' }}>{item.label}</Link>
-               ))}
+                  item.onClick ? (
+                    <a key={idx} href={item.path} onClick={(e) => { item.onClick(e); setIsMobileMenuOpen(false); }} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '15px 0', borderBottom: '1px solid #eee', color: '#333', textDecoration: 'none', fontWeight: '600' }}>
+                      {item.icon && <img src={item.icon} alt={item.label} style={{ height: '20px', width: 'auto', borderRadius: '4px' }} />}
+                      {item.label}
+                    </a>
+                  ) : (
+                    <Link key={idx} to={item.path} onClick={() => setIsMobileMenuOpen(false)} style={{ display: 'block', padding: '15px 0', borderBottom: '1px solid #eee', color: '#333', textDecoration: 'none', fontWeight: '600' }}>{item.label}</Link>
+                  )
+                ))}
             </div>
           )}
         </div>
@@ -176,6 +211,12 @@ const Navbar = () => {
             <Link to="/bambupedia" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('nav_bambupedia')}</Link>
             <Link to="/bamboochain/academy" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('feature_academy')}</Link>
             <Link to="/data-tools" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('nav_datatools')}</Link>
+            
+            <a href="#" onClick={handleXignalxSSO} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', color: 'var(--primary)', textDecoration: 'none', fontWeight: 'bold' }}>
+              <img src={getAssetUrl('logo2.png')} alt="Signal Trading" style={{ height: '18px', width: 'auto', borderRadius: '4px' }} />
+              Signal Trading
+            </a>
+
             <Link to="/bamboochain/marketplace" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('nav_marketplace')}</Link>
             <Link to="/community" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('nav_community')}</Link>
             <Link to="/events" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('nav_events')}</Link>
