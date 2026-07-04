@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { getFirebaseAdmin } from '../_utils/firebaseAdmin.js';
+import { getFirestore } from 'firebase-admin/firestore';
 
 export default async function handler(req, res) {
   // Set CORS headers
@@ -50,7 +51,7 @@ export default async function handler(req, res) {
       });
     }
 
-    const db = app.firestore();
+    const db = getFirestore(app);
     
     // Generate secure keys
     const clientId = `client_${crypto.randomBytes(8).toString('hex')}`;

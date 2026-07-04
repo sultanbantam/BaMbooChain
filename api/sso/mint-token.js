@@ -1,28 +1,25 @@
 import { getFirebaseAdmin } from '../_utils/firebaseAdmin.js';
+import { getAuth } from 'firebase-admin/auth';
 
 export default async function handler(req, res) {
   // CORS
   res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization'
-  );
+  res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
+    return res.status(200).end();
   }
 
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    const admin = getFirebaseAdmin();
-    if (!admin || admin.error) {
-      return res.status(500).json({ error: admin?.error || 'Firebase Admin not initialized in Vercel' });
+    const app = getFirebaseAdmin();
+    if (!app || app.error) {
+      return res.status(500).json({ error: app?.error || 'Firebase Admin not initialized in Vercel' });
     }
 
     const { idToken } = req.body;
@@ -31,7 +28,7 @@ export default async function handler(req, res) {
     }
 
     // 1. Verify that the user is genuinely logged into BambooChain
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const decodedToken = await getAuth(app).verifyIdToken(idToken);
     const uid = decodedToken.uid;
 
     // 2. Generate a custom token that Xignalx can use to log them in
@@ -39,7 +36,7 @@ export default async function handler(req, res) {
       source: 'bamboochain_sso'
     };
     
-    const customToken = await admin.auth().createCustomToken(uid, additionalClaims);
+    const customToken = await getAuth(app).createCustomToken(uid, additionalClaims);
 
     return res.status(200).json({ customToken });
   } catch (error) {

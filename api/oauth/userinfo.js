@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { getFirebaseAdmin } from '../_utils/firebaseAdmin.js';
+import { getFirestore } from 'firebase-admin/firestore';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback_bamboochain_secret_key_123';
 
@@ -38,7 +39,7 @@ export default async function handler(req, res) {
     }
 
     // ======== PRODUCTION MODE ========
-    const db = app.firestore();
+    const db = getFirestore(app);
     const userDoc = await db.collection('users').doc(uid).get();
     
     if (!userDoc.exists) {

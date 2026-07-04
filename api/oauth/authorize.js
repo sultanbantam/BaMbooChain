@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import { getFirebaseAdmin } from '../_utils/firebaseAdmin.js';
+import { getFirestore } from 'firebase-admin/firestore';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -34,7 +35,7 @@ export default async function handler(req, res) {
       });
     }
 
-    const db = app.firestore();
+    const db = getFirestore(app);
 
     // 1. Validate Client ID
     const WHALE_OF_SAVU_CLIENT = "client_4e0f61e19c1855c5";
