@@ -278,7 +278,7 @@ function App() {
             <Route path="/bamboochain/plantation" element={<ProtectedRoute><BcPlantationPage /></ProtectedRoute>} />
             <Route path="/bamboochain/supply-chain" element={<ProtectedRoute><BcSupplyChainPage /></ProtectedRoute>} />
             <Route path="/bamboochain/build" element={<ProtectedRoute><BcBuildPage /></ProtectedRoute>} />
-            <Route path="/bamboochain/token-wallet" element={<ProtectedRoute><BcTokenWalletPage /></ProtectedRoute>} />
+            <Route path="/bamboochain/token-wallet" element={<BcTokenWalletPage />} />
             <Route path="/bamboochain/carbon-impact" element={<ProtectedRoute><BcCarbonImpactPage /></ProtectedRoute>} />
             <Route path="/bamboochain/dao" element={<ProtectedRoute><BcDaoCommunityPage /></ProtectedRoute>} />
             <Route path="/bamboochain/academy" element={<ProtectedRoute><BcAcademyPage /></ProtectedRoute>} />

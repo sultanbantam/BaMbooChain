@@ -1892,6 +1892,7 @@ const GetBMCTab = ({ setActiveTab }) => {
 
 const TransactionsTab = () => {
   const { user } = useAuth();
+  const { t, language } = useLanguage();
   const { t } = useLanguage();
   const txList = user?.transactions || [];
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
@@ -2057,10 +2058,10 @@ const TokenUtilityTab = () => {
     {/* New Section: Ecosystem & dApps */}
     <div style={{ marginTop: '48px' }}>
       <h3 style={{ fontSize: isMobile ? '1.5rem' : '1.8rem', fontWeight: '900', color: 'var(--text-main)', marginBottom: '8px' }}>
-        Explore the BMC Ecosystem
+        {language === 'id' ? 'Jelajahi Ekosistem BMC' : 'Explore the BMC Ecosystem'}
       </h3>
       <p style={{ color: 'var(--text-muted)', fontSize: '1rem', marginBottom: '24px' }}>
-        Akses langsung ke berbagai aplikasi (dApps) dan layanan yang terintegrasi dengan jaringan BambooChain.
+        {language === 'id' ? 'Akses langsung ke berbagai aplikasi (dApps) dan layanan yang terintegrasi dengan jaringan BambooChain.' : 'Direct access to various applications (dApps) and services integrated with the BambooChain network.'}
       </p>
 
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
@@ -2077,10 +2078,10 @@ const TokenUtilityTab = () => {
             </div>
             <h4 style={{ fontSize: '1.25rem', fontWeight: '900', margin: '0 0 12px 0', color: 'var(--text-main)' }}>Whale of Savu (Levanuang)</h4>
             <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '24px', flex: 1 }}>
-              Integrated cultural tourism digital platform for customary preservation and marine ecotourism in Lembata.
+              {language === 'id' ? 'Platform digital pariwisata budaya terpadu untuk pelestarian adat dan ekowisata laut di Lembata.' : 'Integrated cultural tourism digital platform for customary preservation and marine ecotourism in Lembata.'}
             </p>
             <a href="https://whaleofsavu.org/" target="_blank" rel="noopener noreferrer" style={{ background: '#38d9a9', color: 'white', textDecoration: 'none', padding: '14px', borderRadius: '16px', fontWeight: 'bold', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(56, 217, 169, 0.3)' }} onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}>
-              Kunjungi Situs & Treasury <ChevronRight size={18} />
+              {language === 'id' ? 'Kunjungi Situs & Treasury' : 'Visit Site & Treasury'} <ChevronRight size={18} />
             </a>
           </div>
         </div>
@@ -2091,10 +2092,10 @@ const TokenUtilityTab = () => {
           <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', flex: 1 }}>
             <h4 style={{ fontSize: '1.25rem', fontWeight: '900', margin: '0 0 12px 0', color: 'var(--text-main)' }}>enPineering Modular BlockBamboo</h4>
             <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '24px', flex: 1 }}>
-              Jadilah UNDAGI! Bangun dunia BlockBamboo, naik level, dan dapatkan hadiah BMC.
+              {language === 'id' ? 'Jadilah UNDAGI! Bangun dunia BlockBamboo, naik level, dan dapatkan hadiah BMC.' : 'Become an UNDAGI! Build the BlockBamboo world, level up, and earn BMC rewards.'}
             </p>
             <a href="https://bamboogame.click/" target="_blank" rel="noopener noreferrer" style={{ background: '#212529', color: 'white', textDecoration: 'none', padding: '14px', borderRadius: '16px', fontWeight: 'bold', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' }} onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}>
-              Play Now <Play size={18} fill="currentColor" />
+              {language === 'id' ? 'Main Sekarang' : 'Play Now'} <Play size={18} fill="currentColor" />
             </a>
           </div>
         </div>
@@ -2108,10 +2109,10 @@ const TokenUtilityTab = () => {
             </div>
             <h4 style={{ fontSize: '1.25rem', fontWeight: '900', margin: '0 0 12px 0', color: 'var(--text-main)' }}>Signal Trading VIP</h4>
             <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '24px', flex: 1 }}>
-              Akses eksklusif ke sinyal trading cryptocurrency premium. Gunakan saldo BMC Anda untuk berlangganan.
+              {language === 'id' ? 'Akses eksklusif ke sinyal trading cryptocurrency premium. Gunakan saldo BMC Anda untuk berlangganan.' : 'Exclusive access to premium cryptocurrency trading signals. Use your BMC balance to subscribe.'}
             </p>
             <a href="https://www.xignalx.click/" target="_blank" rel="noopener noreferrer" style={{ background: '#e03131', color: 'white', textDecoration: 'none', padding: '14px', borderRadius: '16px', fontWeight: 'bold', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(224, 49, 49, 0.3)' }} onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}>
-              Buka Signal Trading <ChevronRight size={18} />
+              {language === 'id' ? 'Buka Signal Trading' : 'Open Signal Trading'} <ChevronRight size={18} />
             </a>
           </div>
         </div>
@@ -2521,6 +2522,7 @@ const TokenWalletPage = () => {
   const { walletAddress, isConnected, connectWallet } = useWeb3();
   const location = useLocation();
   const { t } = useLanguage();
+  const { isAuthenticated, openLoginModal } = useAuth();
   const [activeTab, setActiveTab] = useState(location.search.includes('tab=validator') || location.search.includes('tab=contribute') ? 'get_bmc' : 'utility');
   const [initialModal, setInitialModal] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 1100);
@@ -2585,7 +2587,14 @@ const TokenWalletPage = () => {
                 return (
                   <button 
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
+                    onClick={() => {
+                      const isPublic = ['overview', 'whitepaper', 'get_bmc', 'utility'].includes(tab.id);
+                      if (!isPublic && !isAuthenticated) {
+                        if(openLoginModal) openLoginModal();
+                      } else {
+                        setActiveTab(tab.id);
+                      }
+                    }}
                     style={{
                       display: 'flex', alignItems: 'center', gap: '10px',
                       width: isMobile ? 'auto' : '100%', 
