@@ -1892,7 +1892,6 @@ const GetBMCTab = ({ setActiveTab }) => {
 
 const TransactionsTab = () => {
   const { user } = useAuth();
-  const { t, language } = useLanguage();
   const { t } = useLanguage();
   const txList = user?.transactions || [];
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
@@ -2005,6 +2004,7 @@ const StakingTab = () => (
 );
 
 const TokenUtilityTab = () => {
+  const { language } = useLanguage();
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
