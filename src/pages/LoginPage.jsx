@@ -10,7 +10,7 @@ const LoginPage = () => {
   const { isAuthenticated, user } = useAuth();
   const { openLoginModal } = useAuthStore();
   const [statusText, setStatusText] = useState('Memuat halaman...');
-  const [isProcessing, setIsProcessing] = useState(false);
+  const hasAttemptedRef = React.useRef(false);
 
   useEffect(() => {
     const processLogin = async () => {
@@ -23,10 +23,10 @@ const LoginPage = () => {
         return;
       }
 
-      if (isProcessing) return;
+      if (hasAttemptedRef.current) return;
 
       if (redirectUrl) {
-        setIsProcessing(true);
+        hasAttemptedRef.current = true;
         setStatusText('Memverifikasi sesi SSO...');
         try {
           if (!auth.currentUser) {
@@ -43,7 +43,8 @@ const LoginPage = () => {
           });
 
           if (!response.ok) {
-            throw new Error(`Server error: ${response.status}`);
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.error || `Server error: ${response.status}`);
           }
 
           const data = await response.json();
@@ -57,7 +58,6 @@ const LoginPage = () => {
         } catch (error) {
           console.error("SSO Error:", error);
           setStatusText(`Gagal melakukan verifikasi SSO: ${error.message}`);
-          setIsProcessing(false);
         }
       } else {
         // Normal login, no redirect param
@@ -67,7 +67,7 @@ const LoginPage = () => {
     };
 
     processLogin();
-  }, [isAuthenticated, user, location, navigate, openLoginModal, isProcessing]);
+  }, [isAuthenticated, user, location, navigate, openLoginModal]);
 
   return (
     <div style={{
