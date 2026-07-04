@@ -96,28 +96,20 @@ export default async function handler(req, res) {
 
     if (client_id === WHALE_OF_SAVU_CLIENT && client_secret === WHALE_OF_SAVU_SECRET) {
       isValidClient = true;
-      allowedRedirectUris = [
-        "https://whaleofsavu.org/",
-        "https://www.whaleofsavu.org/",
-        "https://whaleofsavu.org/api/auth/bamboo/callback",
-        "https://www.whaleofsavu.org/api/auth/bamboo/callback",
-        "https://analis-wine.vercel.app/api/auth/bamboo/callback",
-        "https://whaleofsavu.vercel.app/api/auth/bamboo/callback",
-        "http://localhost:3000/api/auth/bamboo/callback"
-      ];
+      if (redirect_uri && (redirect_uri.startsWith("https://whaleofsavu.org") || 
+                           redirect_uri.startsWith("https://www.whaleofsavu.org") || 
+                           redirect_uri.startsWith("https://analis-wine.vercel.app") || 
+                           redirect_uri.startsWith("https://whaleofsavu.vercel.app") || 
+                           redirect_uri.startsWith("http://localhost:3000"))) {
+        allowedRedirectUris = [redirect_uri];
+      }
     } else if (client_id === 'enpineering') {
       isValidClient = true;
-      allowedRedirectUris = [
-        "https://bamboogame.click/",
-        "https://www.bamboogame.click/",
-        "https://bamboogame.click/api/auth/bamboo/callback",
-        "https://www.bamboogame.click/api/auth/bamboo/callback",
-        "https://bamboogame.click/oauth/callback",
-        "https://www.bamboogame.click/oauth/callback",
-        "https://bamboogame.click",
-        "https://www.bamboogame.click",
-        "http://localhost:3000/api/auth/bamboo/callback"
-      ];
+      if (redirect_uri && (redirect_uri.startsWith("https://bamboogame.click") || 
+                           redirect_uri.startsWith("https://www.bamboogame.click") || 
+                           redirect_uri.startsWith("http://localhost:3000"))) {
+        allowedRedirectUris = [redirect_uri];
+      }
     } else {
       const clientSnapshot = await db.collection('oauth_clients').where('client_id', '==', client_id).limit(1).get();
       if (clientSnapshot.empty) {
