@@ -2116,9 +2116,9 @@ const TokenUtilityTab = () => {
             <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '24px', flex: 1 }}>
               Akses eksklusif ke sinyal trading cryptocurrency premium. Gunakan saldo BMC Anda untuk berlangganan.
             </p>
-            <Link to="/signal-trading" style={{ background: '#e03131', color: 'white', textDecoration: 'none', padding: '14px', borderRadius: '16px', fontWeight: 'bold', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(224, 49, 49, 0.3)' }} onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}>
+            <a href="https://www.xignalx.click/" target="_blank" rel="noopener noreferrer" style={{ background: '#e03131', color: 'white', textDecoration: 'none', padding: '14px', borderRadius: '16px', fontWeight: 'bold', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(224, 49, 49, 0.3)' }} onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}>
               Buka Signal Trading <ChevronRight size={18} />
-            </Link>
+            </a>
           </div>
         </div>
 
