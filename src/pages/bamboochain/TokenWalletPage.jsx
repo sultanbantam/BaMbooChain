@@ -2521,7 +2521,7 @@ const TokenWalletPage = () => {
   const { walletAddress, isConnected, connectWallet } = useWeb3();
   const location = useLocation();
   const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState(location.search.includes('tab=validator') || location.search.includes('tab=contribute') ? 'get_bmc' : 'overview');
+  const [activeTab, setActiveTab] = useState(location.search.includes('tab=validator') || location.search.includes('tab=contribute') ? 'get_bmc' : 'utility');
   const [initialModal, setInitialModal] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 1100);
 
