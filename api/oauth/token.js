@@ -81,8 +81,12 @@ export default async function handler(req, res) {
       return res.status(400).json({ success: false, message: 'Unsupported grant_type' });
     }
 
-    if (!client_id || !client_secret || !code) {
-      return res.status(400).json({ success: false, message: 'Missing client_id, client_secret, or code' });
+    if (!client_id || !code) {
+      return res.status(400).json({ success: false, message: 'Missing client_id or code' });
+    }
+
+    if (!client_secret && client_id !== 'enpineering') {
+      return res.status(400).json({ success: false, message: 'Missing client_secret' });
     }
 
     const db = app.firestore();
