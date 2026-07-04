@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { getFirebaseAdmin } from '../utils/firebaseAdmin.js';
+import { getFirebaseAdmin } from '../_utils/firebaseAdmin.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback_bamboochain_secret_key_123';
 

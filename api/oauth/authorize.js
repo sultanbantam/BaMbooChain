@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { getFirebaseAdmin } from '../utils/firebaseAdmin.js';
+import { getFirebaseAdmin } from '../_utils/firebaseAdmin.js';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
