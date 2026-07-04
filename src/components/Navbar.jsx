@@ -31,7 +31,7 @@ const Navbar = () => {
     
     try {
       const idToken = await auth.currentUser.getIdToken(true);
-      const response = await fetch('/api/sso/xignalx', {
+      const response = await fetch('/api/sso/mint-token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ idToken })

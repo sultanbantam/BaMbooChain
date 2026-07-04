@@ -78,6 +78,7 @@ import SocialInteractions from './components/SocialInteractions';
 const PublicPortfolioPage = lazy(() => import('./pages/PublicPortfolioPage'));
 const AuthorizePage = lazy(() => import('./pages/AuthorizePage'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
+const LoginPage = lazy(() => import('./pages/LoginPage'));
 const PageLoader = () => (
   <div style={{
     display: 'flex',
@@ -250,6 +251,7 @@ function App() {
             <Route path="/portfolio/:username" element={<PublicPortfolioPage />} />
             <Route path="/bamboochain/meeting" element={<BambooMeetingPage />} />
             <Route path="/authorize" element={<AuthorizePage />} />
+            <Route path="/login" element={<LoginPage />} />
             <Route path="/events" element={<EventsPage />} />
             
             {/* Protected Routes */}
