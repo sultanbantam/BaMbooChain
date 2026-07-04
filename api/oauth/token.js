@@ -97,6 +97,8 @@ export default async function handler(req, res) {
     if (client_id === WHALE_OF_SAVU_CLIENT && client_secret === WHALE_OF_SAVU_SECRET) {
       isValidClient = true;
       allowedRedirectUris = [
+        "https://whaleofsavu.org/",
+        "https://www.whaleofsavu.org/",
         "https://whaleofsavu.org/api/auth/bamboo/callback",
         "https://www.whaleofsavu.org/api/auth/bamboo/callback",
         "https://analis-wine.vercel.app/api/auth/bamboo/callback",
@@ -106,6 +108,8 @@ export default async function handler(req, res) {
     } else if (client_id === 'enpineering') {
       isValidClient = true;
       allowedRedirectUris = [
+        "https://bamboogame.click/",
+        "https://www.bamboogame.click/",
         "https://bamboogame.click/api/auth/bamboo/callback",
         "https://www.bamboogame.click/api/auth/bamboo/callback",
         "https://bamboogame.click/oauth/callback",
