@@ -21,8 +21,8 @@ export default async function handler(req, res) {
 
   try {
     const admin = getFirebaseAdmin();
-    if (!admin) {
-      return res.status(500).json({ error: 'Firebase Admin not initialized in Vercel' });
+    if (!admin || admin.error) {
+      return res.status(500).json({ error: admin?.error || 'Firebase Admin not initialized in Vercel' });
     }
 
     const { idToken } = req.body;

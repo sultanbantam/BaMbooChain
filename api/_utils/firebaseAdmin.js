@@ -26,7 +26,7 @@ export function getFirebaseAdmin() {
       return null;
     }
   } catch (error) {
-    console.warn("Firebase Admin failed to initialize (Mock Mode will be used):", error.message);
-    return null;
+    console.warn("Firebase Admin failed to initialize:", error.message);
+    return { error: error.message };
   }
 }
