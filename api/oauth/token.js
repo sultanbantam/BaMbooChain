@@ -97,6 +97,8 @@ export default async function handler(req, res) {
     if (client_id === WHALE_OF_SAVU_CLIENT && client_secret === WHALE_OF_SAVU_SECRET) {
       isValidClient = true;
       allowedRedirectUris = [
+        "https://whaleofsavu.org/api/auth/bamboo/callback",
+        "https://www.whaleofsavu.org/api/auth/bamboo/callback",
         "https://analis-wine.vercel.app/api/auth/bamboo/callback",
         "https://whaleofsavu.vercel.app/api/auth/bamboo/callback",
         "http://localhost:3000/api/auth/bamboo/callback"
