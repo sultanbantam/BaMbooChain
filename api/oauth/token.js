@@ -103,6 +103,17 @@ export default async function handler(req, res) {
         "https://whaleofsavu.vercel.app/api/auth/bamboo/callback",
         "http://localhost:3000/api/auth/bamboo/callback"
       ];
+    } else if (client_id === 'enpineering') {
+      isValidClient = true;
+      allowedRedirectUris = [
+        "https://bamboogame.click/api/auth/bamboo/callback",
+        "https://www.bamboogame.click/api/auth/bamboo/callback",
+        "https://bamboogame.click/oauth/callback",
+        "https://www.bamboogame.click/oauth/callback",
+        "https://bamboogame.click",
+        "https://www.bamboogame.click",
+        "http://localhost:3000/api/auth/bamboo/callback"
+      ];
     } else {
       const clientSnapshot = await db.collection('oauth_clients').where('client_id', '==', client_id).limit(1).get();
       if (clientSnapshot.empty) {
