@@ -50,8 +50,7 @@ export default async function handler(req, res) {
       });
     }
 
-    const { getFirestore } = await import('firebase-admin/firestore');
-    const db = getFirestore(app);
+    const db = app.firestore();
     
     // Generate secure keys
     const clientId = `client_${crypto.randomBytes(8).toString('hex')}`;

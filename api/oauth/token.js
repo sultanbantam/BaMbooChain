@@ -85,8 +85,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ success: false, message: 'Missing client_id, client_secret, or code' });
     }
 
-    const { getFirestore } = await import('firebase-admin/firestore');
-    const db = getFirestore(app);
+    const db = app.firestore();
 
     // 1. Verify Client
     const WHALE_OF_SAVU_CLIENT = "client_4e0f61e19c1855c5";

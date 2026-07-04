@@ -34,8 +34,7 @@ export default async function handler(req, res) {
       });
     }
 
-    const { getFirestore } = await import('firebase-admin/firestore');
-    const db = getFirestore(app);
+    const db = app.firestore();
 
     // 1. Validate Client ID
     const WHALE_OF_SAVU_CLIENT = "client_4e0f61e19c1855c5";

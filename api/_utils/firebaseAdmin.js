@@ -1,25 +1,26 @@
 import admin from 'firebase-admin';
-const { initializeApp, cert, getApps, getApp } = admin;
 
 export function getFirebaseAdmin() {
-  if (getApps().length > 0) {
-    return getApp();
+  if (admin.apps && admin.apps.length > 0) {
+    return admin.app();
   }
 
   try {
     if (process.env.FIREBASE_SERVICE_ACCOUNT) {
       const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-      return initializeApp({
-        credential: cert(serviceAccount)
+      admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount)
       });
+      return admin.app();
     } else if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_PRIVATE_KEY && process.env.FIREBASE_CLIENT_EMAIL) {
-      return initializeApp({
-        credential: cert({
+      admin.initializeApp({
+        credential: admin.credential.cert({
           projectId: process.env.FIREBASE_PROJECT_ID,
           clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
           privateKey: (process.env.FIREBASE_PRIVATE_KEY || '').replace(/\\n/g, '\n')
         })
       });
+      return admin.app();
     } else {
       console.warn("Firebase Admin credentials not found in environment variables.");
       return null;

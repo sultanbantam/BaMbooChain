@@ -38,8 +38,7 @@ export default async function handler(req, res) {
     }
 
     // ======== PRODUCTION MODE ========
-    const { getFirestore } = await import('firebase-admin/firestore');
-    const db = getFirestore(app);
+    const db = app.firestore();
     const userDoc = await db.collection('users').doc(uid).get();
     
     if (!userDoc.exists) {

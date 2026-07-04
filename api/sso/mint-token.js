@@ -27,8 +27,7 @@ export default async function handler(req, res) {
     }
 
     // 1. Verify that the user is genuinely logged into BambooChain
-    const { getAuth } = await import('firebase-admin/auth');
-    const decodedToken = await getAuth(app).verifyIdToken(idToken);
+    const decodedToken = await app.auth().verifyIdToken(idToken);
     const uid = decodedToken.uid;
 
     // 2. Generate a custom token that Xignalx can use to log them in
@@ -36,7 +35,7 @@ export default async function handler(req, res) {
       source: 'bamboochain_sso'
     };
     
-    const customToken = await getAuth(app).createCustomToken(uid, additionalClaims);
+    const customToken = await app.auth().createCustomToken(uid, additionalClaims);
 
     return res.status(200).json({ customToken });
   } catch (error) {
