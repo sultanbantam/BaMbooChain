@@ -2053,6 +2053,77 @@ const TokenUtilityTab = () => {
         </div>
       </div>
     </div>
+
+    {/* New Section: Ecosystem & dApps */}
+    <div style={{ marginTop: '48px' }}>
+      <h3 style={{ fontSize: isMobile ? '1.5rem' : '1.8rem', fontWeight: '900', color: 'var(--text-main)', marginBottom: '8px' }}>
+        Explore the BMC Ecosystem
+      </h3>
+      <p style={{ color: 'var(--text-muted)', fontSize: '1rem', marginBottom: '24px' }}>
+        Akses langsung ke berbagai aplikasi (dApps) dan layanan yang terintegrasi dengan jaringan BambooChain.
+      </p>
+
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
+        
+        {/* Whale of Savu Card */}
+        <div style={{ background: 'white', borderRadius: '24px', overflow: 'hidden', border: '1px solid #f1f3f5', boxShadow: '0 8px 24px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ height: '160px', background: 'url("https://images.unsplash.com/photo-1568430462989-44163eb1752f?q=80&w=800&auto=format&fit=crop") center/cover', position: 'relative' }}>
+            <div style={{ position: 'absolute', top: '16px', left: '16px', background: '#51cf66', color: 'white', padding: '4px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 'bold' }}>ACTIVE</div>
+            <div style={{ position: 'absolute', top: '16px', right: '16px', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', color: 'white', padding: '4px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 'bold' }}>WOF-001</div>
+          </div>
+          <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--primary)', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '8px' }}>
+              <MapPin size={14} /> Lembata, NTT
+            </div>
+            <h4 style={{ fontSize: '1.25rem', fontWeight: '900', margin: '0 0 12px 0', color: 'var(--text-main)' }}>Whale of Savu (Levanuang)</h4>
+            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '24px', flex: 1 }}>
+              Integrated cultural tourism digital platform for customary preservation and marine ecotourism in Lembata.
+            </p>
+            <a href="https://whaleofsavu.org/" target="_blank" rel="noopener noreferrer" style={{ background: '#38d9a9', color: 'white', textDecoration: 'none', padding: '14px', borderRadius: '16px', fontWeight: 'bold', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(56, 217, 169, 0.3)' }} onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}>
+              Kunjungi Situs & Treasury <ChevronRight size={18} />
+            </a>
+          </div>
+        </div>
+
+        {/* enPineering Bamboogame Card */}
+        <div style={{ background: 'white', borderRadius: '24px', overflow: 'hidden', border: '1px solid #f1f3f5', boxShadow: '0 8px 24px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ height: '160px', background: 'linear-gradient(135deg, #1864ab, #3b5bdb)', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: '80px', height: '80px', background: '#212529', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 24px rgba(0,0,0,0.2)' }}>
+              <div style={{ width: '60px', height: '30px', background: 'white', borderRadius: '4px' }}></div>
+            </div>
+          </div>
+          <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+            <h4 style={{ fontSize: '1.25rem', fontWeight: '900', margin: '0 0 12px 0', color: 'var(--text-main)' }}>enPineering Modular BlockBamboo</h4>
+            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '24px', flex: 1 }}>
+              Jadilah UNDAGI! Bangun dunia BlockBamboo, naik level, dan dapatkan hadiah BMC.
+            </p>
+            <a href="https://bamboogame.click/" target="_blank" rel="noopener noreferrer" style={{ background: '#212529', color: 'white', textDecoration: 'none', padding: '14px', borderRadius: '16px', fontWeight: 'bold', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' }} onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}>
+              Play Now <Play size={18} fill="currentColor" />
+            </a>
+          </div>
+        </div>
+
+        {/* Signal Trading Card */}
+        <div style={{ background: 'white', borderRadius: '24px', overflow: 'hidden', border: '1px solid #f1f3f5', boxShadow: '0 8px 24px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ height: '160px', background: 'linear-gradient(135deg, #f03e3e, #f59f00)', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <TrendingUp size={64} color="white" style={{ opacity: 0.9 }} />
+          </div>
+          <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#e03131', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '8px' }}>
+              <TrendingUp size={14} /> VIP Access
+            </div>
+            <h4 style={{ fontSize: '1.25rem', fontWeight: '900', margin: '0 0 12px 0', color: 'var(--text-main)' }}>Signal Trading VIP</h4>
+            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '24px', flex: 1 }}>
+              Akses eksklusif ke sinyal trading cryptocurrency premium. Gunakan saldo BMC Anda untuk berlangganan.
+            </p>
+            <Link to="/signal-trading" style={{ background: '#e03131', color: 'white', textDecoration: 'none', padding: '14px', borderRadius: '16px', fontWeight: 'bold', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(224, 49, 49, 0.3)' }} onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}>
+              Buka Signal Trading <ChevronRight size={18} />
+            </Link>
+          </div>
+        </div>
+
+      </div>
+    </div>
   </div>
   );
 };
