@@ -2087,11 +2087,7 @@ const TokenUtilityTab = () => {
 
         {/* enPineering Bamboogame Card */}
         <div style={{ background: 'white', borderRadius: '24px', overflow: 'hidden', border: '1px solid #f1f3f5', boxShadow: '0 8px 24px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ height: '160px', background: 'linear-gradient(135deg, #1864ab, #3b5bdb)', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ width: '80px', height: '80px', background: '#212529', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 24px rgba(0,0,0,0.2)' }}>
-              <div style={{ width: '60px', height: '30px', background: 'white', borderRadius: '4px' }}></div>
-            </div>
-          </div>
+          <div style={{ height: '160px', background: 'url("/gambar/house.png") center/cover', position: 'relative' }}></div>
           <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', flex: 1 }}>
             <h4 style={{ fontSize: '1.25rem', fontWeight: '900', margin: '0 0 12px 0', color: 'var(--text-main)' }}>enPineering Modular BlockBamboo</h4>
             <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '24px', flex: 1 }}>
@@ -2105,9 +2101,7 @@ const TokenUtilityTab = () => {
 
         {/* Signal Trading Card */}
         <div style={{ background: 'white', borderRadius: '24px', overflow: 'hidden', border: '1px solid #f1f3f5', boxShadow: '0 8px 24px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ height: '160px', background: 'linear-gradient(135deg, #f03e3e, #f59f00)', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <TrendingUp size={64} color="white" style={{ opacity: 0.9 }} />
-          </div>
+          <div style={{ height: '160px', background: 'url("/gambar/logo2.png") center/cover', position: 'relative' }}></div>
           <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', flex: 1 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#e03131', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '8px' }}>
               <TrendingUp size={14} /> VIP Access
