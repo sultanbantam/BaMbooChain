@@ -210,8 +210,8 @@ function App() {
       navigate(`/bamboochain/meeting?room=${room}`);
     }
 
-    // Auto-redirect for OAuth /authorize path without hash
-    if (window.location.pathname === '/authorize') {
+    // Auto-redirect for OAuth /authorize or /login paths without hash
+    if (window.location.pathname === '/authorize' || window.location.pathname === '/login') {
       window.location.replace('/#' + window.location.pathname + window.location.search);
     }
   }, [navigate]);
