@@ -86,7 +86,7 @@ const Navbar = () => {
     { label: t('nav_bambupedia'), path: '/bambupedia' },
     { label: t('feature_academy'), path: '/bamboochain/academy' },
     { label: t('nav_datatools'), path: '/data-tools' },
-    { label: 'Signal Trading', path: '#', onClick: handleXignalxSSO, icon: getAssetUrl('gambar/logo2.png') },
+    { label: 'Signal Trading', path: '#', onClick: handleXignalxSSO },
     { label: t('nav_marketplace'), path: '/bamboochain/marketplace' },
     { label: t('nav_community'), path: '/community' },
     { label: t('nav_events'), path: '/events' },
@@ -212,8 +212,7 @@ const Navbar = () => {
             <Link to="/bamboochain/academy" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('feature_academy')}</Link>
             <Link to="/data-tools" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('nav_datatools')}</Link>
             
-            <a href="#" onClick={handleXignalxSSO} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', color: 'var(--primary)', textDecoration: 'none', fontWeight: 'bold' }}>
-              <img src={getAssetUrl('gambar/logo2.png')} alt="Signal Trading" style={{ height: '18px', width: 'auto', borderRadius: '4px' }} />
+            <a href="#" onClick={handleXignalxSSO} style={{ fontSize: '0.85rem', color: 'var(--primary)', textDecoration: 'none', fontWeight: 'bold' }}>
               Signal Trading
             </a>
 
