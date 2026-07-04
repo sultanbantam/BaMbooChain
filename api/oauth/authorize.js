@@ -1,6 +1,5 @@
 import crypto from 'crypto';
 import { getFirebaseAdmin } from '../_utils/firebaseAdmin.js';
-import { getFirestore } from 'firebase-admin/firestore';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -35,6 +34,7 @@ export default async function handler(req, res) {
       });
     }
 
+    const { getFirestore } = await import('firebase-admin/firestore');
     const db = getFirestore(app);
 
     // 1. Validate Client ID

@@ -1,4 +1,5 @@
-import { initializeApp, cert, getApps, getApp } from 'firebase-admin/app';
+import admin from 'firebase-admin';
+const { initializeApp, cert, getApps, getApp } = admin;
 
 export function getFirebaseAdmin() {
   if (getApps().length > 0) {
