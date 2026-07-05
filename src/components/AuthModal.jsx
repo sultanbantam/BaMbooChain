@@ -8,6 +8,7 @@ const AuthModal = () => {
   const [activeTab, setActiveTab] = useState('login'); // 'login', 'signup', 'forgot'
   const [method, setMethod] = useState('email'); // 'email', 'phone', 'username'
   const [step, setStep] = useState(1); // 1 = input, 2 = OTP/Captcha
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   // Form State
   const [username, setUsername] = useState('');
@@ -192,7 +193,9 @@ const AuthModal = () => {
 
   const handleOAuth = async (provider) => {
     if (provider === 'Google') {
+      setIsGoogleLoading(true);
       const success = await loginWithGoogle();
+      setIsGoogleLoading(false);
       if (success) {
         closeModal();
         setTimeout(() => alert("✅ Berhasil Masuk dengan Google!"), 100);
@@ -245,8 +248,26 @@ const AuthModal = () => {
           <X size={18} />
         </button>
 
-        {/* Tab Headers */}
-        <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color)' }}>
+        {isGoogleLoading ? (
+          <div style={{ padding: '80px 20px', textAlign: 'center', animation: 'fadeIn 0.3s' }}>
+             <div style={{ margin: '0 auto 24px auto', width: '50px', height: '50px', border: '4px solid var(--border-color)', borderTopColor: 'var(--primary)', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+             <h3 style={{ fontSize: '1.4rem', fontWeight: '900', color: 'var(--text-main)', margin: '0 0 12px 0' }}>Menyambungkan ke Google...</h3>
+             <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', margin: '0 0 20px 0', lineHeight: 1.5 }}>
+               Mohon tunggu dan selesaikan otorisasi di jendela Google yang terbuka. Jangan tutup jendela ini.
+             </p>
+             <style>
+               {`
+                 @keyframes spin {
+                   0% { transform: rotate(0deg); }
+                   100% { transform: rotate(360deg); }
+                 }
+               `}
+             </style>
+          </div>
+        ) : (
+          <>
+            {/* Tab Headers */}
+            <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color)' }}>
           {['login', 'signup'].map(tab => (
             <button key={tab} onClick={() => toggleTab(tab)} style={{
               flex: 1, padding: '20px', background: activeTab === tab ? 'var(--bg-card)' : 'var(--bg-secondary)',
@@ -423,6 +444,8 @@ const AuthModal = () => {
           )}
           
         </div>
+        </>
+        )}
       </div>
     </div>
   );
