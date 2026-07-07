@@ -6,6 +6,8 @@ import {
   signOut, 
   onAuthStateChanged,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider
 } from "firebase/auth";
 import { 
@@ -137,6 +139,47 @@ export const AuthProvider = ({ children }) => {
     }
 
     let unsubUserDoc = null;
+    // Handle Redirect Result for Mobile/Safari browsers
+    const handleRedirectResult = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (result && result.user) {
+          console.log("✅ Google Redirect Auth Success:", result.user.uid);
+          const fbUser = result.user;
+          const userDocRef = doc(db, "users", fbUser.uid);
+          const userDoc = await getDoc(userDocRef);
+          
+          if (!userDoc.exists()) {
+            const mockAddress = '0x' + [...Array(40)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
+            const newUser = {
+              id: fbUser.uid,
+              name: fbUser.displayName || 'Google User',
+              username: fbUser.email.split('@')[0],
+              email: fbUser.email,
+              phone: fbUser.phoneNumber || '',
+              joinedAt: new Date().toISOString(),
+              walletAddress: mockAddress,
+              bmcBalance: 0,
+              stakedBalance: 0,
+              isValidator: false,
+              kycStatus: 'unsubmitted',
+              securitySettings: { pin: null, twoFactor: false, retina: false },
+              transactions: [],
+              checkinStreak: 0,
+              lastCheckinDate: null,
+              notifications: [],
+              bioText: '',
+              statusText: ''
+            };
+            await setDoc(userDocRef, newUser);
+          }
+        }
+      } catch (err) {
+        console.error("Redirect Auth Error:", err);
+      }
+    };
+    handleRedirectResult();
+
     console.log("🚀 Firebase Auth Initializing...");
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (unsubUserDoc) {
@@ -579,6 +622,15 @@ export const AuthProvider = ({ children }) => {
   const loginWithGoogle = async () => {
     const googleProvider = new GoogleAuthProvider();
     try {
+      // Use Redirect for mobile compatibility and to prevent popup hanging
+      const isMobileOrSafari = /iPhone|iPad|iPod|Android|Safari/i.test(navigator.userAgent) && !/Chrome/i.test(navigator.userAgent);
+      
+      if (isMobileOrSafari || window.innerWidth < 768) {
+        await signInWithRedirect(auth, googleProvider);
+        return true; // Execution stops here as page redirects
+      }
+
+      // Fallback to popup for desktop Chrome
       const result = await signInWithPopup(auth, googleProvider);
       const fbUser = result.user;
       

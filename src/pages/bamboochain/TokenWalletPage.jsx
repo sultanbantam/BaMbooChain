@@ -2117,6 +2117,20 @@ const TokenUtilityTab = () => {
           </div>
         </div>
 
+        {/* BambooChat Card */}
+        <div style={{ background: 'white', borderRadius: '24px', overflow: 'hidden', border: '1px solid #f1f3f5', boxShadow: '0 8px 24px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ height: '160px', background: 'url("/logobc.png") center/cover', position: 'relative' }}></div>
+          <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+            <h4 style={{ fontSize: '1.25rem', fontWeight: '900', margin: '0 0 12px 0', color: 'var(--text-main)' }}>BambooChat</h4>
+            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '24px', flex: 1 }}>
+              {language === 'id' ? 'BambooChat adalah aplikasi pesan terdesentralisasi berbasis Web3 yang mengutamakan privasi, keamanan end-to-end, dan komunikasi komunitas, terinspirasi dari filosofi rumpun bambu yang kuat, saling terhubung, dan terus bertumbuh.' : 'BambooChat is a Web3-based decentralized messaging application that prioritizes privacy, end-to-end security, and community communication, inspired by the philosophy of strong, interconnected, and continuously growing bamboo clumps.'}
+            </p>
+            <a href="#" target="_blank" rel="noopener noreferrer" style={{ background: '#0ca678', color: 'white', textDecoration: 'none', padding: '14px', borderRadius: '16px', fontWeight: 'bold', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(12, 166, 120, 0.3)' }} onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}>
+              {language === 'id' ? 'Buka BambooChat' : 'Open BambooChat'} <ChevronRight size={18} />
+            </a>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>

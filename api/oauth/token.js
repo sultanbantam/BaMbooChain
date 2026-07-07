@@ -104,6 +104,7 @@ export default async function handler(req, res) {
                            redirect_uri.startsWith("https://www.whaleofsavu.org") || 
                            redirect_uri.startsWith("https://analis-wine.vercel.app") || 
                            redirect_uri.startsWith("https://whaleofsavu.vercel.app") || 
+                           redirect_uri.startsWith("https://api.bamboochat.click") || 
                            redirect_uri.startsWith("http://localhost:3000"))) {
         allowedRedirectUris = [redirect_uri];
       }
