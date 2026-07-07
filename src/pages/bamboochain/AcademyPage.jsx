@@ -8,6 +8,7 @@ import { collection, onSnapshot, doc, addDoc, updateDoc, setDoc, deleteDoc, quer
 import ShareModal from '../../components/ShareModal';
 import { useArticles } from '../../hooks/useFirestoreQueries';
 import { getAssetUrl } from '../../utils/assets';
+import { createKnowledgeItem } from '../../utils/knowledgeService';
 
 const compressImage = (base64Str, maxWidth = 800, maxHeight = 800, quality = 0.6) => {
   return new Promise((resolve) => {
@@ -278,6 +279,26 @@ const AcademyPage = () => {
 
       const docRef = await addDoc(collection(db, "premium_materials"), newMat);
       console.log("✅ Metadata saved. Document ID:", docRef.id);
+
+      // RAG: Sync to Knowledge Base for BambuBot
+      try {
+        await createKnowledgeItem({
+          form: {
+            title: newMatForm.title,
+            summary: newMatForm.desc,
+            extractedText: newMatForm.desc,
+            tags: finalTag,
+            type: 'Artikel',
+            author: user.name || user.username || "Anonim",
+            sourceUrl: window.location.href,
+          },
+          file: null,
+          user: user
+        });
+        console.log("✅ Synced to Knowledge Library");
+      } catch (err) {
+        console.warn("⚠️ Failed to sync to Knowledge Library:", err);
+      }
 
       // 2. Chunk the base64 string of the PDF
       console.log("⏳ Uploading PDF chunks to Firestore...");

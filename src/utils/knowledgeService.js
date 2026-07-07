@@ -37,6 +37,35 @@ const cleanText = (value = '') =>
     .replace(/[^\S\r\n]+/g, ' ')
     .trim();
 
+export const generateEmbedding = async (text) => {
+  try {
+    const res = await fetch('/api/rag/embed', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text })
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return data.vector;
+    }
+  } catch (error) {
+    console.warn('[RAG] Failed to generate embedding:', error);
+  }
+  return null;
+};
+
+export const cosineSimilarity = (vecA, vecB) => {
+  if (!vecA || !vecB || vecA.length !== vecB.length) return 0;
+  let dotProduct = 0, normA = 0, normB = 0;
+  for (let i = 0; i < vecA.length; i++) {
+    dotProduct += vecA[i] * vecB[i];
+    normA += vecA[i] * vecA[i];
+    normB += vecB[i] * vecB[i];
+  }
+  if (normA === 0 || normB === 0) return 0;
+  return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
+};
+
 export const extractSearchText = (item) => {
   const parts = [
     item.title,
@@ -136,6 +165,13 @@ export const createKnowledgeItem = async ({ form, file, user, onProgress }) => {
   };
 
   payload.searchText = extractSearchText(payload);
+  
+  // RAG: Generate vector embedding
+  const vector = await generateEmbedding(payload.searchText);
+  if (vector) {
+    payload.vector = vector;
+  }
+
   const docRef = await addDoc(collection(db, KNOWLEDGE_COLLECTION), payload);
 
   // Buat dokumen validasi baru di koleksi validations
@@ -401,26 +437,38 @@ const buildSnippet = (item, queryTokens) => {
   return `${start > 0 ? '...' : ''}${snippet}${start + 280 < content.length ? '...' : ''}`;
 };
 
-export const searchKnowledge = (items, question, maxResults = 5) => {
+export const searchKnowledge = async (items, question, maxResults = 5) => {
   const queryTokens = tokenize(question);
   if (queryTokens.length === 0) return [];
+
+  const questionVector = await generateEmbedding(question);
 
   return items
     .map((item) => {
       const text = item.searchText || extractSearchText(item);
-      const score = queryTokens.reduce((sum, token) => {
+      const lexicalScore = queryTokens.reduce((sum, token) => {
         if (!text.includes(token)) return sum;
         const titleBoost = (item.title || '').toLowerCase().includes(token) ? 4 : 0;
         const speciesBoost = (item.species || '').toLowerCase().includes(token) ? 3 : 0;
         return sum + 1 + titleBoost + speciesBoost;
       }, 0);
+      
+      let vectorScore = 0;
+      if (questionVector && item.vector) {
+        vectorScore = cosineSimilarity(questionVector, item.vector);
+      }
+      
+      // Combine scores: Vector similarity (0-1) scaled to match lexical scale
+      const finalScore = vectorScore * 10 + lexicalScore;
+
       return {
         item,
-        score,
-        snippet: buildSnippet(item, queryTokens)
+        score: finalScore,
+        snippet: buildSnippet(item, queryTokens),
+        vectorScore
       };
     })
-    .filter((result) => result.score > 0)
+    .filter((result) => result.score > 0 || result.vectorScore > 0.3)
     .sort((a, b) => b.score - a.score)
     .slice(0, maxResults);
 };

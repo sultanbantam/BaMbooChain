@@ -55,7 +55,7 @@ const BambooBotPage = () => {
     setInput('');
     setIsThinking(true);
 
-    const results = searchKnowledge(items, cleanQuestion, 5);
+    const results = await searchKnowledge(items, cleanQuestion, 5);
     const groqApiKey = import.meta.env.VITE_GROQ_API_KEY;
     let finalAnswer = '';
     let confidence = 'rendah';
