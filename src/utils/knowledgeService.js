@@ -39,14 +39,23 @@ const cleanText = (value = '') =>
 
 export const generateEmbedding = async (text) => {
   try {
-    const res = await fetch('/api/rag/embed', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text })
-    });
-    if (res.ok) {
-      const data = await res.json();
-      return data.vector;
+    const hfKey = import.meta.env.VITE_HUGGINGFACE_API_KEY;
+    if (hfKey) {
+      const res = await fetch('https://api-inference.huggingface.co/pipeline/feature-extraction/sentence-transformers/all-MiniLM-L6-v2', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${hfKey}`
+        },
+        body: JSON.stringify({ inputs: [text] })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const vector = Array.isArray(data[0]) ? data[0] : data;
+        return vector;
+      }
+    } else {
+      console.warn('[RAG] Missing VITE_HUGGINGFACE_API_KEY environment variable');
     }
   } catch (error) {
     console.warn('[RAG] Failed to generate embedding:', error);
