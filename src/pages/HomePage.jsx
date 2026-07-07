@@ -578,7 +578,10 @@ const HomePage = () => {
                       transition: 'all 0.2s ease', cursor: 'pointer'
                     }} onMouseEnter={e => { e.currentTarget.style.background = '#f8f9fa'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'; }} onMouseLeave={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.boxShadow = 'none'; }}>
                       <span>UTILITY BMC:</span>
-                      <span style={{ fontSize: '0.85rem', fontWeight: '600', marginTop: '8px' }}>1. BAMBOOGAME  2. BAMBOOCHAT  3. WHALEOFSAVU  4. SIGNAL TRADING</span>
+                      <span style={{ fontSize: '0.85rem', fontWeight: '600', marginTop: '8px', lineHeight: '1.4' }}>
+                        1. BAMBOOGAME &nbsp; 2. BAMBOOCHAT<br/>
+                        3. WHALEOFSAVU &nbsp; 4. SIGNAL TRADING
+                      </span>
                     </Link>
                   </div>
 
