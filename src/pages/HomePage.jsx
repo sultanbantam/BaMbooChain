@@ -571,13 +571,14 @@ const HomePage = () => {
                     }} onMouseEnter={e => { e.currentTarget.style.background = '#f8f9fa'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'; }} onMouseLeave={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.boxShadow = 'none'; }}>
                       TOBAT EKOLOGI
                     </Link>
-                    <Link to="/bamboochain/dao" onClick={closeWelcome} style={{
+                    <Link to="/bamboochain/token-wallet" onClick={closeWelcome} style={{
                       flex: 1, textDecoration: 'none', background: 'white', border: '1px solid #333', 
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#111', 
-                      fontWeight: '800', fontSize: '1.15rem', padding: '40px 20px',
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#111', 
+                      fontWeight: '800', fontSize: '1.15rem', padding: '40px 20px', textAlign: 'center',
                       transition: 'all 0.2s ease', cursor: 'pointer'
                     }} onMouseEnter={e => { e.currentTarget.style.background = '#f8f9fa'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'; }} onMouseLeave={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.boxShadow = 'none'; }}>
-                      GAME BLOCKBAMBOO
+                      <span>UTILITY BMC:</span>
+                      <span style={{ fontSize: '0.85rem', fontWeight: '600', marginTop: '8px' }}>1. BAMBOOGAME  2. BAMBOOCHAT  3. WHALEOFSAVU  4. SIGNAL TRADING</span>
                     </Link>
                   </div>
 
