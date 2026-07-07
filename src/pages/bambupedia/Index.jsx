@@ -6,6 +6,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { db } from '../../firebase/config';
 import { collection, query, getDocs, limit, orderBy } from 'firebase/firestore';
 import { PROJECTS } from '../../data/projectsData';
+import { getApprovedKnowledgeItems, searchKnowledge } from '../../utils/knowledgeService';
 
 // ─── BASIS PENGETAHUAN BAMBU ─────────────────────────────────────────────────
 const BAMBOO_KB = [
@@ -257,6 +258,7 @@ const BambupediaPage = () => {
   const [activeTab, setActiveTab] = useState('chat');
   const [usingGroq, setUsingGroq] = useState(false);
   const [dynamicContext, setDynamicContext] = useState('');
+  const [ragItems, setRagItems] = useState([]);
   const messagesEndRef = useRef(null);
   const navigate = useNavigate();
 
@@ -293,6 +295,21 @@ const BambupediaPage = () => {
               const d = doc.data();
               text += `- ${d.name} (Harga: Rp${d.priceIdr}, Kategori: ${d.category})\n`;
             });
+          }
+
+          // 4. Approved Knowledge Library (RAG Pipeline)
+          try {
+            const knowledgeItems = await getApprovedKnowledgeItems(100);
+            setRagItems(knowledgeItems);
+            if (knowledgeItems.length > 0) {
+              text += `\n[Knowledge Library Terverifikasi: ${knowledgeItems.length} sumber]:\n`;
+              knowledgeItems.slice(0, 5).forEach(item => {
+                const author = [item.author, item.year].filter(Boolean).join(', ');
+                text += `- "${item.title}"${author ? ` (${author})` : ''}${item.summary ? `: ${item.summary.slice(0, 120)}...` : ''}\n`;
+              });
+            }
+          } catch (ragErr) {
+            console.warn('[BambuBot] Gagal memuat Knowledge Library:', ragErr.message);
           }
         }
         setDynamicContext(text);
@@ -343,12 +360,38 @@ const BambupediaPage = () => {
 
     try {
       let answer;
+
+      // === RAG: Cari sumber terverifikasi dari Knowledge Library ===
+      let ragContext = dynamicContext;
+      if (ragItems.length > 0) {
+        const ragResults = await searchKnowledge(ragItems, question, 4);
+        if (ragResults.length > 0) {
+          const ragSection = ragResults.map(({ item, snippet }, idx) => {
+            const author = [item.author, item.year].filter(Boolean).join(', ');
+            return `[Sumber Terverifikasi ${idx + 1}] "${item.title}"${author ? ` (${author})` : ''}\nKutipan: ${snippet}`;
+          }).join('\n\n');
+          ragContext = `${dynamicContext}\n\n=== SUMBER TERVERIFIKASI DARI KNOWLEDGE LIBRARY ===\n${ragSection}\n\nPenting: Jika pertanyaan berkaitan dengan sumber di atas, WAJIB sebutkan judul sumber dan pengarangnya dalam jawaban.`;
+        }
+      }
+
       if (usingGroq) {
-        answer = await callGroqAI(question, messages, dynamicContext);
+        answer = await callGroqAI(question, messages, ragContext);
       } else {
         // Simulasi delay untuk UX yang natural
         await new Promise(r => setTimeout(r, 700 + Math.random() * 500));
-        answer = generateAnswerLocal(question);
+        // Cek RAG dulu sebelum fallback ke BAMBOO_KB
+        if (ragItems.length > 0) {
+          const ragResults = await searchKnowledge(ragItems, question, 3);
+          if (ragResults.length > 0 && ragResults[0].score >= 1) {
+            const top = ragResults[0];
+            const author = [top.item.author, top.item.year].filter(Boolean).join(', ');
+            answer = `📚 **Berdasarkan sumber terverifikasi:**\n\n**"${top.item.title}"**${author ? ` — ${author}` : ''}\n\n${top.snippet}${ragResults.length > 1 ? `\n\n*Lihat juga: ${ragResults.slice(1).map(r => `"${r.item.title}"`).join(', ')}*` : ''}`;
+          } else {
+            answer = generateAnswerLocal(question);
+          }
+        } else {
+          answer = generateAnswerLocal(question);
+        }
       }
       setMessages(prev => [...prev, { role: 'assistant', text: answer }]);
     } catch (err) {
