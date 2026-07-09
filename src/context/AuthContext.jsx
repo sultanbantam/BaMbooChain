@@ -8,7 +8,9 @@ import {
   signInWithPopup,
   signInWithRedirect,
   getRedirectResult,
-  GoogleAuthProvider
+  GoogleAuthProvider,
+  setPersistence,
+  browserLocalPersistence
 } from "firebase/auth";
 import { 
   doc, 
@@ -40,15 +42,65 @@ export const useAuth = () => {
   return context;
 };
 
+const createMockWalletAddress = () => '0x' + Array.from({ length: 40 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+
+const normalizeFirebaseUsername = (fbUser) => {
+  const emailPrefix = fbUser.email?.split('@')[0];
+  if (emailPrefix) return emailPrefix;
+
+  const nameSlug = (fbUser.displayName || '').toLowerCase().replace(/[^a-z0-9_]+/g, '').slice(0, 24);
+  return nameSlug || `user_${fbUser.uid.slice(0, 8)}`;
+};
+
+const buildFirebaseUserProfile = (fbUser) => {
+  const username = normalizeFirebaseUsername(fbUser);
+
+  return {
+    id: fbUser.uid,
+    name: fbUser.displayName || username || 'Google User',
+    username,
+    email: fbUser.email || '',
+    phone: fbUser.phoneNumber || '',
+    avatarUrl: fbUser.photoURL || '',
+    joinedAt: new Date().toISOString(),
+    walletAddress: createMockWalletAddress(),
+    bmcBalance: 0,
+    stakedBalance: 0,
+    isValidator: false,
+    kycStatus: 'unsubmitted',
+    securitySettings: { pin: null, twoFactor: false, retina: false },
+    transactions: [],
+    checkinStreak: 0,
+    lastCheckinDate: null,
+    notifications: [],
+    bioText: '',
+    statusText: ''
+  };
+};
+
+const ensureFirebaseUserProfile = async (fbUser) => {
+  const userDocRef = doc(db, "users", fbUser.uid);
+  const userDoc = await getDoc(userDocRef);
+
+  if (userDoc.exists()) {
+    return { id: userDoc.id, ...userDoc.data() };
+  }
+
+  const newUser = buildFirebaseUserProfile(fbUser);
+  await setDoc(userDocRef, newUser);
+  return newUser;
+};
 export const AuthProvider = ({ children }) => {
   const {
     user,
     isAuthenticated,
+    isAuthReady,
     isAuthModalOpen,
     authModalInitialTab,
     activeToast,
     setUser,
     setIsAuthenticated,
+    setIsAuthReady,
     openLoginModal,
     openSignupModal,
     closeModal,
@@ -143,36 +195,13 @@ export const AuthProvider = ({ children }) => {
     const handleRedirectResult = async () => {
       try {
         const result = await getRedirectResult(auth);
-        if (result && result.user) {
-          console.log("✅ Google Redirect Auth Success:", result.user.uid);
-          const fbUser = result.user;
-          const userDocRef = doc(db, "users", fbUser.uid);
-          const userDoc = await getDoc(userDocRef);
-          
-          if (!userDoc.exists()) {
-            const mockAddress = '0x' + [...Array(40)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
-            const newUser = {
-              id: fbUser.uid,
-              name: fbUser.displayName || 'Google User',
-              username: fbUser.email.split('@')[0],
-              email: fbUser.email,
-              phone: fbUser.phoneNumber || '',
-              joinedAt: new Date().toISOString(),
-              walletAddress: mockAddress,
-              bmcBalance: 0,
-              stakedBalance: 0,
-              isValidator: false,
-              kycStatus: 'unsubmitted',
-              securitySettings: { pin: null, twoFactor: false, retina: false },
-              transactions: [],
-              checkinStreak: 0,
-              lastCheckinDate: null,
-              notifications: [],
-              bioText: '',
-              statusText: ''
-            };
-            await setDoc(userDocRef, newUser);
-          }
+        if (result?.user) {
+          console.log("Google Redirect Auth Success:", result.user.uid);
+          const userData = await ensureFirebaseUserProfile(result.user);
+          setUser(userData);
+          setIsAuthenticated(true);
+          localStorage.setItem('yayasan_user', JSON.stringify(userData));
+          closeModal();
         }
       } catch (err) {
         console.error("Redirect Auth Error:", err);
@@ -203,11 +232,9 @@ export const AuthProvider = ({ children }) => {
           console.error("Real-time User Profile sync error:", err);
         });
 
-        // Fetch user data from Firestore
-        const userDoc = await getDoc(userDocRef);
-        if (userDoc.exists()) {
-          const userData = { id: userDoc.id, ...userDoc.data() };
-          console.log("📦 Firestore data found for user:", userData.username);
+        // Fetch or create user data from Firestore
+        const userData = await ensureFirebaseUserProfile(firebaseUser);
+        console.log("Firestore data ready for user:", userData.username);
           
           // --- AUTO CLAIM REFERRAL REWARDS (Hybrid System) ---
           try {
@@ -290,16 +317,14 @@ export const AuthProvider = ({ children }) => {
           
           // Request notification permission and save token
           requestForToken(firebaseUser.uid);
-        } else {
-          console.warn("⚠️ Auth exists but Firestore document is missing for UID:", firebaseUser.uid);
-          setIsAuthenticated(false);
-          setUser(null);
-        }
+          closeModal();
+          setIsAuthReady(true);
       } else {
         console.log("ℹ️ No user session in Firebase Auth.");
         setUser(null);
         setIsAuthenticated(false);
         localStorage.removeItem('yayasan_user');
+        setIsAuthReady(true);
       }
     });
 
@@ -621,51 +646,47 @@ export const AuthProvider = ({ children }) => {
 
   const loginWithGoogle = async () => {
     const googleProvider = new GoogleAuthProvider();
+    googleProvider.addScope('email');
+    googleProvider.addScope('profile');
+    googleProvider.setCustomParameters({ prompt: 'select_account' });
+
+    const userAgent = navigator.userAgent || '';
+    const isSafariLike = /Safari/i.test(userAgent) && !/Chrome|CriOS|Chromium|Edg|OPR|Firefox|FxiOS/i.test(userAgent);
+    const isIOS = /iPhone|iPad|iPod/i.test(userAgent);
+    const shouldUseRedirectFirst = isIOS || isSafariLike;
+
     try {
-      // Use Redirect for mobile compatibility and to prevent popup hanging
-      const isMobileOrSafari = /iPhone|iPad|iPod|Android|Safari/i.test(navigator.userAgent) && !/Chrome/i.test(navigator.userAgent);
-      
-      if (isMobileOrSafari || window.innerWidth < 768) {
+      await setPersistence(auth, browserLocalPersistence);
+
+      if (shouldUseRedirectFirst) {
         await signInWithRedirect(auth, googleProvider);
-        return true; // Execution stops here as page redirects
+        return false;
       }
 
-      // Fallback to popup for desktop Chrome
       const result = await signInWithPopup(auth, googleProvider);
-      const fbUser = result.user;
-      
-      const userDoc = await getDoc(doc(db, "users", fbUser.uid));
-      if (!userDoc.exists()) {
-        const mockAddress = '0x' + [...Array(40)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
-        const newUser = {
-          id: fbUser.uid,
-          name: fbUser.displayName || 'Google User',
-          username: fbUser.email.split('@')[0],
-          email: fbUser.email,
-          phone: fbUser.phoneNumber || '',
-          joinedAt: new Date().toISOString(),
-          walletAddress: mockAddress,
-          bmcBalance: 0,
-          stakedBalance: 0,
-          isValidator: false,
-          kycStatus: 'unsubmitted',
-          securitySettings: { pin: null, twoFactor: false, retina: false },
-          transactions: [],
-          checkinStreak: 0,
-          lastCheckinDate: null,
-          notifications: [],
-          bioText: '',
-          statusText: ''
-        };
-        await setDoc(doc(db, "users", fbUser.uid), newUser);
-        setUser(newUser);
-      } else {
-        setUser({ id: userDoc.id, ...userDoc.data() });
-      }
+      const userData = await ensureFirebaseUserProfile(result.user);
+      setUser(userData);
       setIsAuthenticated(true);
+      localStorage.setItem('yayasan_user', JSON.stringify(userData));
+      closeModal();
       return true;
     } catch (err) {
-      alert("❌ Google Auth Error: " + err.message);
+      const canRetryWithRedirect = [
+        'auth/popup-blocked',
+        'auth/cancelled-popup-request',
+        'auth/operation-not-supported-in-this-environment'
+      ].includes(err.code);
+
+      if (canRetryWithRedirect) {
+        try {
+          await signInWithRedirect(auth, googleProvider);
+          return false;
+        } catch (redirectErr) {
+          err = redirectErr;
+        }
+      }
+
+      alert("Google Auth Error: " + err.message);
       return false;
     }
   };
@@ -1379,8 +1400,9 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={{ 
-      user, 
-      isAuthenticated, 
+      user,
+      isAuthenticated,
+      isAuthReady,
       isAuthModalOpen, 
       authModalInitialTab,
       pendingValidations,

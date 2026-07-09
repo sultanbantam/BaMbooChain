@@ -3,6 +3,7 @@ import { create } from 'zustand';
 export const useAuthStore = create((set) => ({
   user: null,
   isAuthenticated: false,
+  isAuthReady: false,
   isAuthModalOpen: false,
   authModalInitialTab: 'login', // 'login' or 'signup'
   activeToast: null,
@@ -13,6 +14,8 @@ export const useAuthStore = create((set) => ({
   }),
   
   setIsAuthenticated: (isAuthenticated) => set({ isAuthenticated }),
+
+  setIsAuthReady: (isAuthReady) => set({ isAuthReady }),
   
   openLoginModal: () => set({ 
     isAuthModalOpen: true, 
