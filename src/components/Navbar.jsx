@@ -72,7 +72,6 @@ const Navbar = () => {
     { label: t('feature_data_analytics'), path: '/bamboochain/data-analytics', icon: <BarChart3 size={16} /> },
     { label: t('feature_invest'), path: '/bamboochain/invest', icon: <TrendingUp size={16} /> },
     { label: t('feature_kodiba'), path: '/bamboochain/kodiba', icon: <Wallet size={16} /> },
-    { label: t('vol_nav_volunteer'), path: '/bamboochain/volunteer', icon: <Users size={16} /> },
   ];
 
   const mobileMenuItems = [
@@ -90,6 +89,7 @@ const Navbar = () => {
     { label: t('nav_marketplace'), path: '/bamboochain/marketplace' },
     { label: t('nav_community'), path: '/community' },
     { label: t('nav_events'), path: '/events' },
+    { label: t('vol_nav_volunteer'), path: '/bamboochain/volunteer' },
     ...bambooNusaFeatures,
     { label: t('nav_careers'), path: '/careers' },
     { label: t('nav_membership'), path: '/membership' },
@@ -215,6 +215,7 @@ const Navbar = () => {
             <Link to="/bamboochain/marketplace" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('nav_marketplace')}</Link>
             <Link to="/community" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('nav_community')}</Link>
             <Link to="/events" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('nav_events')}</Link>
+            <Link to="/bamboochain/volunteer" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('vol_nav_volunteer')}</Link>
             
             {/* bambuNUSA DROPDOWN (11 Features) */}
             <div 
