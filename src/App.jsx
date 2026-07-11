@@ -62,6 +62,8 @@ const FAQPage = lazy(() => import('./pages/FAQPage'));
 const AdSpace = lazy(() => import('./components/AdSpace'));
 const CareCenterWidget = lazy(() => import('./components/CareCenterWidget'));
 const BambooMeetingPage = lazy(() => import('./pages/bamboochain/BambooMeetingPage'));
+const BcVolunteersPage = lazy(() => import('./pages/bamboochain/VolunteersPage'));
+const BcVolunteerDetailPage = lazy(() => import('./pages/bamboochain/VolunteerDetailPage'));
 
 // bambuNUSA Modules
 const FarmerListPage = lazy(() => import('./pages/bambunusa/FarmerListPage'));
@@ -289,6 +291,8 @@ function App() {
             <Route path="/bamboochain/activities" element={<ProtectedRoute><ActivityLogPage /></ProtectedRoute>} />
             <Route path="/bamboochain/whitepaper" element={<ProtectedRoute><WhitepaperPage /></ProtectedRoute>} />
             <Route path="/bamboochain/kodiba" element={<ProtectedRoute><KoDiBaPage /></ProtectedRoute>} />
+            <Route path="/bamboochain/volunteer" element={<ProtectedRoute><BcVolunteersPage /></ProtectedRoute>} />
+            <Route path="/bamboochain/volunteer/:hostId" element={<ProtectedRoute><BcVolunteerDetailPage /></ProtectedRoute>} />
             {/* bambuNUSA Protected Routes */}
             <Route path="/bambunusa" element={<ProtectedRoute><BcLifecyclePage /></ProtectedRoute>} />
             <Route path="/bambunusa/farmers" element={<ProtectedRoute><FarmerListPage /></ProtectedRoute>} />

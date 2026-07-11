@@ -72,6 +72,7 @@ const Navbar = () => {
     { label: t('feature_data_analytics'), path: '/bamboochain/data-analytics', icon: <BarChart3 size={16} /> },
     { label: t('feature_invest'), path: '/bamboochain/invest', icon: <TrendingUp size={16} /> },
     { label: t('feature_kodiba'), path: '/bamboochain/kodiba', icon: <Wallet size={16} /> },
+    { label: t('vol_nav_volunteer'), path: '/bamboochain/volunteer', icon: <Users size={16} /> },
   ];
 
   const mobileMenuItems = [
