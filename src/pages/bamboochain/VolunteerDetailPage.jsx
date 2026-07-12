@@ -146,7 +146,8 @@ const VolunteerDetailPage = () => {
               { id: 'about', label: t('vol_tab_about') },
               { id: 'activities', label: t('vol_tab_activities') },
               { id: 'facilities', label: t('vol_tab_facilities') },
-              { id: 'reviews', label: t('vol_tab_reviews') }
+              { id: 'reviews', label: t('vol_tab_reviews') },
+              { id: 'gallery', label: language === 'ja' ? 'ギャラリー' : language === 'en' ? 'Gallery' : 'Galeri Foto' }
             ].map(tab => (
               <button
                 key={tab.id}
@@ -262,6 +263,43 @@ const VolunteerDetailPage = () => {
                       </div>
                     );
                   })}
+                </div>
+              </div>
+            )}
+
+            {/* GALLERY TAB */}
+            {activeTab === 'gallery' && (
+              <div className="animate-fade-in">
+                <h3 style={{ marginTop: 0, fontWeight: '800', fontSize: '1.4rem', color: 'var(--text-main)', marginBottom: '20px' }}>
+                  📸 {language === 'ja' ? '活動ギャラリー' : language === 'en' ? 'Activity Gallery' : 'Galeri Aktivitas'}
+                </h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px' }}>
+                  {host.gallery && host.gallery.map((img, i) => (
+                    <div 
+                      key={i} 
+                      className="gallery-item"
+                      style={{ 
+                        borderRadius: '16px', 
+                        overflow: 'hidden', 
+                        height: '160px', 
+                        border: '1px solid var(--border-color)',
+                        boxShadow: '0 4px 10px rgba(0,0,0,0.02)',
+                        transition: 'transform 0.3s, box-shadow 0.3s',
+                        cursor: 'pointer'
+                      }}
+                      onClick={() => window.open(img, '_blank')}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.transform = 'scale(1.03)';
+                        e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.08)';
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.transform = 'scale(1)';
+                        e.currentTarget.style.boxShadow = '0 4px 10px rgba(0,0,0,0.02)';
+                      }}
+                    >
+                      <div style={{ width: '100%', height: '100%', background: `url("${img}") center/cover no-repeat` }} />
+                    </div>
+                  ))}
                 </div>
               </div>
             )}

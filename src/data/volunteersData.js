@@ -10,10 +10,18 @@ export const VOLUNTEERS_HOSTS = [
     location: "Lembata, NTT",
     location_en: "Lembata, East Nusa Tenggara",
     location_ja: "レンバタ、東ヌサ・トゥンガラ",
-    image: "/volunteer/1.png",
+    image: "/volunteer/2.png",
     rating: 4.9,
     reviewsCount: 18,
     reputationScore: 1250,
+    gallery: [
+      "/volunteer/2.png",
+      "/volunteer/1.png",
+      "https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=800",
+      "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?q=80&w=800",
+      "https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=800",
+      "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=800"
+    ],
     skills: ["Restorasi Karang", "Mengajar", "Konstruksi", "Pertanian", "Bantuan Sosial"],
     skills_en: ["Coral Restoration", "Teaching", "Construction", "Farming", "Social Aid"],
     skills_ja: ["サンゴ保全", "教育", "建設", "農業", "社会支援"],
@@ -83,10 +91,18 @@ export const VOLUNTEERS_HOSTS = [
     location: "Lebak, Banten",
     location_en: "Lebak, Banten",
     location_ja: "レバック, バンテン",
-    image: "/volunteer/2.png", // Bamboo / forest theme
+    image: "/volunteer/1.png", // Bamboo / forest theme
     rating: 4.8,
     reviewsCount: 12,
     reputationScore: 1120,
+    gallery: [
+      "/volunteer/1.png",
+      "/volunteer/2.png",
+      "https://images.unsplash.com/photo-1502082553048-f009c37129b9?q=80&w=800",
+      "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?q=80&w=800",
+      "https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?q=80&w=800",
+      "https://images.unsplash.com/photo-1599008633840-052c7f75a355?q=80&w=800"
+    ],
     skills: ["Budidaya Bambu", "Pemetaan GIS", "Pertanian Agroforestri", "Seni & Kerajinan", "Dokumentasi Media"],
     skills_en: ["Bamboo Cultivation", "GIS Mapping", "Agroforestry Farming", "Arts & Crafts", "Media Documentation"],
     skills_ja: ["竹栽培", "GISマッピング", "アグロフォレストリー農業", "美術工芸", "メディアドキュメンテーション"],
