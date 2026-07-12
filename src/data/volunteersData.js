@@ -149,17 +149,17 @@ export const VOLUNTEERS_HOSTS = [
     ],
 
     // Facilities
-    facilities: ["Rumah Adat Komunal", "Makanan Organik Tradisional", "Peralatan Nursery", "Akses Riset Kehutanan"],
-    facilities_en: ["Communal Customary House", "Traditional Organic Meals", "Nursery & Field Tools", "Forestry Research Access"],
-    facilities_ja: ["共同の伝統家屋", "伝統的なオーガニック料理", "苗床＆フィールドツール", "林業研究へのアクセス"],
+    facilities: ["Homestay Rumah Warga", "Makanan & Nasi Tradisional", "Akses Internet WiFi"],
+    facilities_en: ["Local Homestay", "Traditional Meals & Rice", "WiFi Internet Access"],
+    facilities_ja: ["地元民家でのホームステイ", "伝統的な食事とお米", "WiFiインターネット接続"],
 
     // Accommodation details
-    accommodation_detail: "Menginap di rumah adat panggung (Imah Gede) khas Kasepuhan Cibarani yang terbuat dari bambu dan kayu. Tempat tidur bergaya asrama komunal yang ramah dan hangat. Makanan disediakan dari hasil bumi organik perkebunan adat sendiri.",
-    accommodation_detail_en: "Stay in traditional stilt houses (Imah Gede) typical of Kasepuhan Cibarani, made of bamboo and wood. Cozy communal dormitory-style bedding. Meals are provided from organic produce grown in the customary gardens.",
-    accommodation_detail_ja: "竹と木で作られた、カセプハン・チバラニ特有の伝統的な高床式家屋（イマ・ゲデ）に滞在します。居心地の良い共同ドミトリースタイルのベッドです。食事は慣習庭園で育てられた有機農産物 dari 共同栽培のものです。",
-    contribution: "Relawan tidak dikenakan biaya wajib, namun dapat memberikan donasi sukarela untuk mendukung logistik dapur adat sehari-hari.",
-    contribution_en: "Volunteers are not charged a mandatory fee, but voluntary donations are welcome to support daily communal kitchen logistics.",
-    contribution_ja: "ボランティアへの義務的な費用請求はありませんが、日々の共同キッチンのロジスティクスを支援するための自主的な寄付を歓迎します。",
+    accommodation_detail: "Menginap di homestay rumah warga setempat yang ramah dan hangat. Makanan disediakan 3 kali sehari dengan menu lokal otentik, termasuk nasi sehat dari beras adat yang disimpan puluhan tahun di lumbung leuit.",
+    accommodation_detail_en: "Stay in local homestays with friendly and welcoming residents. Meals are provided 3 times a day featuring authentic local menus, including healthy rice from ancestral customary grains stored for decades in leuit granaries.",
+    accommodation_detail_ja: "フレンドリーで温かい地元住民のホームステイ先に滞在します。食事は1日3回、伝統的な高床式倉庫「レウイット」で数十年間保存された健康的なお米を含む、本物の地元メニューが提供されます。",
+    contribution: "Kontribusi biaya tinggal & konsumsi:\n- Tempat tinggal (Homestay): Rp 50.000 / malam\n- Makan minum (3x sehari menu lokal & nasi beras purba): Rp 50.000 / hari\n- Akses internet WiFi: Rp 50.000 / hari",
+    contribution_en: "Daily accommodation & meal contribution:\n- Local Homestay: IDR 50,000 / night\n- Meals & Drinks (3x daily local menu & ancient rice): IDR 50,000 / day\n- WiFi Internet Access: IDR 50,000 / day",
+    contribution_ja: "滞在・食事の費用貢献：\n- ホームステイ（宿泊）：50,000ルピア / 1泊\n- 食事・飲み物（1日3回、地元料理と伝統米）：50,000ルピア / 1日\n- WiFiインターネットアクセス：50,000ルピア / 1日",
 
     // Reviews
     reviews: [
