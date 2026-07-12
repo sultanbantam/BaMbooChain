@@ -11,6 +11,7 @@ export const VOLUNTEERS_HOSTS = [
     location_en: "Lembata, East Nusa Tenggara",
     location_ja: "レンバタ、東ヌサ・トゥンガラ",
     image: "/volunteer/1.png",
+    bannerImage: "/volunteer/2.png",
     rating: 4.9,
     reviewsCount: 18,
     reputationScore: 1250,

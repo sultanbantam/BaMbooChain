@@ -102,7 +102,7 @@ const VolunteerDetailPage = () => {
       {/* Cover Image Banner */}
       <div style={{ 
         height: '320px', 
-        background: `linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.6)), url("${host.image}") center/cover no-repeat`,
+        background: `linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.6)), url("${host.bannerImage || host.image}") center/cover no-repeat`,
         position: 'relative',
         display: 'flex',
         alignItems: 'flex-end',
