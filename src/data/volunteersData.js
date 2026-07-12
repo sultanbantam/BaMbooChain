@@ -126,6 +126,76 @@ export const VOLUNTEERS_HOSTS = [
         category_ja: "竹の栽培と植樹"
       },
       {
+        url: "/volunteer/70.jpeg",
+        category: "bamboo",
+        category_id: "Budidaya & Penanaman",
+        category_en: "Bamboo Cultivation",
+        category_ja: "竹の栽培と植樹"
+      },
+      {
+        url: "/volunteer/71.jpeg",
+        category: "bamboo",
+        category_id: "Budidaya & Penanaman",
+        category_en: "Bamboo Cultivation",
+        category_ja: "竹の栽培と植樹"
+      },
+      {
+        url: "/volunteer/72.jpeg",
+        category: "bamboo",
+        category_id: "Budidaya & Penanaman",
+        category_en: "Bamboo Cultivation",
+        category_ja: "竹の栽培と植樹"
+      },
+      {
+        url: "/volunteer/73.jpeg",
+        category: "bamboo",
+        category_id: "Budidaya & Penanaman",
+        category_en: "Bamboo Cultivation",
+        category_ja: "竹の栽培と植樹"
+      },
+      {
+        url: "/volunteer/74.jpeg",
+        category: "bamboo",
+        category_id: "Budidaya & Penanaman",
+        category_en: "Bamboo Cultivation",
+        category_ja: "竹の栽培と植樹"
+      },
+      {
+        url: "/volunteer/76.jpeg",
+        category: "bamboo",
+        category_id: "Budidaya & Penanaman",
+        category_en: "Bamboo Cultivation",
+        category_ja: "竹の栽培と植樹"
+      },
+      {
+        url: "/volunteer/77.jpeg",
+        category: "bamboo",
+        category_id: "Budidaya & Penanaman",
+        category_en: "Bamboo Cultivation",
+        category_ja: "竹の栽培と植樹"
+      },
+      {
+        url: "/volunteer/78.jpeg",
+        category: "bamboo",
+        category_id: "Budidaya & Penanaman",
+        category_en: "Bamboo Cultivation",
+        category_ja: "竹の栽培と植樹"
+      },
+      {
+        url: "/volunteer/79.jpeg",
+        category: "bamboo",
+        category_id: "Budidaya & Penanaman",
+        category_en: "Bamboo Cultivation",
+        category_ja: "竹の栽培と植樹"
+      },
+      {
+        url: "/volunteer/80.jpeg",
+        category: "bamboo",
+        category_id: "Budidaya & Penanaman",
+        category_en: "Bamboo Cultivation",
+        category_ja: "竹の栽培と植樹"
+      },
+      {
         url: "/volunteer/8.png",
         category: "construction",
         category_id: "Konstruksi Alami",
@@ -140,6 +210,20 @@ export const VOLUNTEERS_HOSTS = [
         category_ja: "天然素材の建設"
       },
       {
+        url: "/volunteer/68.jpeg",
+        category: "construction",
+        category_id: "Konstruksi Alami",
+        category_en: "Natural Construction",
+        category_ja: "天然素材の建設"
+      },
+      {
+        url: "/volunteer/69.jpeg",
+        category: "construction",
+        category_id: "Konstruksi Alami",
+        category_en: "Natural Construction",
+        category_ja: "天然素材の建設"
+      },
+      {
         url: "/volunteer/4.png",
         category: "documentation",
         category_id: "Database & Dokumentasi",
@@ -148,6 +232,62 @@ export const VOLUNTEERS_HOSTS = [
       },
       {
         url: "/volunteer/6.png",
+        category: "documentation",
+        category_id: "Database & Dokumentasi",
+        category_en: "Data & Documentation",
+        category_ja: "データとドキュメント"
+      },
+      {
+        url: "/volunteer/67.jpeg",
+        category: "documentation",
+        category_id: "Database & Dokumentasi",
+        category_en: "Data & Documentation",
+        category_ja: "データとドキュメント"
+      },
+      {
+        url: "/volunteer/75.jpeg",
+        category: "documentation",
+        category_id: "Database & Dokumentasi",
+        category_en: "Data & Documentation",
+        category_ja: "データとドキュメント"
+      },
+      {
+        url: "/volunteer/81.jpeg",
+        category: "documentation",
+        category_id: "Database & Dokumentasi",
+        category_en: "Data & Documentation",
+        category_ja: "データとドキュメント"
+      },
+      {
+        url: "/volunteer/82.jpeg",
+        category: "documentation",
+        category_id: "Database & Dokumentasi",
+        category_en: "Data & Documentation",
+        category_ja: "データとドキュメント"
+      },
+      {
+        url: "/volunteer/83.jpeg",
+        category: "documentation",
+        category_id: "Database & Dokumentasi",
+        category_en: "Data & Documentation",
+        category_ja: "データとドキュメント"
+      },
+      {
+        url: "/volunteer/84.jpeg",
+        category: "documentation",
+        category_id: "Database & Dokumentasi",
+        category_en: "Data & Documentation",
+        category_ja: "データとドキュメント"
+      },
+      {
+        url: "/volunteer/85.jpeg",
+        category: "documentation",
+        category_id: "Database & Dokumentasi",
+        category_en: "Data & Documentation",
+        category_ja: "データとドキュメント"
+      },
+      {
+        url: "/volunteer/86.jpeg",
         category: "documentation",
         category_id: "Database & Dokumentasi",
         category_en: "Data & Documentation",
