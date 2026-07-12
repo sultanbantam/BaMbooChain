@@ -102,11 +102,11 @@ export const VOLUNTEERS_HOSTS = [
     name: "Yayasan Sabumi - Kasepuhan Cibarani",
     name_en: "Yayasan Sabumi - Kasepuhan Cibarani",
     name_ja: "サブミ財団 - カセプハン・チバラニ",
-    host: "Mukoddas",
+    host: "Mukoddas Syuhada",
     location: "Lebak, Banten",
     location_en: "Lebak, Banten",
     location_ja: "レバック, バンテン",
-    image: "https://images.unsplash.com/photo-1502082553048-f009c37129b9?q=80&w=800&auto=format&fit=crop", // Bamboo / forest theme
+    image: "/volunteer/4.png", // Bamboo / forest theme
     rating: 4.8,
     reviewsCount: 12,
     reputationScore: 1120,
