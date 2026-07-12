@@ -87,6 +87,9 @@ export const VOLUNTEERS_HOSTS = [
     accommodation_detail: "Tempat tinggal berupa bungalow kayu tradisional yang nyaman. Masing-masing relawan diberikan kamar sendiri dengan meja kerja dan toilet di dalam. Lokasi sangat dekat dengan pantai konservasi terumbu karang.",
     accommodation_detail_en: "Accommodation in comfortable traditional wooden bungalows. Each volunteer is provided with a private room, workspace, and en-suite toilet. The location is very close to the coral conservation beach.",
     accommodation_detail_ja: "快適な伝統的木造バンガローに宿泊します。各ボランティアには、ワークスペースと専用トイレ付きの個室が提供されます。場所はサンゴ保全ビーチに非常に近いです。",
+    contribution: "Kontribusi biaya tinggal & konsumsi bagi relawan: Rp 150.000 s.d Rp 200.000 per hari.\n- Paket Rp 200.000: Sudah termasuk sarapan (roti & buah), makan siang, dan makan malam.\n- Paket Rp 150.000: Hanya termasuk makan siang dan makan malam (pagi hari hanya disediakan kopi atau teh).",
+    contribution_en: "Daily accommodation & meal contribution for volunteers: IDR 150,000 to IDR 200,000 per day.\n- IDR 200,000 Package: Includes breakfast (bread & fruits), lunch, and dinner.\n- IDR 150,000 Package: Includes lunch and dinner only (morning is coffee or tea only).",
+    contribution_ja: "ボランティアの滞在・食事費用（1日あたり）：150,000〜200,000ルピア。\n- 200,000ルピアプラン：朝食（パンと果物）、昼食、夕食が含まれます。\n- 150,000ルピアプラン：昼食と夕食のみ（朝はコーヒーまたはお茶のみ提供）。",
 
     // Reviews
     reviews: [
@@ -159,7 +162,10 @@ export const VOLUNTEERS_HOSTS = [
     // Accommodation details
     accommodation_detail: "Menginap di rumah adat panggung (Imah Gede) khas Kasepuhan Cibarani yang terbuat dari bambu dan kayu. Tempat tidur bergaya asrama komunal yang ramah dan hangat. Makanan disediakan dari hasil bumi organik perkebunan adat sendiri.",
     accommodation_detail_en: "Stay in traditional stilt houses (Imah Gede) typical of Kasepuhan Cibarani, made of bamboo and wood. Cozy communal dormitory-style bedding. Meals are provided from organic produce grown in the customary gardens.",
-    accommodation_detail_ja: "竹と木で作られた、カセプハン・チバラニ特有の伝統的な高床式家屋（イマ・ゲデ）に滞在します。居心地の良い共同ドミトリースタイルのベッドです。食事は慣習庭園で育てられた有機農産物から提供されます。",
+    accommodation_detail_ja: "竹と木で作られた、カセプハン・チバラニ特有の伝統的な高床式家屋（イマ・ゲデ）に滞在します。居心地の良い共同ドミトリースタイルのベッドです。食事は慣習庭園で育てられた有機農産物 dari 共同栽培のものです。",
+    contribution: "Relawan tidak dikenakan biaya wajib, namun dapat memberikan donasi sukarela untuk mendukung logistik dapur adat sehari-hari.",
+    contribution_en: "Volunteers are not charged a mandatory fee, but voluntary donations are welcome to support daily communal kitchen logistics.",
+    contribution_ja: "ボランティアへの義務的な費用請求はありませんが、日々の共同キッチンのロジスティクスを支援するための自主的な寄付を歓迎します。",
 
     // Reviews
     reviews: [

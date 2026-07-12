@@ -238,6 +238,17 @@ const VolunteerDetailPage = () => {
                 <p style={{ lineHeight: '1.7', color: 'var(--text-muted)', fontSize: '0.98rem' }}>
                   {hostAccomDetail}
                 </p>
+
+                {host.contribution && (
+                  <div style={{ marginTop: '30px', padding: '24px', background: 'rgba(28, 126, 214, 0.05)', borderRadius: '16px', border: '1px solid rgba(28, 126, 214, 0.15)' }}>
+                    <h4 style={{ fontWeight: 'bold', color: '#1c7ed6', margin: '0 0 12px 0', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.05rem' }}>
+                      💰 {language === 'ja' ? '費用・食費の貢献' : language === 'en' ? 'Fee & Meal Contribution' : 'Kontribusi Biaya & Konsumsi'}
+                    </h4>
+                    <p style={{ lineHeight: '1.7', color: 'var(--text-muted)', fontSize: '0.95rem', margin: 0, whiteSpace: 'pre-line' }}>
+                      {language === 'ja' ? host.contribution_ja : language === 'en' ? host.contribution_en : host.contribution}
+                    </p>
+                  </div>
+                )}
               </div>
             )}
 
