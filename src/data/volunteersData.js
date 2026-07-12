@@ -111,10 +111,48 @@ export const VOLUNTEERS_HOSTS = [
     reviewsCount: 12,
     reputationScore: 1120,
     gallery: [
-      "https://images.unsplash.com/photo-1502082553048-f009c37129b9?q=80&w=800",
-      "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?q=80&w=800",
-      "https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?q=80&w=800",
-      "https://images.unsplash.com/photo-1599008633840-052c7f75a355?q=80&w=800"
+      {
+        url: "/volunteer/5.png",
+        category: "bamboo",
+        category_id: "Budidaya & Penanaman",
+        category_en: "Bamboo Cultivation",
+        category_ja: "竹の栽培と植樹"
+      },
+      {
+        url: "/volunteer/7.png",
+        category: "bamboo",
+        category_id: "Budidaya & Penanaman",
+        category_en: "Bamboo Cultivation",
+        category_ja: "竹の栽培と植樹"
+      },
+      {
+        url: "/volunteer/8.png",
+        category: "construction",
+        category_id: "Konstruksi Alami",
+        category_en: "Natural Construction",
+        category_ja: "天然素材の建設"
+      },
+      {
+        url: "/volunteer/9.png",
+        category: "construction",
+        category_id: "Konstruksi Alami",
+        category_en: "Natural Construction",
+        category_ja: "天然素材の建設"
+      },
+      {
+        url: "/volunteer/4.png",
+        category: "documentation",
+        category_id: "Database & Dokumentasi",
+        category_en: "Data & Documentation",
+        category_ja: "データとドキュメント"
+      },
+      {
+        url: "/volunteer/6.png",
+        category: "documentation",
+        category_id: "Database & Dokumentasi",
+        category_en: "Data & Documentation",
+        category_ja: "データとドキュメント"
+      }
     ],
     skills: ["Semua Keahlian"],
     skills_en: ["All Skills"],
