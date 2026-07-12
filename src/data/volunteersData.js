@@ -10,7 +10,7 @@ export const VOLUNTEERS_HOSTS = [
     location: "Lembata, NTT",
     location_en: "Lembata, East Nusa Tenggara",
     location_ja: "レンバタ、東ヌサ・トゥンガラ",
-    image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=800&auto=format&fit=crop", // Coral / sea theme
+    image: "/volunteer/1.png",
     rating: 4.9,
     reviewsCount: 18,
     reputationScore: 1250,
@@ -83,7 +83,7 @@ export const VOLUNTEERS_HOSTS = [
     location: "Lebak, Banten",
     location_en: "Lebak, Banten",
     location_ja: "レバック, バンテン",
-    image: "https://images.unsplash.com/photo-1502082553048-f009c37129b9?q=80&w=800&auto=format&fit=crop", // Bamboo / forest theme
+    image: "/volunteer/2.png", // Bamboo / forest theme
     rating: 4.8,
     reviewsCount: 12,
     reputationScore: 1120,
