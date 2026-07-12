@@ -116,9 +116,9 @@ export const VOLUNTEERS_HOSTS = [
       "https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?q=80&w=800",
       "https://images.unsplash.com/photo-1599008633840-052c7f75a355?q=80&w=800"
     ],
-    skills: ["Budidaya Bambu", "Pemetaan GIS", "Pertanian Agroforestri", "Seni & Kerajinan", "Dokumentasi Media"],
-    skills_en: ["Bamboo Cultivation", "GIS Mapping", "Agroforestry Farming", "Arts & Crafts", "Media Documentation"],
-    skills_ja: ["竹栽培", "GISマッピング", "アグロフォレストリー農業", "美術工芸", "メディアドキュメンテーション"],
+    skills: ["Semua Keahlian"],
+    skills_en: ["All Skills"],
+    skills_ja: ["すべてのスキル"],
     
     // About
     about: "Jadilah Volunteer di Kasepuhan Cibarani – Menjaga Warisan Leluhur untuk Masa Depan Dunia\n\nHanya 3,5 jam dari Jakarta, tersembunyi di jantung pegunungan Lebak, Banten, terdapat sebuah kawasan adat yang masih menjaga harmoni antara manusia dan alam: Kasepuhan Cibarani.\n\nSejak Desember 2024, kawasan ini dikelola oleh Yayasan Sabumi Nusantara Jaya melalui mandat pengelolaan selama 30 tahun untuk mewujudkan visi \"Emas Hijau (Green Gold)\"—melindungi hutan adat, melestarikan budaya, serta membangun masa depan yang berkelanjutan bagi masyarakat dan bumi.\n\nDi sini, Anda tidak hanya menjadi wisatawan. Anda menjadi bagian dari sebuah misi:\n\n🌿 Menjelajahi hutan adat dengan pohon-pohon purba yang diperkirakan telah hidup selama ribuan tahun.\n⛰️ Mendaki Gunung Liman, yang dikenal sebagai payung Pulau Jawa.\n🕳️ Mengeksplorasi lebih dari 1.000 goa alami yang masih menyimpan banyak misteri alam.\n💧 Menikmati 17 mata air, sungai yang sangat jernih, curug, dan air terjun yang masih alami.\n🌾 Belajar dari kearifan lokal melalui Leuit, lumbung adat yang mampu menyimpan gabah hingga puluhan tahun tanpa kehilangan kualitasnya, sehingga tetap layak dikonsumsi dan menyehatkan.\n\n🎋 Mengalami langsung tradisi Seren Taun dan Ngaruwat Jagad, simbol rasa syukur serta keseimbangan antara manusia, alam, dan Sang Pencipta.\n🌬️ Menghirup udara pegunungan yang bersih, sejuk, dan menyegarkan di kawasan yang dikenal hampir tidak memiliki nyamuk.\n\nSebagai volunteer, Anda akan ikut berkontribusi dalam:\n• Melindungi hutan adat dari ancaman illegal logging dan illegal mining.\n• Mendukung pelestarian keanekaragaman hayati.\n• Mendokumentasikan pengetahuan dan budaya masyarakat adat.\n• Mengembangkan program pendidikan, konservasi, dan pemberdayaan masyarakat.\n• Bersama-sama membangun model kawasan konservasi yang dapat menjadi inspirasi dunia.\n\nKasepuhan Cibarani bukan sekadar destinasi. Ini adalah ruang belajar, ruang pengabdian, dan ruang untuk menemukan kembali hubungan manusia dengan alam.\n\nMari menjadi bagian dari gerakan global menjaga warisan alam, budaya, dan kehidupan. Bersama Kasepuhan Cibarani, kita tidak hanya melindungi hutan—kita sedang menjaga masa depan dunia.",
@@ -127,31 +127,25 @@ export const VOLUNTEERS_HOSTS = [
 
     // Activities
     activities: [
-      "Belajar dan mempraktikkan budidaya bibit bambu Petung unggul di nursery utama.",
-      "Melakukan penanaman bibit bambu di lereng kritis dan sepanjang aliran mata air.",
-      "Membantu pemetaan geospasial (GIS) kawasan hutan adat menggunakan perangkat GPS/drone.",
-      "Ikut serta dalam pelatihan desain produk dan kerajinan bambu bersama pengrajin lokal.",
-      "Mendokumentasikan aktivitas pelestarian lingkungan dalam bentuk foto, video, atau tulisan jurnal.",
-      "Mengajar bahasa Inggris dasar atau keahlian digital bagi anak-anak sekolah adat.",
-      "Membantu sistem logistik dan rantai pasok pembagian bibit ke petani adat."
+      "Belajar dan mempraktikkan budidaya bambu.",
+      "Melakukan penanaman bibit bambu.",
+      "Membuat database bambu dan pohon menggunakan fitur yang ada di www.bamboochain.id.",
+      "Membuat konstruksi bangunan dari bahan-bahan alami yang ada di Desa Cibarani.",
+      "Mendokumentasikan aktivitas pelestarian lingkungan dalam bentuk foto, video, atau tulisan di website www.bamboochain.id."
     ],
     activities_en: [
-      "Learn and practice cultivating superior Petung bamboo seedlings in the main nursery.",
-      "Planting bamboo seedlings on critical slopes and along spring watersheds.",
-      "Assisting in geospatial mapping (GIS) of customary forest areas using GPS devices/drones.",
-      "Participating in bamboo product design and craft training alongside local artisans.",
-      "Documenting environmental conservation activities via photos, videos, or journal articles.",
-      "Teaching basic English or digital skills to customary school children.",
-      "Assisting the logistics and supply chain system of seedling distribution to customary farmers."
+      "Learn and practice bamboo cultivation.",
+      "Planting bamboo seedlings.",
+      "Creating a database of bamboo and trees using the features available on www.bamboochain.id.",
+      "Constructing buildings from natural materials in Cibarani Village.",
+      "Documenting environmental conservation activities via photos, videos, or articles on the www.bamboochain.id website."
     ],
     activities_ja: [
-      "メインの苗床で優れたプトゥン竹の苗木を栽培する方法を学び、実践します。",
-      "重要斜面や水源流域沿いへの竹の苗木の植樹活動。",
-      "GPSデバイスやドローンを使用した、慣習林エリアの地理空間マッピング（GIS）の支援。",
-      "地元の職人と一緒に、竹製品のデザインや工芸トレーニングへの参加。",
-      "写真、ビデオ、ジャーナル記事を通じて環境保全活動を記録する活動。",
-      "慣習学校の子供たちに基本的な英語やデジタルスキルを教える活動。",
-      "慣習農家への苗木配布の物流およびサプライチェーンシステムの支援。"
+      "竹の栽培方法を学び、実践する。",
+      "竹の苗木の植樹を行う。",
+      "www.bamboochain.id にある機能を利用して、竹や樹木のデータベースを作成する。",
+      "チバラニ村にある天然素材を使って建物を建設する。",
+      "www.bamboochain.id のウェブサイト上で、写真、ビデオ、または記事を通じて環境保全活動を記録する。"
     ],
 
     // Facilities
