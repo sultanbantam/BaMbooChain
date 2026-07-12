@@ -40,6 +40,7 @@ const VolunteerDetailPage = () => {
 
   // Tabs state
   const [activeTab, setActiveTab] = useState('about');
+  const [galleryFilter, setGalleryFilter] = useState('all');
 
   // Booking Form State
   const [startDate, setStartDate] = useState('');
@@ -268,41 +269,103 @@ const VolunteerDetailPage = () => {
             )}
 
             {/* GALLERY TAB */}
-            {activeTab === 'gallery' && (
-              <div className="animate-fade-in">
-                <h3 style={{ marginTop: 0, fontWeight: '800', fontSize: '1.4rem', color: 'var(--text-main)', marginBottom: '20px' }}>
-                  📸 {language === 'ja' ? '活動ギャラリー' : language === 'en' ? 'Activity Gallery' : 'Galeri Aktivitas'}
-                </h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px' }}>
-                  {host.gallery && host.gallery.map((img, i) => (
-                    <div 
-                      key={i} 
-                      className="gallery-item"
-                      style={{ 
-                        borderRadius: '16px', 
-                        overflow: 'hidden', 
-                        height: '160px', 
-                        border: '1px solid var(--border-color)',
-                        boxShadow: '0 4px 10px rgba(0,0,0,0.02)',
-                        transition: 'transform 0.3s, box-shadow 0.3s',
-                        cursor: 'pointer'
-                      }}
-                      onClick={() => window.open(img, '_blank')}
-                      onMouseEnter={e => {
-                        e.currentTarget.style.transform = 'scale(1.03)';
-                        e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.08)';
-                      }}
-                      onMouseLeave={e => {
-                        e.currentTarget.style.transform = 'scale(1)';
-                        e.currentTarget.style.boxShadow = '0 4px 10px rgba(0,0,0,0.02)';
-                      }}
-                    >
-                      <div style={{ width: '100%', height: '100%', background: `url("${img}") center/cover no-repeat` }} />
-                    </div>
-                  ))}
+            {activeTab === 'gallery' && (() => {
+              // Normalize data structure
+              const galleryItems = (host.gallery || []).map(item => {
+                if (typeof item === 'string') {
+                  return {
+                    url: item,
+                    category: 'general',
+                    label: language === 'ja' ? '一般' : language === 'en' ? 'General' : 'Umum'
+                  };
+                }
+                return {
+                  url: item.url,
+                  category: item.category,
+                  label: language === 'ja' ? item.category_ja : language === 'en' ? item.category_en : item.category_id
+                };
+              });
+
+              // Extract unique categories
+              const categories = [{ id: 'all', label: language === 'ja' ? 'すべて' : language === 'en' ? 'All' : 'Semua' }];
+              const seen = new Set();
+              galleryItems.forEach(item => {
+                if (item.category && !seen.has(item.category)) {
+                  seen.add(item.category);
+                  categories.push({ id: item.category, label: item.label });
+                }
+              });
+
+              // Filtered items
+              const filteredItems = galleryFilter === 'all' 
+                ? galleryItems 
+                : galleryItems.filter(item => item.category === galleryFilter);
+
+              return (
+                <div className="animate-fade-in">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
+                    <h3 style={{ margin: 0, fontWeight: '800', fontSize: '1.4rem', color: 'var(--text-main)' }}>
+                      📸 {language === 'ja' ? '活動ギャラリー' : language === 'en' ? 'Activity Gallery' : 'Galeri Aktivitas'}
+                    </h3>
+                    
+                    {/* Category Selector Buttons */}
+                    {categories.length > 1 && (
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        {categories.map(cat => (
+                          <button
+                            key={cat.id}
+                            onClick={() => setGalleryFilter(cat.id)}
+                            style={{
+                              padding: '8px 16px',
+                              borderRadius: '20px',
+                              border: '1px solid var(--border-color)',
+                              background: galleryFilter === cat.id ? 'var(--primary)' : 'var(--bg-card)',
+                              color: galleryFilter === cat.id ? 'white' : 'var(--text-muted)',
+                              fontWeight: 'bold',
+                              fontSize: '0.85rem',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease',
+                              boxShadow: galleryFilter === cat.id ? '0 4px 12px rgba(12, 166, 120, 0.2)' : 'none'
+                            }}
+                          >
+                            {cat.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '16px' }}>
+                    {filteredItems.map((img, i) => (
+                      <div 
+                        key={i} 
+                        className="gallery-item"
+                        style={{ 
+                          borderRadius: '16px', 
+                          overflow: 'hidden', 
+                          height: '140px', 
+                          border: '1px solid var(--border-color)',
+                          boxShadow: '0 4px 10px rgba(0,0,0,0.02)',
+                          transition: 'transform 0.3s, box-shadow 0.3s',
+                          cursor: 'pointer'
+                        }}
+                        onClick={() => window.open(img.url, '_blank')}
+                        onMouseEnter={e => {
+                          e.currentTarget.style.transform = 'scale(1.03)';
+                          e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.08)';
+                        }}
+                        onMouseLeave={e => {
+                          e.currentTarget.style.transform = 'scale(1)';
+                          e.currentTarget.style.boxShadow = '0 4px 10px rgba(0,0,0,0.02)';
+                        }}
+                      >
+                        <div style={{ width: '100%', height: '100%', background: `url("${img.url}") center/cover no-repeat` }} />
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
           </div>
         </div>

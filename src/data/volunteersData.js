@@ -16,12 +16,23 @@ export const VOLUNTEERS_HOSTS = [
     reviewsCount: 18,
     reputationScore: 1250,
     gallery: [
-      "/volunteer/2.png",
-      "/volunteer/1.png",
-      "https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=800",
-      "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?q=80&w=800",
-      "https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=800",
-      "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=800"
+      { url: "/volunteer/1.png", category: "sea", category_en: "Coral Restoration", category_ja: "サンゴ保全", category_id: "Restorasi Karang" },
+      { url: "/volunteer/2.png", category: "sea", category_en: "Coral Restoration", category_ja: "サンゴ保全", category_id: "Restorasi Karang" },
+      { url: "/volunteer/3.png", category: "sea", category_en: "Coral Restoration", category_ja: "サンゴ保全", category_id: "Restorasi Karang" },
+      ...Array.from({ length: 9 }, (_, i) => ({
+        url: `/volunteer/${i + 1}.jpeg`,
+        category: "sea",
+        category_en: "Coral Restoration",
+        category_ja: "サンゴ保全",
+        category_id: "Restorasi Karang"
+      })),
+      ...Array.from({ length: 57 }, (_, i) => ({
+        url: `/volunteer/${i + 10}.jpeg`,
+        category: "education",
+        category_en: "Education & Teaching",
+        category_ja: "教育・学校支援",
+        category_id: "Pendidikan & Mengajar"
+      }))
     ],
     skills: ["Restorasi Karang", "Mengajar", "Konstruksi", "Pertanian", "Bantuan Sosial"],
     skills_en: ["Coral Restoration", "Teaching", "Construction", "Farming", "Social Aid"],
