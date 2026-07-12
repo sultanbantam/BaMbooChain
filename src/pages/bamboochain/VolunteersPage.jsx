@@ -123,6 +123,78 @@ const VolunteersPage = () => {
 
   return (
     <div style={{ paddingTop: 'var(--navbar-height)', minHeight: '100vh', background: 'var(--bg-color)', transition: 'background 0.3s ease' }}>
+      <style>
+        {`
+          .volunteer-layout-grid {
+            display: grid;
+            grid-template-columns: 1.4fr 1fr;
+            gap: 30px;
+            align-items: stretch;
+          }
+          @media (max-width: 992px) {
+            .volunteer-layout-grid {
+              grid-template-columns: 1fr !important;
+            }
+          }
+
+          .host-card-container {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            gap: 24px;
+            border-radius: 24px;
+            overflow: hidden;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+          }
+          @media (max-width: 768px) {
+            .host-card-container {
+              grid-template-columns: 1fr !important;
+              gap: 16px !important;
+            }
+          }
+
+          .host-card-image-wrapper {
+            position: relative;
+            height: 100%;
+            min-height: 200px;
+          }
+          @media (max-width: 768px) {
+            .host-card-image-wrapper {
+              height: 220px !important;
+              min-height: 220px !important;
+            }
+          }
+
+          .host-card-info-wrapper {
+            padding: 24px 24px 24px 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+          }
+          @media (max-width: 768px) {
+            .host-card-info-wrapper {
+              padding: 16px 20px 20px 20px !important;
+            }
+          }
+
+          .gis-map-container {
+            position: sticky;
+            top: 100px;
+            align-self: start;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+          }
+          @media (max-width: 992px) {
+            .gis-map-container {
+              position: static !important;
+              align-self: stretch !important;
+            }
+          }
+        `}
+      </style>
       
       {/* Page Header */}
       <div style={{ background: 'var(--bg-card)', borderBottom: '1px solid var(--border-color)', padding: '30px 0', transition: 'background 0.3s ease' }}>
@@ -224,7 +296,7 @@ const VolunteersPage = () => {
         </div>
 
         {/* CORE LAYOUT: HOST LIST vs GIS INTERACTIVE MAP */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '30px', alignItems: 'stretch' }}>
+        <div className="volunteer-layout-grid">
           
           {/* Host list */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -248,23 +320,12 @@ const VolunteersPage = () => {
                 return (
                   <div 
                     key={host.id}
-                    className="glass"
+                    className="glass host-card-container"
                     onMouseEnter={() => handleHostHover(host.id)}
-                    style={{ 
-                      borderRadius: '24px', 
-                      overflow: 'hidden', 
-                      background: 'var(--bg-card)',
-                      border: '1px solid var(--border-color)',
-                      transition: 'transform 0.3s, box-shadow 0.3s',
-                      display: 'grid',
-                      gridTemplateColumns: '220px 1fr',
-                      gap: '24px',
-                      cursor: 'pointer'
-                    }}
                     onClick={() => navigate(`/bamboochain/volunteer/${host.id}`)}
                   >
                     {/* Host Image */}
-                    <div style={{ position: 'relative', height: '100%', minHeight: '200px' }}>
+                    <div className="host-card-image-wrapper">
                       <div style={{ width: '100%', height: '100%', background: `url("${host.image}") center/cover no-repeat` }} />
                       <div style={{ position: 'absolute', top: '16px', left: '16px', background: 'var(--primary)', color: 'white', padding: '4px 10px', borderRadius: '30px', fontSize: '0.7rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}>
                         <Award size={12} /> {t('vol_verified_badge')}
@@ -272,7 +333,7 @@ const VolunteersPage = () => {
                     </div>
 
                     {/* Host Info */}
-                    <div style={{ padding: '24px 24px 24px 0', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                    <div className="host-card-info-wrapper">
                       <div>
                         {/* Location and Rating */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
@@ -332,7 +393,7 @@ const VolunteersPage = () => {
           </div>
 
           {/* GIS INTERACTIVE MAP */}
-          <div style={{ position: 'sticky', top: '100px', alignSelf: 'start', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+          <div className="gis-map-container">
             <div className="glass" style={{ borderRadius: '24px', overflow: 'hidden', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', height: '450px' }}>
               <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-card)' }}>
                 <span style={{ fontWeight: 'bold', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-main)' }}>
