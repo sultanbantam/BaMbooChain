@@ -91,13 +91,11 @@ export const VOLUNTEERS_HOSTS = [
     location: "Lebak, Banten",
     location_en: "Lebak, Banten",
     location_ja: "レバック, バンテン",
-    image: "/volunteer/1.png", // Bamboo / forest theme
+    image: "https://images.unsplash.com/photo-1502082553048-f009c37129b9?q=80&w=800&auto=format&fit=crop", // Bamboo / forest theme
     rating: 4.8,
     reviewsCount: 12,
     reputationScore: 1120,
     gallery: [
-      "/volunteer/1.png",
-      "/volunteer/2.png",
       "https://images.unsplash.com/photo-1502082553048-f009c37129b9?q=80&w=800",
       "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?q=80&w=800",
       "https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?q=80&w=800",
