@@ -4,6 +4,9 @@ import { MapPin, Star, Award, CheckCircle, Clock, BookOpen, Hammer, Anchor, Arro
 import BackButton from '../../components/BackButton';
 import { VOLUNTEERS_HOSTS } from '../../data/volunteersData';
 import { useLanguage } from '../../context/LanguageContext';
+import { useAuth } from '../../context/AuthContext';
+import { db } from '../../firebase/config';
+import { collection, addDoc } from 'firebase/firestore';
 
 const VolunteerDetailPage = () => {
   const { hostId } = useParams();
@@ -33,6 +36,8 @@ const VolunteerDetailPage = () => {
   const hostFacilities = language === 'ja' ? host.facilities_ja : language === 'en' ? host.facilities_en : host.facilities;
   const hostAccomDetail = language === 'ja' ? host.accommodation_detail_ja : language === 'en' ? host.accommodation_detail_en : host.accommodation_detail;
 
+  const { user, isAuthenticated, openLoginModal } = useAuth();
+
   // Tabs state
   const [activeTab, setActiveTab] = useState('about');
 
@@ -41,22 +46,54 @@ const VolunteerDetailPage = () => {
   const [endDate, setEndDate] = useState('');
   const [motivation, setMotivation] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleBookingSubmit = (e) => {
+  const handleBookingSubmit = async (e) => {
     e.preventDefault();
+
+    if (!isAuthenticated) {
+      alert(language === 'ja' ? 'ボランティアに応募するにはログインする必要があります。' : language === 'en' ? 'You must be logged in to apply as a volunteer.' : 'Anda harus masuk (login) terlebih dahulu untuk mendaftar sebagai relawan.');
+      openLoginModal();
+      return;
+    }
+
     if (!startDate || !endDate || !motivation.trim()) {
       alert(language === 'ja' ? 'すべての必須フィールドに入力してください。' : language === 'en' ? 'Please fill in all required fields.' : 'Silakan lengkapi semua kolom yang wajib diisi.');
       return;
     }
 
-    // Success response
-    setIsSubmitted(true);
-    alert(t('vol_alert_success'));
-    
-    // Reset Form
-    setStartDate('');
-    setEndDate('');
-    setMotivation('');
+    try {
+      setIsSubmitting(true);
+      const appPayload = {
+        hostId: Number(hostId),
+        hostName: host.name,
+        hostNameEn: host.name_en,
+        startDate,
+        endDate,
+        motivation,
+        userId: user?.id || user?.uid || 'anonymous',
+        userName: user?.name || user?.username || 'Relawan',
+        userEmail: user?.email || '',
+        status: 'pending',
+        createdAt: new Date().toISOString()
+      };
+
+      await addDoc(collection(db, "volunteer_applications"), appPayload);
+
+      // Success response
+      setIsSubmitted(true);
+      alert(t('vol_alert_success'));
+      
+      // Reset Form
+      setStartDate('');
+      setEndDate('');
+      setMotivation('');
+    } catch (err) {
+      console.error("Error submitting volunteer application:", err);
+      alert(language === 'ja' ? '送信に失敗しました。もう一度お試しください。' : language === 'en' ? 'Failed to submit. Please try again.' : 'Gagal mengirim pendaftaran. Silakan coba lagi.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -289,16 +326,17 @@ const VolunteerDetailPage = () => {
               {/* Submit Button */}
               <button 
                 type="submit"
+                disabled={isSubmitting}
                 style={{ 
                   width: '100%', 
                   padding: '14px', 
                   borderRadius: '12px', 
                   border: 'none', 
-                  background: 'var(--primary)', 
+                  background: isSubmitting ? 'var(--text-muted)' : 'var(--primary)', 
                   color: 'white', 
                   fontWeight: 'bold', 
                   fontSize: '1rem', 
-                  cursor: 'pointer',
+                  cursor: isSubmitting ? 'not-allowed' : 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -306,7 +344,7 @@ const VolunteerDetailPage = () => {
                   boxShadow: '0 4px 12px rgba(12, 166, 120, 0.2)'
                 }}
               >
-                <Send size={16} /> {t('vol_btn_submit_app')}
+                <Send size={16} /> {isSubmitting ? (language === 'ja' ? '送信中...' : language === 'en' ? 'Submitting...' : 'Mengirim...') : t('vol_btn_submit_app')}
               </button>
             </form>
 

@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapPin, Star, Award, Search, Users, Clock, ShieldCheck, Heart } from 'lucide-react';
 import BackButton from '../../components/BackButton';
 import { VOLUNTEERS_HOSTS } from '../../data/volunteersData';
 import { useLanguage } from '../../context/LanguageContext';
+import { db } from '../../firebase/config';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 
 const VolunteersPage = () => {
   const { t, language } = useLanguage();
@@ -13,6 +15,41 @@ const VolunteersPage = () => {
   const [selectedSkill, setSelectedSkill] = useState('all');
   const [selectedLoc, setSelectedLoc] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // Real-time or fetched stats
+  const [stats, setStats] = useState({ activeVolunteers: 142, hoursContributed: 8420 });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const q = query(collection(db, "volunteer_applications"), where("status", "==", "verified"));
+        const snapshot = await getDocs(q);
+        const apps = snapshot.docs.map(doc => doc.data());
+        
+        // unique users
+        const uniqueUsers = new Set(apps.map(a => a.userId));
+        const newVolunteersCount = 142 + uniqueUsers.size;
+
+        // calculate hours
+        let additionalHours = 0;
+        apps.forEach(app => {
+          if (app.startDate && app.endDate) {
+            const start = new Date(app.startDate);
+            const end = new Date(app.endDate);
+            const diffTime = Math.abs(end - start);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
+            additionalHours += diffDays * 6; // assume 6 hours of work per day
+          }
+        });
+        const newHoursCount = 8420 + additionalHours;
+
+        setStats({ activeVolunteers: newVolunteersCount, hoursContributed: newHoursCount });
+      } catch (err) {
+        console.error("Error fetching volunteer stats:", err);
+      }
+    };
+    fetchStats();
+  }, []);
   
   // Coordinates for Map
   const [mapCenter, setMapCenter] = useState({ lat: -7.5, lng: 115.0, zoom: 5 });
@@ -113,7 +150,7 @@ const VolunteersPage = () => {
             </div>
             <div>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 'bold', textTransform: 'uppercase' }}>{t('vol_hours_contributed')}</div>
-              <div style={{ fontSize: '1.6rem', fontWeight: '900', color: 'var(--text-main)' }}>8,420 Jam</div>
+              <div style={{ fontSize: '1.6rem', fontWeight: '900', color: 'var(--text-main)' }}>{stats.hoursContributed.toLocaleString('id-ID')} Jam</div>
             </div>
           </div>
 
@@ -123,7 +160,7 @@ const VolunteersPage = () => {
             </div>
             <div>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 'bold', textTransform: 'uppercase' }}>{t('vol_active_volunteers')}</div>
-              <div style={{ fontSize: '1.6rem', fontWeight: '900', color: 'var(--text-main)' }}>142 Relawan</div>
+              <div style={{ fontSize: '1.6rem', fontWeight: '900', color: 'var(--text-main)' }}>{stats.activeVolunteers} Relawan</div>
             </div>
           </div>
 

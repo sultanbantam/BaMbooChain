@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
-import { Shield, Users, MapPin, CheckCircle, XCircle, Clock, Eye, Filter, Download, Search, BookOpen, Leaf, Settings, Save, Wind, Droplets, DollarSign, Activity } from 'lucide-react';
+import { Shield, Users, MapPin, CheckCircle, XCircle, Clock, Eye, Filter, Download, Search, BookOpen, Leaf, Settings, Save, Wind, Droplets, DollarSign, Activity, Heart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import BackButton from '../components/BackButton';
 import { usePartnerApplications, useLocationProposals, usePlantationDonations, useGlobalSettings, useEventRegistrations, useEventAttendance, useEventTransactions } from '../hooks/useFirestoreQueries';
 import { db } from '../firebase/config';
-import { doc, setDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, addDoc, collection, serverTimestamp, getDocs, updateDoc, increment } from 'firebase/firestore';
 
 const AdminPortalPage = () => {
   const { t } = useLanguage();
@@ -24,6 +24,7 @@ const AdminPortalPage = () => {
   const { data: eventRegistrations = [] } = useEventRegistrations();
   const { data: eventAttendance = [] } = useEventAttendance();
   const { data: eventTransactions = [], refetch: refetchEventTransactions } = useEventTransactions();
+  const [volunteerApps, setVolunteerApps] = useState([]);
   
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('partners'); // 'partners', 'locations', 'donations', 'events', or 'settings'
@@ -107,6 +108,54 @@ const AdminPortalPage = () => {
     alert('Lokasi penanaman disetujui!');
   };
 
+  const fetchVolunteerApps = async () => {
+    try {
+      const querySnapshot = await getDocs(collection(db, "volunteer_applications"));
+      const apps = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      apps.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      setVolunteerApps(apps);
+    } catch (err) {
+      console.error("Error fetching volunteer apps:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'volunteers') {
+      fetchVolunteerApps();
+    }
+  }, [activeTab]);
+
+  const handleApproveVolunteer = async (app) => {
+    try {
+      // 1. Update application status
+      await updateDoc(doc(db, "volunteer_applications", app.id), { status: 'verified' });
+      
+      // 2. Increment user reputation score by 100 XP
+      if (app.userId) {
+        const userRef = doc(db, "users", app.userId);
+        await updateDoc(userRef, { reputationScore: increment(100) });
+      }
+
+      alert('Pendaftaran relawan disetujui & reputasi (100 XP) berhasil dikirim!');
+      fetchVolunteerApps();
+    } catch (err) {
+      console.error("Error approving volunteer:", err);
+      alert('Gagal menyetujui pendaftaran relawan.');
+    }
+  };
+
+  const handleRejectVolunteer = async (id) => {
+    if (!window.confirm('Yakin ingin menolak pendaftaran relawan ini?')) return;
+    try {
+      await updateDoc(doc(db, "volunteer_applications", id), { status: 'rejected' });
+      alert('Pendaftaran relawan ditolak.');
+      fetchVolunteerApps();
+    } catch (err) {
+      console.error("Error rejecting volunteer:", err);
+      alert('Gagal menolak pendaftaran.');
+    }
+  };
+
   return (
     <div style={{ paddingTop: '120px', minHeight: '100vh', background: '#f0f2f5' }}>
       <div className="container" style={{ padding: '40px 24px' }}>
@@ -183,6 +232,12 @@ const AdminPortalPage = () => {
             <BookOpen size={18} /> Manajemen Event
           </button>
           <button 
+            onClick={() => setActiveTab('volunteers')}
+            style={{ padding: '12px 24px', borderRadius: '14px', border: 'none', background: activeTab === 'volunteers' ? '#1c7ed6' : 'transparent', color: activeTab === 'volunteers' ? 'white' : '#495057', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}
+          >
+            <Heart size={18} /> Manajemen Relawan
+          </button>
+          <button 
             onClick={() => setActiveTab('settings')}
             style={{ padding: '12px 24px', borderRadius: '14px', border: 'none', background: activeTab === 'settings' ? '#1c7ed6' : 'transparent', color: activeTab === 'settings' ? 'white' : '#495057', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}
           >
@@ -195,7 +250,7 @@ const AdminPortalPage = () => {
           
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
             <h2 style={{ fontSize: '1.25rem', margin: 0, fontWeight: '800' }}>
-              {activeTab === 'partners' ? t('admin_portal_tab_partners') : activeTab === 'locations' ? t('admin_portal_tab_locations') : activeTab === 'events' ? 'Manajemen Event & Absensi' : activeTab === 'settings' ? 'Pengaturan AI & Variabel Global' : 'Dukungan Penanaman'}
+              {activeTab === 'partners' ? t('admin_portal_tab_partners') : activeTab === 'locations' ? t('admin_portal_tab_locations') : activeTab === 'events' ? 'Manajemen Event & Absensi' : activeTab === 'settings' ? 'Pengaturan AI & Variabel Global' : activeTab === 'volunteers' ? 'Manajemen Pendaftaran Relawan' : 'Dukungan Penanaman'}
             </h2>
             {activeTab !== 'settings' && (
               <div style={{ display: 'flex', gap: '10px' }}>
@@ -248,6 +303,81 @@ const AdminPortalPage = () => {
                   <Save size={18} /> Simpan Pengaturan Global
                 </button>
               </div>
+            </div>
+          ) : activeTab === 'volunteers' ? (
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ textAlign: 'left', borderBottom: '2px solid #f1f3f5', backgroundColor: '#f8f9fa' }}>
+                    <th style={{ padding: '16px', color: '#495057', fontSize: '0.85rem' }}>Nama Relawan</th>
+                    <th style={{ padding: '16px', color: '#495057', fontSize: '0.85rem' }}>Destinasi Host</th>
+                    <th style={{ padding: '16px', color: '#495057', fontSize: '0.85rem' }}>Periode Kunjungan</th>
+                    <th style={{ padding: '16px', color: '#495057', fontSize: '0.85rem' }}>Pesan Motivasi</th>
+                    <th style={{ padding: '16px', color: '#495057', fontSize: '0.85rem' }}>Status</th>
+                    <th style={{ padding: '16px', color: '#495057', fontSize: '0.85rem', textAlign: 'center' }}>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {volunteerApps.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" style={{ padding: '20px', textAlign: 'center', color: '#868e96' }}>Belum ada pendaftaran relawan masuk.</td>
+                    </tr>
+                  ) : (
+                    volunteerApps.map((app) => (
+                      <tr key={app.id} style={{ borderBottom: '1px solid #f1f3f5' }}>
+                        <td style={{ padding: '20px 16px' }}>
+                          <div style={{ fontWeight: 'bold', color: '#212529' }}>{app.userName}</div>
+                          <div style={{ fontSize: '0.8rem', color: '#868e96' }}>{app.userEmail}</div>
+                        </td>
+                        <td style={{ padding: '20px 16px', fontSize: '0.9rem', fontWeight: '600' }}>
+                          {app.hostName}
+                        </td>
+                        <td style={{ padding: '20px 16px', fontSize: '0.85rem' }}>
+                          <div>Mulai: {app.startDate}</div>
+                          <div>Selesai: {app.endDate}</div>
+                        </td>
+                        <td style={{ padding: '20px 16px', fontSize: '0.85rem', color: '#495057', maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={app.motivation}>
+                          {app.motivation}
+                        </td>
+                        <td style={{ padding: '20px 16px' }}>
+                          <span style={{ 
+                            padding: '4px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 'bold',
+                            background: app.status === 'verified' ? '#ebfbee' : app.status === 'pending' ? '#fff9db' : '#fff5f5',
+                            color: app.status === 'verified' ? '#2b8a3e' : app.status === 'pending' ? '#e67700' : '#e03131'
+                          }}>
+                            {app.status.toUpperCase()}
+                          </span>
+                        </td>
+                        <td style={{ padding: '20px 16px', textAlign: 'center' }}>
+                          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                            {app.status === 'pending' && (
+                              <>
+                                <button 
+                                  onClick={() => handleApproveVolunteer(app)} 
+                                  style={{ padding: '8px', borderRadius: '8px', border: 'none', background: '#40c057', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                                  title="Setujui & Berikan Reputasi (XP)"
+                                >
+                                  <CheckCircle size={16} />
+                                </button>
+                                <button 
+                                  onClick={() => handleRejectVolunteer(app.id)} 
+                                  style={{ padding: '8px', borderRadius: '8px', border: 'none', background: '#fa5252', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                                  title="Tolak"
+                                >
+                                  <XCircle size={16} />
+                                </button>
+                              </>
+                            )}
+                            {app.status !== 'pending' && (
+                              <span style={{ fontSize: '0.85rem', color: '#868e96' }}>Selesai</span>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
             </div>
           ) : activeTab === 'events' ? (
             <div>
