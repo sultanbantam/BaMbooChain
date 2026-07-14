@@ -386,9 +386,14 @@ const Navbar = () => {
           <div style={{ padding: '12px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
               <Link to="/"><img src={getAssetUrl('logo-ysnj2.png')} style={{ height: '45px' }} alt="Logo" /></Link>
-              <div style={{ display: 'flex', gap: '8px' }}>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 {[1,2,3,4,5,6,7,8,9].map(i => (
-                  <img key={i} src={`${import.meta.env.BASE_URL}logos/logo${i}.png`} style={{ height: '22px' }} alt="mitra" />
+                  <img 
+                    key={i} 
+                    src={`${import.meta.env.BASE_URL}logos/logo${i}.${i === 2 ? 'svg' : 'png'}`} 
+                    style={{ height: '22px' }} 
+                    alt="mitra" 
+                  />
                 ))}
               </div>
             </div>
