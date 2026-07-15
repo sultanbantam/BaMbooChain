@@ -81,9 +81,49 @@ const AcademyPage = () => {
   // Sync Premium Materials from Firestore
   useEffect(() => {
     const q = query(collection(db, "premium_materials"), orderBy("timestamp", "desc"));
-    const unsub = onSnapshot(q, (snap) => {
+    const unsub = onSnapshot(q, async (snap) => {
       const mats = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setPremiumMaterials(mats);
+      
+      // Auto-insert BaMbooChain.pdf if it doesn't exist in Firestore
+      const hasWhitepaper = mats.some(m => m.pdf === "/BaMbooChain.pdf");
+      if (!hasWhitepaper && snap.docs.length > 0) {
+        let adminUid = "admin_default_id";
+        let adminName = "Admin";
+        let adminUsername = "albantani";
+        try {
+          const usersRef = collection(db, "users");
+          const q1 = query(usersRef, where("username", "==", "albantani"));
+          const snap1 = await getDocs(q1);
+          if (!snap1.empty) {
+            adminUid = snap1.docs[0].id;
+            adminName = snap1.docs[0].data().name || "Admin";
+            adminUsername = "albantani";
+          }
+        } catch (err) {
+          console.error("Error loading admin for auto-insert:", err);
+        }
+        try {
+          await addDoc(collection(db, "premium_materials"), {
+            title: "BaMbooChain: Web3 Green Bamboo Ecosystem Whitepaper",
+            tag: "Whitepaper Resmi",
+            cover: "/BaMbooChain_BMC.png",
+            pdf: "/BaMbooChain.pdf",
+            downloadName: "BaMbooChain.pdf",
+            desc: "Whitepaper resmi ekosistem BaMbooChain. Panduan komprehensif tentang tokenomics token BMC, integrasi IoT sensor bambu, kredit karbon on-chain, serta model pelestarian hutan bambu Kasepuhan Cibarani & Taman Daun Lembata.",
+            userId: adminUid,
+            author: adminName,
+            username: adminUsername,
+            likes: [],
+            sharesCount: 0,
+            comments: [],
+            gifts: [],
+            timestamp: new Date().getTime()
+          });
+        } catch (err) {
+          console.error("Error auto-inserting whitepaper:", err);
+        }
+      }
       
       if (snap.empty) {
         initializeDefaultPremiumMaterials();
@@ -120,6 +160,22 @@ const AcademyPage = () => {
 
     const defaultMaterials = [
       {
+        title: "BaMbooChain: Web3 Green Bamboo Ecosystem Whitepaper",
+        tag: "Whitepaper Resmi",
+        cover: "/BaMbooChain_BMC.png",
+        pdf: "/BaMbooChain.pdf",
+        downloadName: "BaMbooChain.pdf",
+        desc: "Whitepaper resmi ekosistem BaMbooChain. Panduan komprehensif tentang tokenomics token BMC, integrasi IoT sensor bambu, kredit karbon on-chain, serta model pelestarian hutan bambu Kasepuhan Cibarani & Taman Daun Lembata.",
+        userId: adminUid,
+        author: adminName,
+        username: adminUsername,
+        likes: [],
+        sharesCount: 0,
+        comments: [],
+        gifts: [],
+        timestamp: new Date().getTime()
+      },
+      {
         title: "Pedoman Konstruksi Bambu untuk Relawan",
         tag: "Pustaka Relawan Hijau",
         cover: "./assets/pedoman/cbsr.jpg",
@@ -133,7 +189,7 @@ const AcademyPage = () => {
         sharesCount: 0,
         comments: [],
         gifts: [],
-        timestamp: new Date().getTime()
+        timestamp: new Date().getTime() - 100
       },
       {
         title: "Rencana Bisnis Industri Bambu Terintegrasi",
