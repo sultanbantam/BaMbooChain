@@ -489,8 +489,28 @@ const BambooMeetingPage = () => {
     }
 
     const groqApiKey = import.meta.env.VITE_GROQ_API_KEY;
+    const openaiApiKey = import.meta.env.VITE_OPENAI_API_KEY;
 
-    if (!groqApiKey) {
+    let apiKey = openaiApiKey;
+    let endpoint = 'https://api.openai.com/v1/chat/completions';
+    let model = 'gpt-4o-mini';
+
+    const isOpenAiActive = (openaiApiKey && openaiApiKey !== 'PASTE_OPENAI_KEY_DISINI') || (groqApiKey && groqApiKey.startsWith('sk-'));
+    const isGroqActive = groqApiKey && groqApiKey !== 'PASTE_GROQ_KEY_DISINI' && !groqApiKey.startsWith('sk-');
+
+    if (isOpenAiActive) {
+      if (groqApiKey && groqApiKey.startsWith('sk-')) {
+        apiKey = groqApiKey;
+      }
+    } else if (isGroqActive) {
+      apiKey = groqApiKey;
+      endpoint = 'https://api.groq.com/openai/v1/chat/completions';
+      model = 'llama-3.3-70b-versatile';
+    } else {
+      apiKey = null;
+    }
+
+    if (!apiKey) {
       setTimeout(() => {
         const mockSummary = `### 📋 NOTULEN RAPAT BAMBOO MEETING (LOKAL STANDAR)
 **Tanggal:** ${new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
@@ -521,14 +541,14 @@ const BambooMeetingPage = () => {
     }
 
     try {
-      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${groqApiKey}`
+          'Authorization': `Bearer ${apiKey}`
         },
         body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile',
+          model: model,
           messages: [
             {
               role: 'system',

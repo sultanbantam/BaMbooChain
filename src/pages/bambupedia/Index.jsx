@@ -135,9 +135,14 @@ Token BMC lahir bukan dari ketiadaan utilitas layaknya Meme Coin, melainkan dipa
   },
 ];
 
-// ─── GROQ AI ENGINE ─────────────────────────────────────────────────────────
+// ─── AI ENGINE CONFIGURATION (OPENAI & GROQ) ──────────────────────────────
 const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY;
-const GROQ_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions';
+const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
+
+const isOpenAiActive = (OPENAI_API_KEY && OPENAI_API_KEY !== 'PASTE_OPENAI_KEY_DISINI') || (GROQ_API_KEY && GROQ_API_KEY.startsWith('sk-'));
+const isGroqActive = GROQ_API_KEY && GROQ_API_KEY !== 'PASTE_GROQ_KEY_DISINI' && !GROQ_API_KEY.startsWith('sk-');
+const usingAI = isOpenAiActive || isGroqActive;
+const aiProvider = isOpenAiActive ? 'openai' : (isGroqActive ? 'groq' : null);
 
 const BAMBOO_SYSTEM_PROMPT = `Kamu adalah BambuBot, asisten AI ahli bambu dari Yayasan Sabumi Nusantara Jaya (YSNJ) Indonesia.
 
@@ -176,21 +181,33 @@ const callGroqAI = async (question, history, contextData = '') => {
     { role: 'user', content: question },
   ];
 
-  const res = await fetch(GROQ_ENDPOINT, {
+  let apiKey = OPENAI_API_KEY;
+  let endpoint = 'https://api.openai.com/v1/chat/completions';
+  let model = 'gpt-4o-mini';
+
+  if (aiProvider === 'groq') {
+    apiKey = GROQ_API_KEY;
+    endpoint = 'https://api.groq.com/openai/v1/chat/completions';
+    model = 'llama-3.3-70b-versatile';
+  } else if (GROQ_API_KEY && GROQ_API_KEY.startsWith('sk-')) {
+    apiKey = GROQ_API_KEY;
+  }
+
+  const res = await fetch(endpoint, {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${GROQ_API_KEY}`,
+      'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'llama-3.3-70b-versatile',
+      model: model,
       messages,
       temperature: 0.4,
       max_tokens: 600,
     }),
   });
 
-  if (!res.ok) throw new Error(`Groq API error: ${res.status}`);
+  if (!res.ok) throw new Error(`AI API error: ${res.status}`);
   const data = await res.json();
   return data.choices[0].message.content;
 };
@@ -250,7 +267,7 @@ const BambupediaPage = () => {
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
-      text: `${t('bp_bot_welcome')}\n\n${GROQ_API_KEY && GROQ_API_KEY !== 'PASTE_GROQ_KEY_DISINI' ? t('bp_bot_groq') : t('bp_bot_local')}\n\n${t('bp_bot_prompt')}`,
+      text: `${t('bp_bot_welcome')}\n\n${usingAI ? (aiProvider === 'openai' ? t('bp_bot_openai') : t('bp_bot_groq')) : t('bp_bot_local')}\n\n${t('bp_bot_prompt')}`,
     },
   ]);
   const [input, setInput] = useState('');
@@ -321,7 +338,7 @@ const BambupediaPage = () => {
   }, []);
 
   useEffect(() => {
-    if (GROQ_API_KEY && GROQ_API_KEY !== 'PASTE_GROQ_KEY_DISINI') {
+    if (usingAI) {
       setUsingGroq(true);
     }
   }, []);

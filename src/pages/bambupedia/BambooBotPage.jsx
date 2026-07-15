@@ -57,24 +57,45 @@ const BambooBotPage = () => {
 
     const results = await searchKnowledge(items, cleanQuestion, 5);
     const groqApiKey = import.meta.env.VITE_GROQ_API_KEY;
+    const openaiApiKey = import.meta.env.VITE_OPENAI_API_KEY;
+
+    let apiKey = openaiApiKey;
+    let endpoint = 'https://api.openai.com/v1/chat/completions';
+    let model = 'gpt-4o-mini';
+
+    const isOpenAiActive = (openaiApiKey && openaiApiKey !== 'PASTE_OPENAI_KEY_DISINI') || (groqApiKey && groqApiKey.startsWith('sk-'));
+    const isGroqActive = groqApiKey && groqApiKey !== 'PASTE_GROQ_KEY_DISINI' && !groqApiKey.startsWith('sk-');
+
+    if (isOpenAiActive) {
+      if (groqApiKey && groqApiKey.startsWith('sk-')) {
+        apiKey = groqApiKey;
+      }
+    } else if (isGroqActive) {
+      apiKey = groqApiKey;
+      endpoint = 'https://api.groq.com/openai/v1/chat/completions';
+      model = 'llama-3.3-70b-versatile';
+    } else {
+      apiKey = null;
+    }
+
     let finalAnswer = '';
     let confidence = 'rendah';
 
-    if (groqApiKey && results.length > 0) {
+    if (apiKey && results.length > 0) {
       try {
         const contextText = results.map(({ item, snippet }, idx) => {
           const authorInfo = [item.author, item.year].filter(Boolean).join(', ');
           return `[Konteks ${idx + 1}] Sumber: "${item.title}" ${authorInfo ? `(${authorInfo})` : ''}\nIsi Dokumen: ${snippet}\n`;
         }).join('\n');
 
-        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        const response = await fetch(endpoint, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${groqApiKey}`
+            'Authorization': `Bearer ${apiKey}`
           },
           body: JSON.stringify({
-            model: 'llama-3.3-70b-versatile',
+            model: model,
             messages: [
               {
                 role: 'system',
