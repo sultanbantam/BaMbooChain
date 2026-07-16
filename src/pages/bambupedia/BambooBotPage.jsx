@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Bot, Send, Database, Sparkles, FileText, RefreshCw } from 'lucide-react';
 import BackButton from '../../components/BackButton';
 import { composeRagAnswer, getApprovedKnowledgeItems, searchKnowledge } from '../../utils/knowledgeService';
+import { useLanguage } from '../../context/LanguageContext';
 
 const starterPrompts = [
   'Apa sumber terverifikasi tentang bambu petung?',
@@ -11,6 +12,7 @@ const starterPrompts = [
 ];
 
 const BambooBotPage = () => {
+  const { language } = useLanguage();
   const [items, setItems] = useState([]);
   const [messages, setMessages] = useState([
     {
@@ -99,11 +101,15 @@ const BambooBotPage = () => {
             messages: [
               {
                 role: 'system',
-                content: 'Anda adalah BambuBot RAG, asisten kecerdasan buatan terverifikasi untuk Yayasan Sabumi Nusantara Jaya. Tugas Anda adalah menjawab pertanyaan pengguna secara ringkas, profesional, dan akurat dalam Bahasa Indonesia menggunakan konteks dokumen/sumber terverifikasi yang disediakan.\n\nAturan penting:\n1. Jawab HANYA menggunakan informasi dari konteks yang diberikan.\n2. Cantumkan rujukan secara eksplisit dalam kurung siku, misalnya [1] atau [2], merujuk pada nomor konteks sumber.\n3. Jika informasi tidak ada dalam konteks, katakan bahwa Anda tidak memiliki informasi yang cukup dalam Knowledge Library.\n4. Jawab dengan gaya bahasa ilmiah, edukatif, dan ramah.'
+                content: language === 'id' 
+                  ? 'Anda adalah BambuBot RAG, asisten kecerdasan buatan terverifikasi untuk Yayasan Sabumi Nusantara Jaya. Tugas Anda adalah menjawab pertanyaan pengguna secara ringkas, profesional, dan akurat dalam Bahasa Indonesia menggunakan konteks dokumen/sumber terverifikasi yang disediakan.\n\nAturan penting:\n1. Jawab HANYA menggunakan informasi dari konteks yang diberikan.\n2. Cantumkan rujukan secara eksplisit dalam kurung siku, misalnya [1] atau [2], merujuk pada nomor konteks sumber.\n3. Jika informasi tidak ada dalam konteks, katakan bahwa Anda tidak memiliki informasi yang cukup dalam Knowledge Library.\n4. Jawab dengan gaya bahasa ilmiah, edukatif, dan ramah.'
+                  : `You are BambuBot RAG, a verified AI assistant for Sabumi Nusantara Jaya Foundation. Your task is to answer user questions concisely, professionally, and accurately in ${language === 'jp' ? 'Japanese' : 'English'} using the provided verified document/source context.\n\nImportant rules:\n1. Answer ONLY using the information from the provided context.\n2. Include references explicitly in square brackets, e.g., [1] or [2], referring to the source context number.\n3. If the information is not in the context, say that you do not have enough information in the Knowledge Library.\n4. Answer in a scientific, educational, and friendly tone.`
               },
               {
                 role: 'user',
-                content: `Konteks Sumber:\n${contextText}\n\nPertanyaan: ${cleanQuestion}\n\nJawablah dengan merujuk konteks di atas secara ringkas:`
+                content: language === 'id'
+                  ? `Konteks Sumber:\n${contextText}\n\nPertanyaan: ${cleanQuestion}\n\nJawablah dengan merujuk konteks di atas secara ringkas:`
+                  : `Source Context:\n${contextText}\n\nQuestion: ${cleanQuestion}\n\nAnswer referencing the context above concisely:`
               }
             ],
             temperature: 0.2,

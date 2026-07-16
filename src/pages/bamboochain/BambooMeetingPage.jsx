@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Video, Users, Copy, Check, LogOut, Share2, Sparkles, AlertCircle, HelpCircle, Mic, MicOff, FileText, Download, Send, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import BackButton from '../../components/BackButton';
+import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { collection, addDoc, onSnapshot, query, orderBy, limit, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../firebase/config';
@@ -17,6 +18,7 @@ const RANDOM_ROOMS = [
 
 const BambooMeetingPage = () => {
   const { user } = useAuth();
+  const { language } = useLanguage();
   const [displayName, setDisplayName] = useState('');
   const [roomName, setRoomName] = useState('');
   const [isInMeeting, setIsInMeeting] = useState(false);
@@ -552,11 +554,15 @@ const BambooMeetingPage = () => {
           messages: [
             {
               role: 'system',
-              content: 'Anda adalah Asisten Notulen AI untuk BaMbooChain. Buatlah notulen rapat resmi terformat Markdown berdasarkan transkrip percakapan yang diberikan. Struktur notulen harus meliputi: Judul Rapat (sesuaikan dengan konteks), Tanggal, Ruang Rapat, Topik Utama, Keputusan Rapat, dan Tindak Lanjut (Action Items dengan PIC jika ada). Gunakan Bahasa Indonesia yang sopan dan profesional.'
+              content: language === 'id'
+                ? 'Anda adalah Asisten Notulen AI untuk BaMbooChain. Buatlah notulen rapat resmi terformat Markdown berdasarkan transkrip percakapan yang diberikan. Struktur notulen harus meliputi: Judul Rapat (sesuaikan dengan konteks), Tanggal, Ruang Rapat, Topik Utama, Keputusan Rapat, dan Tindak Lanjut (Action Items dengan PIC jika ada). Gunakan Bahasa Indonesia yang sopan dan profesional.'
+                : `You are an AI Minutes Assistant for BaMbooChain. Create official meeting minutes formatted in Markdown based on the provided conversation transcript. The minutes structure must include: Meeting Title (adjust to context), Date, Meeting Room, Main Topics, Meeting Decisions, and Action Items (with PIC if any). Use polite and professional ${language === 'jp' ? 'Japanese' : 'English'}.`
             },
             {
               role: 'user',
-              content: `Berikut adalah transkrip rapat:\n\n${transcriptText}\n\nBuatkan notulen rapat resminya sekarang.`
+              content: language === 'id'
+                ? `Berikut adalah transkrip rapat:\n\n${transcriptText}\n\nBuatkan notulen rapat resminya sekarang.`
+                : `Here is the meeting transcript:\n\n${transcriptText}\n\nCreate the official meeting minutes now.`
             }
           ],
           temperature: 0.3,

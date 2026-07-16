@@ -144,7 +144,9 @@ const isGroqActive = GROQ_API_KEY && GROQ_API_KEY !== 'PASTE_GROQ_KEY_DISINI' &&
 const usingAI = isOpenAiActive || isGroqActive;
 const aiProvider = isOpenAiActive ? 'openai' : (isGroqActive ? 'groq' : null);
 
-const BAMBOO_SYSTEM_PROMPT = `Kamu adalah BambuBot, asisten AI ahli bambu dari Yayasan Sabumi Nusantara Jaya (YSNJ) Indonesia.
+const getBambooSystemPrompt = (language) => {
+  if (language === 'id') {
+    return `Kamu adalah BambuBot, asisten AI ahli bambu dari Yayasan Sabumi Nusantara Jaya (YSNJ) Indonesia.
 
 PERAN:
 - Menjawab semua pertanyaan tentang bambu dalam bahasa Indonesia dengan akurat dan informatif
@@ -172,9 +174,42 @@ FORMAT JAWABAN:
 - Jika tidak tahu, akui dengan jujur dan sarankan sumber terpercaya
 
 Jangan pernah membuat data palsu. Akui ketidakpastian dengan jelas.`;
+  }
+  
+  const targetLang = language === 'jp' ? 'Japanese' : 'English';
+  return `You are BambuBot, an AI bamboo expert assistant from Sabumi Nusantara Jaya Foundation (YSNJ) Indonesia.
 
-const callGroqAI = async (question, history, contextData = '') => {
-  const finalPrompt = contextData ? `${BAMBOO_SYSTEM_PROMPT}\n\n=== DATA REAL-TIME PLATFORM ===\n${contextData}` : BAMBOO_SYSTEM_PROMPT;
+ROLE:
+- Answer all questions about bamboo in ${targetLang} accurately and informatively.
+- Focus on: botany, cultivation, economy, construction, textiles, food, environment, and bamboo export markets.
+- Always include specific numeric data, examples, and practical tips.
+
+YSNJ CONTEXT:
+- A foundation developing the Indonesian bamboo industry from upstream to downstream.
+- Location: Serang, Banten — plantation areas in Cibarani & Cisadane.
+- Focus on Petung bamboo (Dendrocalamus asper) and Moso bamboo (Phyllostachys edulis).
+- Integrates Web3 technology (BMC BEP-20 token) for the bamboo ecosystem.
+
+IMPORTANT DATA:
+- Indonesia: 176 bamboo species in Indonesia (Widjaja 2019) out of 1,400 global species.
+- Petung Bamboo: height 20-30m, diameter up to 20cm, harvest 3-5 years.
+- Export price: laminated bamboo USD 800-1,500/m³, flooring USD 15-30/m².
+- Carbon absorption: 1 ha of bamboo = 17 tons of CO₂/year.
+- Bamboo farm ROI: break even in 3-4 years, productive for 50-100 years.
+
+ANSWER FORMAT:
+- Use emojis for key points.
+- Use **bold** for technical terms.
+- Provide specific numerical data when relevant.
+- Keep answers concise but comprehensive (max 300 words).
+- If you do not know, admit it honestly and suggest reliable sources.
+
+Never fabricate false data. Clearly acknowledge uncertainties.`;
+};
+
+const callGroqAI = async (question, history, contextData = '', language = 'id') => {
+  const systemPrompt = getBambooSystemPrompt(language);
+  const finalPrompt = contextData ? `${systemPrompt}\n\n=== DATA REAL-TIME PLATFORM ===\n${contextData}` : systemPrompt;
   const messages = [
     { role: 'system', content: finalPrompt },
     ...history.slice(-6).map(m => ({ role: m.role, content: m.text })),
@@ -235,7 +270,7 @@ const formatMessage = (text) => {
 
 // ─── KOMPONEN UTAMA ──────────────────────────────────────────────────────────
 const BambupediaPage = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [freeQuota, setFreeQuota] = useState(() => {
     const saved = localStorage.getItem('bambubot_freeQuota');
     return saved !== null ? parseInt(saved, 10) : 3;
@@ -392,7 +427,7 @@ const BambupediaPage = () => {
       }
 
       if (usingGroq) {
-        answer = await callGroqAI(question, messages, ragContext);
+        answer = await callGroqAI(question, messages, ragContext, language);
       } else {
         // Simulasi delay untuk UX yang natural
         await new Promise(r => setTimeout(r, 700 + Math.random() * 500));
