@@ -113,6 +113,9 @@ const VolunteersPage = () => {
     } else if (hostId === 2) {
       // Lebak Banten coordinates
       setMapCenter({ lat: -6.65, lng: 106.22, zoom: 9 });
+    } else if (hostId === 3) {
+      // Kepulauan Seribu coordinates (Pulau Pramuka)
+      setMapCenter({ lat: -5.746, lng: 106.614, zoom: 11 });
     }
   };
 
@@ -428,6 +431,10 @@ const VolunteersPage = () => {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: '#4cd964' }} />
                     Lebak, Banten (Sabumi Adat)
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: '#0ca678' }} />
+                    Kep. Seribu, Jakarta (Pulau Pramuka)
                   </div>
                 </div>
               </div>

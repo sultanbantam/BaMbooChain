@@ -353,15 +353,18 @@ export const VOLUNTEERS_HOSTS = [
     location: "Kep. Seribu, Jakarta",
     location_en: "Thousand Islands, Jakarta",
     location_ja: "サウザンド諸島、ジャカルタ",
-    image: "/volunteer/1.png",
-    bannerImage: "/volunteer/2.png",
+    image: "/gambar/smilingcoral/3.png",
+    bannerImage: "/gambar/smilingcoral/8.png",
     rating: 4.9,
     reviewsCount: 24,
     reputationScore: 1280,
     gallery: [
-      { url: "/volunteer/1.png", category: "sea", category_en: "Coral Restoration", category_ja: "サンゴ保全", category_id: "Restorasi Karang" },
-      { url: "/volunteer/2.png", category: "sea", category_en: "Coral Restoration", category_ja: "サンゴ保全", category_id: "Restorasi Karang" },
-      { url: "/volunteer/3.png", category: "sea", category_en: "Coral Restoration", category_ja: "サンゴ保全", category_id: "Restorasi Karang" }
+      { url: "/gambar/smilingcoral/4.png", category: "sea", category_en: "Coral Restoration", category_ja: "サンゴ保全", category_id: "Restorasi Karang" },
+      { url: "/gambar/smilingcoral/5.png", category: "sea", category_en: "Coral Restoration", category_ja: "サンゴ保全", category_id: "Restorasi Karang" },
+      { url: "/gambar/smilingcoral/6.png", category: "sea", category_en: "Coral Restoration", category_ja: "サンゴ保全", category_id: "Restorasi Karang" },
+      { url: "/gambar/smilingcoral/7.png", category: "sea", category_en: "Coral Restoration", category_ja: "サンゴ保全", category_id: "Restorasi Karang" },
+      { url: "/gambar/smilingcoral/9.png", category: "sea", category_en: "Coral Restoration", category_ja: "サンゴ保全", category_id: "Restorasi Karang" },
+      { url: "/gambar/smilingcoral/10.png", category: "sea", category_en: "Coral Restoration", category_ja: "サンゴ保全", category_id: "Restorasi Karang" }
     ],
     skills: ["Restorasi Karang", "Penanaman Mangrove", "Pembersihan Pantai", "Ekowisata", "Edukasi Lingkungan"],
     skills_en: ["Coral Restoration", "Mangrove Planting", "Beach Clean Up", "Ecotourism", "Environmental Education"],
