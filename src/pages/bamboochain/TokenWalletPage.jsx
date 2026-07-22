@@ -2131,6 +2131,76 @@ const TokenUtilityTab = () => {
           </div>
         </div>
 
+        {/* AdViPI Card */}
+        <div style={{ background: 'white', borderRadius: '24px', overflow: 'hidden', border: '1px solid #f1f3f5', boxShadow: '0 8px 24px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ height: '160px', background: 'linear-gradient(135deg, #FF6B6B, #FF8E53)', position: 'relative' }}></div>
+          <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+            <h4 style={{ fontSize: '1.25rem', fontWeight: '900', margin: '0 0 12px 0', color: 'var(--text-main)' }}>AdViPI</h4>
+            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '24px', flex: 1 }}>
+              {language === 'id' ? 'Platform AI yang membantu membuat iklan gambar dan video pendek secara otomatis. Cukup masukkan informasi produk atau layanan, AdViPI akan menghasilkan copywriting, desain visual, dan konten promosi siap tayang.' : 'AI platform that helps create image and short video ads automatically. Just enter product or service information, AdViPI will generate copywriting, visual designs, and ready-to-publish promotional content.'}
+            </p>
+            <a href="https://www.advipi.click" target="_blank" rel="noopener noreferrer" style={{ background: '#FF6B6B', color: 'white', textDecoration: 'none', padding: '14px', borderRadius: '16px', fontWeight: 'bold', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(255, 107, 107, 0.3)' }} onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}>
+              {language === 'id' ? 'Buka AdViPI' : 'Open AdViPI'} <ChevronRight size={18} />
+            </a>
+          </div>
+        </div>
+
+        {/* Votiva Card */}
+        <div style={{ background: 'white', borderRadius: '24px', overflow: 'hidden', border: '1px solid #f1f3f5', boxShadow: '0 8px 24px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ height: '160px', background: 'linear-gradient(135deg, #4D96FF, #6BCB77)', position: 'relative' }}></div>
+          <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+            <h4 style={{ fontSize: '1.25rem', fontWeight: '900', margin: '0 0 12px 0', color: 'var(--text-main)' }}>Votiva</h4>
+            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '24px', flex: 1 }}>
+              {language === 'id' ? 'Platform AI Election Intelligence yang membantu kandidat, partai politik, dan tim kampanye mengelola pemilih, relawan, analisis sentimen, peta geospasial, serta komunikasi digital dalam satu dashboard cerdas.' : 'AI Election Intelligence platform helping candidates, political parties, and campaign teams manage voters, volunteers, sentiment analysis, geospatial maps, and digital communication in a smart dashboard.'}
+            </p>
+            <a href="https://www.votiva.click" target="_blank" rel="noopener noreferrer" style={{ background: '#4D96FF', color: 'white', textDecoration: 'none', padding: '14px', borderRadius: '16px', fontWeight: 'bold', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(77, 150, 255, 0.3)' }} onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}>
+              {language === 'id' ? 'Buka Votiva' : 'Open Votiva'} <ChevronRight size={18} />
+            </a>
+          </div>
+        </div>
+
+        {/* AIchitect Card */}
+        <div style={{ background: 'white', borderRadius: '24px', overflow: 'hidden', border: '1px solid #f1f3f5', boxShadow: '0 8px 24px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ height: '160px', background: 'linear-gradient(135deg, #FFD93D, #FF6B6B)', position: 'relative' }}></div>
+          <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+            <h4 style={{ fontSize: '1.25rem', fontWeight: '900', margin: '0 0 12px 0', color: 'var(--text-main)' }}>AIchitect</h4>
+            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '24px', flex: 1 }}>
+              {language === 'id' ? 'Platform cerdas untuk planner, arsitek, engineer, dan tim manajemen proyek dalam merencanakan, merancang, menghitung, serta mengendalikan proyek secara terintegrasi dengan dukungan AI.' : 'Smart platform for planners, architects, engineers, and project management teams to plan, design, calculate, and control projects integratedly with AI support.'}
+            </p>
+            <a href="https://www.aichitect.click" target="_blank" rel="noopener noreferrer" style={{ background: '#FFD93D', color: '#333', textDecoration: 'none', padding: '14px', borderRadius: '16px', fontWeight: 'bold', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(255, 217, 61, 0.3)' }} onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}>
+              {language === 'id' ? 'Buka AIchitect' : 'Open AIchitect'} <ChevronRight size={18} />
+            </a>
+          </div>
+        </div>
+
+        {/* YourFuture Card */}
+        <div style={{ background: 'white', borderRadius: '24px', overflow: 'hidden', border: '1px solid #f1f3f5', boxShadow: '0 8px 24px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ height: '160px', background: 'linear-gradient(135deg, #6BCB77, #FFD93D)', position: 'relative' }}></div>
+          <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+            <h4 style={{ fontSize: '1.25rem', fontWeight: '900', margin: '0 0 12px 0', color: 'var(--text-main)' }}>YourFuture</h4>
+            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '24px', flex: 1 }}>
+              {language === 'id' ? 'Aplikasi BMC AI yang membantu calon founder, UMKM, dan kreator bisnis mengubah ide mentah menjadi Business Model Canvas yang lebih terstruktur, praktis, dan siap diuji.' : 'AI BMC application helping founders, SMEs, and creators turn raw ideas into structured, practical, and test-ready Business Model Canvas.'}
+            </p>
+            <a href="https://www.yourfuture.fun" target="_blank" rel="noopener noreferrer" style={{ background: '#6BCB77', color: 'white', textDecoration: 'none', padding: '14px', borderRadius: '16px', fontWeight: 'bold', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(107, 203, 119, 0.3)' }} onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}>
+              {language === 'id' ? 'Buka YourFuture' : 'Open YourFuture'} <ChevronRight size={18} />
+            </a>
+          </div>
+        </div>
+
+        {/* ClimateMansion Card */}
+        <div style={{ background: 'white', borderRadius: '24px', overflow: 'hidden', border: '1px solid #f1f3f5', boxShadow: '0 8px 24px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ height: '160px', background: 'linear-gradient(135deg, #2E8B57, #3CB371)', position: 'relative' }}></div>
+          <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+            <h4 style={{ fontSize: '1.25rem', fontWeight: '900', margin: '0 0 12px 0', color: 'var(--text-main)' }}>ClimateMansion</h4>
+            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '24px', flex: 1 }}>
+              {language === 'id' ? 'Platform berbasis AI yang membantu organisasi menemukan peluang pendanaan iklim, mengukur kesiapan hibah, menyusun desain dan proposal proyek, serta melakukan simulasi reviewer.' : 'AI-based platform helping organizations find climate funding opportunities, measure grant readiness, draft project proposals, and simulate reviewers.'}
+            </p>
+            <a href="https://www.climatemansion.com" target="_blank" rel="noopener noreferrer" style={{ background: '#2E8B57', color: 'white', textDecoration: 'none', padding: '14px', borderRadius: '16px', fontWeight: 'bold', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(46, 139, 87, 0.3)' }} onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}>
+              {language === 'id' ? 'Buka ClimateMansion' : 'Open ClimateMansion'} <ChevronRight size={18} />
+            </a>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
