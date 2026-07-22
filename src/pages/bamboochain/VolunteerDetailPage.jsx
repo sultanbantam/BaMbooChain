@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { MapPin, Star, Award, CheckCircle, Clock, BookOpen, Hammer, Anchor, ArrowLeft, Send } from 'lucide-react';
 import BackButton from '../../components/BackButton';
@@ -9,6 +9,13 @@ import { db } from '../../firebase/config';
 import { collection, addDoc } from 'firebase/firestore';
 
 const VolunteerDetailPage = () => {
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   const { hostId } = useParams();
   const navigate = useNavigate();
   const { t, language } = useLanguage();
@@ -137,7 +144,7 @@ const VolunteerDetailPage = () => {
       </div>
 
       {/* Main Content Layout */}
-      <div className="container" style={{ padding: '40px 24px', display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: '40px' }}>
+      <div className="container" style={{ padding: isMobile ? '24px 16px' : '40px 24px', display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1.6fr 1fr', gap: isMobile ? '24px' : '40px' }}>
         
         {/* Left Side: Host Details and Tabs */}
         <div>
@@ -370,7 +377,7 @@ const VolunteerDetailPage = () => {
                           e.currentTarget.style.boxShadow = '0 4px 10px rgba(0,0,0,0.02)';
                         }}
                       >
-                        <div style={{ width: '100%', height: '100%', background: `url("${img.url}") center/cover no-repeat` }} />
+                        <img src={img.url} alt="Gallery item" loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       </div>
                     ))}
                   </div>
