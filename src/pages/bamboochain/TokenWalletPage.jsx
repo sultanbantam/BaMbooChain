@@ -13,6 +13,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { updateDoc, doc, arrayUnion } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { useQueryClient } from '@tanstack/react-query';
+import { GoogleMap, useLoadScript, Marker } from '@react-google-maps/api';
 
 const formatBalance = (val) => {
   const num = Number(val || 0);
@@ -1195,10 +1196,7 @@ const ContributeDataBMC = () => {
   const locateGps = () => setMapOpen(true);
 
   const handleMapPinDrop = (e) => {
-    const mockLat = (-6.1214 + Math.random() * 0.001).toFixed(5);
-    const mockLng = (106.123 + Math.random() * 0.001).toFixed(5);
-    setGps(`${mockLat}, ${mockLng}`);
-    setMapOpen(false);
+    // This is handled directly inside the GoogleMap onClick now
   };
 
   const handleFileChange = (e, fileKey) => {
@@ -1259,8 +1257,20 @@ const ContributeDataBMC = () => {
           <div style={{ background: 'white', padding: isMobile ? '24px' : '32px', borderRadius: '24px', width: '90%', maxWidth: '600px', display: 'flex', flexDirection: 'column', gap: '16px', animation: 'fadeIn 0.2s' }}>
             <h3 style={{ margin:0, fontWeight: '900' }}>Pilih Lokasi</h3>
             <p style={{ margin:0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>Klik di peta untuk koordinat GPS.</p>
-            <div onClick={handleMapPinDrop} style={{ width: '100%', height: isMobile ? '200px' : '300px', background: 'url(./gambar/gmap.jpg) center/cover', borderRadius: '16px', border: '2px solid #dee2e6', cursor: 'crosshair', position: 'relative' }}>
-                <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: 'rgba(255,255,255,0.9)', padding: '8px 16px', borderRadius: '20px', fontWeight: 'bold', pointerEvents: 'none', fontSize: '0.8rem' }}>⬇️ Klik di Peta ⬇️</div>
+            <div style={{ width: '100%', height: isMobile ? '200px' : '300px', borderRadius: '16px', border: '2px solid #dee2e6', overflow: 'hidden', position: 'relative', margin: '16px 0' }}>
+              {!isMapLoaded ? (
+                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', background: '#f8f9fa' }}>Loading Google Maps...</div>
+              ) : (
+                 <GoogleMap
+                   zoom={5}
+                   center={{ lat: -2.5, lng: 118.0 }}
+                   mapContainerStyle={{ width: '100%', height: '100%' }}
+                   onClick={(e) => {
+                     setGps(`${e.latLng.lat().toFixed(5)}, ${e.latLng.lng().toFixed(5)}`);
+                     setMapOpen(false);
+                   }}
+                 />
+              )}
             </div>
             <button onClick={() => setMapOpen(false)} style={{ padding: '12px', border: '1px solid #ced4da', background: 'white', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.9rem' }}>Batal</button>
           </div>

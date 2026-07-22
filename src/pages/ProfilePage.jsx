@@ -105,9 +105,13 @@ const ProfilePage = () => {
   // Real-time statuses list state
   const [statuses, setStatuses] = useState([]);
   
-  // Track expanded comments or gifts per status
   const [expandedCommentsStatusId, setExpandedCommentsStatusId] = useState(null);
   const [expandedGiftsStatusId, setExpandedGiftsStatusId] = useState(null);
+  const [activeMapMarker, setActiveMapMarker] = useState(null);
+
+  const { isLoaded: isMapLoaded } = useLoadScript({
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
+  });
   const [showInbox, setShowInbox] = useState(false);
 
   const [shareModalData, setShareModalData] = useState({ isOpen: false, url: '', title: '' });
@@ -1514,37 +1518,54 @@ const ProfilePage = () => {
                   🗺️ Peta Lokasi Aktivitas Hijau
                 </p>
                 <div style={{ height: '240px', width: '100%', borderRadius: '16px', overflow: 'hidden', border: '1px solid var(--border-color)', marginBottom: '15px', zIndex: 1 }}>
-                  <MapContainer center={mapCenter} zoom={10} style={{ height: '100%', width: '100%' }}>
-                    <TileLayer
-                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    />
-                    {(plantings || []).map((p, idx) => {
-                      const coords = parseCoords(p.location);
-                      if (!coords) return null;
-                      return (
-                        <Marker key={p.id || idx} position={coords} icon={defaultIcon}>
-                          <Popup>
-                            <div style={{ fontSize: '0.8rem', color: '#333' }}>
-                              <strong style={{ color: 'var(--primary)' }}>{p.species || 'Bambu'}</strong><br/>
-                              <span>Jumlah: {p.count || 0} rumpun</span><br/>
-                              <span>Status: {p.status || 'Planted'}</span>
-                            </div>
-                          </Popup>
+                  {!isMapLoaded ? (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', background: '#f8f9fa' }}>Loading Google Maps...</div>
+                  ) : (
+                    <GoogleMap 
+                      center={mapCenter ? { lat: mapCenter[0], lng: mapCenter[1] } : { lat: -6.5888, lng: 106.3144 }} 
+                      zoom={10} 
+                      mapContainerStyle={{ height: '100%', width: '100%' }}
+                    >
+                      {(plantings || []).map((p, idx) => {
+                        const coords = parseCoords(p.location);
+                        if (!coords) return null;
+                        const pos = { lat: coords[0], lng: coords[1] };
+                        const markerId = p.id || `marker-${idx}`;
+                        return (
+                          <Marker 
+                            key={markerId} 
+                            position={pos} 
+                            onClick={() => setActiveMapMarker(markerId)}
+                          >
+                            {activeMapMarker === markerId && (
+                              <InfoWindow onCloseClick={() => setActiveMapMarker(null)}>
+                                <div style={{ fontSize: '0.8rem', color: '#333', padding: '4px' }}>
+                                  <strong style={{ color: 'var(--primary)' }}>{p.species || 'Bambu'}</strong><br/>
+                                  <span>Jumlah: {p.count || 0} rumpun</span><br/>
+                                  <span>Status: {p.status || 'Planted'}</span>
+                                </div>
+                              </InfoWindow>
+                            )}
+                          </Marker>
+                        );
+                      })}
+                      {coordsList.length === 0 && (
+                        <Marker 
+                          position={mapCenter ? { lat: mapCenter[0], lng: mapCenter[1] } : { lat: -6.5888, lng: 106.3144 }}
+                          onClick={() => setActiveMapMarker('cibarani')}
+                        >
+                          {activeMapMarker === 'cibarani' && (
+                            <InfoWindow onCloseClick={() => setActiveMapMarker(null)}>
+                              <div style={{ fontSize: '0.8rem', color: '#333', padding: '4px' }}>
+                                <strong>Area Konservasi Cibarani</strong><br/>
+                                <span>Lokasi demonstrasi penanaman bambu lestari.</span>
+                              </div>
+                            </InfoWindow>
+                          )}
                         </Marker>
-                      );
-                    })}
-                    {coordsList.length === 0 && (
-                      <Marker position={mapCenter} icon={defaultIcon}>
-                        <Popup>
-                          <div style={{ fontSize: '0.8rem', color: '#333' }}>
-                            <strong>Area Konservasi Cibarani</strong><br/>
-                            <span>Lokasi demonstrasi penanaman bambu lestari.</span>
-                          </div>
-                        </Popup>
-                      </Marker>
-                    )}
-                  </MapContainer>
+                      )}
+                    </GoogleMap>
+                  )}
                 </div>
                 {/* Green Action Navigation Links */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
