@@ -45,9 +45,9 @@ const VolunteerDetailPage = () => {
 
   const { user, isAuthenticated, openLoginModal } = useAuth();
 
-  // Tabs state
   const [activeTab, setActiveTab] = useState('about');
   const [galleryFilter, setGalleryFilter] = useState('all');
+  const [visibleGalleryCount, setVisibleGalleryCount] = useState(8);
 
   // Booking Form State
   const [startDate, setStartDate] = useState('');
@@ -332,7 +332,10 @@ const VolunteerDetailPage = () => {
                         {categories.map(cat => (
                           <button
                             key={cat.id}
-                            onClick={() => setGalleryFilter(cat.id)}
+                            onClick={() => {
+                              setGalleryFilter(cat.id);
+                              setVisibleGalleryCount(8);
+                            }}
                             style={{
                               padding: '8px 16px',
                               borderRadius: '20px',
@@ -354,7 +357,7 @@ const VolunteerDetailPage = () => {
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '16px' }}>
-                    {filteredItems.map((img, i) => (
+                    {filteredItems.slice(0, visibleGalleryCount).map((img, i) => (
                       <div 
                         key={i} 
                         className="gallery-item"
@@ -381,6 +384,16 @@ const VolunteerDetailPage = () => {
                       </div>
                     ))}
                   </div>
+                  {visibleGalleryCount < filteredItems.length && (
+                    <div style={{ display: 'flex', justifyContent: 'center', marginTop: '24px' }}>
+                      <button 
+                        onClick={() => setVisibleGalleryCount(prev => prev + 8)}
+                        style={{ padding: '10px 24px', borderRadius: '24px', background: 'var(--primary)', color: 'white', border: 'none', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 12px rgba(12,166,120,0.2)' }}
+                      >
+                        {language === 'ja' ? 'もっと見る' : language === 'en' ? 'Load More' : 'Tampilkan Lebih Banyak'}
+                      </button>
+                    </div>
+                  )}
                 </div>
               );
             })()}
