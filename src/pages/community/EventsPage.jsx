@@ -23,7 +23,14 @@ const EventsPage = () => {
     description: ev.description,
     image: ev.title?.includes('Revolusi Sebatang Bambu') ? getAssetUrl('event/ebtr.png') : (ev.image || getAssetUrl('event/placeholder.jpg')),
     color: '#fab005', // default color for community events
-    organizer: ev.organizerName
+    organizer: ev.organizerName,
+    speakers: ev.title?.includes('Revolusi Sebatang Bambu') ? [
+      { name: 'Mukoddas Syuhada', role: 'Narasumber Utama', cvUrl: getAssetUrl('event/cv.pdf') }
+    ] : ev.speakers,
+    materials: ev.title?.includes('Revolusi Sebatang Bambu') ? [
+      { title: 'Itinerary Kegiatan', fileUrl: getAssetUrl('event/itinerary.pdf') },
+      { title: 'Materi Acara', fileUrl: getAssetUrl('event/materi.pdf') }
+    ] : ev.materials
   }))];
 
   const featuredEvent = featuredEventData;
