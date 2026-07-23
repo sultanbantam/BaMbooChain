@@ -29,7 +29,8 @@ const EventsPage = () => {
     ] : ev.speakers,
     materials: ev.title?.includes('Revolusi Sebatang Bambu') ? [
       { title: 'Itinerary Kegiatan', fileUrl: getAssetUrl('event/itinerary.pdf') },
-      { title: 'Materi Acara', fileUrl: getAssetUrl('event/materi.pdf') }
+      { title: 'Materi Acara', fileUrl: getAssetUrl('event/materi.pdf') },
+      { title: 'Materi BLL', fileUrl: getAssetUrl('event/bll.pdf') }
     ] : ev.materials
   }))];
 
