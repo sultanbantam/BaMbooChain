@@ -21,7 +21,7 @@ const EventsPage = () => {
     location: ev.location,
     category: ev.category,
     description: ev.description,
-    image: ev.image || getAssetUrl('event/placeholder.jpg'),
+    image: ev.title?.includes('Revolusi Sebatang Bambu') ? getAssetUrl('event/ebtr.png') : (ev.image || getAssetUrl('event/placeholder.jpg')),
     color: '#fab005', // default color for community events
     organizer: ev.organizerName
   }))];
