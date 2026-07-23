@@ -13,18 +13,6 @@ import {
   DownloadCloud, Lock, FileText, CheckCircle, Send
 } from 'lucide-react';
 import { GoogleMap, useLoadScript, Marker, InfoWindow } from '@react-google-maps/api';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-
-const defaultIcon = L.icon({
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
-});
-
 const parseCoords = (locStr) => {
   if (!locStr) return null;
   const match = locStr.match(/\((-?\d+\.\d+),\s*(-?\d+\.\d+)\)/);

@@ -15,9 +15,7 @@ import {
   UploadCloud, FileText, Trash2, Send, ChevronRight, PlayCircle, Search, Leaf, Bell, Smile, Calendar
 } from 'lucide-react';
 import EmojiPicker from 'emoji-picker-react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import { GoogleMap, useLoadScript, Marker, InfoWindow } from '@react-google-maps/api';
 
 const compressAvatar = (base64Str) => {
   return new Promise((resolve) => {
@@ -49,14 +47,6 @@ const compressAvatar = (base64Str) => {
   });
 };
 
-const defaultIcon = L.icon({
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
-});
 
 const parseCoords = (locStr) => {
   if (!locStr) return null;
