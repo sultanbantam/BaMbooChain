@@ -57,6 +57,7 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
   const isDiburuan = eventTitle?.includes('Diburuan') || eventTitle?.includes('DIBURUAN');
   const isSerenTaun = eventTitle?.includes('Seren Taun');
   const isFGD = eventId === 'fgd-rumah-modular-2026';
+  const isFieldVisit = eventTitle?.includes('Field Visit');
   
   const isKodibaMember = user && ((user.stakedBalance || 0) >= 10 || (user.transactions || []).some(t => t.type === 'Fiat'));
 
@@ -78,6 +79,7 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
   if (isDiburuan) statementText = "Saya menyatakan bersedia mengikuti seluruh rangkaian kegiatan DIBURUAN FESTIVAL JILID IV 2026 dan mematuhi aturan.";
   if (isHBN) statementText = "Saya menyatakan bersedia mengikuti seluruh rangkaian kegiatan HARI BAMBU NASIONAL 2026 dan mematuhi aturan.";
   if (isFGD) statementText = "Saya menyatakan bersedia mengikuti seluruh rangkaian kegiatan Workshop dan FGD Capacity Building Perancangan Prototype Rumah Modular Bambu dan mematuhi aturan.";
+  if (isFieldVisit) statementText = "Saya menyatakan bersedia mengikuti seluruh rangkaian kegiatan Field Visit: Revolusi Sebatang Bambu dan mematuhi tata tertib.";
 
   let waEventName = eventTitle || 'Event';
   if (isSerenTaun) waEventName = 'Seren Taun';
@@ -85,6 +87,7 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
   if (isDiburuan) waEventName = 'Festival Diburuan';
   if (isHBN) waEventName = 'Hari Bambu Nasional';
   if (isFGD) waEventName = 'Workshop & FGD';
+  if (isFieldVisit) waEventName = 'Field Visit Trisakti';
 
   const activitiesList = [
     'Penanaman bambu',
@@ -395,7 +398,7 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
             <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '25px', color: '#51cf66' }}>D. Pernyataan & Pembayaran</h3>
             
-            {!isTba && !isFGD && (
+            {!isTba && !isFGD && !isFieldVisit && (
               isKodibaMember ? (
                 <div style={{ backgroundColor: '#ebfbee', border: '1px solid #51cf66', padding: '15px', borderRadius: '15px', marginBottom: '25px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <CheckCircle color="#2b8a3e" size={32} />
@@ -436,7 +439,7 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
                 <CreditCard color="#51cf66" /> Informasi Pembayaran
               </h4>
               
-              {isFGD ? (
+              {isFGD || isFieldVisit ? (
                 <>
                   <div style={{ backgroundColor: 'rgba(81, 207, 102, 0.1)', border: '1px solid #51cf66', padding: '15px', borderRadius: '10px', marginBottom: '15px' }}>
                     <p style={{ color: '#51cf66', margin: 0, fontWeight: 'bold' }}>Event Tidak Berbayar (Gratis)</p>
