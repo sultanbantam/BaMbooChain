@@ -15,9 +15,9 @@ const EventsPage = () => {
 
   const events = [...eventsData, ...communityEvents.map(ev => ({
     id: ev.id,
-    title: ev.title,
+    title: ev.title?.includes('Revolusi Sebatang Bambu') ? 'Field Visit: Revolusi Sebatang Bambu di Indonesia Studi Lapangan Ekosistem Bambu Tangerang Raya bersama Tim Pusat Studi Arsitektur Nusantara FTSP Universitas Trisakti' : ev.title,
     date: ev.date,
-    time: ev.time || '10:00 - 15:00 WIB',
+    time: ev.title?.includes('Revolusi Sebatang Bambu') ? '09.00 - 17.00 WIB' : (ev.time || '10:00 - 15:00 WIB'),
     location: ev.location,
     category: ev.category,
     description: ev.description,
@@ -30,7 +30,8 @@ const EventsPage = () => {
     materials: ev.title?.includes('Revolusi Sebatang Bambu') ? [
       { title: 'Itinerary Kegiatan', fileUrl: getAssetUrl('event/itinerary.pdf') },
       { title: 'Materi Acara', fileUrl: getAssetUrl('event/materi.pdf') },
-      { title: 'Materi BLL', fileUrl: getAssetUrl('event/bll.pdf') }
+      { title: 'Materi BLL', fileUrl: getAssetUrl('event/bll.pdf') },
+      { title: 'Materi Tambahan 2', fileUrl: getAssetUrl('event/materi2.pdf') }
     ] : ev.materials
   }))];
 
