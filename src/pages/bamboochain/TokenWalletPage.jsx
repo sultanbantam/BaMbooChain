@@ -2161,7 +2161,7 @@ const TokenUtilityTab = () => {
 
         {/* Votiva Card */}
         <div style={{ background: 'white', borderRadius: '24px', overflow: 'hidden', border: '1px solid #f1f3f5', boxShadow: '0 8px 24px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ height: '160px', background: 'linear-gradient(135deg, #4D96FF, #6BCB77)', position: 'relative' }}></div>
+          <div style={{ height: '160px', background: 'url("/gambar/utility/logo2.png") center/cover', position: 'relative' }}></div>
           <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', flex: 1 }}>
             <h4 style={{ fontSize: '1.25rem', fontWeight: '900', margin: '0 0 12px 0', color: 'var(--text-main)' }}>Votiva</h4>
             <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '24px', flex: 1 }}>
@@ -2175,7 +2175,7 @@ const TokenUtilityTab = () => {
 
         {/* AIchitect Card */}
         <div style={{ background: 'white', borderRadius: '24px', overflow: 'hidden', border: '1px solid #f1f3f5', boxShadow: '0 8px 24px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ height: '160px', background: 'linear-gradient(135deg, #FFD93D, #FF6B6B)', position: 'relative' }}></div>
+          <div style={{ height: '160px', background: 'url("/gambar/utility/logo5.png") center/cover', position: 'relative' }}></div>
           <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', flex: 1 }}>
             <h4 style={{ fontSize: '1.25rem', fontWeight: '900', margin: '0 0 12px 0', color: 'var(--text-main)' }}>AIchitect</h4>
             <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '24px', flex: 1 }}>
@@ -2189,7 +2189,7 @@ const TokenUtilityTab = () => {
 
         {/* YourFuture Card */}
         <div style={{ background: 'white', borderRadius: '24px', overflow: 'hidden', border: '1px solid #f1f3f5', boxShadow: '0 8px 24px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ height: '160px', background: 'linear-gradient(135deg, #6BCB77, #FFD93D)', position: 'relative' }}></div>
+          <div style={{ height: '160px', background: 'url("/gambar/utility/logo.png") center/cover', position: 'relative' }}></div>
           <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', flex: 1 }}>
             <h4 style={{ fontSize: '1.25rem', fontWeight: '900', margin: '0 0 12px 0', color: 'var(--text-main)' }}>YourFuture</h4>
             <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '24px', flex: 1 }}>
@@ -2203,7 +2203,7 @@ const TokenUtilityTab = () => {
 
         {/* ClimateMansion Card */}
         <div style={{ background: 'white', borderRadius: '24px', overflow: 'hidden', border: '1px solid #f1f3f5', boxShadow: '0 8px 24px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ height: '160px', background: 'linear-gradient(135deg, #2E8B57, #3CB371)', position: 'relative' }}></div>
+          <div style={{ height: '160px', background: 'url("/gambar/utility/5.jpeg") center/cover', position: 'relative' }}></div>
           <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', flex: 1 }}>
             <h4 style={{ fontSize: '1.25rem', fontWeight: '900', margin: '0 0 12px 0', color: 'var(--text-main)' }}>ClimateMansion</h4>
             <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '24px', flex: 1 }}>
