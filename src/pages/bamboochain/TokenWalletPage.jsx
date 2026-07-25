@@ -2116,7 +2116,7 @@ const TokenUtilityTab = () => {
 
         {/* Signal Trading Card */}
         <div style={{ background: 'white', borderRadius: '24px', overflow: 'hidden', border: '1px solid #f1f3f5', boxShadow: '0 8px 24px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ height: '160px', background: 'url("/gambar/logo2.png") center/cover', position: 'relative' }}></div>
+          <div style={{ height: '160px', background: '#fff url("/gambar/logo2.png") center/contain no-repeat', position: 'relative' }}></div>
           <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', flex: 1 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#e03131', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '8px' }}>
               <TrendingUp size={14} /> VIP Access
@@ -2125,7 +2125,7 @@ const TokenUtilityTab = () => {
             <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '24px', flex: 1 }}>
               {language === 'id' ? 'Akses eksklusif ke sinyal trading cryptocurrency premium. Gunakan saldo BMC Anda untuk berlangganan.' : 'Exclusive access to premium cryptocurrency trading signals. Use your BMC balance to subscribe.'}
             </p>
-            <a href="https://www.xignalx.click/" target="_blank" rel="noopener noreferrer" style={{ background: '#e03131', color: 'white', textDecoration: 'none', padding: '14px', borderRadius: '16px', fontWeight: 'bold', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(224, 49, 49, 0.3)' }} onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}>
+            <a href="https://xignalx.click" target="_blank" rel="noopener noreferrer" style={{ background: '#e03131', color: 'white', textDecoration: 'none', padding: '14px', borderRadius: '16px', fontWeight: 'bold', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(224, 49, 49, 0.3)' }} onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}>
               {language === 'id' ? 'Buka Signal Trading' : 'Open Signal Trading'} <ChevronRight size={18} />
             </a>
           </div>
@@ -2161,13 +2161,13 @@ const TokenUtilityTab = () => {
 
         {/* Votiva Card */}
         <div style={{ background: 'white', borderRadius: '24px', overflow: 'hidden', border: '1px solid #f1f3f5', boxShadow: '0 8px 24px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ height: '160px', background: 'url("/gambar/utility/logo2.png") center/cover', position: 'relative' }}></div>
+          <div style={{ height: '160px', background: '#fff url("/gambar/utility/logo2.png") center/contain no-repeat', position: 'relative' }}></div>
           <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', flex: 1 }}>
             <h4 style={{ fontSize: '1.25rem', fontWeight: '900', margin: '0 0 12px 0', color: 'var(--text-main)' }}>Votiva</h4>
             <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '24px', flex: 1 }}>
               {language === 'id' ? 'Platform AI Election Intelligence yang membantu kandidat, partai politik, dan tim kampanye mengelola pemilih, relawan, analisis sentimen, peta geospasial, serta komunikasi digital dalam satu dashboard cerdas.' : 'AI Election Intelligence platform helping candidates, political parties, and campaign teams manage voters, volunteers, sentiment analysis, geospatial maps, and digital communication in a smart dashboard.'}
             </p>
-            <a href="https://www.votiva.click" target="_blank" rel="noopener noreferrer" style={{ background: '#4D96FF', color: 'white', textDecoration: 'none', padding: '14px', borderRadius: '16px', fontWeight: 'bold', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(77, 150, 255, 0.3)' }} onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}>
+            <a href="https://votiva.click" target="_blank" rel="noopener noreferrer" style={{ background: '#4D96FF', color: 'white', textDecoration: 'none', padding: '14px', borderRadius: '16px', fontWeight: 'bold', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(77, 150, 255, 0.3)' }} onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}>
               {language === 'id' ? 'Buka Votiva' : 'Open Votiva'} <ChevronRight size={18} />
             </a>
           </div>
@@ -2175,13 +2175,13 @@ const TokenUtilityTab = () => {
 
         {/* AIchitect Card */}
         <div style={{ background: 'white', borderRadius: '24px', overflow: 'hidden', border: '1px solid #f1f3f5', boxShadow: '0 8px 24px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ height: '160px', background: 'url("/gambar/utility/logo5.png") center/cover', position: 'relative' }}></div>
+          <div style={{ height: '160px', background: '#fff url("/gambar/utility/logo5.png") center/contain no-repeat', position: 'relative' }}></div>
           <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', flex: 1 }}>
             <h4 style={{ fontSize: '1.25rem', fontWeight: '900', margin: '0 0 12px 0', color: 'var(--text-main)' }}>AIchitect</h4>
             <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '24px', flex: 1 }}>
               {language === 'id' ? 'Platform cerdas untuk planner, arsitek, engineer, dan tim manajemen proyek dalam merencanakan, merancang, menghitung, serta mengendalikan proyek secara terintegrasi dengan dukungan AI.' : 'Smart platform for planners, architects, engineers, and project management teams to plan, design, calculate, and control projects integratedly with AI support.'}
             </p>
-            <a href="https://www.aichitect.click" target="_blank" rel="noopener noreferrer" style={{ background: '#FFD93D', color: '#333', textDecoration: 'none', padding: '14px', borderRadius: '16px', fontWeight: 'bold', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(255, 217, 61, 0.3)' }} onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}>
+            <a href="https://aichitect.click" target="_blank" rel="noopener noreferrer" style={{ background: '#FFD93D', color: '#333', textDecoration: 'none', padding: '14px', borderRadius: '16px', fontWeight: 'bold', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(255, 217, 61, 0.3)' }} onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}>
               {language === 'id' ? 'Buka AIchitect' : 'Open AIchitect'} <ChevronRight size={18} />
             </a>
           </div>
@@ -2189,13 +2189,13 @@ const TokenUtilityTab = () => {
 
         {/* YourFuture Card */}
         <div style={{ background: 'white', borderRadius: '24px', overflow: 'hidden', border: '1px solid #f1f3f5', boxShadow: '0 8px 24px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ height: '160px', background: 'url("/gambar/utility/logo.png") center/cover', position: 'relative' }}></div>
+          <div style={{ height: '160px', background: '#fff url("/gambar/utility/logo.png") center/contain no-repeat', position: 'relative' }}></div>
           <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', flex: 1 }}>
             <h4 style={{ fontSize: '1.25rem', fontWeight: '900', margin: '0 0 12px 0', color: 'var(--text-main)' }}>YourFuture</h4>
             <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '24px', flex: 1 }}>
               {language === 'id' ? 'Aplikasi BMC AI yang membantu calon founder, UMKM, dan kreator bisnis mengubah ide mentah menjadi Business Model Canvas yang lebih terstruktur, praktis, dan siap diuji.' : 'AI BMC application helping founders, SMEs, and creators turn raw ideas into structured, practical, and test-ready Business Model Canvas.'}
             </p>
-            <a href="https://www.yourfuture.fun" target="_blank" rel="noopener noreferrer" style={{ background: '#6BCB77', color: 'white', textDecoration: 'none', padding: '14px', borderRadius: '16px', fontWeight: 'bold', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(107, 203, 119, 0.3)' }} onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}>
+            <a href="https://yourfuture.com" target="_blank" rel="noopener noreferrer" style={{ background: '#6BCB77', color: 'white', textDecoration: 'none', padding: '14px', borderRadius: '16px', fontWeight: 'bold', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(107, 203, 119, 0.3)' }} onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}>
               {language === 'id' ? 'Buka YourFuture' : 'Open YourFuture'} <ChevronRight size={18} />
             </a>
           </div>
@@ -2203,7 +2203,7 @@ const TokenUtilityTab = () => {
 
         {/* ClimateMansion Card */}
         <div style={{ background: 'white', borderRadius: '24px', overflow: 'hidden', border: '1px solid #f1f3f5', boxShadow: '0 8px 24px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ height: '160px', background: 'url("/gambar/utility/5.jpeg") center/cover', position: 'relative' }}></div>
+          <div style={{ height: '160px', background: '#fff url("/gambar/utility/5.jpeg") center/contain no-repeat', position: 'relative' }}></div>
           <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', flex: 1 }}>
             <h4 style={{ fontSize: '1.25rem', fontWeight: '900', margin: '0 0 12px 0', color: 'var(--text-main)' }}>ClimateMansion</h4>
             <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '24px', flex: 1 }}>
