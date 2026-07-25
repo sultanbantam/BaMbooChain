@@ -85,7 +85,8 @@ export default async function handler(req, res) {
       return res.status(400).json({ success: false, message: 'Missing client_id or code' });
     }
 
-    if (!client_secret && client_id !== 'enpineering') {
+    const publicClients = ['enpineering', 'client_xignalx', 'client_votiva', 'client_aichitect', 'client_yourfuture'];
+    if (!client_secret && !publicClients.includes(client_id)) {
       return res.status(400).json({ success: false, message: 'Missing client_secret' });
     }
 
@@ -112,6 +113,34 @@ export default async function handler(req, res) {
       isValidClient = true;
       if (redirect_uri && (redirect_uri.startsWith("https://bamboogame.click") || 
                            redirect_uri.startsWith("https://www.bamboogame.click") || 
+                           redirect_uri.startsWith("http://localhost:3000"))) {
+        allowedRedirectUris = [redirect_uri];
+      }
+    } else if (client_id === 'client_xignalx') {
+      isValidClient = true;
+      if (redirect_uri && (redirect_uri.startsWith("https://xignalx.click") || 
+                           redirect_uri.startsWith("https://www.xignalx.click") || 
+                           redirect_uri.startsWith("http://localhost:3000"))) {
+        allowedRedirectUris = [redirect_uri];
+      }
+    } else if (client_id === 'client_votiva') {
+      isValidClient = true;
+      if (redirect_uri && (redirect_uri.startsWith("https://votiva.click") || 
+                           redirect_uri.startsWith("https://www.votiva.click") || 
+                           redirect_uri.startsWith("http://localhost:3000"))) {
+        allowedRedirectUris = [redirect_uri];
+      }
+    } else if (client_id === 'client_aichitect') {
+      isValidClient = true;
+      if (redirect_uri && (redirect_uri.startsWith("https://aichitect.click") || 
+                           redirect_uri.startsWith("https://www.aichitect.click") || 
+                           redirect_uri.startsWith("http://localhost:3000"))) {
+        allowedRedirectUris = [redirect_uri];
+      }
+    } else if (client_id === 'client_yourfuture') {
+      isValidClient = true;
+      if (redirect_uri && (redirect_uri.startsWith("https://yourfuture.fun") || 
+                           redirect_uri.startsWith("https://www.yourfuture.fun") || 
                            redirect_uri.startsWith("http://localhost:3000"))) {
         allowedRedirectUris = [redirect_uri];
       }

@@ -59,6 +59,34 @@ export default async function handler(req, res) {
                            redirect_uri.startsWith("http://localhost:3000"))) {
         allowedRedirectUris = [redirect_uri];
       }
+    } else if (client_id === 'client_xignalx') {
+      isClientValid = true;
+      if (redirect_uri && (redirect_uri.startsWith("https://xignalx.click") || 
+                           redirect_uri.startsWith("https://www.xignalx.click") || 
+                           redirect_uri.startsWith("http://localhost:3000"))) {
+        allowedRedirectUris = [redirect_uri];
+      }
+    } else if (client_id === 'client_votiva') {
+      isClientValid = true;
+      if (redirect_uri && (redirect_uri.startsWith("https://votiva.click") || 
+                           redirect_uri.startsWith("https://www.votiva.click") || 
+                           redirect_uri.startsWith("http://localhost:3000"))) {
+        allowedRedirectUris = [redirect_uri];
+      }
+    } else if (client_id === 'client_aichitect') {
+      isClientValid = true;
+      if (redirect_uri && (redirect_uri.startsWith("https://aichitect.click") || 
+                           redirect_uri.startsWith("https://www.aichitect.click") || 
+                           redirect_uri.startsWith("http://localhost:3000"))) {
+        allowedRedirectUris = [redirect_uri];
+      }
+    } else if (client_id === 'client_yourfuture') {
+      isClientValid = true;
+      if (redirect_uri && (redirect_uri.startsWith("https://yourfuture.fun") || 
+                           redirect_uri.startsWith("https://www.yourfuture.fun") || 
+                           redirect_uri.startsWith("http://localhost:3000"))) {
+        allowedRedirectUris = [redirect_uri];
+      }
     } else {
       const clientSnapshot = await db.collection('oauth_clients').where('client_id', '==', client_id).limit(1).get();
       if (!clientSnapshot.empty) {
