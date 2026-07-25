@@ -25,7 +25,7 @@ const formatBalance = (val) => {
 // ======================================
 
 const OverviewTab = ({ setActiveTab, setInitialModal }) => {
-  const { user, isAuthenticated, openLoginModal } = useAuth();
+  const { user } = useAuth();
   const { t } = useLanguage();
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 1100);
 
@@ -54,16 +54,6 @@ const OverviewTab = ({ setActiveTab, setInitialModal }) => {
 
   const handleTradeClick = () => {
     if (setActiveTab) setActiveTab('get_bmc');
-  };
-
-  const handleSSOClick = (e, clientId, redirectUri) => {
-    e.preventDefault();
-    if (!isAuthenticated) {
-      openLoginModal();
-    } else {
-      const authUrl = `/#/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}`;
-      window.open(authUrl, '_blank');
-    }
   };
 
   return (
@@ -2135,7 +2125,7 @@ const TokenUtilityTab = () => {
             <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '24px', flex: 1 }}>
               {language === 'id' ? 'Akses eksklusif ke sinyal trading cryptocurrency premium. Gunakan saldo BMC Anda untuk berlangganan.' : 'Exclusive access to premium cryptocurrency trading signals. Use your BMC balance to subscribe.'}
             </p>
-            <a onClick={(e) => handleSSOClick(e, 'client_xignalx', 'https://www.xignalx.click/callback')} style={{ cursor: 'pointer', background: '#e03131', color: 'white', textDecoration: 'none', padding: '14px', borderRadius: '16px', fontWeight: 'bold', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(224, 49, 49, 0.3)' }} onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}>
+            <a href="https://www.xignalx.click/" target="_blank" rel="noopener noreferrer" style={{ background: '#e03131', color: 'white', textDecoration: 'none', padding: '14px', borderRadius: '16px', fontWeight: 'bold', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(224, 49, 49, 0.3)' }} onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}>
               {language === 'id' ? 'Buka Signal Trading' : 'Open Signal Trading'} <ChevronRight size={18} />
             </a>
           </div>
@@ -2177,7 +2167,7 @@ const TokenUtilityTab = () => {
             <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '24px', flex: 1 }}>
               {language === 'id' ? 'Platform AI Election Intelligence yang membantu kandidat, partai politik, dan tim kampanye mengelola pemilih, relawan, analisis sentimen, peta geospasial, serta komunikasi digital dalam satu dashboard cerdas.' : 'AI Election Intelligence platform helping candidates, political parties, and campaign teams manage voters, volunteers, sentiment analysis, geospatial maps, and digital communication in a smart dashboard.'}
             </p>
-            <a onClick={(e) => handleSSOClick(e, 'client_votiva', 'https://www.votiva.click/callback')} style={{ cursor: 'pointer', background: '#4D96FF', color: 'white', textDecoration: 'none', padding: '14px', borderRadius: '16px', fontWeight: 'bold', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(77, 150, 255, 0.3)' }} onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}>
+            <a href="https://www.votiva.click" target="_blank" rel="noopener noreferrer" style={{ background: '#4D96FF', color: 'white', textDecoration: 'none', padding: '14px', borderRadius: '16px', fontWeight: 'bold', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(77, 150, 255, 0.3)' }} onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}>
               {language === 'id' ? 'Buka Votiva' : 'Open Votiva'} <ChevronRight size={18} />
             </a>
           </div>
@@ -2191,7 +2181,7 @@ const TokenUtilityTab = () => {
             <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '24px', flex: 1 }}>
               {language === 'id' ? 'Platform cerdas untuk planner, arsitek, engineer, dan tim manajemen proyek dalam merencanakan, merancang, menghitung, serta mengendalikan proyek secara terintegrasi dengan dukungan AI.' : 'Smart platform for planners, architects, engineers, and project management teams to plan, design, calculate, and control projects integratedly with AI support.'}
             </p>
-            <a onClick={(e) => handleSSOClick(e, 'client_aichitect', 'https://www.aichitect.click/callback')} style={{ cursor: 'pointer', background: '#FFD93D', color: '#333', textDecoration: 'none', padding: '14px', borderRadius: '16px', fontWeight: 'bold', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(255, 217, 61, 0.3)' }} onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}>
+            <a href="https://www.aichitect.click" target="_blank" rel="noopener noreferrer" style={{ background: '#FFD93D', color: '#333', textDecoration: 'none', padding: '14px', borderRadius: '16px', fontWeight: 'bold', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(255, 217, 61, 0.3)' }} onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}>
               {language === 'id' ? 'Buka AIchitect' : 'Open AIchitect'} <ChevronRight size={18} />
             </a>
           </div>
@@ -2205,7 +2195,7 @@ const TokenUtilityTab = () => {
             <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '24px', flex: 1 }}>
               {language === 'id' ? 'Aplikasi BMC AI yang membantu calon founder, UMKM, dan kreator bisnis mengubah ide mentah menjadi Business Model Canvas yang lebih terstruktur, praktis, dan siap diuji.' : 'AI BMC application helping founders, SMEs, and creators turn raw ideas into structured, practical, and test-ready Business Model Canvas.'}
             </p>
-            <a onClick={(e) => handleSSOClick(e, 'client_yourfuture', 'https://www.yourfuture.fun/callback')} style={{ cursor: 'pointer', background: '#6BCB77', color: 'white', textDecoration: 'none', padding: '14px', borderRadius: '16px', fontWeight: 'bold', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(107, 203, 119, 0.3)' }} onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}>
+            <a href="https://www.yourfuture.fun" target="_blank" rel="noopener noreferrer" style={{ background: '#6BCB77', color: 'white', textDecoration: 'none', padding: '14px', borderRadius: '16px', fontWeight: 'bold', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(107, 203, 119, 0.3)' }} onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}>
               {language === 'id' ? 'Buka YourFuture' : 'Open YourFuture'} <ChevronRight size={18} />
             </a>
           </div>
