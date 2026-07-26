@@ -13,6 +13,28 @@ const EventsPage = () => {
 
   const { data: communityEvents = [], isLoading } = useApprovedCommunityEvents();
 
+  const parseEventDate = (dateStr) => {
+    if (!dateStr) return 0;
+    const monthMap = {
+      'januari': 0, 'februari': 1, 'maret': 2, 'april': 3, 'mei': 4, 'juni': 5,
+      'juli': 6, 'agustus': 7, 'september': 8, 'oktober': 9, 'november': 10, 'desember': 11,
+      'january': 0, 'february': 1, 'march': 2, 'may': 4, 'june': 5, 'july': 6,
+      'august': 7, 'october': 9, 'december': 11
+    };
+    const dayMatch = dateStr.match(/^(\d+)/);
+    const yearMatch = dateStr.match(/(\d{4})/);
+    const monthMatch = dateStr.match(/[a-zA-Z]+/);
+    if (dayMatch && yearMatch && monthMatch) {
+      const day = parseInt(dayMatch[1], 10);
+      const year = parseInt(yearMatch[1], 10);
+      const month = monthMap[monthMatch[0].toLowerCase()] || 0;
+      return new Date(year, month, day).getTime();
+    }
+    return 0;
+  };
+
+  const nowTime = new Date().setHours(0, 0, 0, 0);
+
   const events = [...eventsData, ...communityEvents.map(ev => ({
     id: ev.id,
     title: ev.title?.includes('Revolusi Sebatang Bambu') ? 'Field Visit: Revolusi Sebatang Bambu di Indonesia Studi Lapangan Ekosistem Bambu Tangerang Raya bersama Tim Pusat Studi Arsitektur Nusantara FTSP Universitas Trisakti' : ev.title,
@@ -33,7 +55,17 @@ const EventsPage = () => {
       { title: 'Materi BLL', fileUrl: getAssetUrl('event/bll.pdf') },
       { title: 'Materi Tambahan 2', fileUrl: getAssetUrl('event/materi2.pdf') }
     ] : ev.materials
-  }))];
+  }))].sort((a, b) => {
+    const timeA = parseEventDate(a.date);
+    const timeB = parseEventDate(b.date);
+    const isPastA = timeA > 0 && timeA < nowTime;
+    const isPastB = timeB > 0 && timeB < nowTime;
+
+    if (isPastA && !isPastB) return 1;
+    if (!isPastA && isPastB) return -1;
+    if (!isPastA && !isPastB) return timeA - timeB; // Closest future event first
+    return timeB - timeA; // Most recent past event first
+  });
 
   const featuredEvent = featuredEventData;
 
