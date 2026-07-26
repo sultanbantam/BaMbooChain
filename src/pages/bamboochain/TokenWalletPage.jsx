@@ -2195,7 +2195,7 @@ const TokenUtilityTab = () => {
             <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '24px', flex: 1 }}>
               {language === 'id' ? 'Aplikasi BMC AI yang membantu calon founder, UMKM, dan kreator bisnis mengubah ide mentah menjadi Business Model Canvas yang lebih terstruktur, praktis, dan siap diuji.' : 'AI BMC application helping founders, SMEs, and creators turn raw ideas into structured, practical, and test-ready Business Model Canvas.'}
             </p>
-            <a href="https://yourfuture.com" target="_blank" rel="noopener noreferrer" style={{ background: '#6BCB77', color: 'white', textDecoration: 'none', padding: '14px', borderRadius: '16px', fontWeight: 'bold', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(107, 203, 119, 0.3)' }} onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}>
+            <a href="https://yourfuture.fun" target="_blank" rel="noopener noreferrer" style={{ background: '#6BCB77', color: 'white', textDecoration: 'none', padding: '14px', borderRadius: '16px', fontWeight: 'bold', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(107, 203, 119, 0.3)' }} onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}>
               {language === 'id' ? 'Buka YourFuture' : 'Open YourFuture'} <ChevronRight size={18} />
             </a>
           </div>
