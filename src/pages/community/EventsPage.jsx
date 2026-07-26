@@ -35,7 +35,7 @@ const EventsPage = () => {
 
   const nowTime = new Date().setHours(0, 0, 0, 0);
 
-  const events = [...eventsData, ...communityEvents.map(ev => ({
+  const allEvents = [...eventsData, featuredEventData, ...communityEvents.map(ev => ({
     id: ev.id,
     title: ev.title?.includes('Revolusi Sebatang Bambu') ? 'Field Visit: Revolusi Sebatang Bambu di Indonesia Studi Lapangan Ekosistem Bambu Tangerang Raya bersama Tim Pusat Studi Arsitektur Nusantara FTSP Universitas Trisakti' : ev.title,
     date: ev.date,
@@ -55,7 +55,9 @@ const EventsPage = () => {
       { title: 'Materi BLL', fileUrl: getAssetUrl('event/bll.pdf') },
       { title: 'Materi Tambahan 2', fileUrl: getAssetUrl('event/materi2.pdf') }
     ] : ev.materials
-  }))].sort((a, b) => {
+  }))];
+
+  const sortedEvents = allEvents.sort((a, b) => {
     const timeA = parseEventDate(a.date);
     const timeB = parseEventDate(b.date);
     const isPastA = timeA > 0 && timeA < nowTime;
@@ -67,7 +69,8 @@ const EventsPage = () => {
     return timeB - timeA; // Most recent past event first
   });
 
-  const featuredEvent = featuredEventData;
+  const featuredEvent = sortedEvents.length > 0 ? sortedEvents[0] : featuredEventData;
+  const gridEvents = sortedEvents.slice(1);
 
   const styles = {
     container: {
@@ -88,6 +91,8 @@ const EventsPage = () => {
       marginBottom: '50px',
       display: 'flex',
       flexDirection: 'column',
+      alignItems: 'center',
+      textAlign: 'center',
       gap: '20px'
     },
     title: {
@@ -103,8 +108,11 @@ const EventsPage = () => {
     subtitle: {
       color: '#adb5bd',
       fontSize: '1.1rem',
-      maxWidth: '600px',
-      lineHeight: '1.6'
+      lineHeight: '1.6',
+      whiteSpace: 'nowrap',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      maxWidth: '100%'
     },
     featuredCard: {
       backgroundColor: 'rgba(255,255,255,0.05)',
@@ -199,7 +207,7 @@ const EventsPage = () => {
     <div style={styles.container}>
       <div style={styles.wrapper}>
         <header style={styles.header}>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <h1 style={styles.title}>
               KALENDER <span style={styles.highlight}>EVENT</span>
             </h1>
@@ -261,7 +269,7 @@ const EventsPage = () => {
         {/* Event List */}
         {isLoading && <div style={{ textAlign: 'center', padding: '40px', color: '#51cf66' }}>Memuat daftar acara...</div>}
         <div style={styles.grid}>
-          {events.map((event, index) => (
+          {gridEvents.map((event, index) => (
             <motion.div
               key={index}
               style={styles.card}
