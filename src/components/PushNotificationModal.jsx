@@ -44,7 +44,7 @@ export default function PushNotificationModal() {
 
       const registration = await navigator.serviceWorker.register('/sw.js');
       
-      const response = await fetch('http://localhost:3001/api/vapid-public-key');
+      const response = await fetch('https://api.bamboochain.id/api/vapid-public-key');
       if (!response.ok) throw new Error('Gagal mengambil VAPID key');
       const publicVapidKey = await response.text();
       
@@ -53,7 +53,7 @@ export default function PushNotificationModal() {
         applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
       });
 
-      await fetch('http://localhost:3001/api/subscribe', {
+      await fetch('https://api.bamboochain.id/api/subscribe', {
         method: 'POST',
         body: JSON.stringify(subscription),
         headers: { 'Content-Type': 'application/json' }
@@ -72,7 +72,7 @@ export default function PushNotificationModal() {
   const sendTestNotification = async () => {
     setLoading(true);
     try {
-      await fetch('http://localhost:3001/api/send-notification', {
+      await fetch('https://api.bamboochain.id/api/send-notification', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
