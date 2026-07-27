@@ -76,6 +76,7 @@ const TobatEkologiDashboard = lazy(() => import('./pages/bamboochain/TobatEkolog
 import ScrollToTop from './components/ScrollToTop';
 import GlobalToast from './components/GlobalToast';
 import SocialInteractions from './components/SocialInteractions';
+import PushNotificationModal from './components/PushNotificationModal';
 
 const PublicPortfolioPage = lazy(() => import('./pages/PublicPortfolioPage'));
 const AuthorizePage = lazy(() => import('./pages/AuthorizePage'));
@@ -314,6 +315,7 @@ function App() {
         <CareCenterWidget />
         <div id="version-debug" style={{ fontSize: '10px', opacity: 0.3, textAlign: 'center', padding: '10px' }}>Build v1.0.8-ThemeFix</div>
         <GlobalToast />
+        <PushNotificationModal />
       </div>
   );
 }
