@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaBell, FaTimes, FaPaperPlane } from 'react-icons/fa';
+import { requestForToken } from '../utils/NotificationService';
 
 export default function PushNotificationModal() {
   const [isOpen, setIsOpen] = useState(false);
@@ -19,19 +20,6 @@ export default function PushNotificationModal() {
     }
   }, []);
 
-  const urlBase64ToUint8Array = (base64String) => {
-    const padding = '='.repeat((4 - base64String.length % 4) % 4);
-    const base64 = (base64String + padding)
-      .replace(/-/g, '+')
-      .replace(/_/g, '/');
-    const rawData = window.atob(base64);
-    const outputArray = new Uint8Array(rawData.length);
-    for (let i = 0; i < rawData.length; ++i) {
-      outputArray[i] = rawData.charCodeAt(i);
-    }
-    return outputArray;
-  };
-
   const subscribeUser = async () => {
     setLoading(true);
     try {
@@ -42,29 +30,19 @@ export default function PushNotificationModal() {
         return;
       }
 
-      const registration = await navigator.serviceWorker.register('/sw.js');
-      
-      const response = await fetch('https://api.bamboochain.id/api/vapid-public-key');
-      if (!response.ok) throw new Error('Gagal mengambil VAPID key');
-      const publicVapidKey = await response.text();
-      
-      const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
-      });
+      // Menggunakan Firebase Cloud Messaging (FCM)
+      const token = await requestForToken();
 
-      await fetch('https://api.bamboochain.id/api/subscribe', {
-        method: 'POST',
-        body: JSON.stringify(subscription),
-        headers: { 'Content-Type': 'application/json' }
-      });
-
-      setIsSubscribed(true);
-      setMessage('Berhasil berlangganan notifikasi!');
-      setTimeout(() => setIsOpen(false), 2000);
+      if (token) {
+        setIsSubscribed(true);
+        setMessage('Berhasil berlangganan notifikasi!');
+        setTimeout(() => setIsOpen(false), 2000);
+      } else {
+        throw new Error('Gagal mendapatkan token FCM');
+      }
     } catch (err) {
       console.error(err);
-      setMessage('Gagal mengaktifkan notifikasi. Pastikan backend berjalan.');
+      setMessage('Gagal mengaktifkan notifikasi. Silakan coba lagi nanti.');
     }
     setLoading(false);
   };
@@ -72,17 +50,18 @@ export default function PushNotificationModal() {
   const sendTestNotification = async () => {
     setLoading(true);
     try {
-      await fetch('https://api.bamboochain.id/api/send-notification', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: 'Notifikasi Uji Coba',
+      if ('serviceWorker' in navigator) {
+        const registration = await navigator.serviceWorker.ready;
+        await registration.showNotification('Notifikasi Uji Coba', {
           body: 'Ini adalah notifikasi dari BaMbooChain PWA.',
-          url: window.location.href
-        })
-      });
-      setMessage('Notifikasi terkirim!');
-      setTimeout(() => setMessage(''), 3000);
+          icon: '/logos/bmc.png',
+          data: { url: window.location.href }
+        });
+        setMessage('Notifikasi terkirim!');
+        setTimeout(() => setMessage(''), 3000);
+      } else {
+        throw new Error('Service worker tidak didukung');
+      }
     } catch (err) {
       console.error(err);
       setMessage('Gagal mengirim notifikasi uji coba.');
@@ -128,7 +107,7 @@ export default function PushNotificationModal() {
               </p>
               
               {message && (
-                <div style={{ marginBottom: '15px', fontSize: '0.85rem', color: '#10b981' }}>{message}</div>
+                <div style={{ marginBottom: '15px', fontSize: '0.85rem', color: message.includes('Gagal') || message.includes('ditolak') ? '#ef4444' : '#10b981' }}>{message}</div>
               )}
               
               {!isSubscribed ? (
