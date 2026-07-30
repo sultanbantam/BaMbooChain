@@ -9,7 +9,7 @@ const EventGallery = ({ eventId }) => {
   const [mediaList, setMediaList] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgressText, setUploadProgressText] = useState('');
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFiles, setSelectedFiles] = useState([]);
   const [caption, setCaption] = useState('');
   const [activeMedia, setActiveMedia] = useState(null);
 
@@ -29,24 +29,36 @@ const EventGallery = ({ eventId }) => {
       openLoginModal();
       return;
     }
-    const file = e.target.files[0];
-    if (!file) return;
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
 
-    if (file.size > 10 * 1024 * 1024) {
-      alert("Ukuran file maksimal 10MB");
+    if (files.length > 100) {
+      alert("Maksimal 100 file dalam sekali unggahan");
+      e.target.value = null;
       return;
     }
 
-    setSelectedFile({ file, type });
-    setCaption('');
+    const validFiles = [];
+    for (const file of files) {
+      if (file.size > 10 * 1024 * 1024) {
+        alert(`Ukuran file ${file.name} maksimal 10MB`);
+        continue;
+      }
+      validFiles.push({ file, type });
+    }
+
+    if (validFiles.length > 0) {
+      setSelectedFiles(validFiles);
+      setCaption('');
+    }
+    e.target.value = null;
   };
 
   const handleConfirmUpload = async () => {
-    if (!selectedFile) return;
-    const { file, type } = selectedFile;
+    if (!selectedFiles || selectedFiles.length === 0) return;
 
     setIsUploading(true);
-    setUploadProgressText(`Mengunggah ${type}...`);
+    setUploadProgressText(`Mengunggah 0 / ${selectedFiles.length} file...`);
     try {
       const cloudName = "dsieguutz";
       const uploadPreset = "bamboochain_upload";
@@ -55,35 +67,49 @@ const EventGallery = ({ eventId }) => {
         throw new Error("Konfigurasi Cloudinary belum diatur.");
       }
 
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('upload_preset', uploadPreset);
-      const resourceType = file.type.startsWith('video/') ? 'video' : 'image';
+      let uploadedCount = 0;
 
-      const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`, {
-        method: 'POST',
-        body: formData
-      });
+      for (const item of selectedFiles) {
+        const { file } = item;
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', uploadPreset);
+        const resourceType = file.type.startsWith('video/') ? 'video' : 'image';
 
-      if (!response.ok) {
-        throw new Error('Gagal mengunggah ke Cloudinary');
+        const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`, {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          console.error(`Gagal mengunggah ke Cloudinary untuk file ${file.name}`);
+          continue;
+        }
+
+        const data = await response.json();
+        const downloadUrl = data.secure_url;
+
+        await addDoc(collection(db, 'event_gallery'), {
+          eventId,
+          userId: user.id,
+          userName: user.username || user.name || 'User',
+          url: downloadUrl,
+          type: file.type.startsWith('video/') ? 'video' : 'image',
+          storagePath: `events/gallery/${eventId}/${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`,
+          caption: caption,
+          timestamp: serverTimestamp()
+        });
+        
+        uploadedCount++;
+        setUploadProgressText(`Mengunggah ${uploadedCount} / ${selectedFiles.length} file...`);
       }
 
-      const data = await response.json();
-      const downloadUrl = data.secure_url;
-
-      await addDoc(collection(db, 'event_gallery'), {
-        eventId,
-        userId: user.id,
-        userName: user.username || user.name || 'User',
-        url: downloadUrl,
-        type: file.type.startsWith('video/') ? 'video' : 'image',
-        storagePath: `events/gallery/${eventId}/${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`,
-        caption: caption,
-        timestamp: serverTimestamp()
-      });
-      setSelectedFile(null);
+      setSelectedFiles([]);
       setCaption('');
+      
+      if (uploadedCount < selectedFiles.length) {
+        alert(`Berhasil mengunggah ${uploadedCount} file. ${selectedFiles.length - uploadedCount} file gagal diunggah.`);
+      }
     } catch (err) {
       console.error("Upload error:", err);
       alert("Error: " + err.message);
@@ -108,13 +134,14 @@ const EventGallery = ({ eventId }) => {
     <div style={{ marginTop: '20px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#fab005', margin: 0 }}>Galeri Event</h3>
-        {!selectedFile && (
+        {(!selectedFiles || selectedFiles.length === 0) && (
           <div style={{ display: 'flex', gap: '10px' }}>
             <label style={{ cursor: 'pointer', background: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: '10px', border: '1px solid var(--border-color)', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.9rem' }}>
               <Camera size={16} /> Foto
               <input 
                 type="file" 
                 accept="image/*" 
+                multiple
                 style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', whiteSpace: 'nowrap', borderWidth: 0 }} 
                 onChange={(e) => handleFileSelect(e, 'Foto')} 
                 disabled={isUploading} 
@@ -125,6 +152,7 @@ const EventGallery = ({ eventId }) => {
               <input 
                 type="file" 
                 accept="video/*" 
+                multiple
                 style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', whiteSpace: 'nowrap', borderWidth: 0 }} 
                 onChange={(e) => handleFileSelect(e, 'Video')} 
                 disabled={isUploading} 
@@ -134,17 +162,23 @@ const EventGallery = ({ eventId }) => {
         )}
       </div>
 
-      {selectedFile && (
+      {selectedFiles && selectedFiles.length > 0 && (
         <div style={{ background: 'rgba(255,255,255,0.05)', padding: '15px', borderRadius: '12px', marginBottom: '20px', border: '1px solid #444' }}>
-          <h4 style={{ margin: '0 0 10px 0', fontSize: '0.95rem', color: '#51cf66' }}>Pratinjau {selectedFile.type}</h4>
+          <h4 style={{ margin: '0 0 10px 0', fontSize: '0.95rem', color: '#51cf66' }}>Pratinjau {selectedFiles.length} File</h4>
           
-          {selectedFile.file.type.startsWith('video/') ? (
-            <div style={{ color: '#adb5bd', fontSize: '0.85rem', marginBottom: '10px', padding: '10px', background: '#111', borderRadius: '8px' }}>
-              🎥 {selectedFile.file.name}
-            </div>
-          ) : (
-            <img src={URL.createObjectURL(selectedFile.file)} alt="Preview" style={{ width: '100%', maxHeight: '200px', objectFit: 'contain', borderRadius: '8px', marginBottom: '10px', backgroundColor: '#000' }} />
-          )}
+          <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '10px', marginBottom: '10px' }}>
+            {selectedFiles.map((item, idx) => (
+              <div key={idx} style={{ flexShrink: 0, width: '100px' }}>
+                {item.file.type.startsWith('video/') ? (
+                   <div style={{ color: '#adb5bd', fontSize: '0.7rem', padding: '10px', background: '#111', borderRadius: '8px', height: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                     🎥 {item.file.name}
+                   </div>
+                ) : (
+                   <img src={URL.createObjectURL(item.file)} alt={`Preview ${idx}`} style={{ width: '100%', height: '100px', objectFit: 'cover', borderRadius: '8px', backgroundColor: '#000' }} />
+                )}
+              </div>
+            ))}
+          </div>
 
           <input 
             type="text" 
@@ -157,7 +191,7 @@ const EventGallery = ({ eventId }) => {
 
           <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
             <button 
-              onClick={() => { setSelectedFile(null); setCaption(''); }}
+              onClick={() => { setSelectedFiles([]); setCaption(''); }}
               disabled={isUploading}
               style={{ padding: '8px 16px', borderRadius: '8px', background: 'transparent', color: '#adb5bd', border: '1px solid #444', cursor: isUploading ? 'not-allowed' : 'pointer', fontSize: '0.9rem' }}
             >
@@ -169,7 +203,7 @@ const EventGallery = ({ eventId }) => {
               style={{ padding: '8px 16px', borderRadius: '8px', background: '#51cf66', color: 'black', border: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '5px', cursor: isUploading ? 'not-allowed' : 'pointer', fontSize: '0.9rem' }}
             >
               {isUploading ? <Loader size={14} className="spin" /> : null}
-              {isUploading ? 'Mengunggah...' : 'Unggah Sekarang'}
+              {isUploading ? 'Mengunggah...' : `Unggah ${selectedFiles.length} File`}
             </button>
           </div>
         </div>
