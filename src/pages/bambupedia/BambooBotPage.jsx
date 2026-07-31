@@ -62,7 +62,12 @@ const BambooBotPage = () => {
     const openaiApiKey = import.meta.env.VITE_OPENAI_API_KEY;
 
     let apiKey = openaiApiKey;
-    let endpoint = 'https://api.openai.com/v1/chat/completions';
+    
+    // 🛡️ --- INTEGRASI AI SHIELD (VPS CONTABO) ---
+    // Ganti endpoint ke IP server Anda untuk mengharuskan prompt melewati filter keamanan (PII & Prompt Injection).
+    // let endpoint = 'http://62.169.23.77:8088/v1/firewall/analyze';
+    let endpoint = 'http://62.169.23.77:8011/v1/chat/completions'; // 🛡️ AI Shield Proxy
+    
     let model = 'gpt-4o-mini';
 
     const isOpenAiActive = (openaiApiKey && openaiApiKey !== 'PASTE_OPENAI_KEY_DISINI') || (groqApiKey && groqApiKey.startsWith('sk-'));

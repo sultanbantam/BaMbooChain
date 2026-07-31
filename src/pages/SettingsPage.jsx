@@ -5,9 +5,11 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import BackButton from '../components/BackButton';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 
 const SettingsPage = () => {
   const { user, isAuthenticated } = useAuth();
+  const { t } = useLanguage();
   const [apps, setApps] = useState([]);
   const [newAppName, setNewAppName] = useState('');
   const [newAppRedirects, setNewAppRedirects] = useState('');
@@ -87,7 +89,7 @@ const SettingsPage = () => {
       <div style={{ minHeight: '100vh', background: 'var(--bg-color)' }}>
         <Navbar />
         <div style={{ paddingTop: '150px', textAlign: 'center' }}>
-          <h2>Silakan login untuk mengakses pengaturan.</h2>
+          <h2>{t('dev_portal_login_req')}</h2>
         </div>
       </div>
     );
@@ -103,10 +105,10 @@ const SettingsPage = () => {
           
           <div style={{ marginTop: '20px', marginBottom: '40px' }}>
             <h1 style={{ fontSize: '2.5rem', fontWeight: '900', color: 'var(--text-main)', marginBottom: '10px' }}>
-              Developer Portal
+              {t('dev_portal_title')}
             </h1>
             <p style={{ fontSize: '1.1rem', color: 'var(--text-muted)' }}>
-              Kelola akses API dan integrasi aplikasi pihak ketiga dengan ekosistem BaMbooChain.
+              {t('dev_portal_desc')}
             </p>
           </div>
 
@@ -129,21 +131,21 @@ const SettingsPage = () => {
                 <div style={{ background: 'rgba(16, 185, 129, 0.1)', padding: '12px', borderRadius: '16px', color: '#10b981' }}>
                   <Key size={24} />
                 </div>
-                <h2 style={{ fontSize: '1.4rem', fontWeight: 'bold', margin: 0, color: 'var(--text-main)' }}>Buat Kredensial Baru</h2>
+                <h2 style={{ fontSize: '1.4rem', fontWeight: 'bold', margin: 0, color: 'var(--text-main)' }}>{t('dev_portal_create_title')}</h2>
               </div>
               
               <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '24px', lineHeight: '1.6' }}>
-                Dapatkan <strong>Client ID</strong> dan <strong>Client Secret</strong> untuk mengintegrasikan game atau aplikasi Web3 Anda dengan login dan dompet BaMbooChain.
+                {t('dev_portal_create_desc')}
               </p>
 
               <form onSubmit={generateCredentials}>
                 <div style={{ marginBottom: '20px' }}>
-                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: 'var(--text-main)', fontSize: '0.9rem' }}>Nama Aplikasi</label>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: 'var(--text-main)', fontSize: '0.9rem' }}>{t('dev_portal_app_name')}</label>
                   <input 
                     type="text" 
                     value={newAppName}
                     onChange={(e) => setNewAppName(e.target.value)}
-                    placeholder="Misal: Bamboo Farm Game"
+                    placeholder={t('dev_portal_app_name_ph')}
                     style={{ 
                       width: '100%', padding: '14px 16px', borderRadius: '12px',
                       border: '1px solid var(--border-color)', background: 'var(--bg-secondary)',
@@ -153,12 +155,12 @@ const SettingsPage = () => {
                   />
                 </div>
                 <div style={{ marginBottom: '24px' }}>
-                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: 'var(--text-main)', fontSize: '0.9rem' }}>Authorized Redirect URIs (Pisahkan dengan koma)</label>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: 'var(--text-main)', fontSize: '0.9rem' }}>{t('dev_portal_redirects')}</label>
                   <input 
                     type="text" 
                     value={newAppRedirects}
                     onChange={(e) => setNewAppRedirects(e.target.value)}
-                    placeholder="Misal: https://myapp.com/callback, https://test.app/auth"
+                    placeholder={t('dev_portal_redirects_ph')}
                     style={{ 
                       width: '100%', padding: '14px 16px', borderRadius: '12px',
                       border: '1px solid var(--border-color)', background: 'var(--bg-secondary)',
@@ -178,7 +180,7 @@ const SettingsPage = () => {
                   onMouseOver={(e) => { if (!isGenerating) e.currentTarget.style.transform = 'translateY(-2px)'; }}
                   onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                 >
-                  <Plus size={20} /> {isGenerating ? 'Memproses...' : 'Generate API Keys'}
+                  <Plus size={20} /> {isGenerating ? t('dev_portal_processing') : t('dev_portal_generate')}
                 </button>
               </form>
             </motion.div>
@@ -189,13 +191,13 @@ const SettingsPage = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
             >
-              <h2 style={{ fontSize: '1.4rem', fontWeight: 'bold', marginBottom: '24px', color: 'var(--text-main)' }}>Aplikasi Terdaftar ({apps.length})</h2>
+              <h2 style={{ fontSize: '1.4rem', fontWeight: 'bold', marginBottom: '24px', color: 'var(--text-main)' }}>{t('dev_portal_registered')} ({apps.length})</h2>
               
               {apps.length === 0 ? (
                 <div style={{ padding: '40px', textAlign: 'center', background: 'rgba(0,0,0,0.02)', borderRadius: '24px', border: '1px dashed var(--border-color)' }}>
                   <Key size={48} color="#ccc" style={{ marginBottom: '16px' }} />
-                  <h3 style={{ color: 'var(--text-main)', marginBottom: '8px' }}>Belum Ada Aplikasi</h3>
-                  <p style={{ color: 'var(--text-muted)' }}>Anda belum men-generate API keys apapun. Silakan buat di form sebelah kiri.</p>
+                  <h3 style={{ color: 'var(--text-main)', marginBottom: '8px' }}>{t('dev_portal_no_apps_title')}</h3>
+                  <p style={{ color: 'var(--text-muted)' }}>{t('dev_portal_no_apps_desc')}</p>
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -204,12 +206,12 @@ const SettingsPage = () => {
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
                         <div>
                           <h3 style={{ margin: '0 0 4px 0', fontSize: '1.2rem', color: 'var(--text-main)' }}>{app.name}</h3>
-                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Dibuat: {new Date(app.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{t('dev_portal_created_at')} {new Date(app.createdAt).toLocaleDateString(t('id-ID'), { day: 'numeric', month: 'long', year: 'numeric' })}</div>
                         </div>
                         <button 
                           onClick={() => deleteApp(app.id)}
                           style={{ background: '#fee2e2', color: '#ef4444', border: 'none', padding: '8px', borderRadius: '10px', cursor: 'pointer' }}
-                          title="Hapus Kredensial"
+                          title={t('dev_portal_delete')}
                         >
                           <Trash2 size={18} />
                         </button>
@@ -244,7 +246,7 @@ const SettingsPage = () => {
                             </button>
                           </div>
                           <div style={{ fontSize: '0.75rem', color: '#eab308', marginTop: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <span style={{ fontWeight: 'bold' }}>Peringatan:</span> Rahasiakan Client Secret Anda.
+                            <span style={{ fontWeight: 'bold' }}>{t('dev_portal_warning')}</span> {t('dev_portal_warning_desc')}
                           </div>
                         </div>
 

@@ -260,7 +260,7 @@ const ProfilePage = () => {
   if (!user) {
     return (
       <div style={{ paddingTop: '150px', minHeight: '60vh', textAlign: 'center' }}>
-        <h2>Harap Login Terlebih Dahulu</h2>
+        <h2>{t('profile_login_req')}</h2>
       </div>
     );
   }
@@ -276,7 +276,7 @@ const ProfilePage = () => {
       phone: formData.phone
     });
     setIsEditing(false);
-    alert('Profil berhasil diperbarui!');
+    alert(t('profile_alert_saved'));
   };
 
   const compressStatusPhoto = (base64Str) => {
@@ -574,7 +574,7 @@ const ProfilePage = () => {
             <div style={{ position: 'relative' }}>
               <input
                 type="text"
-                placeholder="Cari pegiat ekosistem..."
+                placeholder={t('profile_search_ph')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 style={{
@@ -627,11 +627,11 @@ const ProfilePage = () => {
               }}>
                 {isSearching ? (
                   <div style={{ textAlign: 'center', padding: '15px 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                    Mencari...
+                    {t('profile_search_loading')}
                   </div>
                 ) : searchResults.length === 0 ? (
                   <div style={{ textAlign: 'center', padding: '15px 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                    Tidak ada pegiat ditemukan.
+                    {t('profile_search_empty')}
                   </div>
                 ) : (
                   searchResults.map((u, i) => (
@@ -697,7 +697,7 @@ const ProfilePage = () => {
                   <button 
                     onClick={handleAvatarChange}
                     style={{ position: 'absolute', bottom: 0, right: 0, background: 'var(--text-main)', color: 'white', border: 'none', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-                    title="Ubah Avatar"
+                    title={t('profile_avatar_change')}
                   >
                     <Camera size={16} />
                   </button>
@@ -715,12 +715,12 @@ const ProfilePage = () => {
                       <input 
                         type="text" name="name" value={formData.name} onChange={handleChange} 
                         style={{ fontSize: '1.2rem', fontWeight: 'bold', padding: '6px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', width: '100%', background: 'var(--bg-color)', color: 'var(--text-main)' }}
-                        placeholder="Nama Lengkap"
+                        placeholder={t('profile_fullname')}
                       />
                       <input 
                         type="text" name="username" value={formData.username} onChange={handleChange} 
                         style={{ fontSize: '0.9rem', padding: '6px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', width: '100%', background: 'var(--bg-color)', color: 'var(--text-main)' }}
-                        placeholder="Username"
+                        placeholder={t('profile_username')}
                       />
                     </div>
                   ) : (
@@ -741,57 +741,57 @@ const ProfilePage = () => {
                 <div>
                   {isEditing ? (
                     <button onClick={handleSave} style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
-                      <Save size={16} /> Simpan
+                      <Save size={16} /> {t('profile_btn_save')}
                     </button>
                   ) : (
                     <button onClick={() => setIsEditing(true)} style={{ background: 'var(--bg-color)', color: 'var(--text-main)', border: '1px solid var(--border-color)', padding: '8px 16px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>
-                      Edit
+                      {t('profile_btn_edit')}
                     </button>
                   )}
                 </div>
               </div>
 
               <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '20px' }}>
-                <h3 style={{ fontSize: '1.1rem', marginBottom: '15px', color: 'var(--text-main)' }}>Informasi Kontak</h3>
+                <h3 style={{ fontSize: '1.1rem', marginBottom: '15px', color: 'var(--text-main)' }}>{t('profile_contact_info')}</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '5px', fontWeight: 'bold' }}>Email</label>
                     <div style={{ padding: '10px 14px', background: 'var(--bg-color)', borderRadius: '10px', border: '1px solid var(--border-color)', color: 'var(--text-main)', fontSize: '0.9rem' }}>
-                      {user.email || 'Tidak ada email'}
+                      {user.email || t('profile_no_email')}
                     </div>
                   </div>
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '5px', fontWeight: 'bold' }}>Nomor HP</label>
+                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '5px', fontWeight: 'bold' }}>{t('profile_phone')}</label>
                     {isEditing ? (
                       <input 
                         type="text" name="phone" value={formData.phone} onChange={handleChange} 
                         style={{ padding: '10px 14px', borderRadius: '10px', border: '1px solid var(--border-color)', width: '100%', background: 'var(--bg-color)', color: 'var(--text-main)', fontSize: '0.9rem' }}
-                        placeholder="Contoh: 08123456789"
+                        placeholder={t('profile_phone_ph')}
                       />
                     ) : (
                       <div style={{ padding: '10px 14px', background: 'var(--bg-color)', borderRadius: '10px', border: '1px solid var(--border-color)', color: 'var(--text-main)', fontSize: '0.9rem' }}>
-                        {user.phone || 'Belum diisi'}
+                        {user.phone || t('profile_phone_empty')}
                       </div>
                     )}
                   </div>
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '5px', fontWeight: 'bold' }}>Wallet Address</label>
+                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '5px', fontWeight: 'bold' }}>{t('profile_wallet')}</label>
                     <div style={{ padding: '10px 14px', background: 'var(--bg-color)', borderRadius: '10px', border: '1px solid var(--border-color)', color: 'var(--text-main)', fontFamily: 'monospace', fontSize: '0.8rem', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {user.walletAddress}
                     </div>
                   </div>
                   <div style={{ marginTop: '10px' }}>
-                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '5px', fontWeight: 'bold' }}>Notifikasi Perangkat</label>
+                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '5px', fontWeight: 'bold' }}>{t('profile_device_notif')}</label>
                     <div style={{ padding: '14px', background: 'var(--bg-color)', borderRadius: '10px', border: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                        <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)' }}>Terima Pembaruan & Promo</span>
-                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Menerima notifikasi langsung ke layar Anda.</span>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)' }}>{t('profile_promo_notif')}</span>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t('profile_promo_notif_desc')}</span>
                       </div>
                       <button 
                         onClick={handleEnableNotifications}
                         style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '6px 14px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
                       >
-                        <Bell size={14} /> Nyalakan
+                        <Bell size={14} /> {t('profile_turn_on')}
                       </button>
                     </div>
                   </div>

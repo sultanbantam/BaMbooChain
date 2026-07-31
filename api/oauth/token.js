@@ -94,7 +94,7 @@ export default async function handler(req, res) {
 
     // 1. Verify Client
     const WHALE_OF_SAVU_CLIENT = "client_4e0f61e19c1855c5";
-    const WHALE_OF_SAVU_SECRET = "secret_087eaa28a0feef4be7fa236b38d383cb";
+    const WHALE_OF_SAVU_SECRET = process.env.WHALE_OF_SAVU_SECRET;
     
     let isValidClient = false;
     let allowedRedirectUris = [];

@@ -18,27 +18,27 @@ const About = () => {
             <div style={{ background: 'rgba(12, 166, 120, 0.1)', width: '70px', height: '70px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', color: 'var(--primary)' }}>
               <Leaf size={32} />
             </div>
-            <h3 style={{ fontSize: '1.5rem', marginBottom: '16px' }}>Adopsi Bambu</h3>
-            <p style={{ color: 'var(--text-muted)', marginBottom: '32px' }}>Dukungan langsung untuk bibit bambu berkualitas yang akan ditanam oleh petani binaan di ekosistem bambuNUSA.</p>
-            <Link to="/bamboochain/plantation" className="btn btn-primary" style={{ display: 'inline-block' }}>Ayo Mulai</Link>
+            <h3 style={{ fontSize: '1.5rem', marginBottom: '16px' }}>{t('about_card1_title')}</h3>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '32px' }}>{t('about_card1_desc')}</p>
+            <Link to="/bamboochain/plantation" className="btn btn-primary" style={{ display: 'inline-block' }}>{t('about_card1_btn')}</Link>
           </div>
 
           <div className="glass-card" style={{ padding: '40px', textAlign: 'center', border: '2px solid var(--primary)' }}>
             <div style={{ background: 'var(--primary)', width: '70px', height: '70px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', color: 'white' }}>
               <Users size={32} />
             </div>
-            <h3 style={{ fontSize: '1.5rem', marginBottom: '16px' }}>Menjadi Petani Milenial</h3>
-            <p style={{ color: 'var(--text-muted)', marginBottom: '32px' }}>Bergabunglah dalam gerakan ekonomi hijau. Kami mendampingi petani dengan teknologi dan akses ke pasar global.</p>
-            <Link to="/bamboochain/plantation" className="btn btn-primary" style={{ display: 'inline-block' }}>Daftar Program</Link>
+            <h3 style={{ fontSize: '1.5rem', marginBottom: '16px' }}>{t('about_card2_title')}</h3>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '32px' }}>{t('about_card2_desc')}</p>
+            <Link to="/bamboochain/plantation" className="btn btn-primary" style={{ display: 'inline-block' }}>{t('about_card2_btn')}</Link>
           </div>
 
           <div className="glass-card" style={{ padding: '40px', textAlign: 'center' }}>
             <div style={{ background: 'rgba(12, 166, 120, 0.1)', width: '70px', height: '70px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', color: 'var(--primary)' }}>
               <ShieldCheck size={32} />
             </div>
-            <h3 style={{ fontSize: '1.5rem', marginBottom: '16px' }}>Menjadi Orang Tua Asuh</h3>
-            <p style={{ color: 'var(--text-muted)', marginBottom: '32px' }}>Investasi berdampak untuk masa depan. Pantau pertumbuhan aset hijau Anda secara transparan melalui blockchain.</p>
-            <Link to="/bamboochain/plantation" className="btn btn-primary" style={{ display: 'inline-block' }}>Ambil Peran</Link>
+            <h3 style={{ fontSize: '1.5rem', marginBottom: '16px' }}>{t('about_card3_title')}</h3>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '32px' }}>{t('about_card3_desc')}</p>
+            <Link to="/bamboochain/plantation" className="btn btn-primary" style={{ display: 'inline-block' }}>{t('about_card3_btn')}</Link>
           </div>
         </div>
       </div>

@@ -17,7 +17,7 @@ const PartnersPage = () => {
     setIsVisible(true);
   }, []);
 
-  const partnerCategories = [
+  const partnerCategories_id = [
     {
       id: 'komunitas',
       title: 'Komunitas & Masyarakat Adat',
@@ -115,6 +115,108 @@ const PartnersPage = () => {
       ]
     }
   ];
+
+  const partnerCategories_en = [
+    {
+      id: 'komunitas',
+      title: 'Community & Indigenous People',
+      icon: <Users size={32} />,
+      color: '#0ca678',
+      bgColor: 'rgba(12, 166, 120, 0.1)',
+      description: 'Building real economic empowerment that synergizes with local wisdom and nature conservation.',
+      partners: [
+        { name: 'Kasepuhan Cibarani, Lebak Banten', desc: 'Preparing 490 Ha - 20,000 Ha of customary land to become Green Gold Plantations.' },
+        { name: 'Pokdarwis Ekowisata Keranggan', desc: 'Driver of ecotourism awareness and local ecological education.' },
+        { name: 'Komunitas Bambu Nusantara', desc: 'Network of bamboo enthusiasts and conservationists across Indonesia.' },
+        { name: 'Yayasan Kinarya Anak Bangsa', desc: 'Driver of community empowerment and sustainable social education.' },
+        { name: 'Kampung Konservasi RIMBUN', desc: 'Indonesian People Building Conservation Village.' }
+      ]
+    },
+    {
+      id: 'industri',
+      title: 'Industry, Business & Manufacturing',
+      icon: <Factory size={32} />,
+      color: '#f59f00',
+      bgColor: 'rgba(245, 159, 0, 0.1)',
+      description: 'Opening the downstream supply chain of raw commodities into high-value products for domestic and global markets.',
+      partners: [
+        { name: 'PT. Mediasi Sarana Nusa', desc: 'Development of Blockwood Modular House architecture into Blockbamboo.' },
+        { name: 'Minamoto LLC, Japan', desc: 'Business penetration and distribution of premium bamboo products between Indonesia and Japan.' },
+        { name: 'PT. Bamboo Republik Indonesia', desc: 'Pioneer in the manufacturing and production of industry-standard Laminated Bamboo.' },
+        { name: 'PERPUBI', desc: 'Association of Indonesian Bamboo Business Actors.' },
+        { 
+          name: 'PT. Inakaz Citraniaga Internasional', 
+          desc: 'Strategic partner in the development of information technology and digital platforms.',
+          since: 'Collaboration Started: August 2024',
+          focus: 'Focus Area: Information Technology and Digital Platforms.'
+        },
+        { name: 'PT. Bambu Pedoman Indonesia (BAMBUPEDIA)', desc: 'Platform for bamboo ecosystem guidelines and standardization.' },
+        { name: 'PT. Gemma Bambu Nusantara', desc: 'Innovation in integrated bamboo ecosystem development.' },
+        { name: 'PT. Patanjala Bambu Nusa', desc: 'Development of sustainable bamboo manufacturing and products.' }
+      ]
+    },
+    {
+      id: 'teknologi',
+      title: 'Technology & Digital',
+      icon: <Cpu size={32} />,
+      color: '#3b82f6',
+      bgColor: 'rgba(59, 130, 246, 0.1)',
+      description: 'Integration of precision monitoring, digitalization, and satellite-based geospatial mapping.',
+      partners: [
+        { name: 'PT. Inovasi Mandiri Pratama', desc: 'Utilization of Drone Technology and Applications for monitoring the Green Gold Plantation in Kasepuhan Cibarani.' },
+        { name: 'Skalainfo', desc: 'Provider of information infrastructure and strategic data processing.' },
+        { name: 'Tokeninid', desc: 'Provider of Web3 infrastructure and digital asset tokenization.' }
+      ]
+    },
+    {
+      id: 'akademisi',
+      title: 'Academics & Research',
+      icon: <GraduationCap size={32} />,
+      color: '#845ef7',
+      bgColor: 'rgba(132, 94, 247, 0.1)',
+      description: 'Improving the quality of seed research, tissue culture, and purely scientific-based derivative innovations.',
+      partners: [
+        { name: 'PKR Bambu', desc: 'Specialized Collaborative Research Center for the study and development of tropical bamboo species.' },
+        { name: 'Universitas Pradipta', desc: 'University partner for academic validation and student innovation incubator.' },
+        { name: 'Universitas Sultan Ageng Tirtayasa (UNTIRTA)', desc: 'Development of strategic local academic research.' },
+        { name: 'Universitas Islam Negeri (UIN) Maulana Hasanuddin', desc: 'Synergy of ecological research and socio-cultural empowerment.' },
+        { name: 'Universitas Indonesia (UI) Architecture Engineering', desc: 'Research on architectural design based on bamboo material.' },
+        { name: 'Institute Teknologi Bandung (ITB) Architecture Engineering', desc: 'Innovation in bamboo structural engineering and technology.' },
+        { name: 'IPB University', desc: 'Center of excellence for botanical research and sustainable agriculture.' }
+      ]
+    },
+    {
+      id: 'finansial',
+      title: 'Finance & Funding Institutions',
+      icon: <Landmark size={32} />,
+      color: '#e03131',
+      bgColor: 'rgba(224, 49, 49, 0.1)',
+      description: 'Capital flow support, banking, and financial audits for giant operational scales.',
+      partners: [
+        { name: 'PT. Bank Mizuho Indonesia', desc: 'International banking support and corporate financial ecosystem.' },
+        { name: 'BAZNAS South Tangerang', desc: 'Distributor of zakat and CSR funds for community empowerment through ecological channels.' }
+      ]
+    },
+    {
+      id: 'pemerintah',
+      title: 'Government & Regulation',
+      icon: <Building size={32} />,
+      color: '#0b7285',
+      bgColor: 'rgba(11, 114, 133, 0.1)',
+      description: 'Alignment of regulatory policies, bureaucratic support, and legitimacy of national-scale conservation programs.',
+      partners: [
+        { name: 'Banten Provincial Government', desc: 'Spatial planning regulation support for green gold preservation.' },
+        { name: 'South Tangerang City Government', desc: 'Synergy of urban environmental programs and empowerment.' },
+        { name: 'Tangerang Regency Government', desc: 'Support for spatial planning infrastructure and local conservation.' },
+        { name: 'BAPPENAS', desc: 'Ministry of National Development Planning / National Development Planning Agency.' },
+        { name: 'BPDLH', desc: 'Environmental Fund Management Agency.' },
+        { name: 'National Nutrition Agency', desc: 'Synergy of national food and nutrition security programs based on natural commodities.' }
+      ]
+    }
+  ];
+
+  const { language } = useLanguage();
+  const partnerCategories = language === 'en' ? partnerCategories_en : partnerCategories_id;
 
   const handleViewProfile = (partner) => {
     if (!isAuthenticated) {

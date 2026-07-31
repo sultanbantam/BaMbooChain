@@ -11,7 +11,7 @@ async function run() {
 
     const db = app.firestore();
     const clientId = "client_4e0f61e19c1855c5";
-    const clientSecret = "secret_087eaa28a0feef4be7fa236b38d383cb";
+    const clientSecret = process.env.WHALE_OF_SAVU_SECRET; // Load from environment variable
     const clientSecretHash = await bcrypt.hash(clientSecret, 10);
 
     const clientDoc = {

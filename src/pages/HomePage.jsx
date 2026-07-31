@@ -523,7 +523,7 @@ const HomePage = () => {
                 {welcomeStep === 1 ? t('welcome_greeting') : t('guide_title')}
               </h2>
               <p style={{ opacity: 0.9, fontSize: '0.85rem', lineHeight: '1.4' }}>
-                {welcomeStep === 1 ? t('welcome_intro') : "Pilih langkah pertama Anda untuk membangun ekosistem bambu bersama kami."}
+                {welcomeStep === 1 ? t('welcome_intro') : t('welcome_intro_2')}
               </p>
             </div>
 
@@ -569,7 +569,7 @@ const HomePage = () => {
                       fontWeight: '800', fontSize: '1.15rem', padding: '40px 20px',
                       transition: 'all 0.2s ease', cursor: 'pointer'
                     }} onMouseEnter={e => { e.currentTarget.style.background = '#f8f9fa'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'; }} onMouseLeave={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.boxShadow = 'none'; }}>
-                      TOBAT EKOLOGI
+                      {t('welcome_btn_1')}
                     </Link>
                     <Link to="/bamboochain/token-wallet" onClick={closeWelcome} style={{
                       flex: 1, textDecoration: 'none', background: 'white', border: '1px solid #333', 
@@ -577,10 +577,9 @@ const HomePage = () => {
                       fontWeight: '800', fontSize: '1.15rem', padding: '40px 20px', textAlign: 'center',
                       transition: 'all 0.2s ease', cursor: 'pointer'
                     }} onMouseEnter={e => { e.currentTarget.style.background = '#f8f9fa'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'; }} onMouseLeave={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.boxShadow = 'none'; }}>
-                      <span>UTILITY BMC:</span>
-                      <span style={{ fontSize: '0.85rem', fontWeight: '600', marginTop: '8px', lineHeight: '1.4' }}>
-                        1. BAMBOOGAME &nbsp; 2. BAMBOOCHAT<br/>
-                        3. WHALEOFSAVU &nbsp; 4. SIGNAL TRADING
+                      <span>{t('welcome_btn_2_1')}</span>
+                      <span style={{ fontSize: '0.85rem', fontWeight: '600', marginTop: '8px', lineHeight: '1.4', whiteSpace: 'pre-line' }}>
+                        {t('welcome_btn_2_2')}
                       </span>
                     </Link>
                   </div>
@@ -681,7 +680,7 @@ const HomePage = () => {
                 onClick={() => setShowKodibaTos(false)}
                 style={{ padding: '15px 30px', background: 'transparent', border: '1px solid #adb5bd', color: '#adb5bd', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1rem' }}
               >
-                Kembali
+                {t('home_kodiba_btn_back')}
               </button>
               <button 
                 onClick={() => {
@@ -690,7 +689,7 @@ const HomePage = () => {
                 }}
                 style={{ padding: '15px 30px', background: '#51cf66', border: 'none', color: 'black', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1rem', boxShadow: '0 4px 15px rgba(0,0,0,0.2)' }}
               >
-                Mengerti & Lanjutkan
+                {t('home_kodiba_btn_next')}
               </button>
             </div>
           </div>

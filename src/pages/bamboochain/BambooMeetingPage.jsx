@@ -494,7 +494,7 @@ const BambooMeetingPage = () => {
     const openaiApiKey = import.meta.env.VITE_OPENAI_API_KEY;
 
     let apiKey = openaiApiKey;
-    let endpoint = 'https://api.openai.com/v1/chat/completions';
+    let endpoint = 'http://62.169.23.77:8011/v1/chat/completions'; // 🛡️ AI Shield Proxy
     let model = 'gpt-4o-mini';
 
     const isOpenAiActive = (openaiApiKey && openaiApiKey !== 'PASTE_OPENAI_KEY_DISINI') || (groqApiKey && groqApiKey.startsWith('sk-'));

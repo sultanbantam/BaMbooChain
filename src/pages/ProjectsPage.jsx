@@ -481,7 +481,6 @@ const ProjectsPage = () => {
           </div>
         </div>
 
-        {/* Global Dashboard Stats */}
         <div className="glass animate-fade-in" style={{ 
           padding: '25px 30px', 
           borderRadius: '24px', 
@@ -492,36 +491,36 @@ const ProjectsPage = () => {
         }}>
           <h2 style={{ fontSize: '1.25rem', fontWeight: '800', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-main)' }}>
             <Activity size={20} style={{ color: 'var(--primary)' }} />
-            Project Ecosystem & Treasury Global Stats (ProjectFi)
+            {t('projects_stat_ecosystem')}
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '20px' }}>
             <div style={{ padding: '20px', background: 'rgba(0,0,0,0.01)', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Jumlah Proyek</div>
-              <div style={{ fontSize: '1.6rem', fontWeight: '900', color: 'var(--text-main)' }}>{stats.totalProjects} <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)' }}>(Total 128)</span></div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('projects_stat_count')}</div>
+              <div style={{ fontSize: '1.6rem', fontWeight: '900', color: 'var(--text-main)' }}>{stats.totalProjects} <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)' }}>({t('projects_stat_total')} 128)</span></div>
             </div>
             <div style={{ padding: '20px', background: 'rgba(0,0,0,0.01)', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Dana Terkelola</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('projects_stat_managed_funds')}</div>
               <div style={{ fontSize: '1.6rem', fontWeight: '900', color: '#10b981' }}>
                 {formatGlobalDana(stats.danaTerkelola)}
               </div>
             </div>
             <div style={{ padding: '20px', background: 'rgba(0,0,0,0.01)', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Pendukung</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('projects_stat_supporters')}</div>
               <div style={{ fontSize: '1.6rem', fontWeight: '900', color: 'var(--primary)' }}>{stats.totalPendukung.toLocaleString('id-ID')}</div>
             </div>
             <div style={{ padding: '20px', background: 'rgba(0,0,0,0.01)', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>BMC Digunakan</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('projects_stat_bmc_used')}</div>
               <div style={{ fontSize: '1.6rem', fontWeight: '900', color: '#e67700' }}>
                 {formatGlobalBmc(stats.bmcDigunakan)} <span style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>BMC</span>
               </div>
             </div>
             <div style={{ padding: '20px', background: 'rgba(0,0,0,0.01)', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Proyek Aktif</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('projects_stat_active')}</div>
               <div style={{ fontSize: '1.6rem', fontWeight: '900', color: 'var(--text-main)' }}>{stats.activeProjectsCount}</div>
             </div>
             <div style={{ padding: '20px', background: 'rgba(0,0,0,0.01)', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Proyek Selesai</div>
-              <div style={{ fontSize: '1.6rem', fontWeight: '900', color: 'var(--text-main)' }}>{stats.completedProjectsCount}</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('projects_stat_completed')}</div>
+              <div style={{ fontSize: '1.6rem', fontWeight: '900', color: 'var(--text-main)' }}>{stats.proposedProjectsCount}</div>
             </div>
           </div>
         </div>
@@ -610,7 +609,7 @@ const ProjectsPage = () => {
                   onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
                   onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                 >
-                  {project.id === 8 ? "Kunjungi Situs & Treasury" : (project.id === 1 || project.id === 2) ? "Tonton Video & Treasury" : hasAccess ? "Detail & Treasury" : t('projects_btn_locked')}
+                  {project.id === 8 ? t('projects_btn_visit_web') : (project.id === 1 || project.id === 2) ? t('projects_btn_watch_video') : hasAccess ? t('projects_btn_detail_treasury') : t('projects_btn_locked')}
                   {project.id === 8 || project.id === 1 || project.id === 2 ? <ArrowRight size={18} /> : hasAccess ? <ArrowRight size={18} /> : <Lock size={18} />}
                 </button>
               </div>
@@ -679,13 +678,13 @@ const ProjectsPage = () => {
                 border: '1px dashed var(--border-color)', flexWrap: 'wrap'
               }}>
                 <div style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--text-muted)' }}>
-                  ⚙️ Mode Simulasi (Demo):
+                  {t('projects_sim_mode')}
                 </div>
                 <div style={{ display: 'flex', gap: '5px' }}>
                   {[
-                    { id: 'donor', label: 'Pendukung (Publik)' },
-                    { id: 'pm', label: 'Manajer Proyek (PM)' },
-                    { id: 'bendahara', label: 'Bendahara / Admin' }
+                    { id: 'donor', label: t('projects_sim_donor') },
+                    { id: 'pm', label: t('projects_sim_pm') },
+                    { id: 'bendahara', label: t('projects_sim_admin') }
                   ].map(role => (
                     <button
                       key={role.id}
@@ -705,17 +704,16 @@ const ProjectsPage = () => {
               </div>
             </div>
 
-            {/* Navigation Tabs */}
             <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color)', padding: '0 30px', overflowX: 'auto', gap: '20px' }}>
               {[
-                { id: 'explore', label: 'Eksplorasi', icon: <Info size={16} /> },
-                { id: 'treasury', label: 'Kas & Treasury', icon: <Wallet size={16} /> },
-                { id: 'funding', label: 'Pendanaan', icon: <Coins size={16} /> },
-                { id: 'expenses', label: 'Pengeluaran', icon: <Folder size={16} /> },
-                { id: 'milestone', label: 'Milestone & Tim', icon: <Award size={16} /> },
-                { id: 'wallet', label: 'Wallet & Integrasi', icon: <Shield size={16} /> },
-                { id: 'faq', label: 'FAQ', icon: <HelpCircle size={16} /> },
-                { id: 'audit', label: 'Audit Trail', icon: <History size={16} /> }
+                { id: 'explore', label: t('projects_tab_explore'), icon: <Info size={16} /> },
+                { id: 'treasury', label: t('projects_tab_treasury'), icon: <Wallet size={16} /> },
+                { id: 'funding', label: t('projects_tab_funding'), icon: <Coins size={16} /> },
+                { id: 'expenses', label: t('projects_tab_expenses'), icon: <Folder size={16} /> },
+                { id: 'milestone', label: t('projects_tab_milestone'), icon: <Award size={16} /> },
+                { id: 'wallet', label: t('projects_tab_wallet'), icon: <Shield size={16} /> },
+                { id: 'faq', label: t('projects_tab_faq'), icon: <HelpCircle size={16} /> },
+                { id: 'audit', label: t('projects_tab_audit'), icon: <History size={16} /> }
               ].map(tab => (
                 <button
                   key={tab.id}
@@ -747,20 +745,20 @@ const ProjectsPage = () => {
               {activeTab === 'explore' && (
                 <div className="animate-fade-in" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '30px' }}>
                   <div>
-                    <h3 style={{ marginTop: 0, fontWeight: 'bold' }}>Tentang Proyek</h3>
+                    <h3 style={{ marginTop: 0, fontWeight: 'bold' }}>{t('projects_about')}</h3>
                     <p style={{ lineHeight: '1.7', color: 'var(--text-muted)' }}>{tField(selectedProject, 'fullDesc')}</p>
                     
-                    <h4 style={{ fontWeight: 'bold', marginTop: '24px' }}>Dampak Sosial & Ekologis</h4>
+                    <h4 style={{ fontWeight: 'bold', marginTop: '24px' }}>{t('projects_impact')}</h4>
                     <p style={{ lineHeight: '1.7', color: 'var(--text-muted)' }}>{tField(selectedProject, 'impact')}</p>
                     
                     <div style={{ marginTop: '30px', padding: '20px', background: 'rgba(0,0,0,0.02)', borderRadius: '15px', border: '1px solid var(--border-color)' }}>
-                      <h4 style={{ margin: '0 0 10px 0', fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>ALAMAT DOMPET TREASURY</h4>
+                      <h4 style={{ margin: '0 0 10px 0', fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>{t('projects_wallet_address')}</h4>
                       <code style={{ fontSize: '0.9rem', color: 'var(--primary)', fontWeight: 'bold', wordBreak: 'break-all' }}>{tr.wallet_address}</code>
                     </div>
                   </div>
                   
                   <div style={{ borderLeft: '1px solid var(--border-color)', paddingLeft: '30px' }}>
-                    <h3 style={{ marginTop: 0, fontWeight: 'bold' }}>Progress Pendanaan</h3>
+                    <h3 style={{ marginTop: 0, fontWeight: 'bold' }}>{t('projects_progress')}</h3>
                     <div style={{ fontSize: '2rem', fontWeight: '900', color: 'var(--primary)', marginBottom: '5px' }}>{tr.progress}%</div>
                     
                     <div style={{ width: '100%', height: '10px', background: 'rgba(0,0,0,0.05)', borderRadius: '10px', overflow: 'hidden', marginBottom: '20px' }}>
@@ -768,13 +766,13 @@ const ProjectsPage = () => {
                     </div>
                     
                     <div style={{ marginBottom: '20px' }}>
-                      <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>DANA TERKUMPUL</div>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{t('projects_funds_collected')}</div>
                       <div style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>{formatIdr(tr.total_dana_masuk)}</div>
                       <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>≈ {formatBmc(tr.total_dana_masuk)}</div>
                     </div>
                     
                     <div style={{ marginBottom: '30px' }}>
-                      <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>TARGET PENDANAAN</div>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{t('projects_funds_target')}</div>
                       <div style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>{formatIdr(tr.target_dana)}</div>
                     </div>
 
@@ -786,7 +784,7 @@ const ProjectsPage = () => {
                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
                       }}
                     >
-                      <Coins size={16} /> Dukung Proyek Ini
+                      <Coins size={16} /> {t('projects_btn_support')}
                     </button>
                   </div>
                 </div>

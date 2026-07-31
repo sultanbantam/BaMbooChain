@@ -4,12 +4,12 @@ import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 
 const FAQPage = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('Semua');
   const [openIndex, setOpenIndex] = useState(null);
 
-  const categories = [
+  const categories_id = [
     { name: 'Semua', icon: HelpCircle },
     { name: 'UMUM', icon: Globe },
     { name: 'AI & BOT', icon: Cpu },
@@ -25,7 +25,25 @@ const FAQPage = () => {
     { name: 'DISCLAIMER', icon: AlertTriangle }
   ];
 
-  const faqs = [
+  const categories_en = [
+    { name: 'All', icon: HelpCircle },
+    { name: 'GENERAL', icon: Globe },
+    { name: 'AI & BOT', icon: Cpu },
+    { name: 'ACADEMY', icon: GraduationCap },
+    { name: 'MARKET', icon: ShoppingCart },
+    { name: 'CONSTRUCTION', icon: Hammer },
+    { name: 'DATA TOOLS', icon: Box },
+    { name: 'ANALYSIS', icon: BarChart3 },
+    { name: 'WALLET', icon: Wallet },
+    { name: 'REWARD', icon: Layout },
+    { name: 'COMMUNITY', icon: MessageCircle },
+    { name: 'SECURITY', icon: ShieldCheck },
+    { name: 'DISCLAIMER', icon: AlertTriangle }
+  ];
+
+  const categories = language === 'en' ? categories_en : categories_id;
+
+  const faqs_id = [
     // 1. UMUM
     { category: 'UMUM', q: "Apa itu platform Bamboo Ecosystem ini?", a: "Platform ini adalah ekosistem digital yang mengintegrasikan edukasi, industri, marketplace, dan teknologi blockchain untuk mendukung pengembangan bambu secara global." },
     { category: 'UMUM', q: "Apa tujuan utama website ini?", a: "Tujuannya adalah membangun ekosistem bambu yang terintegrasi dari hulu ke hilir, mulai dari pengetahuan, produksi, hingga pasar." },
@@ -85,8 +103,71 @@ const FAQPage = () => {
     { category: 'DISCLAIMER', q: "Apakah ada risiko?", a: "Ya, penggunaan teknologi digital dan blockchain memiliki risiko yang harus dipahami pengguna." }
   ];
 
+  const faqs_en = [
+    // 1. GENERAL
+    { category: 'GENERAL', q: "What is this Bamboo Ecosystem platform?", a: "This platform is a digital ecosystem that integrates education, industry, marketplace, and blockchain technology to support global bamboo development." },
+    { category: 'GENERAL', q: "What is the main goal of this website?", a: "The goal is to build an integrated bamboo ecosystem from upstream to downstream, ranging from knowledge, production, to the market." },
+    { category: 'GENERAL', q: "Who can use this platform?", a: "The general public, Investors & industry players, Bamboo farmers, Architects & contractors, Researchers & academics." },
+    
+    // 2. AI
+    { category: 'AI & BOT', q: "What is Bambupedia?", a: "Bambupedia is an AI-based digital bamboo library that provides comprehensive information about bamboo." },
+    { category: 'AI & BOT', q: "What is BambuBot?", a: "BambuBot is an AI assistant that can answer questions related to bamboo, from technical to business matters." },
+    { category: 'AI & BOT', q: "Is using BambuBot free?", a: "Users get limited free access, then paid access using BMC tokens." },
+    { category: 'AI & BOT', q: "Can AI answers be used as professional reference?", a: "Answers are for educational and general information purposes, not a substitute for professional consultation." },
+
+    // 3. ACADEMY
+    { category: 'ACADEMY', q: "What is Akademi Bambu Nusantara?", a: "A learning platform that provides a curriculum on the bamboo industry, from basic to professional levels." },
+    { category: 'ACADEMY', q: "Are courses paid?", a: "Some are free, some are premium using BMC." },
+    { category: 'ACADEMY', q: "Is there certification?", a: "Yes, some programs provide competency certificates." },
+
+    // 4. MARKET
+    { category: 'MARKET', q: "What is the Bamboo Market?", a: "A platform for buying and selling raw bamboo, processed bamboo, and derivative products." },
+    { category: 'MARKET', q: "Can I sell products on this platform?", a: "Yes, anyone can become a seller after registering." },
+    { category: 'MARKET', q: "How does the transaction system work?", a: "Transactions can be made using the digital system and BMC tokens." },
+    { category: 'MARKET', q: "Are prices transparent?", a: "Yes, prices are displayed openly to create an efficient market." },
+
+    // 5. CONSTRUCTION
+    { category: 'CONSTRUCTION', q: "What is the bamboo labor service?", a: "This platform connects users with builders and bamboo construction workers." },
+    { category: 'CONSTRUCTION', q: "Are the builders verified?", a: "Yes, a rating and review system is available to maintain quality." },
+    { category: 'CONSTRUCTION', q: "Can I create a construction project through the platform?", a: "Yes, users can create projects and find workers as needed." },
+
+    // 6. DATA TOOLS
+    { category: 'DATA TOOLS', q: "What is the bamboo detection feature?", a: "An AI-based feature that can identify bamboo types, health, and conditions." },
+    { category: 'DATA TOOLS', q: "Can bamboo data be accessed by the public?", a: "Some data is free, some is premium using BMC." },
+    { category: 'DATA TOOLS', q: "Can I contribute data?", a: "Yes, users can upload data and get BMC rewards." },
+
+    // 7. ANALYSIS
+    { category: 'ANALYSIS', q: "What is the function of the market analysis feature?", a: "It provides insights and data on global market trends (crypto & stocks)." },
+    { category: 'ANALYSIS', q: "Does this provide investment recommendations?", a: "No. The information is for educational purposes only, not investment advice." },
+
+    // 8. WALLET
+    { category: 'WALLET', q: "What is BMC?", a: "BMC is a utility token used in the BambooChain ecosystem." },
+    { category: 'WALLET', q: "What is BMC used for?", a: "Access to premium features, contribution rewards, marketplace transactions, and community voting." },
+    { category: 'WALLET', q: "Do I automatically get a wallet?", a: "Yes, when registering, you will automatically get a digital wallet." },
+    { category: 'WALLET', q: "How do I get BMC?", a: "By purchasing, daily check-ins, contributing data, platform activities, and marketplace." },
+
+    // 9. REWARD
+    { category: 'REWARD', q: "How do I get rewards?", a: "Through check-ins, playing games, contributing data, and community activities." },
+    { category: 'REWARD', q: "Can rewards be cashed out?", a: "Rewards can be used within the ecosystem or transacted according to platform policies." },
+
+    // 10. COMMUNITY
+    { category: 'COMMUNITY', q: "What is WebNUSA?", a: "An educational bamboo tourism program and community activities." },
+    { category: 'COMMUNITY', q: "Can I join events?", a: "Yes, users can register for events through the platform." },
+
+    // 11. SECURITY
+    { category: 'SECURITY', q: "Is my data safe?", a: "The platform uses digital security standards to protect user data. (Learn With Bamboo)" },
+    { category: 'SECURITY', q: "Is my wallet safe?", a: "The wallet uses a blockchain-based security system." },
+
+    // 12. DISCLAIMER
+    { category: 'DISCLAIMER', q: "Does this platform provide investment services?", a: "No. All information is educational and not investment advice." },
+    { category: 'DISCLAIMER', q: "Are there risks?", a: "Yes, using digital and blockchain technology involves risks that users must understand." }
+  ];
+
+  const faqs = language === 'en' ? faqs_en : faqs_id;
+
   const filteredFaqs = faqs.filter(faq => {
-    const matchesCategory = activeCategory === 'Semua' || faq.category === activeCategory;
+    const isAll = activeCategory === 'Semua' || activeCategory === 'All';
+    const matchesCategory = isAll || faq.category === activeCategory;
     const matchesSearch = faq.q.toLowerCase().includes(searchQuery.toLowerCase()) || faq.a.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
