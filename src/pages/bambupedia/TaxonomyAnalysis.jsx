@@ -48,13 +48,18 @@ const TaxonomyAnalysis = () => {
         },
         body: JSON.stringify({
           model: "gpt-4o",
+          response_format: { type: "json_object" },
           messages: [
+            {
+              role: "system",
+              content: "You are a Bamboo Botanist AI. You MUST output ONLY a valid JSON object. If you are unsure about the image, make your best educated guess based on what is visible."
+            },
             {
               role: "user",
               content: [
                 {
                   type: "text",
-                  text: "You are an expert Bamboo Botanist AI. Analyze this image of bamboo. Identify its likely species, estimate its age in years, and assess its health status (0-100). Provide details and recommendations. Your output must be ONLY a valid JSON object EXACTLY in this format: {\"species\": \"Bambu X (Scientific name)\", \"age\": \"X Tahun\", \"health\": 90, \"status\": \"Sehat\", \"details\": \"Batang sehat...\", \"recommendation\": \"Beri pupuk...\"}"
+                  text: "Analyze this image of bamboo. Identify its likely species, estimate its age in years, and assess its health status (0-100). Provide details and recommendations. Your output MUST be a JSON object with EXACTLY these keys: 'species', 'age', 'health' (number), 'status', 'details', 'recommendation'."
                 },
                 {
                   type: "image_url",
@@ -65,7 +70,7 @@ const TaxonomyAnalysis = () => {
               ]
             }
           ],
-          max_tokens: 300
+          max_tokens: 400
         })
       });
 
@@ -76,18 +81,33 @@ const TaxonomyAnalysis = () => {
       const data = await response.json();
       let aiResponseText = data.choices[0].message.content.trim();
       
-      if (aiResponseText.startsWith('```json')) {
-        aiResponseText = aiResponseText.replace(/^```json\n/, '').replace(/\n```$/, '');
+      const jsonMatch = aiResponseText.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        aiResponseText = jsonMatch[0];
       }
 
-      const finalResult = JSON.parse(aiResponseText);
-      setResult(finalResult);
-      
-      // Simpan ke riwayat
-      addTaxonomy({
-        image: image,
-        ...finalResult
-      });
+      try {
+        const parsedData = JSON.parse(aiResponseText);
+        const finalResult = {
+          species: parsedData.species || "Spesies Tidak Diketahui",
+          age: parsedData.age || "Tidak Diketahui",
+          health: parsedData.health || 0,
+          status: parsedData.status || "Tidak Jelas",
+          details: parsedData.details || "AI tidak dapat menganalisis detail dari gambar yang diberikan.",
+          recommendation: parsedData.recommendation || "Lakukan observasi langsung di lapangan."
+        };
+        
+        setResult(finalResult);
+        
+        // Simpan ke riwayat
+        addTaxonomy({
+          image: image,
+          ...finalResult
+        });
+      } catch (parseError) {
+        console.error("Parse Error. Raw text:", aiResponseText);
+        throw new Error("AI gagal mengenali gambar ini sebagai bambu yang valid. Coba unggah foto yang lebih jelas dan fokus.");
+      }
     } catch (err) {
       console.error(err);
       setError(err.message || "Terjadi kesalahan saat memproses gambar.");
