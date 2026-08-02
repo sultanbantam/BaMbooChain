@@ -2,6 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Camera, Upload, Scan, CheckCircle, AlertCircle, Info, ArrowLeft, RefreshCw, Sprout, Activity, ShieldCheck, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useBambupedia } from '../../context/BambupediaContext';
+import { useAuth } from '../../context/AuthContext';
+import { storage } from '../../firebase/config';
+import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 import BackButton from '../../components/BackButton';
 
 const compressImage = (file, maxWidth = 800, maxHeight = 800, quality = 0.6) => {
@@ -102,9 +105,26 @@ const TaxonomyAnalysis = () => {
         throw new Error("OpenAI API Key tidak ditemukan. Pastikan Anda telah menambahkannya di file .env");
       }
 
-      const imagePayloads = [];
+      // 1. Unggah gambar ke Firebase Storage
+      const uploadedImagesMap = {};
+      const userId = user?.id || user?.uid || 'guest';
+      const sessionTimestamp = Date.now();
+      
       for (const catId in images) {
-        images[catId].forEach(imgUrl => {
+        uploadedImagesMap[catId] = [];
+        for (let i = 0; i < images[catId].length; i++) {
+          const imgBase64 = images[catId][i];
+          const fileName = `taxonomies/${userId}/${sessionTimestamp}_${catId}_${i}.jpg`;
+          const storageRef = ref(storage, fileName);
+          await uploadString(storageRef, imgBase64, 'data_url');
+          const downloadUrl = await getDownloadURL(storageRef);
+          uploadedImagesMap[catId].push(downloadUrl);
+        }
+      }
+
+      const imagePayloads = [];
+      for (const catId in uploadedImagesMap) {
+        uploadedImagesMap[catId].forEach(imgUrl => {
           imagePayloads.push({
             type: "image_url",
             image_url: { url: imgUrl, detail: "low" }
@@ -168,7 +188,16 @@ Your output MUST be a JSON object with EXACTLY these keys: 'species' (string), '
         };
         
         setResult(finalResult);
-        addTaxonomy({ image: allImages[0], ...finalResult });
+        
+        // Dapatkan gambar utama (foto pertama yang berhasil diunggah) untuk UI legacy
+        const firstCategory = Object.keys(uploadedImagesMap)[0];
+        const primaryImageUrl = uploadedImagesMap[firstCategory][0];
+
+        addTaxonomy({ 
+          image: primaryImageUrl,
+          imagesData: uploadedImagesMap,
+          ...finalResult 
+        });
       } catch (parseError) {
         throw new Error("AI gagal memformat respons dengan benar.");
       }
@@ -285,8 +314,8 @@ Your output MUST be a JSON object with EXACTLY these keys: 'species' (string), '
         {isScanning && (
           <div className="glass" style={{ padding: '60px', borderRadius: '32px', background: 'white', textAlign: 'center' }}>
             <RefreshCw size={60} className="animate-spin" color="var(--primary)" style={{ margin: '0 auto 24px auto', display: 'block' }} />
-            <h3 style={{ fontSize: '1.8rem', fontWeight: 'bold', color: 'var(--text-main)', marginBottom: '10px' }}>Menganalisis {totalUploaded} Foto Anatomi...</h3>
-            <p style={{ color: 'var(--text-muted)', maxWidth: '400px', margin: '0 auto' }}>AI Botani kami sedang membandingkan ciri-ciri fisik daun, batang, dan pelepah dengan database Taksonomi Nusantara.</p>
+            <h3 style={{ fontSize: '1.8rem', fontWeight: 'bold', color: 'var(--text-main)', marginBottom: '10px' }}>Mengunggah & Menganalisis {totalUploaded} Foto...</h3>
+            <p style={{ color: 'var(--text-muted)', maxWidth: '400px', margin: '0 auto' }}>Proses ini mungkin memakan waktu ekstra karena sistem sedang menyimpan foto secara permanen ke Cloud Storage dan membandingkannya dengan database Taksonomi Nusantara.</p>
           </div>
         )}
 
