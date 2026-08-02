@@ -1,4 +1,4 @@
-import { db, storage } from '../firebase/config';
+import { db } from '../firebase/config';
 import {
   addDoc,
   collection,
@@ -16,7 +16,7 @@ import {
   arrayUnion,
   where
 } from 'firebase/firestore';
-import { getDownloadURL, ref, uploadBytes, uploadBytesResumable } from 'firebase/storage';
+// Firebase Storage imports removed - migrated to Cloudinary
 
 export const KNOWLEDGE_COLLECTION = 'knowledge_items';
 
@@ -91,25 +91,46 @@ export const extractSearchText = (item) => {
   return cleanText(parts.filter(Boolean).join(' ')).toLowerCase();
 };
 
-const uploadFileHelper = (fileRef, file, onProgress) => {
+const uploadFileHelper = async (file, onProgress) => {
   return new Promise((resolve, reject) => {
-    const uploadTask = uploadBytesResumable(fileRef, file);
-    uploadTask.on(
-      'state_changed',
-      (snapshot) => {
-        const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-        if (onProgress) onProgress(progress);
-      },
-      (error) => reject(error),
-      async () => {
+    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+    const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+    
+    if (!cloudName || !uploadPreset) {
+      return reject(new Error("Cloudinary configuration is missing."));
+    }
+
+    const url = `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`;
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', uploadPreset);
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', url, true);
+
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable && onProgress) {
+        const progress = Math.round((e.loaded / e.total) * 100);
+        onProgress(progress);
+      }
+    };
+
+    xhr.onload = () => {
+      if (xhr.status === 200) {
+        const response = JSON.parse(xhr.responseText);
+        resolve(response.secure_url);
+      } else {
         try {
-          const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
-          resolve(downloadUrl);
-        } catch (error) {
-          reject(error);
+          const err = JSON.parse(xhr.responseText);
+          reject(new Error(err.error.message || 'Upload failed'));
+        } catch {
+          reject(new Error(`Upload failed with status ${xhr.status}`));
         }
       }
-    );
+    };
+
+    xhr.onerror = () => reject(new Error('Network error during upload'));
+    xhr.send(formData);
   });
 };
 
@@ -124,25 +145,17 @@ export const createKnowledgeItem = async ({ form, file, user, onProgress }) => {
     fileName = file.name;
     fileType = file.type || 'application/octet-stream';
     fileSize = file.size;
-    filePath = `knowledge/${user?.id || 'guest'}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
-    const fileRef = ref(storage, filePath);
+    // We don't need filePath for Cloudinary, but keep it for compatibility if needed
+    filePath = `cloudinary/${user?.id || 'guest'}/${Date.now()}`; 
     try {
-      if (onProgress) {
-        fileUrl = await uploadFileHelper(fileRef, file, onProgress);
-      } else {
-        await uploadBytes(fileRef, file);
-        fileUrl = await getDownloadURL(fileRef);
-      }
-    } catch (storageError) {
-      // Storage upload gagal (CORS, network, rules) — tetap lanjut simpan metadata
-      console.warn('[Knowledge] File upload ke Firebase Storage gagal, melanjutkan tanpa file:', storageError.message);
-      // Kembalikan pesan error ke caller melalui properti opsional
-      if (onProgress) onProgress(-1); // sinyal error upload
+      fileUrl = await uploadFileHelper(file, onProgress);
+    } catch (uploadError) {
+      console.warn('[Knowledge] File upload ke Cloudinary gagal, melanjutkan tanpa file:', uploadError.message);
+      if (onProgress) onProgress(-1);
       fileUrl = '';
       filePath = '';
-      // Lempar error dengan flag khusus agar UI bisa membedakan
-      const err = new Error(`FILE_UPLOAD_FAILED: ${storageError.message}`);
-      err.code = storageError.code || 'storage/unknown';
+      const err = new Error(`FILE_UPLOAD_FAILED: ${uploadError.message}`);
+      err.code = 'upload/cloudinary-error';
       err.fileUploadOnly = true;
       throw err;
     }
