@@ -77,7 +77,7 @@ export const BambupediaProvider = ({ children }) => {
     if (!user) return null;
     const newPlanting = {
       ...data,
-      userId: user.id,
+      userId: user.uid || user.id,
       date: data.date || new Date().toISOString(),
       status: data.status || 'planted',
       createdAt: serverTimestamp()
@@ -104,7 +104,7 @@ export const BambupediaProvider = ({ children }) => {
     if (!user) return null;
     const newMaintenance = {
       ...data,
-      userId: user.id,
+      userId: user.uid || user.id,
       date: new Date().toISOString(),
       createdAt: serverTimestamp()
     };
@@ -121,7 +121,7 @@ export const BambupediaProvider = ({ children }) => {
     if (!user) return null;
     const newHarvest = {
       ...data,
-      userId: user.id,
+      userId: user.uid || user.id,
       date: new Date().toISOString(),
       createdAt: serverTimestamp()
     };
@@ -145,7 +145,7 @@ export const BambupediaProvider = ({ children }) => {
     if (!user) return null;
     const newUtil = {
       ...data,
-      userId: user.id,
+      userId: user.uid || user.id,
       date: new Date().toISOString(),
       createdAt: serverTimestamp()
     };
@@ -162,7 +162,7 @@ export const BambupediaProvider = ({ children }) => {
     if (!user) return null;
     const newCult = {
       ...data,
-      userId: user.id,
+      userId: user.uid || user.id,
       date: new Date().toISOString(),
       createdAt: serverTimestamp()
     };
@@ -179,7 +179,7 @@ export const BambupediaProvider = ({ children }) => {
     if (!user) return null;
     const newTax = {
       ...data,
-      userId: user.id,
+      userId: user.uid || user.id,
       date: new Date().toISOString(),
       createdAt: serverTimestamp()
     };
