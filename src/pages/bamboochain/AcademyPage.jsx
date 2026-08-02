@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { BookOpen, GraduationCap, Award, PlayCircle, Clock, ShieldCheck, DownloadCloud, Lock, User, FileText, X, Sparkles, Calendar, ChevronLeft, ChevronRight, Heart, Share2, Send, MessageSquare, Gift, UploadCloud, Edit3, Trash2 } from 'lucide-react';
+import { BookOpen, GraduationCap, Award, PlayCircle, Clock, ShieldCheck, DownloadCloud, Lock, User, FileText, X, Sparkles, Calendar, ChevronLeft, ChevronRight, Heart, Share2, Send, MessageSquare, Gift, UploadCloud, Edit3, Trash2, Search } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { db } from '../../firebase/config';
@@ -44,6 +44,7 @@ const AcademyPage = () => {
   const navigate = useNavigate();
   const { user, setIsAuthModalOpen, setAuthModalInitialTab, submitArticle, updateArticle, giftBmc } = useAuth();
   const { data: articles = [] } = useArticles();
+  const [searchQuery, setSearchQuery] = useState("");
   
   // Premium Materials States
   const [premiumMaterials, setPremiumMaterials] = useState([]);
@@ -1162,9 +1163,32 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
          <h1 style={{ fontSize: '3rem', fontWeight: '900', color: 'var(--text-main)', marginBottom: '16px', letterSpacing: '-0.5px' }}>
           {t('academy_title')}
         </h1>
-        <p style={{ fontSize: '1.2rem', color: 'var(--text-muted)', maxWidth: '600px', margin: '0 auto' }}>
+        <p style={{ fontSize: '1.2rem', color: 'var(--text-muted)', maxWidth: '600px', margin: '0 auto', marginBottom: '30px' }}>
           Belajar, Berkarya, Berdaya. Tingkatkan kapasitas diri melalui perpustakaan ilmu pengetahuan terpadu dari pakar bambu dan ahli teknologi terkemuka.
         </p>
+
+        {/* SEARCH BAR */}
+        <div style={{ maxWidth: '600px', margin: '0 auto', position: 'relative' }}>
+          <input 
+            type="text" 
+            placeholder="Cari judul ebook, artikel, riset, kurikulum, penulis..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '16px 24px',
+              paddingLeft: '48px',
+              borderRadius: '30px',
+              border: '1px solid var(--border-color)',
+              background: 'var(--bg-card)',
+              color: 'var(--text-main)',
+              fontSize: '1rem',
+              boxShadow: '0 4px 15px rgba(0,0,0,0.05)',
+              outline: 'none'
+            }}
+          />
+          <Search size={20} color="var(--text-muted)" style={{ position: 'absolute', left: '18px', top: '50%', transform: 'translateY(-50%)' }} />
+        </div>
       </div>
 
       <div className="container" style={{ display: 'flex', flexDirection: 'column', gap: '50px' }}>
@@ -1181,7 +1205,10 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '30px' }}>
-            {courses.map((course) => (
+            {courses.filter(c => 
+              c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              c.category.toLowerCase().includes(searchQuery.toLowerCase())
+            ).map((course) => (
               <div key={course.id} style={{ background: 'var(--bg-card)', borderRadius: '20px', overflow: 'hidden', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', transition: 'transform 0.3s', cursor: 'pointer' }}
                    onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-8px)'}
                    onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
@@ -1291,7 +1318,14 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
-            {premiumMaterials.map((ebook, idx) => {
+            {premiumMaterials.filter(m =>
+              m.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              m.desc?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              m.tag?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              m.author?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              m.username?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              (m.publisher && m.publisher.toLowerCase().includes(searchQuery.toLowerCase()))
+            ).map((ebook, idx) => {
               const alreadyLiked = user && ebook.likes?.includes(user.id);
               const isOwner = user && user.id === ebook.userId;
               
@@ -1647,7 +1681,13 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
                 approved: true
               },
               ...(articles || []).filter(art => art.approved !== 'rejected')
-            ].map((article) => (
+            ].filter(art => 
+              art.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              art.excerpt?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              art.author?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              art.category?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              art.content?.toLowerCase().includes(searchQuery.toLowerCase())
+            ).map((article) => (
               <div key={article.id} style={{ 
                 background: 'var(--bg-card)', 
                 border: '1px solid var(--border-color)', 
