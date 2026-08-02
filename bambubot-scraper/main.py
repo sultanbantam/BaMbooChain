@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 import firebase_admin
 from firebase_admin import credentials, firestore
 from groq import Groq
+from openai import OpenAI
 
 load_dotenv()
 
@@ -15,6 +16,7 @@ load_dotenv()
 # ==========================================
 FIREBASE_KEY_PATH = os.getenv("FIREBASE_KEY_PATH", "serviceAccountKey.json")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 HUGGINGFACE_API_KEY = os.getenv("HUGGINGFACE_API_KEY")
 
 # ==========================================
@@ -30,6 +32,7 @@ if not firebase_admin._apps:
 
 db = firestore.client() if firebase_admin._apps else None
 groq_client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
+openai_client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
 
 # ==========================================
 # 1. SCRAPING / CRAWLING (MOCK/EXAMPLE)
@@ -80,11 +83,11 @@ def scrape_bamboo_news():
 # ==========================================
 def validate_content_with_ai(content):
     """
-    Uses Groq LLM to validate if the scraped content is relevant to Bamboo, 
+    Uses Groq LLM or OpenAI to validate if the scraped content is relevant to Bamboo, 
     accurate, and free from spam/hoaxes.
     """
-    if not groq_client:
-        print("Groq client not initialized, skipping AI validation.")
+    if not groq_client and not openai_client:
+        print("No AI client initialized (Groq/OpenAI), skipping AI validation.")
         return {"valid": False, "reason": "No API Key"}
 
     prompt = f"""
@@ -103,14 +106,24 @@ def validate_content_with_ai(content):
     }}
     """
     try:
-        completion = groq_client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.0,
-            response_format={"type": "json_object"}
-        )
-        result = json.loads(completion.choices[0].message.content)
-        return result
+        if groq_client:
+            completion = groq_client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.0,
+                response_format={"type": "json_object"}
+            )
+            result = json.loads(completion.choices[0].message.content)
+            return result
+        elif openai_client:
+            completion = openai_client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.0,
+                response_format={"type": "json_object"}
+            )
+            result = json.loads(completion.choices[0].message.content)
+            return result
     except Exception as e:
         print(f"Error during AI Validation: {e}")
         return {"valid": False, "reason": "API Error"}
