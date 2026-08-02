@@ -183,7 +183,7 @@ const BambooBotPage = () => {
             </div>
             <h1 style={{ fontSize: '1.7rem', margin: '0 0 8px', color: 'var(--text-main)' }}>BambuBot RAG</h1>
             <p style={{ color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: '18px' }}>
-              Jawaban diambil dari Knowledge Library yang sudah disetujui admin.
+              Jawaban diambil dari Knowledge Library yang disetujui admin & divalidasi otomatis oleh AI (Sosial Media & Data Global).
             </p>
             <div style={{ display: 'grid', gap: '10px', marginBottom: '18px' }}>
               <div style={statStyle}><Database size={18} /> {stats.sources} sumber verified</div>

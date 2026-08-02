@@ -9,7 +9,7 @@ const KnowledgeAdminPage = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
   const [items, setItems] = useState([]);
-  const [activeStatus, setActiveStatus] = useState('pending');
+  const [activeStatus, setActiveStatus] = useState('pending'); // pending, approved, rejected, auto-validated
   const [queryText, setQueryText] = useState('');
   const [adminNotes, setAdminNotes] = useState({});
   const [isProcessing, setIsProcessing] = useState(null);
@@ -20,9 +20,20 @@ const KnowledgeAdminPage = () => {
   }, [isAuthenticated, navigate, user?.username]);
 
   useEffect(() => {
+    // If auto-validated, we want to fetch 'published' or 'approved' items that have auto_verified = true
+    // The knowledgeService might need to handle this, but since it fetches all by status, 
+    // we can fetch 'approved' for auto-validated if that's what the scraper saves.
+    const statusQuery = activeStatus === 'auto-validated' ? 'approved' : activeStatus;
+    
     const unsubscribe = subscribeKnowledgeItems({
-      status: activeStatus,
-      callback: setItems,
+      status: statusQuery,
+      callback: (fetchedItems) => {
+        if (activeStatus === 'auto-validated') {
+           setItems(fetchedItems.filter(item => item.auto_verified === true));
+        } else {
+           setItems(fetchedItems.filter(item => item.auto_verified !== true));
+        }
+      },
       onError: (error) => console.error('Knowledge admin sync error:', error)
     });
     return unsubscribe;
@@ -74,8 +85,8 @@ const KnowledgeAdminPage = () => {
         </header>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', marginBottom: '20px', flexWrap: 'wrap' }}>
-          <div style={{ background: 'white', borderRadius: '16px', padding: '6px', display: 'inline-flex', gap: '4px' }}>
-            {['pending', 'approved', 'rejected'].map((status) => (
+          <div style={{ background: 'white', borderRadius: '16px', padding: '6px', display: 'inline-flex', gap: '4px', overflowX: 'auto', maxWidth: '100%' }}>
+            {['pending', 'approved', 'rejected', 'auto-validated'].map((status) => (
               <button
                 key={status}
                 onClick={() => setActiveStatus(status)}
