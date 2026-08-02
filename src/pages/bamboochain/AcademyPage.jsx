@@ -1182,14 +1182,14 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
           {t('academy_title')}
         </h1>
         <p style={{ fontSize: '1.2rem', color: 'var(--text-muted)', maxWidth: '600px', margin: '0 auto', marginBottom: '30px' }}>
-          Belajar, Berkarya, Berdaya. Tingkatkan kapasitas diri melalui perpustakaan ilmu pengetahuan terpadu dari pakar bambu dan ahli teknologi terkemuka.
+          {t('academy_subtitle')}
         </p>
 
         {/* SEARCH BAR */}
         <div style={{ maxWidth: '600px', margin: '0 auto', position: 'relative' }}>
           <input 
             type="text" 
-            placeholder="Cari judul ebook, artikel, riset, kurikulum, penulis..."
+            placeholder={t('academy_search_ph')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             style={{
@@ -1210,14 +1210,14 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
 
         {/* TOGGLE GLOBAL MODE */}
         <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px' }}>
-          <span style={{ fontSize: '0.95rem', color: isGlobalMode ? 'var(--text-muted)' : 'var(--primary)', fontWeight: 'bold' }}>Pustaka Internal</span>
+          <span style={{ fontSize: '0.95rem', color: isGlobalMode ? 'var(--text-muted)' : 'var(--primary)', fontWeight: 'bold' }}>{t('academy_tab_internal')}</span>
           <label className="switch" style={{ position: 'relative', display: 'inline-block', width: '54px', height: '28px' }}>
             <input type="checkbox" checked={isGlobalMode} onChange={(e) => setIsGlobalMode(e.target.checked)} style={{ opacity: 0, width: 0, height: 0 }} />
             <span className="slider round" style={{ position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: isGlobalMode ? 'var(--primary)' : '#cbd5e1', transition: '.4s', borderRadius: '34px' }}>
                <span style={{ position: 'absolute', height: '20px', width: '20px', left: isGlobalMode ? '30px' : '4px', bottom: '4px', backgroundColor: 'white', transition: '.4s', borderRadius: '50%' }}></span>
             </span>
           </label>
-          <span style={{ fontSize: '0.95rem', color: isGlobalMode ? 'var(--primary)' : 'var(--text-muted)', fontWeight: 'bold' }}>Jurnal Global (OpenAlex)</span>
+          <span style={{ fontSize: '0.95rem', color: isGlobalMode ? 'var(--primary)' : 'var(--text-muted)', fontWeight: 'bold' }}>{t('academy_tab_global')}</span>
         </div>
       </div>
 
@@ -1266,9 +1266,9 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '32px' }}>
             <div>
               <h2 style={{ fontSize: '2rem', color: 'var(--text-main)', margin: '0 0 8px 0', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <BookOpen size={28} color="var(--primary)" /> Katalog Kurikulum
+                <BookOpen size={28} color="var(--primary)" /> {t('academy_catalog_title')}
               </h2>
-              <p style={{ color: 'var(--text-muted)', margin: 0 }}>Akses semua kelas secara gratis dengan status keanggotaan Bambu Anda.</p>
+              <p style={{ color: 'var(--text-muted)', margin: 0 }}>{t('academy_catalog_desc')}</p>
             </div>
           </div>
 
@@ -1327,12 +1327,14 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
           </div>
 
           <div style={{ flex: '1 1 400px', position: 'relative', zIndex: 1 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-              <ShieldCheck size={32} color="#fcc419" />
-              <h2 style={{ fontSize: '2rem', color: 'white', margin: 0 }}>Sertifikat Blockchain</h2>
+            <div style={{ padding: '40px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <h2 style={{ fontSize: '2rem', color: 'white', margin: 0 }}>{t('academy_cert_title')}</h2>
+              <div style={{ background: 'rgba(255,255,255,0.2)', padding: '6px 12px', borderRadius: '12px', fontSize: '0.85rem', fontWeight: 'bold', display: 'inline-block', marginTop: '12px', marginBottom: '20px' }}>
+                Non-Fungible Token (NFT)
+              </div>
             </div>
             <p style={{ fontSize: '1.1rem', color: 'rgba(255,255,255,0.9)', marginBottom: '24px', lineHeight: '1.6' }}>
-              Tiap kelulusan kursus Anda di Akademi akan dianugerahi **Sertifikat NFT (Non-Fungible Token)**. Ini merupakan gelar digital kekal yang tak dapat dipalsukan, tertanam permanen di Blockchain cerdas sebagai bukti keahlian hijau Anda.
+              {t('academy_cert_desc')}
             </p>
             <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
               <button style={{ background: 'white', color: 'var(--primary)', padding: '14px 28px', borderRadius: '30px', fontWeight: 'bold', fontSize: '1rem', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
@@ -1371,9 +1373,9 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
 
         {/* PREMIUM RESOURCES SECTION */}
         <div style={{ marginTop: '80px', marginBottom: '40px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', flexWrap: 'wrap', gap: '20px' }}>
-            <h2 style={{ fontSize: '2rem', color: 'var(--text-main)', margin: 0, display: 'flex', alignItems: 'center', gap: '12px', fontWeight: '900', letterSpacing: '-0.5px' }}>
-              <BookOpen size={28} color="var(--primary)" /> Perpustakaan & Materi Riset Premium
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '24px' }}>
+            <h2 style={{ fontSize: '1.8rem', color: 'var(--text-main)', margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <BookOpen size={24} color="var(--primary)" /> {t('academy_premium_title')}
             </h2>
             {user?.kycStatus === 'verified' && (
               <button 
