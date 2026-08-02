@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useBambupedia } from '../context/BambupediaContext';
 import { useLanguage } from '../context/LanguageContext';
 import { db, storage } from '../firebase/config';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytes, uploadString, getDownloadURL } from 'firebase/storage';
 import { useArticles, usePlantationDonations, useEventTransactions, useUserEvents } from '../hooks/useFirestoreQueries';
 import { doc, onSnapshot, updateDoc, collection, query, where, getDoc, getDocs, addDoc, arrayUnion, arrayRemove, increment } from 'firebase/firestore';
 import { requestForToken } from '../utils/NotificationService';
@@ -340,15 +340,39 @@ const ProfilePage = () => {
     // Create new status document if there is content
     if (formData.statusText.trim() || (formData.statusPhotos && formData.statusPhotos.length > 0) || formData.statusVideo) {
       try {
+        const uid = user?.id || user?.uid || 'guest';
+        const timestamp = Date.now();
+        
+        let finalPhotos = [];
+        for (let i = 0; i < (formData.statusPhotos || []).length; i++) {
+          const photo = formData.statusPhotos[i];
+          if (photo.startsWith('data:image')) {
+             const photoRef = ref(storage, `status_updates/${uid}/${timestamp}_${i}.jpg`);
+             await uploadString(photoRef, photo, 'data_url');
+             finalPhotos.push(await getDownloadURL(photoRef));
+          } else {
+             finalPhotos.push(photo);
+          }
+        }
+
+        let finalVideo = formData.statusVideo || '';
+        if (finalVideo.startsWith('data:video')) {
+             // Assuming video is recorded or small enough, use a simple upload
+             const ext = finalVideo.split(';')[0].split('/')[1] || 'mp4';
+             const videoRef = ref(storage, `status_updates/${uid}/${timestamp}_video.${ext}`);
+             await uploadString(videoRef, finalVideo, 'data_url');
+             finalVideo = await getDownloadURL(videoRef);
+        }
+
         await addDoc(collection(db, "statuses"), {
           userId: user.id,
           username: user.username || user.name || "user",
           name: user.name || "User",
           avatarUrl: user.avatarUrl || '',
           statusText: formData.statusText,
-          statusPhotos: formData.statusPhotos || [],
-          statusVideo: formData.statusVideo || '',
-          timestamp: Date.now(),
+          statusPhotos: finalPhotos,
+          statusVideo: finalVideo,
+          timestamp: timestamp,
           likes: [],
           comments: [],
           gifts: [],
@@ -431,10 +455,20 @@ const ProfilePage = () => {
     const reader = new FileReader();
     reader.onload = (uploadEvent) => {
       compressAvatar(uploadEvent.target.result).then(async (compressedBase64) => {
-        setFormData(prev => ({ ...prev, avatarUrl: compressedBase64 }));
-        const success = await updateProfile({ avatarUrl: compressedBase64 });
-        if (success) {
-          alert("✅ Foto profil berhasil diperbarui!");
+        try {
+          const uid = user?.id || user?.uid || 'guest';
+          const avatarRef = ref(storage, `users/${uid}/avatar_${Date.now()}.jpg`);
+          await uploadString(avatarRef, compressedBase64, 'data_url');
+          const avatarUrl = await getDownloadURL(avatarRef);
+
+          setFormData(prev => ({ ...prev, avatarUrl }));
+          const success = await updateProfile({ avatarUrl });
+          if (success) {
+            alert("✅ Foto profil berhasil diperbarui!");
+          }
+        } catch (err) {
+           console.error("Error uploading avatar:", err);
+           alert("❌ Gagal mengunggah foto profil.");
         }
       });
     };

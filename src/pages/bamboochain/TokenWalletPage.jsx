@@ -6,6 +6,9 @@ import {
 } from 'lucide-react';
 import { useWeb3 } from '../../context/Web3Context';
 import { useAuth } from '../../context/AuthContext';
+import { useTokenWallet } from '../../context/TokenContext';
+import { storage } from '../../firebase/config';
+import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 import { Link, useLocation } from 'react-router-dom';
 import BackButton from '../../components/BackButton';
 import { useValidations, usePlantationDonations, useLocationProposals } from '../../hooks/useFirestoreQueries';
@@ -726,7 +729,9 @@ const BuyBMC = ({ setActiveTab }) => {
     }
   };
 
-  const handlePaymentProofSubmit = () => {
+  const [isUploadingProof, setIsUploadingProof] = useState(false);
+
+  const handlePaymentProofSubmit = async () => {
     if(!bankName) return alert(t('tw_alert_bank_name'));
     if(!paymentProof) return alert(t('tw_alert_proof'));
     
@@ -736,24 +741,40 @@ const BuyBMC = ({ setActiveTab }) => {
         return;
     }
 
-    if (addPendingValidation) {
-      addPendingValidation({
-        title: `Pembelian BMC (Fiat)`,
-        gps: '-',
-        tags: 'Pembelian, Fiat',
-        details: { pemilik: bankName, paket: `${activePkg.bmc} BMC` },
-        uploadedFiles: {
-          'Bukti Transfer': paymentProof
-        },
-        rewardAmount: activePkg.bmc
-      });
-      alert(t('tw_alert_buy_success').replace('{bmc}', activePkg.bmc));
-      const waText = encodeURIComponent(`Halo Admin, saya (${bankName}) sudah mentransfer sejumlah Rp ${activePkg.idr} untuk pembelian ${activePkg.bmc} BMC. Berikut adalah bukti transfer saya.`);
-      window.open(`https://wa.me/628174139994?text=${waText}`, '_blank');
+    setIsUploadingProof(true);
+    try {
+      let finalProofUrl = paymentProof;
+      if (paymentProof.startsWith('data:image')) {
+        const uid = user?.id || user?.uid || 'guest';
+        const fileRef = ref(storage, `payments/${uid}/${Date.now()}_proof.jpg`);
+        await uploadString(fileRef, paymentProof, 'data_url');
+        finalProofUrl = await getDownloadURL(fileRef);
+      }
+
+      if (addPendingValidation) {
+        addPendingValidation({
+          title: `Pembelian BMC (Fiat)`,
+          gps: '-',
+          tags: 'Pembelian, Fiat',
+          details: { pemilik: bankName, paket: `${activePkg.bmc} BMC` },
+          uploadedFiles: {
+            'Bukti Transfer': finalProofUrl
+          },
+          rewardAmount: activePkg.bmc
+        });
+        alert(t('tw_alert_buy_success').replace('{bmc}', activePkg.bmc));
+        const waText = encodeURIComponent(`Halo Admin, saya (${bankName}) sudah mentransfer sejumlah Rp ${activePkg.idr} untuk pembelian ${activePkg.bmc} BMC. Berikut adalah bukti transfer saya.`);
+        window.open(`https://wa.me/628174139994?text=${waText}`, '_blank');
+      }
+      setActivePkg(null);
+      setBankName('');
+      setPaymentProof(null);
+    } catch (err) {
+      console.error(err);
+      alert("Gagal mengunggah bukti pembayaran: " + err.message);
+    } finally {
+      setIsUploadingProof(false);
     }
-    setActivePkg(null);
-    setBankName('');
-    setPaymentProof(null);
   };
 
   return (
@@ -791,8 +812,9 @@ const BuyBMC = ({ setActiveTab }) => {
               <button onClick={() => setActivePkg(null)} style={{ padding: '14px', borderRadius: '16px', border: '1px solid var(--border-color)', background: 'transparent', color: 'var(--text-main)', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.9rem' }}>{t('tw_buy_cancel')}</button>
               <button 
                 onClick={handlePaymentProofSubmit}
-                style={{ padding: '14px', borderRadius: '16px', border: 'none', background: '#25D366', color: 'white', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(37, 211, 102, 0.2)', fontSize: '0.9rem' }}>
-                WA Confirm
+                disabled={isUploadingProof}
+                style={{ padding: '14px', borderRadius: '16px', border: 'none', background: '#25D366', color: 'white', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(37, 211, 102, 0.2)', fontSize: '0.9rem', opacity: isUploadingProof ? 0.7 : 1 }}>
+                {isUploadingProof ? 'Mengunggah...' : 'WA Confirm'}
               </button>
             </div>
           </div>
@@ -2290,12 +2312,30 @@ const KYCCenterTab = () => {
           setTimeout(() => {
             setScanStep('success');
             setTimeout(async () => {
+              let finalKtp = ktpPhoto;
+              let finalSelfie = selfiePhoto;
+              try {
+                const uid = user?.id || user?.uid || 'guest';
+                if (ktpPhoto.startsWith('data:image')) {
+                  const ktpRef = ref(storage, `kyc_docs/${uid}/${docType}_${Date.now()}.jpg`);
+                  await uploadString(ktpRef, ktpPhoto, 'data_url');
+                  finalKtp = await getDownloadURL(ktpRef);
+                }
+                if (selfiePhoto.startsWith('data:image')) {
+                  const selfRef = ref(storage, `kyc_docs/${uid}/Selfie_${Date.now()}.jpg`);
+                  await uploadString(selfRef, selfiePhoto, 'data_url');
+                  finalSelfie = await getDownloadURL(selfRef);
+                }
+              } catch (e) {
+                 console.error("KYC Upload error", e);
+              }
+
               const success = await updateKyc({ 
                 fullName, 
                 nik, 
                 docType,
-                ktpPhoto, 
-                selfiePhoto, 
+                ktpPhoto: finalKtp, 
+                selfiePhoto: finalSelfie, 
                 submittedAt: new Date().toISOString() 
               });
 

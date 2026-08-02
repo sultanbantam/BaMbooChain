@@ -11,6 +11,8 @@ import BackButton from '../../components/BackButton';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { useMarketplace } from '../../context/MarketplaceContext';
+import { storage } from '../../firebase/config';
+import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 
 const compressImage = (file) => {
   return new Promise((resolve) => {
@@ -230,6 +232,7 @@ const MarketplacePage = () => {
   ]);
   const [likes, setLikes] = useState(1240);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [isUploadingProduct, setIsUploadingProduct] = useState(false);
   const [toast, setToast] = useState({ show: false, message: '' });
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
@@ -645,36 +648,63 @@ const MarketplacePage = () => {
     }
   };
 
-  const handleAddProduct = (e) => {
+  const handleAddProduct = async (e) => {
     e.preventDefault();
-    const id = products.length + 1;
-    const priceNum = parseInt(newProduct.price);
+    setIsUploadingProduct(true);
     
-    const finalCategory = newProduct.category === t('market_cat_other') ? newProduct.customCategory : newProduct.category;
-    const finalUnit = newProduct.unit === t('market_unit_other') ? newProduct.customUnit : newProduct.unit;
+    try {
+      const id = products.length + 1;
+      const priceNum = parseInt(newProduct.price);
+      
+      const finalCategory = newProduct.category === t('market_cat_other') ? newProduct.customCategory : newProduct.category;
+      const finalUnit = newProduct.unit === t('market_unit_other') ? newProduct.customUnit : newProduct.unit;
 
-    const productToAdd = {
-      ...newProduct,
-      id,
-      category: finalCategory,
-      unit: finalUnit,
-      priceIdr: priceNum,
-      rating: 5.0,
-      vendor: user?.username || "admin",
-      img: newProduct.images.length > 0 ? newProduct.images[0] : "https://images.unsplash.com/photo-1590059345003-34537330756e?auto=format&fit=crop&w=400",
-      images: newProduct.images.length > 0 ? newProduct.images : ["https://images.unsplash.com/photo-1590059345003-34537330756e?auto=format&fit=crop&w=400"],
-      verified: false,
-      specs: newProduct.specs.split(/[,;]\s+/).filter(s => s.trim() !== ''),
-      storyTelling: newProduct.storyTelling,
-      status: 'Pending Curation'
-    };
-    
-    // Save to Firebase Database
-    fbAddProduct(productToAdd);
-    
-    setShowSellModal(false);
-    setNewProduct({ name: '', category: t('market_cat_material'), customCategory: '', price: '', images: [], description: '', storyTelling: '', unit: t('market_unit_stem'), customUnit: '', specs: '', whatsapp: '' });
-    showToast(t('market_toast_product_registered').replace('{name}', newProduct.name));
+      const uploadedImageUrls = [];
+      const vendorId = user?.username || user?.id || user?.uid || "admin";
+      const timestamp = Date.now();
+      
+      for (let i = 0; i < newProduct.images.length; i++) {
+        const base64Img = newProduct.images[i];
+        if (base64Img.startsWith('data:image')) {
+          const fileRef = ref(storage, `marketplace/products/${vendorId}/${timestamp}_${i}.jpg`);
+          await uploadString(fileRef, base64Img, 'data_url');
+          const url = await getDownloadURL(fileRef);
+          uploadedImageUrls.push(url);
+        } else {
+          uploadedImageUrls.push(base64Img); // If already an URL
+        }
+      }
+
+      const finalImages = uploadedImageUrls.length > 0 ? uploadedImageUrls : ["https://images.unsplash.com/photo-1590059345003-34537330756e?auto=format&fit=crop&w=400"];
+
+      const productToAdd = {
+        ...newProduct,
+        id,
+        category: finalCategory,
+        unit: finalUnit,
+        priceIdr: priceNum,
+        rating: 5.0,
+        vendor: vendorId,
+        img: finalImages[0],
+        images: finalImages,
+        verified: false,
+        specs: newProduct.specs.split(/[,;]\s+/).filter(s => s.trim() !== ''),
+        storyTelling: newProduct.storyTelling,
+        status: 'Pending Curation'
+      };
+      
+      // Save to Firebase Database
+      fbAddProduct(productToAdd);
+      
+      setShowSellModal(false);
+      setNewProduct({ name: '', category: t('market_cat_material'), customCategory: '', price: '', images: [], description: '', storyTelling: '', unit: t('market_unit_stem'), customUnit: '', specs: '', whatsapp: '' });
+      showToast(t('market_toast_product_registered').replace('{name}', newProduct.name));
+    } catch (err) {
+      console.error(err);
+      showToast("Gagal mengunggah produk: " + err.message);
+    } finally {
+      setIsUploadingProduct(false);
+    }
   };
 
   const handleSendChatMessage = (e) => {
@@ -1591,7 +1621,7 @@ const MarketplacePage = () => {
                       </div>
                    </div>
 
-                   <button type="submit" style={{ width: '100%', padding: '16px', borderRadius: '15px', background: 'var(--primary)', color: 'white', border: 'none', fontWeight: 'bold' }}>{t('market_sell_btn')}</button>
+                   <button type="submit" disabled={isUploadingProduct} style={{ width: '100%', padding: '16px', borderRadius: '15px', background: 'var(--primary)', color: 'white', border: 'none', fontWeight: 'bold', opacity: isUploadingProduct ? 0.7 : 1 }}>{isUploadingProduct ? 'Mengunggah...' : t('market_sell_btn')}</button>
                 </form>
               </div>
             </div>

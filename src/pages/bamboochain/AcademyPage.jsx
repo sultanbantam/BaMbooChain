@@ -3,7 +3,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { BookOpen, GraduationCap, Award, PlayCircle, Clock, ShieldCheck, DownloadCloud, Lock, User, FileText, X, Sparkles, Calendar, ChevronLeft, ChevronRight, Heart, Share2, Send, MessageSquare, Gift, UploadCloud, Edit3, Trash2, Search } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
-import { db } from '../../firebase/config';
+import { db, storage } from '../../firebase/config';
+import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 import { collection, onSnapshot, doc, addDoc, updateDoc, setDoc, deleteDoc, query, orderBy, serverTimestamp, arrayUnion, arrayRemove, increment, getDoc, getDocs, where } from 'firebase/firestore';
 import ShareModal from '../../components/ShareModal';
 import { useArticles } from '../../hooks/useFirestoreQueries';
@@ -339,14 +340,30 @@ const AcademyPage = () => {
 
     setIsUploading(true);
     try {
+      console.log("⏳ Uploading to Firebase Storage...");
+      const timestamp = new Date().getTime();
+      let coverUrl = newMatForm.cover;
+      let pdfUrl = newMatForm.pdf;
+
+      if (newMatForm.cover.startsWith('data:image')) {
+         const coverRef = ref(storage, `academy_materials/${user.id}/${timestamp}_cover.jpg`);
+         await uploadString(coverRef, newMatForm.cover, 'data_url');
+         coverUrl = await getDownloadURL(coverRef);
+      }
+      
+      if (newMatForm.pdf.startsWith('data:application/pdf')) {
+         const pdfRef = ref(storage, `academy_materials/${user.id}/${timestamp}_document.pdf`);
+         await uploadString(pdfRef, newMatForm.pdf, 'data_url');
+         pdfUrl = await getDownloadURL(pdfRef);
+      }
+
       console.log("⏳ Saving metadata to Firestore...");
-      // 1. Save metadata document to Firestore first (without the pdf content in the root field to avoid size limit)
       const newMat = {
         title: newMatForm.title,
         tag: finalTag,
         desc: newMatForm.desc,
-        cover: newMatForm.cover,
-        pdf: 'chunked', // Indicator that the file is stored in chunks
+        cover: coverUrl,
+        pdf: pdfUrl,
         downloadName: newMatForm.downloadName,
         userId: user.id,
         author: user.name || user.username || "Anonim",
@@ -355,7 +372,7 @@ const AcademyPage = () => {
         sharesCount: 0,
         comments: [],
         gifts: [],
-        timestamp: new Date().getTime()
+        timestamp: timestamp
       };
 
       const docRef = await addDoc(collection(db, "premium_materials"), newMat);
@@ -380,22 +397,6 @@ const AcademyPage = () => {
       } catch (err) {
         console.warn("⚠️ Failed to sync to Knowledge Library:", err);
       }
-
-      // 2. Chunk the base64 string of the PDF
-      console.log("⏳ Uploading PDF chunks to Firestore...");
-      const pdfBase64 = newMatForm.pdf;
-      const chunkSize = 800000;
-      const totalChunks = Math.ceil(pdfBase64.length / chunkSize);
-      
-      const chunksCollectionRef = collection(db, `premium_materials/${docRef.id}/pdf_chunks`);
-      for (let i = 0; i < totalChunks; i++) {
-        const chunkData = pdfBase64.substring(i * chunkSize, (i + 1) * chunkSize);
-        await setDoc(doc(chunksCollectionRef, `chunk_${i}`), {
-          index: i,
-          data: chunkData
-        });
-      }
-      console.log("✅ PDF chunks saved successfully!");
 
       alert("✅ Berhasil mengunggah materi riset premium!");
       setNewMatForm({
@@ -426,38 +427,31 @@ const AcademyPage = () => {
       console.log("⏳ Updating document in Firestore...");
       const matRef = doc(db, "premium_materials", editMatForm.id);
       
-      // Update metadata fields (excluding the pdf content if it's chunked)
+      let coverUrl = editMatForm.cover;
+      let pdfUrl = editMatForm.pdf;
+      const timestamp = new Date().getTime();
+      
+      if (coverUrl && coverUrl.startsWith('data:image')) {
+         const coverRef = ref(storage, `academy_materials/${user?.id || 'admin'}/${timestamp}_cover.jpg`);
+         await uploadString(coverRef, coverUrl, 'data_url');
+         coverUrl = await getDownloadURL(coverRef);
+      }
+      
+      if (pdfUrl && pdfUrl.startsWith('data:application/pdf')) {
+         const pdfRef = ref(storage, `academy_materials/${user?.id || 'admin'}/${timestamp}_document.pdf`);
+         await uploadString(pdfRef, pdfUrl, 'data_url');
+         pdfUrl = await getDownloadURL(pdfRef);
+      }
+
+      // Update metadata fields
       await updateDoc(matRef, {
         title: editMatForm.title,
         tag: finalTag,
         desc: editMatForm.desc,
-        cover: editMatForm.cover,
-        pdf: 'chunked',
+        cover: coverUrl,
+        pdf: pdfUrl,
         downloadName: editMatForm.downloadName
       });
-
-      // If a new PDF base64 string is selected, write new chunks
-      if (editMatForm.pdf && editMatForm.pdf !== 'chunked') {
-        console.log("⏳ Updating PDF chunks in Firestore...");
-        const pdfBase64 = editMatForm.pdf;
-        const chunkSize = 800000;
-        const totalChunks = Math.ceil(pdfBase64.length / chunkSize);
-
-        const chunksCollectionRef = collection(db, `premium_materials/${editMatForm.id}/pdf_chunks`);
-        const existingChunks = await getDocs(chunksCollectionRef);
-        for (const docSnap of existingChunks.docs) {
-          await deleteDoc(doc(db, `premium_materials/${editMatForm.id}/pdf_chunks`, docSnap.id));
-        }
-
-        for (let i = 0; i < totalChunks; i++) {
-          const chunkData = pdfBase64.substring(i * chunkSize, (i + 1) * chunkSize);
-          await setDoc(doc(chunksCollectionRef, `chunk_${i}`), {
-            index: i,
-            data: chunkData
-          });
-        }
-        console.log("✅ PDF chunks updated successfully!");
-      }
 
       console.log("✅ Firestore document updated successfully!");
       alert("✅ Berhasil memperbarui materi riset premium!");
