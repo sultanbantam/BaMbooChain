@@ -459,12 +459,15 @@ const buildSnippet = (item, queryTokens) => {
   const content = cleanText([item.summary, item.extractedText].filter(Boolean).join(' '));
   if (!content) return 'Belum ada ringkasan teks. Buka sumber untuk membaca dokumen asli.';
 
+  // For LLM RAG, we need a larger chunk of text, not just a tiny 280 char preview.
   const lower = content.toLowerCase();
   const hit = queryTokens.find((token) => lower.includes(token));
   const index = hit ? lower.indexOf(hit) : 0;
-  const start = Math.max(0, index - 90);
-  const snippet = content.slice(start, start + 280);
-  return `${start > 0 ? '...' : ''}${snippet}${start + 280 < content.length ? '...' : ''}`;
+  
+  // Provide up to 2000 characters to ensure we capture all speakers/details
+  const start = Math.max(0, index - 500);
+  const snippet = content.slice(start, start + 2000);
+  return `${start > 0 ? '...' : ''}${snippet}${start + 2000 < content.length ? '...' : ''}`;
 };
 
 export const searchKnowledge = async (items, question, maxResults = 5) => {

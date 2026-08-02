@@ -239,11 +239,20 @@ const BambooBotPage = () => {
 
                   {message.sources?.length > 0 && (
                     <div style={{ marginTop: '10px', display: 'grid', gap: '6px' }}>
-                      {message.sources.map((source) => (
-                        <a key={source.id} href={source.fileUrl || source.sourceUrl || '#'} target="_blank" rel="noreferrer" style={{ display: 'flex', gap: '8px', alignItems: 'center', color: 'var(--primary)', textDecoration: 'none', fontSize: '0.82rem', fontWeight: '800' }}>
-                          <FileText size={14} /> {source.title} <span style={{ color: 'var(--text-muted)' }}>score {source.score}</span>
-                        </a>
-                      ))}
+                      {message.sources.map((source) => {
+                        let refUrl = '#';
+                        if (source.type === 'Event') refUrl = '#/events';
+                        else if (source.type === 'Materi Narasumber' && source.fileUrl && source.fileUrl.startsWith('http')) refUrl = source.fileUrl;
+                        else if (source.type === 'Artikel') refUrl = '#/academy';
+                        else if (source.fileUrl && source.fileUrl.startsWith('http')) refUrl = source.fileUrl;
+                        else if (source.sourceUrl && source.sourceUrl.startsWith('http')) refUrl = source.sourceUrl;
+
+                        return (
+                          <a key={source.id} href={refUrl} target={refUrl === '#' || refUrl.startsWith('#') ? '_self' : '_blank'} rel="noreferrer" style={{ display: 'flex', gap: '8px', alignItems: 'center', color: 'var(--primary)', textDecoration: 'none', fontSize: '0.82rem', fontWeight: '800' }}>
+                            <FileText size={14} /> {source.title} <span style={{ color: 'var(--text-muted)' }}>score {source.score}</span>
+                          </a>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
