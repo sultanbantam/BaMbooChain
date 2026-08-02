@@ -1,34 +1,96 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Camera, Upload, Scan, CheckCircle, AlertCircle, Info, ArrowLeft, RefreshCw, Sprout, Activity, ShieldCheck } from 'lucide-react';
+import { Camera, Upload, Scan, CheckCircle, AlertCircle, Info, ArrowLeft, RefreshCw, Sprout, Activity, ShieldCheck, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useBambupedia } from '../../context/BambupediaContext';
 import BackButton from '../../components/BackButton';
+
+const compressImage = (file, maxWidth = 800, maxHeight = 800, quality = 0.6) => {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.src = e.target.result;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        if (width > height) {
+          if (width > maxWidth) {
+            height *= maxWidth / width;
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width *= maxHeight / height;
+            height = maxHeight;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+    };
+    reader.readAsDataURL(file);
+  });
+};
+
+const photoCategories = [
+  { id: 'rumpun', label: 'Rumpun', count: 3 },
+  { id: 'ruas_batang', label: 'Ruas Batang', count: 1 },
+  { id: 'buku_batang', label: 'Buku Batang', count: 1 },
+  { id: 'pelepah_daun', label: 'Pelepah Daun', count: 1 },
+  { id: 'pelepah_batang', label: 'Pelepah Batang (Blade-Auricle-Bristle)', count: 3 },
+  { id: 'cabang', label: 'Cabang', count: 1 },
+  { id: 'rebung', label: 'Rebung (Opsional)', count: 3 },
+  { id: 'bunga', label: 'Bunga (Opsional)', count: 1 }
+];
 
 const TaxonomyAnalysis = () => {
   const navigate = useNavigate();
   const { addTaxonomy } = useBambupedia();
   
-  const [image, setImage] = useState(null);
+  const [images, setImages] = useState({});
+  const [contextData, setContextData] = useState({ diameter: '', warna: '', lokasi: '' });
+  
   const [isScanning, setIsScanning] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
-  const fileInputRef = useRef(null);
+  
+  const handleImageUpload = async (e, categoryId, maxCount) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    
+    const currentImages = images[categoryId] || [];
+    const remainingSlots = maxCount - currentImages.length;
+    const filesToProcess = files.slice(0, remainingSlots);
+    
+    if (filesToProcess.length === 0) return;
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImage(reader.result);
-        setResult(null);
-        setError(null);
-      };
-      reader.readAsDataURL(file);
-    }
+    const compressedImages = await Promise.all(
+      filesToProcess.map(file => compressImage(file))
+    );
+    
+    setImages(prev => ({
+      ...prev,
+      [categoryId]: [...(prev[categoryId] || []), ...compressedImages]
+    }));
+  };
+
+  const removeImage = (categoryId, index) => {
+    setImages(prev => ({
+      ...prev,
+      [categoryId]: prev[categoryId].filter((_, i) => i !== index)
+    }));
   };
 
   const startAnalysis = async () => {
-    if (!image) return;
+    const allImages = Object.values(images).flat();
+    if (allImages.length === 0) {
+      setError("Silakan unggah setidaknya satu foto bambu untuk dianalisis.");
+      return;
+    }
     
     setIsScanning(true);
     setResult(null);
@@ -40,6 +102,27 @@ const TaxonomyAnalysis = () => {
         throw new Error("OpenAI API Key tidak ditemukan. Pastikan Anda telah menambahkannya di file .env");
       }
 
+      const imagePayloads = [];
+      for (const catId in images) {
+        images[catId].forEach(imgUrl => {
+          imagePayloads.push({
+            type: "image_url",
+            image_url: { url: imgUrl, detail: "low" }
+          });
+        });
+      }
+
+      const systemPrompt = `You are an expert Bamboo Taxonomist AI specialized in Indonesian bamboo species (e.g. Gigantochloa apus, Dendrocalamus asper, Bambusa vulgaris).
+You MUST output ONLY a valid JSON object.
+Analyze all provided images (which may include culms, leaves, shoots/rebung, nodes, internodes) along with context data to scientifically determine the species.
+Instead of an absolute guess, provide top probability confidence.
+Context Data:
+- Diameter: ${contextData.diameter || 'Tidak disebutkan'}
+- Warna: ${contextData.warna || 'Tidak disebutkan'}
+- Lokasi Tumbuh: ${contextData.lokasi || 'Tidak disebutkan'}
+
+Your output MUST be a JSON object with EXACTLY these keys: 'species' (string), 'confidence' (string like '95%'), 'age' (string like '3 Tahun'), 'health' (number 0-100), 'status' (string), 'details' (string), 'recommendation' (string), 'alternative_species' (string).`;
+
       const response = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: {
@@ -50,63 +133,44 @@ const TaxonomyAnalysis = () => {
           model: "gpt-4o",
           response_format: { type: "json_object" },
           messages: [
-            {
-              role: "system",
-              content: "You are a Bamboo Botanist AI. You MUST output ONLY a valid JSON object. If you are unsure about the image, make your best educated guess based on what is visible."
-            },
+            { role: "system", content: systemPrompt },
             {
               role: "user",
               content: [
-                {
-                  type: "text",
-                  text: "Analyze this image of bamboo. Identify its likely species, estimate its age in years, and assess its health status (0-100). Provide details and recommendations. Your output MUST be a JSON object with EXACTLY these keys: 'species', 'age', 'health' (number), 'status', 'details', 'recommendation'."
-                },
-                {
-                  type: "image_url",
-                  image_url: {
-                    url: image
-                  }
-                }
+                { type: "text", text: "Please scientifically analyze these bamboo anatomy photos." },
+                ...imagePayloads
               ]
             }
           ],
-          max_tokens: 400
+          max_tokens: 600
         })
       });
 
-      if (!response.ok) {
-        throw new Error("Gagal menghubungi server AI (OpenAI API).");
-      }
+      if (!response.ok) throw new Error("Gagal menghubungi server AI (OpenAI API).");
 
       const data = await response.json();
       let aiResponseText = data.choices[0].message.content.trim();
       
       const jsonMatch = aiResponseText.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        aiResponseText = jsonMatch[0];
-      }
+      if (jsonMatch) aiResponseText = jsonMatch[0];
 
       try {
         const parsedData = JSON.parse(aiResponseText);
         const finalResult = {
           species: parsedData.species || "Spesies Tidak Diketahui",
+          confidence: parsedData.confidence || "Unknown",
           age: parsedData.age || "Tidak Diketahui",
           health: parsedData.health || 0,
           status: parsedData.status || "Tidak Jelas",
           details: parsedData.details || "AI tidak dapat menganalisis detail dari gambar yang diberikan.",
-          recommendation: parsedData.recommendation || "Lakukan observasi langsung di lapangan."
+          recommendation: parsedData.recommendation || "Lakukan observasi langsung di lapangan.",
+          alternative_species: parsedData.alternative_species || ""
         };
         
         setResult(finalResult);
-        
-        // Simpan ke riwayat
-        addTaxonomy({
-          image: image,
-          ...finalResult
-        });
+        addTaxonomy({ image: allImages[0], ...finalResult });
       } catch (parseError) {
-        console.error("Parse Error. Raw text:", aiResponseText);
-        throw new Error("AI gagal mengenali gambar ini sebagai bambu yang valid. Coba unggah foto yang lebih jelas dan fokus.");
+        throw new Error("AI gagal memformat respons dengan benar.");
       }
     } catch (err) {
       console.error(err);
@@ -117,14 +181,17 @@ const TaxonomyAnalysis = () => {
   };
 
   const reset = () => {
-    setImage(null);
+    setImages({});
     setResult(null);
     setIsScanning(false);
+    setError(null);
   };
+
+  const totalUploaded = Object.values(images).flat().length;
 
   return (
     <div className="light-gradient-bg" style={{ paddingTop: 'var(--navbar-height)', paddingBottom: '100px', minHeight: '100vh' }}>
-      <div className="container" style={{ maxWidth: '800px' }}>
+      <div className="container" style={{ maxWidth: '900px' }}>
         
         <div style={{ marginBottom: '30px' }}>
           <BackButton to="/bambupedia/tracker" />
@@ -132,145 +199,145 @@ const TaxonomyAnalysis = () => {
 
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(12, 166, 120, 0.1)', padding: '8px 20px', borderRadius: '30px', color: 'var(--primary)', fontWeight: 'bold', marginBottom: '16px' }}>
-            <Scan size={20} /> AI Taxonomy Vision
+            <Scan size={20} /> AI Taxonomy Vision V3
           </div>
           <h1 style={{ fontSize: '2.5rem', fontWeight: '900', color: 'var(--text-main)', marginBottom: '16px' }}>Analisis Taksonomi AI</h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>Identifikasi spesies, estimasi usia, dan cek kesehatan bambu melalui kamera secara instan.</p>
+          <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>Unggah kelengkapan anatomi bambu untuk mendapatkan hasil identifikasi spesies dengan akurasi tinggi layaknya ahli botani.</p>
         </div>
 
-        {!image ? (
-          /* UPLOAD SECTION */
-          <div 
-            onClick={() => fileInputRef.current?.click()}
-            className="glass"
-            style={{ 
-              height: '400px', borderRadius: '32px', border: '2px dashed var(--primary)', 
-              background: 'rgba(12, 166, 120, 0.02)', display: 'flex', flexDirection: 'column', 
-              alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.3s'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(12, 166, 120, 0.05)'}
-            onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(12, 166, 120, 0.02)'}
-          >
-            <div style={{ background: 'rgba(12, 166, 120, 0.1)', padding: '30px', borderRadius: '50%', color: 'var(--primary)', marginBottom: '24px' }}>
-              <Camera size={48} />
-            </div>
-            <h3 style={{ fontSize: '1.5rem', fontWeight: '800', marginBottom: '10px' }}>Ambil Foto atau Unggah</h3>
-            <p style={{ color: 'var(--text-muted)' }}>Klik untuk membuka kamera atau pilih file dari galeri</p>
-            <input 
-              type="file" 
-              accept="image/*" 
-              capture="environment" 
-              ref={fileInputRef} 
-              style={{ display: 'none' }} 
-              onChange={handleImageChange}
-            />
-          </div>
-        ) : (
-          /* PREVIEW & ANALYSIS SECTION */
-          <div className="animate-fade-in">
-            <div style={{ position: 'relative', borderRadius: '32px', overflow: 'hidden', boxShadow: '0 20px 50px rgba(0,0,0,0.1)', marginBottom: '30px', background: 'white' }}>
-              <img src={image} alt="Preview" style={{ width: '100%', height: 'auto', maxHeight: '500px', objectFit: 'cover', display: 'block' }} />
-              
-              {isScanning && (
-                <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.4)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
-                  <div className="scan-line" style={{ position: 'absolute', width: '100%', height: '4px', background: 'var(--primary)', boxShadow: '0 0 20px var(--primary)', animation: 'scan 2s linear infinite' }} />
-                  <RefreshCw size={50} className="animate-spin" style={{ marginBottom: '20px' }} />
-                  <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>Menganalisis...</h3>
-                  <p style={{ opacity: 0.8 }}>Mendeteksi struktur serat & pigmen batang</p>
-                </div>
-              )}
-
-              {result && (
-                <div style={{ position: 'absolute', top: '20px', right: '20px' }}>
-                  <div style={{ background: 'rgba(34, 197, 94, 0.9)', color: 'white', padding: '8px 16px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold', backdropFilter: 'blur(10px)' }}>
-                    <CheckCircle size={18} /> Teranalisis
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {error && (
-              <div style={{ background: '#fee2e2', color: '#dc2626', padding: '16px', borderRadius: '16px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 'bold' }}>
-                <AlertCircle size={20} />
-                {error}
-              </div>
-            )}
-
-            {!isScanning && !result && (
-              <div style={{ display: 'flex', gap: '15px' }}>
-                <button onClick={reset} style={{ flex: 1, padding: '16px', borderRadius: '16px', border: '1px solid #ddd', background: 'white', fontWeight: 'bold', cursor: 'pointer' }}>Batal</button>
-                <button onClick={startAnalysis} style={{ flex: 2, padding: '16px', borderRadius: '16px', border: 'none', background: 'var(--primary)', color: 'white', fontWeight: 'bold', fontSize: '1.1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', boxShadow: '0 10px 20px rgba(12, 166, 120, 0.2)' }}>
-                  <Scan size={20} /> Mulai Analisis AI
-                </button>
-              </div>
-            )}
-
-            {result && (
-              <div className="glass animate-slide-up" style={{ padding: '40px', borderRadius: '32px', background: 'white', border: '1px solid rgba(12, 166, 120, 0.1)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '30px' }}>
-                  <div>
-                    <h2 style={{ fontSize: '1.8rem', fontWeight: '900', color: 'var(--text-main)', marginBottom: '8px' }}>{result.species}</h2>
-                    <div style={{ display: 'flex', gap: '12px' }}>
-                      <span style={{ background: 'rgba(12, 166, 120, 0.1)', color: 'var(--primary)', padding: '4px 12px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 'bold' }}>Usia: {result.age}</span>
-                      <span style={{ background: 'rgba(34, 197, 94, 0.1)', color: '#16a34a', padding: '4px 12px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 'bold' }}>{result.status}</span>
-                    </div>
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '4px' }}>Skor Kesehatan</div>
-                    <div style={{ fontSize: '2rem', fontWeight: '900', color: result.health > 80 ? 'var(--primary)' : '#f59f00' }}>{result.health}%</div>
-                  </div>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginBottom: '30px' }}>
-                  <div style={{ background: '#f8f9fa', padding: '20px', borderRadius: '20px', border: '1px solid #eee' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px', color: 'var(--text-main)', fontWeight: 'bold' }}>
-                      <Activity size={18} color="var(--primary)" /> Detail Analisis
-                    </div>
-                    <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: '1.6' }}>{result.details}</p>
-                  </div>
-                  <div style={{ background: 'rgba(12, 166, 120, 0.03)', padding: '20px', borderRadius: '20px', border: '1px solid rgba(12, 166, 120, 0.1)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px', color: 'var(--primary)', fontWeight: 'bold' }}>
-                      <ShieldCheck size={18} /> Rekomendasi
-                    </div>
-                    <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: '1.6' }}>{result.recommendation}</p>
-                  </div>
-                </div>
-
-                <div style={{ textAlign: 'center', display: 'flex', gap: '15px' }}>
-                   <button onClick={reset} style={{ flex: 1, padding: '16px', borderRadius: '16px', border: '1px solid #ddd', background: 'white', fontWeight: 'bold', cursor: 'pointer' }}>Analisis Lain</button>
-                   <button onClick={() => navigate('/bambupedia/tracker')} style={{ flex: 2, padding: '16px', borderRadius: '16px', border: 'none', background: 'var(--primary)', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}>Lihat di Riwayat Tracker</button>
-                </div>
-              </div>
-            )}
+        {error && (
+          <div style={{ background: '#fee2e2', color: '#dc2626', padding: '16px', borderRadius: '16px', marginBottom: '30px', display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 'bold' }}>
+            <AlertCircle size={20} />
+            {error}
           </div>
         )}
 
-        {/* INFO CARDS */}
-        <div style={{ marginTop: '60px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
-          {[
-            { icon: <Sprout />, title: "36+ Spesies", desc: "Database taksonomi bambu Nusantara" },
-            { icon: <Activity />, title: "Health Check", desc: "Deteksi jamur & hama otomatis" },
-            { icon: <ShieldCheck />, title: "Web3 Verified", desc: "Hasil terenkripsi di ekosistem Sabumi" }
-          ].map((item, i) => (
-            <div key={i} className="glass" style={{ padding: '24px', borderRadius: '20px', textAlign: 'center', background: 'white' }}>
-              <div style={{ color: 'var(--primary)', marginBottom: '12px', display: 'flex', justifyContent: 'center' }}>{item.icon}</div>
-              <h4 style={{ fontWeight: 'bold', marginBottom: '4px' }}>{item.title}</h4>
-              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{item.desc}</p>
+        {!isScanning && !result && (
+          <div className="animate-fade-in">
+            {/* Context Data Form */}
+            <div className="glass" style={{ background: 'white', padding: '30px', borderRadius: '24px', marginBottom: '30px' }}>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '20px', color: 'var(--text-main)' }}>Konteks Tambahan (Opsional)</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Perkiraan Diameter</label>
+                  <input type="text" placeholder="Misal: 15 cm" value={contextData.diameter} onChange={e => setContextData({...contextData, diameter: e.target.value})} style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #ddd' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Warna Dominan</label>
+                  <input type="text" placeholder="Misal: Hijau Tua" value={contextData.warna} onChange={e => setContextData({...contextData, warna: e.target.value})} style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #ddd' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Lokasi Tumbuh</label>
+                  <input type="text" placeholder="Misal: Pinggir Sungai" value={contextData.lokasi} onChange={e => setContextData({...contextData, lokasi: e.target.value})} style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #ddd' }} />
+                </div>
+              </div>
             </div>
-          ))}
-        </div>
+
+            {/* Photo Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '20px', marginBottom: '40px' }}>
+              {photoCategories.map(cat => {
+                const uploaded = images[cat.id] || [];
+                return (
+                  <div key={cat.id} className="glass" style={{ background: 'white', padding: '20px', borderRadius: '20px', display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ fontWeight: 'bold', marginBottom: '4px', fontSize: '1rem', color: 'var(--text-main)' }}>{cat.label}</div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '16px' }}>Maks. {cat.count} Foto</div>
+                    
+                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '16px' }}>
+                      {uploaded.map((img, i) => (
+                        <div key={i} style={{ position: 'relative', width: '60px', height: '60px', borderRadius: '8px', overflow: 'hidden' }}>
+                          <img src={img} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          <button onClick={() => removeImage(cat.id, i)} style={{ position: 'absolute', top: '2px', right: '2px', background: 'rgba(0,0,0,0.5)', color: 'white', border: 'none', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                            <X size={12} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div style={{ marginTop: 'auto' }}>
+                      <input 
+                        type="file" 
+                        id={`upload-${cat.id}`} 
+                        multiple 
+                        accept="image/*" 
+                        style={{ display: 'none' }}
+                        onChange={(e) => handleImageUpload(e, cat.id, cat.count)}
+                        disabled={uploaded.length >= cat.count}
+                      />
+                      <label htmlFor={`upload-${cat.id}`} style={{ display: 'block', width: '100%', padding: '10px', textAlign: 'center', background: uploaded.length >= cat.count ? '#f1f5f9' : 'rgba(12, 166, 120, 0.1)', color: uploaded.length >= cat.count ? '#94a3b8' : 'var(--primary)', borderRadius: '10px', fontWeight: 'bold', cursor: uploaded.length >= cat.count ? 'not-allowed' : 'pointer', transition: '0.2s' }}>
+                        {uploaded.length >= cat.count ? 'Penuh' : '+ Upload Foto'}
+                      </label>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <button 
+              onClick={startAnalysis} 
+              disabled={totalUploaded === 0}
+              style={{ width: '100%', padding: '20px', borderRadius: '20px', border: 'none', background: totalUploaded === 0 ? '#cbd5e1' : 'var(--primary)', color: 'white', fontWeight: 'bold', fontSize: '1.2rem', cursor: totalUploaded === 0 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', boxShadow: totalUploaded === 0 ? 'none' : '0 10px 25px rgba(12, 166, 120, 0.3)', transition: '0.3s' }}
+            >
+              <Scan size={24} /> {totalUploaded === 0 ? 'Unggah Foto Dahulu' : `Mulai Analisis AI (${totalUploaded} Foto)`}
+            </button>
+          </div>
+        )}
+
+        {isScanning && (
+          <div className="glass" style={{ padding: '60px', borderRadius: '32px', background: 'white', textAlign: 'center' }}>
+            <RefreshCw size={60} className="animate-spin" color="var(--primary)" style={{ margin: '0 auto 24px auto', display: 'block' }} />
+            <h3 style={{ fontSize: '1.8rem', fontWeight: 'bold', color: 'var(--text-main)', marginBottom: '10px' }}>Menganalisis {totalUploaded} Foto Anatomi...</h3>
+            <p style={{ color: 'var(--text-muted)', maxWidth: '400px', margin: '0 auto' }}>AI Botani kami sedang membandingkan ciri-ciri fisik daun, batang, dan pelepah dengan database Taksonomi Nusantara.</p>
+          </div>
+        )}
+
+        {result && (
+          <div className="glass animate-slide-up" style={{ padding: '40px', borderRadius: '32px', background: 'white', border: '1px solid rgba(12, 166, 120, 0.1)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '30px' }}>
+              <div>
+                <h2 style={{ fontSize: '2rem', fontWeight: '900', color: 'var(--text-main)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  {result.species} <span style={{ fontSize: '1rem', background: 'var(--primary)', color: 'white', padding: '4px 12px', borderRadius: '20px' }}>Akurasi {result.confidence}</span>
+                </h2>
+                {result.alternative_species && (
+                  <div style={{ fontSize: '0.9rem', color: '#f59f00', fontWeight: 'bold', marginBottom: '12px' }}>
+                    Kemungkinan lain: {result.alternative_species}
+                  </div>
+                )}
+                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                  <span style={{ background: 'rgba(12, 166, 120, 0.1)', color: 'var(--primary)', padding: '6px 16px', borderRadius: '10px', fontSize: '0.9rem', fontWeight: 'bold' }}>Usia: {result.age}</span>
+                  <span style={{ background: 'rgba(34, 197, 94, 0.1)', color: '#16a34a', padding: '6px 16px', borderRadius: '10px', fontSize: '0.9rem', fontWeight: 'bold' }}>Status: {result.status}</span>
+                </div>
+              </div>
+              <div style={{ textAlign: 'right', background: '#f8f9fa', padding: '16px 24px', borderRadius: '20px' }}>
+                <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '4px', fontWeight: 'bold' }}>Skor Kesehatan AI</div>
+                <div style={{ fontSize: '2.5rem', fontWeight: '900', color: result.health > 80 ? 'var(--primary)' : '#f59f00', lineHeight: 1 }}>{result.health}%</div>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginBottom: '40px' }}>
+              <div style={{ background: '#f8f9fa', padding: '24px', borderRadius: '24px', border: '1px solid #eee' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px', color: 'var(--text-main)', fontWeight: 'bold', fontSize: '1.1rem' }}>
+                  <Activity size={20} color="var(--primary)" /> Analisis Anatomi
+                </div>
+                <p style={{ fontSize: '0.95rem', color: 'var(--text-muted)', lineHeight: '1.7' }}>{result.details}</p>
+              </div>
+              <div style={{ background: 'rgba(12, 166, 120, 0.03)', padding: '24px', borderRadius: '24px', border: '1px solid rgba(12, 166, 120, 0.1)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px', color: 'var(--primary)', fontWeight: 'bold', fontSize: '1.1rem' }}>
+                  <ShieldCheck size={20} /> Rekomendasi Ahli
+                </div>
+                <p style={{ fontSize: '0.95rem', color: 'var(--text-muted)', lineHeight: '1.7' }}>{result.recommendation}</p>
+              </div>
+            </div>
+
+            <div style={{ textAlign: 'center', display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+               <button onClick={reset} style={{ flex: 1, minWidth: '200px', padding: '18px', borderRadius: '20px', border: '2px solid #eee', background: 'white', color: 'var(--text-main)', fontWeight: 'bold', fontSize: '1.1rem', cursor: 'pointer', transition: '0.2s' }} onMouseEnter={(e) => e.target.style.borderColor = 'var(--primary)'} onMouseLeave={(e) => e.target.style.borderColor = '#eee'}>Analisis Pohon Lain</button>
+               <button onClick={() => navigate('/bambupedia/tracker')} style={{ flex: 2, minWidth: '300px', padding: '18px', borderRadius: '20px', border: 'none', background: 'var(--primary)', color: 'white', fontWeight: 'bold', fontSize: '1.1rem', cursor: 'pointer', boxShadow: '0 10px 25px rgba(12, 166, 120, 0.2)' }}>Simpan ke Riwayat Tracker</button>
+            </div>
+          </div>
+        )}
 
       </div>
 
       <style>{`
-        @keyframes scan {
-          0% { top: 0; }
-          50% { top: 100%; }
-          100% { top: 0; }
-        }
-        .scan-line {
-          z-index: 10;
-        }
         .animate-spin {
           animation: spin 2s linear infinite;
         }
