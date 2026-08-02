@@ -53,6 +53,7 @@ const photoCategories = [
 const TaxonomyAnalysis = () => {
   const navigate = useNavigate();
   const { addTaxonomy } = useBambupedia();
+  const { user } = useAuth();
   
   const [images, setImages] = useState({});
   const [contextData, setContextData] = useState({ diameter: '', warna: '', lokasi: '' });
