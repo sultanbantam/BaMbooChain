@@ -106,31 +106,20 @@ const TaxonomyAnalysis = () => {
         throw new Error("OpenAI API Key tidak ditemukan. Pastikan Anda telah menambahkannya di file .env");
       }
 
-      // 1. Unggah gambar ke Firebase Storage
-      const uploadedImagesMap = {};
-      const userId = user?.id || user?.uid || 'guest';
-      const sessionTimestamp = Date.now();
-      
+      // Siapkan payload gambar langsung dari Base64 untuk dikirim ke OpenAI (sangat cepat, menghindari timeout Storage)
+      const imagePayloads = [];
+      const base64ImagesMap = {};
+
       for (const catId in images) {
-        uploadedImagesMap[catId] = [];
+        base64ImagesMap[catId] = [];
         for (let i = 0; i < images[catId].length; i++) {
           const imgBase64 = images[catId][i];
-          const fileName = `taxonomies/${userId}/${sessionTimestamp}_${catId}_${i}.jpg`;
-          const storageRef = ref(storage, fileName);
-          await uploadString(storageRef, imgBase64, 'data_url');
-          const downloadUrl = await getDownloadURL(storageRef);
-          uploadedImagesMap[catId].push(downloadUrl);
-        }
-      }
-
-      const imagePayloads = [];
-      for (const catId in uploadedImagesMap) {
-        uploadedImagesMap[catId].forEach(imgUrl => {
+          base64ImagesMap[catId].push(imgBase64);
           imagePayloads.push({
             type: "image_url",
-            image_url: { url: imgUrl, detail: "low" }
+            image_url: { url: imgBase64, detail: "low" }
           });
-        });
+        }
       }
 
       const systemPrompt = `You are an expert Bamboo Taxonomist AI specialized in Indonesian bamboo species (e.g. Gigantochloa apus, Dendrocalamus asper, Bambusa vulgaris).
@@ -190,15 +179,34 @@ Your output MUST be a JSON object with EXACTLY these keys: 'species' (string), '
         
         setResult(finalResult);
         
-        // Dapatkan gambar utama (foto pertama yang berhasil diunggah) untuk UI legacy
-        const firstCategory = Object.keys(uploadedImagesMap)[0];
-        const primaryImageUrl = uploadedImagesMap[firstCategory][0];
-
-        addTaxonomy({ 
-          image: primaryImageUrl,
-          imagesData: uploadedImagesMap,
-          ...finalResult 
+        // Background upload ke Firebase Storage agar tidak membuat pengguna menunggu (mencegah timeout)
+        const userId = user?.id || user?.uid || 'guest';
+        const sessionTimestamp = Date.now();
+        
+        // Kita upload foto pertama saja sebagai thumbnail history agar ringan
+        const firstCategory = Object.keys(base64ImagesMap)[0];
+        const primaryImageBase64 = base64ImagesMap[firstCategory][0];
+        
+        const fileName = `taxonomies/${userId}/${sessionTimestamp}_thumb.jpg`;
+        const storageRef = ref(storage, fileName);
+        
+        uploadString(storageRef, primaryImageBase64, 'data_url').then(async () => {
+           const downloadUrl = await getDownloadURL(storageRef);
+           addTaxonomy({ 
+             image: downloadUrl,
+             imagesData: { [firstCategory]: [downloadUrl] },
+             ...finalResult 
+           });
+        }).catch(err => {
+           console.warn("Gagal menyimpan thumbnail ke history:", err);
+           // Tetap simpan riwayat meski tanpa gambar
+           addTaxonomy({ 
+             image: null,
+             imagesData: {},
+             ...finalResult 
+           });
         });
+
       } catch (parseError) {
         throw new Error("AI gagal memformat respons dengan benar.");
       }
