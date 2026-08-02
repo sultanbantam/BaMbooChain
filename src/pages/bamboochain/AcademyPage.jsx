@@ -345,16 +345,30 @@ const AcademyPage = () => {
       let coverUrl = newMatForm.cover;
       let pdfUrl = newMatForm.pdf;
 
+      const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+      const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+      
+      if (!cloudName || !uploadPreset) throw new Error("Cloudinary configuration is missing. Harap cek Vercel.");
+
+      const uploadToCloudinary = async (dataUrl) => {
+        const formData = new FormData();
+        formData.append('file', dataUrl);
+        formData.append('upload_preset', uploadPreset);
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error?.message || "Gagal mengunggah ke Cloudinary");
+        return data.secure_url;
+      };
+
       if (newMatForm.cover.startsWith('data:image')) {
-         const coverRef = ref(storage, `academy_materials/${user.id}/${timestamp}_cover.jpg`);
-         await uploadString(coverRef, newMatForm.cover, 'data_url');
-         coverUrl = await getDownloadURL(coverRef);
+         coverUrl = await uploadToCloudinary(newMatForm.cover);
       }
       
       if (newMatForm.pdf.startsWith('data:application/pdf')) {
-         const pdfRef = ref(storage, `academy_materials/${user.id}/${timestamp}_document.pdf`);
-         await uploadString(pdfRef, newMatForm.pdf, 'data_url');
-         pdfUrl = await getDownloadURL(pdfRef);
+         pdfUrl = await uploadToCloudinary(newMatForm.pdf);
       }
 
       console.log("⏳ Saving metadata to Firestore...");
@@ -430,18 +444,33 @@ const AcademyPage = () => {
       let coverUrl = editMatForm.cover;
       let pdfUrl = editMatForm.pdf;
       const timestamp = new Date().getTime();
+      const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+      const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
       
-      if (coverUrl && coverUrl.startsWith('data:image')) {
-         const coverRef = ref(storage, `academy_materials/${user?.id || 'admin'}/${timestamp}_cover.jpg`);
-         await uploadString(coverRef, coverUrl, 'data_url');
-         coverUrl = await getDownloadURL(coverRef);
+      if (!cloudName || !uploadPreset) throw new Error("Cloudinary configuration is missing.");
+
+      const uploadToCloudinary = async (dataUrl) => {
+        const formData = new FormData();
+        formData.append('file', dataUrl);
+        formData.append('upload_preset', uploadPreset);
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error?.message || "Gagal mengunggah ke Cloudinary");
+        return data.secure_url;
+      };
+
+      if (editMatForm.cover && editMatForm.cover.startsWith('data:image')) {
+         coverUrl = await uploadToCloudinary(editMatForm.cover);
       }
       
-      if (pdfUrl && pdfUrl.startsWith('data:application/pdf')) {
-         const pdfRef = ref(storage, `academy_materials/${user?.id || 'admin'}/${timestamp}_document.pdf`);
-         await uploadString(pdfRef, pdfUrl, 'data_url');
-         pdfUrl = await getDownloadURL(pdfRef);
+      if (editMatForm.pdf && editMatForm.pdf.startsWith('data:application/pdf')) {
+         pdfUrl = await uploadToCloudinary(editMatForm.pdf);
       }
+
+      console.log("⏳ Updating metadata to Firestore...");
 
       // Update metadata fields
       await updateDoc(matRef, {
