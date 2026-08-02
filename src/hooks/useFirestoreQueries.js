@@ -223,6 +223,27 @@ export async function uploadSpeakerMaterial(file, eventId, speakerName, type) {
     timestamp: serverTimestamp()
   });
   
+  if (type === 'material') {
+    const cleanText = (text = '') => String(text).replace(/<\/?[^>]+(>|$)/g, '').trim();
+    const knowledgeRef = collection(db, 'knowledge_items');
+    await addDoc(knowledgeRef, {
+      title: `Materi Narasumber: ${speakerName}`,
+      summary: `Materi presentasi yang dibawakan oleh ${speakerName} pada sesi acara.`,
+      extractedText: `Materi presentasi yang dibawakan oleh ${speakerName}. File Name: ${file.name}`,
+      tags: `Event, Narasumber, ${speakerName}`,
+      type: 'Materi Narasumber',
+      status: 'approved',
+      sourceTrust: 'verified',
+      fileUrl: downloadUrl,
+      fileName: file.name,
+      fileType: file.type || 'application/pdf',
+      createdBy: 'system',
+      createdByName: speakerName,
+      searchText: cleanText(`Materi presentasi ${speakerName} acara ${file.name}`).toLowerCase(),
+      createdAt: serverTimestamp()
+    });
+  }
+  
   return { id: docRef.id, url: downloadUrl };
 }
 
@@ -267,6 +288,25 @@ export async function createCommunityEvent(eventData) {
     status: 'pending',
     timestamp: serverTimestamp()
   });
+  
+  const cleanText = (text = '') => String(text).replace(/<\/?[^>]+(>|$)/g, '').trim();
+  const knowledgeRef = collection(db, 'knowledge_items');
+  await addDoc(knowledgeRef, {
+    title: `Acara Komunitas: ${eventData.title}`,
+    summary: cleanText(eventData.description),
+    extractedText: cleanText(`Acara: ${eventData.title}. Lokasi: ${eventData.location}. Kategori: ${eventData.category}. ${eventData.description}`),
+    tags: `Event, ${eventData.category}, ${eventData.location}`,
+    type: 'Event',
+    status: 'approved',
+    sourceTrust: 'verified',
+    fileUrl: eventData.image || '',
+    fileName: '',
+    createdBy: 'system_event',
+    createdByName: 'Panitia Acara',
+    searchText: cleanText(`${eventData.title} ${eventData.description} ${eventData.location} ${eventData.category}`).toLowerCase(),
+    createdAt: serverTimestamp()
+  });
+  
   return docRef.id;
 }
 
