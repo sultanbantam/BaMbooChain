@@ -65,8 +65,7 @@ const BambooBotPage = () => {
     
     // 🛡️ --- INTEGRASI AI SHIELD (VPS CONTABO) ---
     // Ganti endpoint ke IP server Anda untuk mengharuskan prompt melewati filter keamanan (PII & Prompt Injection).
-    // let endpoint = 'http://62.169.23.77:8088/v1/firewall/analyze';
-    let endpoint = 'http://62.169.23.77:8011/v1/chat/completions'; // 🛡️ AI Shield Proxy
+    let endpoint = 'https://api.openai.com/v1/chat/completions'; // 🛡️ Standalone AI
     
     let model = 'gpt-4o-mini';
 

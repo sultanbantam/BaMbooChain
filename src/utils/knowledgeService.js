@@ -354,14 +354,22 @@ export const subscribeKnowledgeItems = ({ status = 'approved', callback, onError
 };
 
 export const getApprovedKnowledgeItems = async (maxItems = 80) => {
+  // Query only by status to avoid Firestore composite index requirements
   const q = query(
     collection(db, KNOWLEDGE_COLLECTION),
-    where('status', '==', 'approved'),
-    orderBy('createdAt', 'desc'),
-    limit(maxItems)
+    where('status', '==', 'approved')
   );
   const snapshot = await getDocs(q);
-  return snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
+  let docs = snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
+  
+  // Sort by createdAt descending in memory
+  docs.sort((a, b) => {
+    const tA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+    const tB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+    return tB - tA;
+  });
+  
+  return docs.slice(0, maxItems);
 };
 
 export const updateKnowledgeStatus = async ({ itemId, status, admin, adminNotes = '' }) => {

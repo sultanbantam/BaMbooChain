@@ -217,7 +217,7 @@ const callGroqAI = async (question, history, contextData = '', language = 'id') 
   ];
 
   let apiKey = OPENAI_API_KEY;
-  let endpoint = 'http://62.169.23.77:8011/v1/chat/completions';
+  let endpoint = 'https://api.openai.com/v1/chat/completions';
   let model = 'gpt-4o-mini';
 
   if (aiProvider === 'groq') {
