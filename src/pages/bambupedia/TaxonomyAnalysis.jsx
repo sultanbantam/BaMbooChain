@@ -32,46 +32,68 @@ const TaxonomyAnalysis = () => {
     
     setIsScanning(true);
     setResult(null);
+    setError(null);
     
-    // Simulasi Proses AI (Bisa diganti dengan API Groq Vision/Gemini Vision)
-    await new Promise(resolve => setTimeout(resolve, 3500));
-    
-    const mockResults = [
-      {
-        species: "Bambu Petung (Dendrocalamus asper)",
-        age: "3.5 Tahun",
-        health: 92,
-        status: "Sangat Sehat",
-        details: "Batang memiliki densitas serat yang optimal untuk konstruksi. Tidak ditemukan tanda-tanda serangan hama Bubuk Bambu.",
-        recommendation: "Siap panen dalam 6-12 bulan ke depan untuk kualitas kayu terbaik."
-      },
-      {
-        species: "Bambu Moso (Phyllostachys edulis)",
-        age: "2 Tahun",
-        health: 85,
-        status: "Sehat (Masa Pertumbuhan)",
-        details: "Warna pelepah normal, tunas baru mulai bermunculan. Struktur akar sangat kokoh.",
-        recommendation: "Berikan pupuk NPK tambahan untuk mempercepat lignifikasi batang."
-      },
-      {
-        species: "Bambu Apus (Gigantochloa apus)",
-        age: "4 Tahun",
-        health: 78,
-        status: "Cukup Sehat",
-        details: "Ditemukan sedikit bercak jamur pada bagian bawah batang akibat kelembaban tinggi.",
-        recommendation: "Lakukan penjarangan (thinning) di sekitar rumpun untuk meningkatkan sirkulasi udara."
+    try {
+      const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+      if (!apiKey) {
+        throw new Error("OpenAI API Key tidak ditemukan. Pastikan Anda telah menambahkannya di file .env");
       }
-    ];
-    
-    const finalResult = mockResults[Math.floor(Math.random() * mockResults.length)];
-    setResult(finalResult);
-    setIsScanning(false);
-    
-    // Simpan ke riwayat
-    addTaxonomy({
-      image: image,
-      ...finalResult
-    });
+
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: "gpt-4o",
+          messages: [
+            {
+              role: "user",
+              content: [
+                {
+                  type: "text",
+                  text: "You are an expert Bamboo Botanist AI. Analyze this image of bamboo. Identify its likely species, estimate its age in years, and assess its health status (0-100). Provide details and recommendations. Your output must be ONLY a valid JSON object EXACTLY in this format: {\"species\": \"Bambu X (Scientific name)\", \"age\": \"X Tahun\", \"health\": 90, \"status\": \"Sehat\", \"details\": \"Batang sehat...\", \"recommendation\": \"Beri pupuk...\"}"
+                },
+                {
+                  type: "image_url",
+                  image_url: {
+                    url: image
+                  }
+                }
+              ]
+            }
+          ],
+          max_tokens: 300
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error("Gagal menghubungi server AI (OpenAI API).");
+      }
+
+      const data = await response.json();
+      let aiResponseText = data.choices[0].message.content.trim();
+      
+      if (aiResponseText.startsWith('```json')) {
+        aiResponseText = aiResponseText.replace(/^```json\n/, '').replace(/\n```$/, '');
+      }
+
+      const finalResult = JSON.parse(aiResponseText);
+      setResult(finalResult);
+      
+      // Simpan ke riwayat
+      addTaxonomy({
+        image: image,
+        ...finalResult
+      });
+    } catch (err) {
+      console.error(err);
+      setError(err.message || "Terjadi kesalahan saat memproses gambar.");
+    } finally {
+      setIsScanning(false);
+    }
   };
 
   const reset = () => {
@@ -146,6 +168,13 @@ const TaxonomyAnalysis = () => {
                 </div>
               )}
             </div>
+
+            {error && (
+              <div style={{ background: '#fee2e2', color: '#dc2626', padding: '16px', borderRadius: '16px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 'bold' }}>
+                <AlertCircle size={20} />
+                {error}
+              </div>
+            )}
 
             {!isScanning && !result && (
               <div style={{ display: 'flex', gap: '15px' }}>

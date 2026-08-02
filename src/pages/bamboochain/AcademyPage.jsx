@@ -45,6 +45,30 @@ const AcademyPage = () => {
   const { user, setIsAuthModalOpen, setAuthModalInitialTab, submitArticle, updateArticle, giftBmc } = useAuth();
   const { data: articles = [] } = useArticles();
   const [searchQuery, setSearchQuery] = useState("");
+  const [isGlobalMode, setIsGlobalMode] = useState(false);
+  const [globalResults, setGlobalResults] = useState([]);
+  const [isSearchingGlobal, setIsSearchingGlobal] = useState(false);
+
+  useEffect(() => {
+    if (!isGlobalMode) return;
+    if (searchQuery.trim().length < 3) {
+      setGlobalResults([]);
+      return;
+    }
+    const timeoutId = setTimeout(async () => {
+      setIsSearchingGlobal(true);
+      try {
+        const response = await fetch(`https://api.openalex.org/works?search=${encodeURIComponent(searchQuery)}+bamboo`);
+        const data = await response.json();
+        setGlobalResults(data.results || []);
+      } catch (err) {
+        console.error("OpenAlex Search Error:", err);
+      } finally {
+        setIsSearchingGlobal(false);
+      }
+    }, 800);
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery, isGlobalMode]);
   
   // Premium Materials States
   const [premiumMaterials, setPremiumMaterials] = useState([]);
@@ -1189,10 +1213,60 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
           />
           <Search size={20} color="var(--text-muted)" style={{ position: 'absolute', left: '18px', top: '50%', transform: 'translateY(-50%)' }} />
         </div>
+
+        {/* TOGGLE GLOBAL MODE */}
+        <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px' }}>
+          <span style={{ fontSize: '0.95rem', color: isGlobalMode ? 'var(--text-muted)' : 'var(--primary)', fontWeight: 'bold' }}>Pustaka Internal</span>
+          <label className="switch" style={{ position: 'relative', display: 'inline-block', width: '54px', height: '28px' }}>
+            <input type="checkbox" checked={isGlobalMode} onChange={(e) => setIsGlobalMode(e.target.checked)} style={{ opacity: 0, width: 0, height: 0 }} />
+            <span className="slider round" style={{ position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: isGlobalMode ? 'var(--primary)' : '#cbd5e1', transition: '.4s', borderRadius: '34px' }}>
+               <span style={{ position: 'absolute', height: '20px', width: '20px', left: isGlobalMode ? '30px' : '4px', bottom: '4px', backgroundColor: 'white', transition: '.4s', borderRadius: '50%' }}></span>
+            </span>
+          </label>
+          <span style={{ fontSize: '0.95rem', color: isGlobalMode ? 'var(--primary)' : 'var(--text-muted)', fontWeight: 'bold' }}>Jurnal Global (OpenAlex)</span>
+        </div>
       </div>
 
       <div className="container" style={{ display: 'flex', flexDirection: 'column', gap: '50px' }}>
         
+        {/* GLOBAL SEARCH RESULTS */}
+        {isGlobalMode && (
+          <div style={{ background: 'var(--bg-card)', borderRadius: '24px', padding: '30px', border: '1px solid var(--border-color)' }}>
+            <h2 style={{ fontSize: '1.8rem', color: 'var(--text-main)', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <Search size={24} color="var(--primary)" /> Hasil Pencarian Jurnal Global
+            </h2>
+            {isSearchingGlobal ? (
+               <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>Mencari di database OpenAlex (250+ Juta Jurnal)...</div>
+            ) : globalResults.length === 0 ? (
+               <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>Ketik minimal 3 karakter untuk mencari jurnal internasional.</div>
+            ) : (
+               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                 {globalResults.map(res => (
+                   <div key={res.id} style={{ padding: '24px', border: '1px solid var(--border-color)', borderRadius: '16px', background: 'var(--bg-color)', transition: 'transform 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
+                     <h3 style={{ fontSize: '1.25rem', marginBottom: '8px', color: 'var(--text-main)', lineHeight: 1.4 }}>{res.title}</h3>
+                     <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '16px' }}>
+                       Oleh: <strong>{res.authorships?.map(a => a.author.display_name).join(', ')}</strong> | Tahun: <strong>{res.publication_year}</strong> | Penerbit: <strong>{res.primary_location?.source?.display_name || 'N/A'}</strong>
+                     </p>
+                     <div style={{ display: 'flex', gap: '12px' }}>
+                       {res.open_access?.is_oa && res.open_access.oa_url ? (
+                         <a href={res.open_access.oa_url} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '10px 20px', background: 'var(--primary)', color: 'white', borderRadius: '12px', textDecoration: 'none', fontWeight: 'bold', fontSize: '0.9rem' }}>
+                           <DownloadCloud size={16} /> Unduh PDF (Open Access)
+                         </a>
+                       ) : (
+                         <a href={res.doi} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '10px 20px', background: 'var(--bg-card)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', textDecoration: 'none', fontWeight: 'bold', fontSize: '0.9rem' }}>
+                           <FileText size={16} /> Lihat di Jurnal (DOI)
+                         </a>
+                       )}
+                     </div>
+                   </div>
+                 ))}
+               </div>
+            )}
+          </div>
+        )}
+
+        {!isGlobalMode && (
+          <>
         {/* COURSES SECTION */}
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '32px' }}>
@@ -3250,6 +3324,9 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
               </div>
             </div>
           </div>
+        )}
+
+          </>
         )}
 
         <ShareModal 
