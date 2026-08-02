@@ -87,12 +87,14 @@ const BambooBotPage = () => {
     let finalAnswer = '';
     let confidence = 'rendah';
 
-    if (apiKey && results.length > 0) {
+    if (apiKey) {
       try {
-        const contextText = results.map(({ item, snippet }, idx) => {
-          const authorInfo = [item.author, item.year].filter(Boolean).join(', ');
-          return `[Konteks ${idx + 1}] Sumber: "${item.title}" ${authorInfo ? `(${authorInfo})` : ''}\nIsi Dokumen: ${snippet}\n`;
-        }).join('\n');
+        const contextText = results.length > 0 
+          ? results.map(({ item, snippet }, idx) => {
+              const authorInfo = [item.author, item.year].filter(Boolean).join(', ');
+              return `[Konteks ${idx + 1}] Sumber: "${item.title}" ${authorInfo ? `(${authorInfo})` : ''}\nIsi Dokumen: ${snippet}\n`;
+            }).join('\n')
+          : 'Belum ada sumber terverifikasi di Knowledge Library lokal terkait pertanyaan ini.';
 
         const response = await fetch(endpoint, {
           method: 'POST',
@@ -106,30 +108,30 @@ const BambooBotPage = () => {
               {
                 role: 'system',
                 content: language === 'id' 
-                  ? 'Anda adalah BambuBot RAG, asisten kecerdasan buatan terverifikasi untuk Yayasan Sabumi Nusantara Jaya. Tugas Anda adalah menjawab pertanyaan pengguna secara ringkas, profesional, dan akurat dalam Bahasa Indonesia menggunakan konteks dokumen/sumber terverifikasi yang disediakan.\n\nAturan penting:\n1. Jawab HANYA menggunakan informasi dari konteks yang diberikan.\n2. Cantumkan rujukan secara eksplisit dalam kurung siku, misalnya [1] atau [2], merujuk pada nomor konteks sumber.\n3. Jika informasi tidak ada dalam konteks, katakan bahwa Anda tidak memiliki informasi yang cukup dalam Knowledge Library.\n4. Jawab dengan gaya bahasa ilmiah, edukatif, dan ramah.'
-                  : `You are BambuBot RAG, a verified AI assistant for Sabumi Nusantara Jaya Foundation. Your task is to answer user questions concisely, professionally, and accurately in ${language === 'jp' ? 'Japanese' : 'English'} using the provided verified document/source context.\n\nImportant rules:\n1. Answer ONLY using the information from the provided context.\n2. Include references explicitly in square brackets, e.g., [1] or [2], referring to the source context number.\n3. If the information is not in the context, say that you do not have enough information in the Knowledge Library.\n4. Answer in a scientific, educational, and friendly tone.`
+                  ? 'Anda adalah BambuBot RAG, asisten kecerdasan buatan terverifikasi untuk Yayasan Sabumi Nusantara Jaya. Tugas Anda adalah menjawab pertanyaan pengguna secara ringkas, profesional, dan akurat dalam Bahasa Indonesia.\n\nAturan penting:\n1. Prioritaskan menjawab menggunakan "Konteks Sumber" (Knowledge Library) jika relevan.\n2. Jika informasi dalam konteks kurang lengkap atau tidak ada, Anda DIIZINKAN menggunakan pengetahuan global Anda (seperti data SNI dari BSN, standar internasional, dll) untuk melengkapi jawaban secara komprehensif.\n3. Cantumkan rujukan secara eksplisit dalam kurung siku jika memakai konteks sumber (misal: [1]).\n4. Jika memakai pengetahuan global/di luar konteks, jelaskan secara singkat bahwa data tersebut diambil dari "Pengetahuan Global / Basis Data AI".\n5. Jawab dengan gaya bahasa ilmiah, edukatif, dan ramah.'
+                  : `You are BambuBot RAG, a verified AI assistant for Sabumi Nusantara Jaya Foundation. Your task is to answer user questions concisely, professionally, and accurately in ${language === 'jp' ? 'Japanese' : 'English'}.\n\nImportant rules:\n1. Prioritize answering using the provided "Source Context" if relevant.\n2. If the context is insufficient or missing, you are ALLOWED to use your global knowledge base (e.g., international standards, global market data) to provide a comprehensive answer.\n3. Include references in square brackets if using source context (e.g., [1]).\n4. If using global knowledge outside the context, briefly mention that the data is sourced from the "Global AI Knowledge Base".\n5. Answer in a scientific, educational, and friendly tone.`
               },
               {
                 role: 'user',
                 content: language === 'id'
-                  ? `Konteks Sumber:\n${contextText}\n\nPertanyaan: ${cleanQuestion}\n\nJawablah dengan merujuk konteks di atas secara ringkas:`
-                  : `Source Context:\n${contextText}\n\nQuestion: ${cleanQuestion}\n\nAnswer referencing the context above concisely:`
+                  ? `Konteks Sumber Lokal:\n${contextText}\n\nPertanyaan: ${cleanQuestion}\n\nBerikan jawaban terlengkap Anda:`
+                  : `Local Source Context:\n${contextText}\n\nQuestion: ${cleanQuestion}\n\nProvide your most comprehensive answer:`
               }
             ],
-            temperature: 0.2,
-            max_tokens: 800
+            temperature: 0.3,
+            max_tokens: 1000
           })
         });
 
         if (response.ok) {
           const data = await response.json();
           finalAnswer = data.choices[0].message.content;
-          confidence = results[0].score >= 8 ? 'tinggi' : 'sedang';
+          confidence = results.length > 0 && results[0].score >= 8 ? 'tinggi' : 'sedang (Hybrid Global)';
         } else {
           throw new Error(`API returned status ${response.status}`);
         }
       } catch (err) {
-        console.warn('[BambuBot] Groq LLM API failed. Falling back to static lexical answer:', err);
+        console.warn('[BambuBot] Groq/OpenAI LLM API failed. Falling back to static lexical answer:', err);
         const fallbackResponse = composeRagAnswer(cleanQuestion, results);
         finalAnswer = fallbackResponse.answer;
         confidence = fallbackResponse.confidence;
