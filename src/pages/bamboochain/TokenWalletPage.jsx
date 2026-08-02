@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { useWeb3 } from '../../context/Web3Context';
 import { useAuth } from '../../context/AuthContext';
-import { useTokenWallet } from '../../context/TokenContext';
+
 import { storage } from '../../firebase/config';
 import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 import { Link, useLocation } from 'react-router-dom';
