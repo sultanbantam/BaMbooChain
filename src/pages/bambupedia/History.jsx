@@ -1,10 +1,11 @@
 import React from 'react';
 import { useBambupedia } from '../../context/BambupediaContext';
 import BackButton from '../../components/BackButton';
-import { Sprout, Calendar, MapPin, Tag, ChevronRight, Activity, Clock } from 'lucide-react';
+import { Sprout, Calendar, MapPin, Tag, ChevronRight, Activity, Clock, X, ShieldCheck } from 'lucide-react';
 
 const HistoryPage = () => {
   const { plantings, taxonomies } = useBambupedia();
+  const [selectedTax, setSelectedTax] = React.useState(null);
   
   // Menggabungkan plantings dan taxonomies lalu mengurutkan berdasarkan tanggal terbaru
   const allActivities = [
@@ -46,11 +47,16 @@ const HistoryPage = () => {
             {allActivities.map((item) => (
               <div 
                 key={item.id}
-                style={{ 
-                  background: 'white', padding: '24px', borderRadius: '24px', border: '1px solid #eee', boxShadow: '0 4px 12px rgba(0,0,0,0.02)', display: 'flex', alignItems: 'center', gap: '20px', transition: 'all 0.3s'
+                onClick={() => {
+                  if (item.type === 'taxonomy') {
+                    setSelectedTax(item);
+                  }
                 }}
-                onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--primary)'}
-                onMouseLeave={e => e.currentTarget.style.borderColor = '#eee'}
+                style={{ 
+                  background: 'white', padding: '24px', borderRadius: '24px', border: '1px solid #eee', boxShadow: '0 4px 12px rgba(0,0,0,0.02)', display: 'flex', alignItems: 'center', gap: '20px', transition: 'all 0.3s', cursor: item.type === 'taxonomy' ? 'pointer' : 'default'
+                }}
+                onMouseEnter={e => { if (item.type === 'taxonomy') e.currentTarget.style.borderColor = 'var(--primary)'; }}
+                onMouseLeave={e => { if (item.type === 'taxonomy') e.currentTarget.style.borderColor = '#eee'; }}
               >
                 <div style={{ 
                   width: '56px', height: '56px', background: item.type === 'taxonomy' ? 'rgba(74, 144, 226, 0.1)' : item.status === 'harvested' ? 'rgba(245,159,0,0.1)' : 'rgba(12,166,120,0.1)', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
@@ -109,6 +115,53 @@ const HistoryPage = () => {
            </p>
         </div>
       </div>
+
+      {selectedTax && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', backdropFilter: 'blur(5px)' }} onClick={() => setSelectedTax(null)}>
+          <div style={{ background: 'white', padding: '40px', borderRadius: '32px', width: '100%', maxWidth: '700px', maxHeight: '90vh', overflowY: 'auto', position: 'relative' }} onClick={e => e.stopPropagation()}>
+            <button onClick={() => setSelectedTax(null)} style={{ position: 'absolute', top: '20px', right: '20px', background: '#f1f5f9', border: 'none', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-muted)' }}>
+              <X size={20} />
+            </button>
+            
+            <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start', marginBottom: '30px', flexWrap: 'wrap' }}>
+              {selectedTax.image && (
+                <div style={{ width: '120px', height: '120px', borderRadius: '20px', overflow: 'hidden', flexShrink: 0 }}>
+                  <img src={selectedTax.image} alt="Bamboo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
+              )}
+              <div>
+                <h2 style={{ fontSize: '2rem', fontWeight: '900', color: 'var(--text-main)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  {selectedTax.species} <span style={{ fontSize: '1rem', background: 'var(--primary)', color: 'white', padding: '4px 12px', borderRadius: '20px' }}>Akurasi {selectedTax.confidence}</span>
+                </h2>
+                {selectedTax.alternative_species && (
+                  <div style={{ fontSize: '0.9rem', color: '#f59f00', fontWeight: 'bold', marginBottom: '12px' }}>
+                    Kemungkinan lain: {selectedTax.alternative_species}
+                  </div>
+                )}
+                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                  <span style={{ background: 'rgba(12, 166, 120, 0.1)', color: 'var(--primary)', padding: '6px 16px', borderRadius: '10px', fontSize: '0.9rem', fontWeight: 'bold' }}>Usia: {selectedTax.age}</span>
+                  <span style={{ background: 'rgba(34, 197, 94, 0.1)', color: '#16a34a', padding: '6px 16px', borderRadius: '10px', fontSize: '0.9rem', fontWeight: 'bold' }}>Status: {selectedTax.status}</span>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+              <div style={{ background: '#f8f9fa', padding: '24px', borderRadius: '24px', border: '1px solid #eee' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px', color: 'var(--text-main)', fontWeight: 'bold', fontSize: '1.1rem' }}>
+                  <Activity size={20} color="var(--primary)" /> Analisis Anatomi
+                </div>
+                <p style={{ fontSize: '0.95rem', color: 'var(--text-muted)', lineHeight: '1.7' }}>{selectedTax.details}</p>
+              </div>
+              <div style={{ background: 'rgba(12, 166, 120, 0.03)', padding: '24px', borderRadius: '24px', border: '1px solid rgba(12, 166, 120, 0.1)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px', color: 'var(--primary)', fontWeight: 'bold', fontSize: '1.1rem' }}>
+                  <ShieldCheck size={20} /> Rekomendasi Ahli
+                </div>
+                <p style={{ fontSize: '0.95rem', color: 'var(--text-muted)', lineHeight: '1.7' }}>{selectedTax.recommendation}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

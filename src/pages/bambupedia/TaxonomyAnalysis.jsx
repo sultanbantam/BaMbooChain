@@ -122,16 +122,27 @@ const TaxonomyAnalysis = () => {
         }
       }
 
-      const systemPrompt = `You are an expert Bamboo Taxonomist AI specialized in Indonesian bamboo species (e.g. Gigantochloa apus, Dendrocalamus asper, Bambusa vulgaris).
-You MUST output ONLY a valid JSON object.
-Analyze all provided images (which may include culms, leaves, shoots/rebung, nodes, internodes) along with context data to scientifically determine the species.
-Instead of an absolute guess, provide top probability confidence.
+      const systemPrompt = `You are a highly expert Bamboo Taxonomist AI and Botanist, specialized in strictly identifying Indonesian and Southeast Asian bamboo species (e.g., Gigantochloa apus, Dendrocalamus asper, Bambusa maculata, Schizostachyum brachycladum).
+You MUST output ONLY a valid JSON object. DO NOT output markdown or explanations outside the JSON.
+Your task is to scientifically analyze the provided bamboo anatomy photos (culm sheaths, auricles, ligules, nodes, internodes, branching patterns, shoots/rebung, leaves) and the provided context data.
+Do NOT guess blindly. If the morphological features are unclear, reduce your confidence score. Pay close attention to:
+1. Culm sheath (pelepah buluh): presence of hairs (miang), color, shape of auricles and blades.
+2. Nodes and Internodes: prominent nodes, aerial roots, thickness, color, stripes.
+3. Shoots (rebung): color of hairs, sheath color.
 Context Data:
-- Diameter: ${contextData.diameter || 'Tidak disebutkan'}
-- Warna: ${contextData.warna || 'Tidak disebutkan'}
+- Perkiraan Diameter: ${contextData.diameter || 'Tidak disebutkan'}
+- Warna Dominan: ${contextData.warna || 'Tidak disebutkan'}
 - Lokasi Tumbuh: ${contextData.lokasi || 'Tidak disebutkan'}
 
-Your output MUST be a JSON object with EXACTLY these keys: 'species' (string), 'confidence' (string like '95%'), 'age' (string like '3 Tahun'), 'health' (number 0-100), 'status' (string), 'details' (string), 'recommendation' (string), 'alternative_species' (string).`;
+Your output MUST be a JSON object with EXACTLY these keys:
+'species' (string: botanical name, e.g., 'Dendrocalamus asper'),
+'confidence' (string: e.g., '98%'),
+'age' (string: estimated age based on culm appearance, e.g., '3-4 Tahun'),
+'health' (number: 0-100, based on visible defects or diseases),
+'status' (string: e.g., 'Sangat Sehat', 'Terserang Penyakit', 'Kering'),
+'details' (string: highly detailed botanical explanation of the morphological features observed in the photos that led to this conclusion),
+'recommendation' (string: expert advice for cultivation or preservation based on health status),
+'alternative_species' (string: other highly probable species if ambiguous).`;
 
       const response = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
@@ -183,29 +194,34 @@ Your output MUST be a JSON object with EXACTLY these keys: 'species' (string), '
         const userId = user?.id || user?.uid || 'guest';
         const sessionTimestamp = Date.now();
         
-        // Kita upload foto pertama saja sebagai thumbnail history agar ringan
-        const firstCategory = Object.keys(base64ImagesMap)[0];
-        const primaryImageBase64 = base64ImagesMap[firstCategory][0];
-        
-        const fileName = `taxonomies/${userId}/${sessionTimestamp}_thumb.jpg`;
-        const storageRef = ref(storage, fileName);
-        
-        uploadString(storageRef, primaryImageBase64, 'data_url').then(async () => {
-           const downloadUrl = await getDownloadURL(storageRef);
-           addTaxonomy({ 
-             image: downloadUrl,
-             imagesData: { [firstCategory]: [downloadUrl] },
-             ...finalResult 
-           });
-        }).catch(err => {
-           console.warn("Gagal menyimpan thumbnail ke history:", err);
-           // Tetap simpan riwayat meski tanpa gambar
-           addTaxonomy({ 
-             image: null,
-             imagesData: {},
-             ...finalResult 
-           });
-        });
+        const firstCategory = Object.keys(base64ImagesMap).find(cat => base64ImagesMap[cat].length > 0);
+        if (firstCategory) {
+          const primaryImageBase64 = base64ImagesMap[firstCategory][0];
+          const fileName = `taxonomies/${userId}/${sessionTimestamp}_thumb.jpg`;
+          const storageRef = ref(storage, fileName);
+          
+          uploadString(storageRef, primaryImageBase64, 'data_url').then(async () => {
+             const downloadUrl = await getDownloadURL(storageRef);
+             addTaxonomy({ 
+               image: downloadUrl,
+               imagesData: { [firstCategory]: [downloadUrl] },
+               ...finalResult 
+             });
+          }).catch(err => {
+             console.warn("Gagal menyimpan thumbnail ke history:", err);
+             addTaxonomy({ 
+               image: null,
+               imagesData: {},
+               ...finalResult 
+             });
+          });
+        } else {
+          addTaxonomy({ 
+            image: null,
+            imagesData: {},
+            ...finalResult 
+          });
+        }
 
       } catch (parseError) {
         throw new Error("AI gagal memformat respons dengan benar.");
@@ -366,9 +382,12 @@ Your output MUST be a JSON object with EXACTLY these keys: 'species' (string), '
               </div>
             </div>
 
-            <div style={{ textAlign: 'center', display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-               <button onClick={reset} style={{ flex: 1, minWidth: '200px', padding: '18px', borderRadius: '20px', border: '2px solid #eee', background: 'white', color: 'var(--text-main)', fontWeight: 'bold', fontSize: '1.1rem', cursor: 'pointer', transition: '0.2s' }} onMouseEnter={(e) => e.target.style.borderColor = 'var(--primary)'} onMouseLeave={(e) => e.target.style.borderColor = '#eee'}>Analisis Pohon Lain</button>
-               <button onClick={() => navigate('/bambupedia/tracker')} style={{ flex: 2, minWidth: '300px', padding: '18px', borderRadius: '20px', border: 'none', background: 'var(--primary)', color: 'white', fontWeight: 'bold', fontSize: '1.1rem', cursor: 'pointer', boxShadow: '0 10px 25px rgba(12, 166, 120, 0.2)' }}>Simpan ke Riwayat Tracker</button>
+            <div style={{ textAlign: 'center', display: 'flex', gap: '20px', flexWrap: 'wrap', justifyContent: 'center' }}>
+               <button onClick={reset} style={{ flex: 1, minWidth: '150px', maxWidth: '200px', padding: '16px', borderRadius: '20px', border: '2px solid #fee2e2', background: '#fef2f2', color: '#dc2626', fontWeight: 'bold', fontSize: '1.1rem', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                 <X size={20} /> Tutup
+               </button>
+               <button onClick={reset} style={{ flex: 1, minWidth: '200px', padding: '16px', borderRadius: '20px', border: '2px solid #eee', background: 'white', color: 'var(--text-main)', fontWeight: 'bold', fontSize: '1.1rem', cursor: 'pointer', transition: '0.2s' }}>Analisis Pohon Lain</button>
+               <button onClick={() => navigate('/bambupedia/tracker')} style={{ flex: 2, minWidth: '250px', padding: '16px', borderRadius: '20px', border: 'none', background: 'var(--primary)', color: 'white', fontWeight: 'bold', fontSize: '1.1rem', cursor: 'pointer', boxShadow: '0 10px 25px rgba(12, 166, 120, 0.2)' }}>Lihat di Tracker</button>
             </div>
           </div>
         )}
