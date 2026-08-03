@@ -20,9 +20,9 @@ export const handleChatEvents = (io: Server, socket: Socket, user: { id: string;
   });
 
   // Event to send a message
-  socket.on('send_message', async (data: { room_id: string; receiver_id?: string; content?: string; type?: string; attachment_url?: string }) => {
+  socket.on('send_message', async (data: { room_id: string; receiver_id?: string; content?: string; type?: string; attachment_url?: string; client_id?: string }) => {
     try {
-      const { room_id, receiver_id, content, type = 'text', attachment_url } = data;
+      const { room_id, receiver_id, content, type = 'text', attachment_url, client_id } = data;
 
       // Save to database
       const savedMessage = await prisma.message.create({
@@ -35,15 +35,15 @@ export const handleChatEvents = (io: Server, socket: Socket, user: { id: string;
         }
       });
 
-      // Broadcast to the room if it's a group, or directly to receiver if 1-on-1
+      const outgoingMessage = { ...savedMessage, client_id };
+
+      // Broadcast to the room if it's a group, or directly to receiver if 1-on-1.
+      // The sending socket already rendered an optimistic bubble, so exclude it.
       if (receiver_id) {
-        // Direct message
-        io.to(receiver_id).emit('receive_message', savedMessage);
-        // Also emit to self (in case user has multiple devices/tabs open)
-        io.to(user.id).emit('receive_message', savedMessage);
+        io.to(receiver_id).emit('receive_message', outgoingMessage);
+        socket.to(user.id).emit('receive_message', outgoingMessage);
       } else {
-        // Group message
-        io.to(room_id).emit('receive_message', savedMessage);
+        socket.to(room_id).emit('receive_message', outgoingMessage);
       }
     } catch (error) {
       console.error('Error sending message:', error);

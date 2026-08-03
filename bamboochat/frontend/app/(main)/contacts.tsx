@@ -5,8 +5,8 @@ import { socketService } from '../../src/utils/socket';
 import * as SecureStore from '../../src/utils/storage';
 
 import axios from 'axios';
+import { API_URL } from '../../src/utils/config';
 
-const API_URL = 'http://localhost:3000/api';
 
 export default function ContactsScreen() {
   const [loading, setLoading] = useState(true);
@@ -28,8 +28,6 @@ export default function ContactsScreen() {
 
   useEffect(() => {
     const init = async () => {
-      await socketService.connect();
-      
       let user = '';
       let userId = '';
       let token = '';
@@ -59,6 +57,13 @@ export default function ContactsScreen() {
       }
       setCurrentUser(user);
       setCurrentUserId(userId);
+
+      if (!token) {
+        router.replace('/(auth)/login');
+        return;
+      }
+
+      await socketService.connect(token);
 
       // Fetch users and groups
       try {

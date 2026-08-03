@@ -1,24 +1,29 @@
 import { io, Socket } from 'socket.io-client';
 import { Platform } from 'react-native';
 import * as SecureStore from './storage';
-
-const SOCKET_URL = 'http://localhost:3000';
+import { SOCKET_URL } from './config';
 
 class SocketService {
   public socket: Socket | null = null;
+  private activeToken: string | null = null;
 
-  public async connect() {
-    if (this.socket?.connected) return;
+  public async connect(tokenOverride?: string | null) {
+    if (this.socket?.connected && (!tokenOverride || tokenOverride === this.activeToken)) return;
 
-    let token = null;
+    let token = tokenOverride || null;
     if (Platform.OS === 'web') {
-      token = localStorage.getItem('token');
+      token = token || localStorage.getItem('token');
     } else {
-      token = await SecureStore.getItemAsync('token');
+      token = token || await SecureStore.getItemAsync('token');
     }
 
     if (!token) return;
 
+    if (this.socket) {
+      this.disconnect();
+    }
+
+    this.activeToken = token;
     this.socket = io(SOCKET_URL, {
       query: { token },
       transports: ['websocket']
@@ -38,6 +43,7 @@ class SocketService {
       this.socket.disconnect();
       this.socket = null;
     }
+    this.activeToken = null;
   }
 }
 
