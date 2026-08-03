@@ -174,22 +174,22 @@ export default function ContactsScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <View>
-          <Text style={styles.greeting}>Hello, {currentUser}</Text>
+          <Text style={styles.greeting}>Halo, {currentUser || 'Pengguna'}</Text>
           <TouchableOpacity onPress={() => setWalletModalVisible(true)}>
-            <Text style={styles.walletText}>⚙️ Set Wallet Address</Text>
+            <Text style={styles.walletText}>Atur Alamat Dompet</Text>
           </TouchableOpacity>
         </View>
         <TouchableOpacity onPress={handleLogout}>
-          <Text style={styles.logoutText}>Logout</Text>
+          <Text style={styles.logoutText}>Keluar</Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.tabs}>
         <TouchableOpacity style={[styles.tab, activeTab === 'contacts' && styles.activeTab]} onPress={() => setActiveTab('contacts')}>
-          <Text style={[styles.tabText, activeTab === 'contacts' && styles.activeTabText]}>Contacts</Text>
+          <Text style={[styles.tabText, activeTab === 'contacts' && styles.activeTabText]}>Kontak</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.tab, activeTab === 'groups' && styles.activeTab]} onPress={() => setActiveTab('groups')}>
-          <Text style={[styles.tabText, activeTab === 'groups' && styles.activeTabText]}>Groups</Text>
+          <Text style={[styles.tabText, activeTab === 'groups' && styles.activeTabText]}>Kelompok</Text>
         </TouchableOpacity>
       </View>
       
@@ -217,7 +217,7 @@ export default function ContactsScreen() {
       ) : (
         <View style={{ flex: 1 }}>
           <TouchableOpacity style={styles.createGroupBtn} onPress={() => setGroupModalVisible(true)}>
-            <Text style={styles.createGroupBtnText}>+ Create New Group</Text>
+            <Text style={styles.createGroupBtnText}>+ Buat Kelompok Baru</Text>
           </TouchableOpacity>
           <FlatList
             data={groups}
@@ -229,10 +229,10 @@ export default function ContactsScreen() {
                 </View>
                 <View style={styles.contactInfo}>
                   <Text style={styles.contactName}>{item.name}</Text>
-                  <Text style={styles.contactUsername}>Min Balance: {item.min_bmc_balance} BMC</Text>
+                  <Text style={styles.contactUsername}>Saldo minimum: {item.min_bmc_balance} BMC</Text>
                 </View>
                 <View style={styles.lockBadge}>
-                  <Text style={styles.lockBadgeText}>🔒</Text>
+                  <Text style={styles.lockBadgeText}>Private</Text>
                 </View>
               </TouchableOpacity>
             )}
@@ -244,8 +244,8 @@ export default function ContactsScreen() {
       <Modal visible={isWalletModalVisible} transparent={true} animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Bamboochain Wallet</Text>
-            <Text style={styles.modalDesc}>Enter your BEP20 Wallet Address to access Token-Gated groups.</Text>
+            <Text style={styles.modalTitle}>Dompet Bamboochain</Text>
+            <Text style={styles.modalDesc}>Masukkan alamat dompet BEP20 untuk mengakses kelompok berbasis token.</Text>
             <TextInput
               style={styles.input}
               placeholder="0x..."

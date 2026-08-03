@@ -48,8 +48,8 @@ export default function MainLayout() {
         <View style={styles.main}>
           {pathname === '/contacts' || pathname === '/' ? (
              <View style={styles.emptyState}>
-               <Text style={styles.emptyStateText}>BambooChat Web</Text>
-               <Text style={styles.emptyStateSubtext}>Select a chat to start messaging</Text>
+               <Text style={styles.emptyStateText}>BambooChat</Text>
+               <Text style={styles.emptyStateSubtext}>Pilih kontak untuk mulai chat</Text>
              </View>
           ) : (
              <Slot />
@@ -68,7 +68,7 @@ export default function MainLayout() {
         headerTitleStyle: { fontWeight: 'bold' },
         contentStyle: { backgroundColor: '#0F172A' }
       }}>
-        <Stack.Screen name="contacts" options={{ title: 'WhatsApp' }} />
+        <Stack.Screen name="contacts" options={{ title: 'BambooChat' }} />
         <Stack.Screen name="chat/[id]" options={{ headerShown: false }} />
       </Stack>
       {renderToast()}
@@ -83,8 +83,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#0F172A',
   },
   sidebar: {
-    width: '30%',
-    minWidth: 300,
+    width: 400,
+    maxWidth: '32%',
+    minWidth: 320,
     borderRightWidth: 1,
     borderRightColor: '#334155',
   },

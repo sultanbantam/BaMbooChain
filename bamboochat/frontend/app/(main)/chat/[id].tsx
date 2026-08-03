@@ -335,6 +335,20 @@ export default function ChatRoomScreen() {
       }, 1500);
     }
   };
+  const getUploadHeaders = async (includeMultipartHeader = false) => {
+    const token = (await SecureStore.getItemAsync('token')) || '';
+    if (!token) throw new Error('Sesi login tidak ditemukan. Silakan login ulang.');
+
+    const headers: Record<string, string> = {
+      Authorization: `Bearer ${token}`,
+    };
+
+    if (includeMultipartHeader) {
+      headers['Content-Type'] = 'multipart/form-data';
+    }
+
+    return headers;
+  };
 
   const uploadFile = async (uri: string, type: string, originalName?: string) => {
     try {
@@ -356,7 +370,7 @@ export default function ChatRoomScreen() {
       }
 
       const response = await axios.post(`${API_URL}/upload`, formData, {
-        headers: Platform.OS === 'web' ? undefined : { 'Content-Type': 'multipart/form-data' }
+        headers: await getUploadHeaders(Platform.OS !== 'web')
       });
       return response.data.url;
     } catch (error) {
@@ -488,7 +502,7 @@ export default function ChatRoomScreen() {
         formData.append('file', audioBlob, 'upload.webm');
         
         try {
-          const response = await axios.post(`${API_URL}/upload`, formData);
+          const response = await axios.post(`${API_URL}/upload`, formData, { headers: await getUploadHeaders() });
           const url = response.data.url;
           
           if (url) {
@@ -504,7 +518,11 @@ export default function ChatRoomScreen() {
             setTimeout(() => flatListRef.current?.scrollToEnd(), 100);
           }
         } catch (e) {
+          const message = axios.isAxiosError(e)
+            ? e.response?.data?.error || e.response?.data?.message || e.message
+            : e instanceof Error ? e.message : 'Unknown error';
           console.error('Upload failed', e);
+          alert(`Gagal upload file: ${message}`);
         }
       };
       mediaRecorder.stop();
