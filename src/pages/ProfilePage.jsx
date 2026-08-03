@@ -270,13 +270,19 @@ const ProfilePage = () => {
   };
 
   const handleSave = async () => {
-    await updateProfile({
-      name: formData.name,
-      username: formData.username.toLowerCase().replace(/\s+/g, ''),
-      phone: formData.phone
-    });
-    setIsEditing(false);
-    alert(t('profile_alert_saved'));
+    if (!user?.id) return;
+    try {
+      await updateDoc(doc(db, 'users', user.id), {
+        name: formData.name,
+        username: formData.username.toLowerCase().replace(/\s+/g, ''),
+        phone: formData.phone
+      });
+      setIsEditing(false);
+      alert(t('profile_alert_saved'));
+    } catch (err) {
+      console.error("Error updating profile:", err);
+      alert("❌ Gagal memperbarui profil: " + err.message);
+    }
   };
 
   const compressStatusPhoto = (base64Str) => {
@@ -371,11 +377,11 @@ const ProfilePage = () => {
         }
 
         await addDoc(collection(db, "statuses"), {
-          userId: user.id,
-          username: user.username || user.name || "user",
-          name: user.name || "User",
-          avatarUrl: user.avatarUrl || '',
-          statusText: formData.statusText,
+          userId: uid,
+          username: user?.username || user?.name || "user",
+          name: user?.name || "User",
+          avatarUrl: user?.avatarUrl || '',
+          statusText: formData.statusText || '',
           statusPhotos: finalPhotos,
           statusVideo: finalVideo,
           timestamp: timestamp,
@@ -394,7 +400,7 @@ const ProfilePage = () => {
         }));
       } catch (err) {
         console.error("Error creating status document:", err);
-        alert("❌ Gagal menyimpan status baru.");
+        alert(`❌ Gagal menyimpan status baru. Error: ${err.message || err}`);
       }
     }
     
@@ -539,12 +545,12 @@ const ProfilePage = () => {
       };
       
       console.log("Updating profile with:", cvFile);
-      const success = await updateProfile({ cvFile });
-      console.log("Profile update success:", success);
-      
-      if (success) {
+      if (user?.id) {
+        await updateDoc(doc(db, 'users', user.id), { cvFile });
         alert("✅ CV/Portofolio berhasil diunggah!");
       }
+      
+      // alert already handled above
     } catch (err) {
       console.error("Error uploading CV:", err);
       alert("❌ Gagal mengunggah dokumen: " + err.message);
@@ -555,9 +561,13 @@ const ProfilePage = () => {
 
   const handleCvDelete = async () => {
     if (window.confirm("Apakah Anda yakin ingin menghapus CV/Portofolio Anda?")) {
-      const success = await updateProfile({ cvFile: null });
-      if (success) {
-        alert("✅ CV/Portofolio berhasil dihapus!");
+      if (user?.id) {
+        try {
+          await updateDoc(doc(db, 'users', user.id), { cvFile: null });
+          alert("✅ CV/Portofolio berhasil dihapus!");
+        } catch (err) {
+          alert("❌ Gagal menghapus CV: " + err.message);
+        }
       }
     }
   };
