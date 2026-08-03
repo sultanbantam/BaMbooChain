@@ -64,7 +64,7 @@ const formatBalance = (val) => {
 
 const ProfilePage = () => {
   const { t } = useLanguage();
-  const { user, updateProfile } = useAuth();
+  const { user } = useAuth();
   const { data: articles = [] } = useArticles();
   const { plantings, maintenances, harvests } = useBambupedia();
   const { data: plantationDonations = [] } = usePlantationDonations(user?.id, user?.username);
@@ -333,9 +333,15 @@ const ProfilePage = () => {
   const handleSaveStatus = async () => {
     setIsUploadingMedia(true);
     // Update bio in user profile
-    await updateProfile({
-      bioText: formData.bioText
-    });
+    if (user?.id) {
+      try {
+        await updateDoc(doc(db, 'users', user.id), {
+          bioText: formData.bioText || ''
+        });
+      } catch (e) {
+        console.error("Error updating bio:", e);
+      }
+    }
 
     // Create new status document if there is content
     if (formData.statusText.trim() || (formData.statusPhotos && formData.statusPhotos.length > 0) || formData.statusVideo) {
