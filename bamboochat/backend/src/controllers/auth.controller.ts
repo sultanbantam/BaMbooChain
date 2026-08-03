@@ -10,11 +10,7 @@ const BAMBOOCHAIN_CLIENT_ID = process.env.BAMBOOCHAIN_CLIENT_ID || 'client_4e0f6
 const BAMBOOCHAIN_CLIENT_SECRET = process.env.BAMBOOCHAIN_CLIENT_SECRET || 'secret_bamboochain_123';
 const BAMBOOCHAIN_OAUTH_URL = 'https://bamboochain.id/oauth/authorize';
 const BAMBOOCHAIN_TOKEN_URL = 'https://bamboochain.id/api/oauth/token';
-const DEFAULT_BACKEND_URL = process.env.NODE_ENV === 'production' ? 'https://api.bamboochat.click' : 'http://localhost:3000';
-const DEFAULT_FRONTEND_URL = process.env.NODE_ENV === 'production' ? 'https://bamboochat.click' : 'http://localhost:8081';
-const BACKEND_URL = (process.env.BACKEND_URL || DEFAULT_BACKEND_URL).replace(/\/$/, '');
-const FRONTEND_URL = (process.env.FRONTEND_URL || DEFAULT_FRONTEND_URL).replace(/\/$/, '');
-const REDIRECT_URI = process.env.BAMBOOCHAIN_REDIRECT_URI || `${BACKEND_URL}/api/auth/bamboochain/callback`;
+const REDIRECT_URI = 'http://localhost:3000/api/auth/bamboochain/callback';
 
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -219,10 +215,9 @@ export const bamboochainCallback = async (req: Request, res: Response): Promise<
     const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
 
     // Redirect to frontend with token
-    const redirectUrl = `${FRONTEND_URL}/(main)/contacts?sso_token=${encodeURIComponent(token)}&sso_username=${encodeURIComponent(user.username)}&sso_userid=${encodeURIComponent(user.id)}`;
-    res.redirect(redirectUrl);
+    res.redirect(`http://localhost:8081/(main)/contacts?sso_token=${token}&sso_username=${user.username}&sso_userid=${user.id}`);
   } catch (error: any) {
     console.error('BambooChain SSO Callback Error:', error?.response?.data || error.message);
-    res.redirect(`${FRONTEND_URL}/(auth)/login?error=sso_failed`);
+    res.redirect('http://localhost:8081/(auth)/login?error=sso_failed');
   }
 };

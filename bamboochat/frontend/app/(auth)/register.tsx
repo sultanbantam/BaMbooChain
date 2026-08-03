@@ -3,8 +3,8 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator,
 import { router } from 'expo-router';
 import * as SecureStore from '../../src/utils/storage';
 import axios from 'axios';
-import { API_URL } from '../../src/utils/config';
 
+const API_URL = 'http://localhost:3000/api';
 
 export default function RegisterScreen() {
   const [username, setUsername] = useState('');

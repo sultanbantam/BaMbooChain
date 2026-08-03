@@ -8,7 +8,6 @@ import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import { Audio } from 'expo-av';
 import axios from 'axios';
-import { API_URL } from '../../../src/utils/config';
 
 interface Message {
   id: string;
@@ -82,12 +81,11 @@ export default function ChatRoomScreen() {
   const [inputText, setInputText] = useState('');
   const [secretKey, setSecretKey] = useState('');
   const [actualRoomId, setActualRoomId] = useState('');
-  const [currentUserId, setCurrentUserId] = useState('');
   
   // Real-time states
   const [isTyping, setIsTyping] = useState(false);
   const [partnerStatus, setPartnerStatus] = useState<string>('');
-  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   // Attachments
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
@@ -102,15 +100,17 @@ export default function ChatRoomScreen() {
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
 
   const flatListRef = useRef<FlatList>(null);
-  const localClientIdsRef = useRef<Set<string>>(new Set());
   const router = useRouter();
 
   useEffect(() => {
     const initRoom = async () => {
       // Create a shared symmetric key for E2EE based on sorted IDs
-      const myId = (await SecureStore.getItemAsync('userId')) || '';
-      setCurrentUserId(myId);
-      const token = (await SecureStore.getItemAsync('token')) || '';
+      let myId = '';
+      if (Platform.OS === 'web') {
+        myId = localStorage.getItem('userId') || '';
+      } else {
+        myId = (await SecureStore.getItemAsync('userId')) || '';
+      }
       
       const partnerId = roomId as string;
       // Define a consistent room ID for 1-on-1 chats regardless of who opens it
@@ -120,12 +120,12 @@ export default function ChatRoomScreen() {
 
       // Fetch history
       try {
-        const response = await axios.get(`${API_URL}/messages/${sharedKey}`, {
-          headers: { Authorization: `Bearer ${token}` }
+        const response = await axios.get(`http://localhost:3000/api/messages/${sharedKey}`, {
+          headers: { Authorization: `Bearer ${await SecureStore.getItemAsync('token') || localStorage.getItem('token')}` }
         });
         const history = response.data.map((msg: any) => {
           let decryptedText = '';
-          if ((msg.type === 'text' || msg.type === 'document') && msg.content) {
+          if (msg.type === 'text' && msg.content) {
             decryptedText = decryptMessage(msg.content, sharedKey);
           }
           return {
@@ -154,45 +154,30 @@ export default function ChatRoomScreen() {
 
         // Listen for incoming messages
         socketService.socket.on('receive_message', (data: any) => {
-          const isLocalEcho = data.sender_id === myId && (!data.client_id || localClientIdsRef.current.has(data.client_id));
-
-          if (isLocalEcho) {
-            if (data.client_id && data.id) {
-              localClientIdsRef.current.delete(data.client_id);
-              setMessages(prev => prev.map(msg => (
-                msg.id === data.client_id ? { ...msg, id: data.id, timestamp: new Date().toISOString() } : msg
-              )));
-            }
-            return;
-          }
+          // Prevent double messages if we sent it (from our own optimistic UI)
+          if (data.sender_id === myId) return;
 
           // Decrypt the message
           let decryptedText = '';
-          if ((data.type === 'text' || data.type === 'document') && data.content) {
+          if (data.type === 'text' && data.content) {
             decryptedText = decryptMessage(data.content, sharedKey);
           }
           
-          setMessages(prev => {
-            if (data.id && prev.some(msg => msg.id === data.id)) return prev;
-
-            return [...prev, {
-              id: data.id || Math.random().toString(),
-              sender_id: data.sender_id,
-              content: decryptedText,
-              isMine: data.sender_id === myId,
-              timestamp: new Date().toISOString(),
-              type: data.type || 'text',
-              attachment_url: data.attachment_url,
-              reactions: data.reactions || {},
-              is_edited: data.is_edited,
-              is_pinned: data.is_pinned
-            }];
-          });
+          setMessages(prev => [...prev, {
+            id: data.id || Math.random().toString(),
+            sender_id: data.sender_id,
+            content: decryptedText,
+            isMine: false, 
+            timestamp: new Date().toISOString(),
+            type: data.type || 'text',
+            attachment_url: data.attachment_url,
+            reactions: data.reactions || {},
+            is_edited: data.is_edited,
+            is_pinned: data.is_pinned
+          }]);
 
           // Emit read receipt immediately since we are in the room!
-          if (data.sender_id !== myId) {
-            socketService.socket?.emit('mark_messages_read', { sender_id: data.sender_id, room_id: sharedKey });
-          }
+          socketService.socket?.emit('mark_messages_read', { sender_id: data.sender_id, room_id: sharedKey });
         });
 
         // Listen for errors (like token gating)
@@ -296,13 +281,10 @@ export default function ChatRoomScreen() {
     // E2EE: Encrypt the message before sending
     const ciphertext = encryptMessage(inputText.trim(), secretKey);
 
-    const clientId = Math.random().toString();
-    localClientIdsRef.current.add(clientId);
     const messageData = {
       room_id: actualRoomId,
       receiver_id: roomId, // Pass receiver_id so backend broadcasts to them globally
-      content: ciphertext,
-      client_id: clientId
+      content: ciphertext
     };
 
     if (socketService.socket) {
@@ -311,8 +293,8 @@ export default function ChatRoomScreen() {
 
     // Add locally for optimistic UI
     setMessages(prev => [...prev, {
-      id: clientId,
-      sender_id: currentUserId || 'me',
+      id: Math.random().toString(),
+      sender_id: 'me',
       content: inputText.trim(),
       isMine: true,
       timestamp: new Date().toISOString()
@@ -355,16 +337,13 @@ export default function ChatRoomScreen() {
         } as any);
       }
 
-      const response = await axios.post(`${API_URL}/upload`, formData, {
-        headers: Platform.OS === 'web' ? undefined : { 'Content-Type': 'multipart/form-data' }
+      const response = await axios.post('http://localhost:3000/api/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
       return response.data.url;
     } catch (error) {
-      const message = axios.isAxiosError(error)
-        ? error.response?.data?.error || error.response?.data?.message || error.message
-        : error instanceof Error ? error.message : 'Unknown error';
       console.error('Upload failed:', error);
-      alert(`Gagal upload file: ${message}`);
+      alert('Failed to upload file');
       return null;
     }
   };
@@ -382,21 +361,18 @@ export default function ChatRoomScreen() {
       
       if (url) {
         // Send image message
-        const clientId = Math.random().toString();
-        localClientIdsRef.current.add(clientId);
         const messageData = {
           room_id: actualRoomId,
           receiver_id: roomId,
           type: 'image',
-          attachment_url: url,
-          client_id: clientId
+          attachment_url: url
         };
         if (socketService.socket) {
           socketService.socket.emit('send_message', messageData);
         }
         setMessages(prev => [...prev, {
-          id: clientId,
-          sender_id: currentUserId || 'me',
+          id: Math.random().toString(),
+          sender_id: 'me',
           isMine: true,
           timestamp: new Date().toISOString(),
           type: 'image',
@@ -419,22 +395,19 @@ export default function ChatRoomScreen() {
       if (url) {
         // We will store the original file name in the content (encrypted)
         const encryptedName = encryptMessage(doc.name, secretKey);
-        const clientId = Math.random().toString();
-        localClientIdsRef.current.add(clientId);
         const messageData = {
           room_id: actualRoomId,
           receiver_id: roomId,
           type: 'document',
           content: encryptedName,
-          attachment_url: url,
-          client_id: clientId
+          attachment_url: url
         };
         if (socketService.socket) {
           socketService.socket.emit('send_message', messageData);
         }
         setMessages(prev => [...prev, {
-          id: clientId,
-          sender_id: currentUserId || 'me',
+          id: Math.random().toString(),
+          sender_id: 'me',
           isMine: true,
           content: doc.name,
           timestamp: new Date().toISOString(),
@@ -488,17 +461,17 @@ export default function ChatRoomScreen() {
         formData.append('file', audioBlob, 'upload.webm');
         
         try {
-          const response = await axios.post(`${API_URL}/upload`, formData);
+          const response = await axios.post('http://localhost:3000/api/upload', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          });
           const url = response.data.url;
           
           if (url) {
-            const clientId = Math.random().toString();
-            localClientIdsRef.current.add(clientId);
-            const messageData = { room_id: actualRoomId, receiver_id: roomId, type: 'audio', attachment_url: url, client_id: clientId };
+            const messageData = { room_id: actualRoomId, receiver_id: roomId, type: 'audio', attachment_url: url };
             if (socketService.socket) socketService.socket.emit('send_message', messageData);
             
             setMessages(prev => [...prev, {
-              id: clientId, sender_id: currentUserId || 'me', isMine: true,
+              id: Math.random().toString(), sender_id: 'me', isMine: true,
               timestamp: new Date().toISOString(), type: 'audio', attachment_url: url
             }]);
             setTimeout(() => flatListRef.current?.scrollToEnd(), 100);
@@ -521,21 +494,18 @@ export default function ChatRoomScreen() {
         const url = await uploadFile(uri, 'audio');
         if (url) {
           // Send audio message
-          const clientId = Math.random().toString();
-          localClientIdsRef.current.add(clientId);
           const messageData = {
             room_id: actualRoomId,
             receiver_id: roomId,
             type: 'audio',
-            attachment_url: url,
-            client_id: clientId
+            attachment_url: url
           };
           if (socketService.socket) {
             socketService.socket.emit('send_message', messageData);
           }
           setMessages(prev => [...prev, {
-            id: clientId,
-            sender_id: currentUserId || 'me',
+            id: Math.random().toString(),
+            sender_id: 'me',
             isMine: true,
             timestamp: new Date().toISOString(),
             type: 'audio',
