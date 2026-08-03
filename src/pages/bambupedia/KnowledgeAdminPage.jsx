@@ -73,19 +73,43 @@ const KnowledgeAdminPage = () => {
 
   return (
     <div style={{ paddingTop: 'var(--navbar-height)', minHeight: '100vh', background: '#f0f2f5' }}>
-      <div className="container" style={{ padding: '40px 24px 100px' }}>
+      <style>{`
+        .admin-knowledge-container { padding: 40px 24px 100px; }
+        .admin-knowledge-header { padding: 34px; margin-bottom: 24px; border-radius: 24px; }
+        .admin-knowledge-header h1 { font-size: 2rem; }
+        .admin-knowledge-controls { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+        .admin-knowledge-tabs { background: white; border-radius: 16px; padding: 6px; display: inline-flex; gap: 4px; overflow-x: auto; max-width: 100%; white-space: nowrap; -webkit-overflow-scrolling: touch; }
+        .admin-knowledge-search { position: relative; min-width: 280px; }
+        .admin-knowledge-card { background: white; border-radius: 20px; padding: 24px; border: 1px solid #e9ecef; box-shadow: 0 8px 24px rgba(0,0,0,0.03); }
+        .admin-knowledge-card-header { display: grid; grid-template-columns: 1fr auto; gap: 18px; align-items: start; }
+        .admin-knowledge-card h2 { font-size: 1.25rem; }
+        
+        @media (max-width: 768px) {
+          .admin-knowledge-container { padding: 20px 16px 100px; }
+          .admin-knowledge-header { padding: 20px; border-radius: 16px; margin-bottom: 16px; }
+          .admin-knowledge-header h1 { font-size: 1.5rem; }
+          .admin-knowledge-controls { flex-direction: column; align-items: stretch; gap: 12px; }
+          .admin-knowledge-tabs { width: 100%; }
+          .admin-knowledge-search { min-width: 100%; width: 100%; }
+          .admin-knowledge-card { padding: 16px; border-radius: 16px; }
+          .admin-knowledge-card-header { grid-template-columns: 1fr; gap: 12px; }
+          .admin-knowledge-card-header .status-badge { align-self: flex-start; }
+          .admin-knowledge-card h2 { font-size: 1.1rem; }
+        }
+      `}</style>
+      <div className="container admin-knowledge-container">
         <BackButton to="/admin-portal" />
 
-        <header style={{ marginTop: '24px', background: 'linear-gradient(135deg, #0ca678, #087f5b)', borderRadius: '24px', padding: '34px', color: 'white', marginBottom: '24px' }}>
+        <header className="admin-knowledge-header" style={{ marginTop: '24px', background: 'linear-gradient(135deg, #0ca678, #087f5b)', color: 'white' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '8px' }}>
             <ShieldCheck size={32} />
-            <h1 style={{ margin: 0, fontSize: '2rem' }}>Admin Verification Knowledge</h1>
+            <h1 style={{ margin: 0 }}>Admin Verification Knowledge</h1>
           </div>
           <p style={{ margin: 0, opacity: 0.9 }}>Setujui sumber bambu sebelum masuk ke Knowledge Library dan dipakai BambuBot RAG.</p>
         </header>
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', marginBottom: '20px', flexWrap: 'wrap' }}>
-          <div style={{ background: 'white', borderRadius: '16px', padding: '6px', display: 'inline-flex', gap: '4px', overflowX: 'auto', maxWidth: '100%' }}>
+        <div className="admin-knowledge-controls">
+          <div className="admin-knowledge-tabs">
             {['pending', 'approved', 'rejected', 'auto-validated'].map((status) => (
               <button
                 key={status}
@@ -106,7 +130,7 @@ const KnowledgeAdminPage = () => {
             ))}
           </div>
 
-          <div style={{ position: 'relative', minWidth: '280px' }}>
+          <div className="admin-knowledge-search">
             <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#868e96' }} />
             <input value={queryText} onChange={(e) => setQueryText(e.target.value)} placeholder="Cari judul, spesies, uploader..." style={{ width: '100%', padding: '12px 14px 12px 38px', borderRadius: '14px', border: '1px solid #dee2e6' }} />
           </div>
@@ -118,14 +142,14 @@ const KnowledgeAdminPage = () => {
               Tidak ada sumber dengan status {activeStatus}.
             </div>
           ) : filteredItems.map((item) => (
-            <article key={item.id} style={{ background: 'white', borderRadius: '20px', padding: '24px', border: '1px solid #e9ecef', boxShadow: '0 8px 24px rgba(0,0,0,0.03)' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '18px', alignItems: 'start' }}>
+            <article key={item.id} className="admin-knowledge-card">
+              <div className="admin-knowledge-card-header">
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--primary)', fontWeight: '800', fontSize: '0.82rem', marginBottom: '8px' }}>
                     {item.type === 'Gambar' ? <Image size={16} /> : <FileText size={16} />}
                     {item.type} oleh @{item.createdByUsername || 'guest'}
                   </div>
-                  <h2 style={{ margin: '0 0 8px', fontSize: '1.25rem', color: '#212529' }}>{item.title}</h2>
+                  <h2 style={{ margin: '0 0 8px', color: '#212529' }}>{item.title}</h2>
                   <p style={{ margin: '0 0 14px', color: '#495057', lineHeight: 1.6 }}>{item.summary}</p>
                   <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', fontSize: '0.78rem', color: '#495057' }}>
                     {item.species && <span style={pillStyle}>{item.species}</span>}
@@ -136,7 +160,7 @@ const KnowledgeAdminPage = () => {
                   </div>
                 </div>
 
-                <span style={{
+                <span className="status-badge" style={{
                   padding: '6px 12px',
                   borderRadius: '999px',
                   fontWeight: '900',
