@@ -6,7 +6,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { db, storage } from '../firebase/config';
 import { ref, uploadBytes, uploadString, getDownloadURL } from 'firebase/storage';
 import { useArticles, usePlantationDonations, useEventTransactions, useUserEvents } from '../hooks/useFirestoreQueries';
-import { doc, onSnapshot, updateDoc, collection, query, where, getDoc, getDocs, addDoc, arrayUnion, arrayRemove, increment } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc, setDoc, collection, query, where, getDoc, getDocs, addDoc, arrayUnion, arrayRemove, increment } from 'firebase/firestore';
 import { requestForToken } from '../utils/NotificationService';
 import ShareModal from '../components/ShareModal';
 import { 
@@ -338,74 +338,76 @@ const ProfilePage = () => {
 
   const handleSaveStatus = async () => {
     setIsUploadingMedia(true);
-    // Update bio in user profile
-    if (user?.id) {
-      try {
-        await updateDoc(doc(db, 'users', user.id), {
-          bioText: formData.bioText || ''
-        });
-      } catch (e) {
-        console.error("Error updating bio:", e);
-      }
-    }
-
-    // Create new status document if there is content
-    if (formData.statusText.trim() || (formData.statusPhotos && formData.statusPhotos.length > 0) || formData.statusVideo) {
-      try {
-        const uid = user?.id || user?.uid || 'guest';
-        const timestamp = Date.now();
-        
-        let finalPhotos = [];
-        for (let i = 0; i < (formData.statusPhotos || []).length; i++) {
-          const photo = formData.statusPhotos[i];
-          if (photo.startsWith('data:image')) {
-             const photoRef = ref(storage, `status_updates/${uid}/${timestamp}_${i}.jpg`);
-             await uploadString(photoRef, photo, 'data_url');
-             finalPhotos.push(await getDownloadURL(photoRef));
-          } else {
-             finalPhotos.push(photo);
-          }
-        }
-
-        let finalVideo = formData.statusVideo || '';
-        if (finalVideo.startsWith('data:video')) {
-             // Assuming video is recorded or small enough, use a simple upload
-             const ext = finalVideo.split(';')[0].split('/')[1] || 'mp4';
-             const videoRef = ref(storage, `status_updates/${uid}/${timestamp}_video.${ext}`);
-             await uploadString(videoRef, finalVideo, 'data_url');
-             finalVideo = await getDownloadURL(videoRef);
-        }
-
-        await addDoc(collection(db, "statuses"), {
-          userId: uid,
-          username: user?.username || user?.name || "user",
-          name: user?.name || "User",
-          avatarUrl: user?.avatarUrl || '',
-          statusText: formData.statusText || '',
-          statusPhotos: finalPhotos,
-          statusVideo: finalVideo,
-          timestamp: timestamp,
-          likes: [],
-          comments: [],
-          gifts: [],
-          shares: 0
-        });
-
-        // Reset the status inputs in formData
-        setFormData(prev => ({
-          ...prev,
-          statusText: '',
-          statusPhotos: [],
-          statusVideo: ''
-        }));
-      } catch (err) {
-        console.error("Error creating status document:", err);
-        alert(`❌ Gagal menyimpan status baru. Error: ${err.message || err}`);
-      }
-    }
     
-    setIsUploadingMedia(false);
-    setIsEditingStatus(false);
+    try {
+      // Update bio in user profile (non-blocking)
+      if (user?.id) {
+        setDoc(doc(db, 'users', user.id), {
+          bioText: formData.bioText || ''
+        }, { merge: true }).catch(e => console.error("Error updating bio:", e));
+      }
+
+      // Create new status document if there is content
+      if ((formData.statusText || '').trim() || (formData.statusPhotos && formData.statusPhotos.length > 0) || formData.statusVideo) {
+        try {
+          const uid = user?.id || user?.uid || 'guest';
+          const timestamp = Date.now();
+          
+          let finalPhotos = [];
+          for (let i = 0; i < (formData.statusPhotos || []).length; i++) {
+            const photo = formData.statusPhotos[i];
+            if (photo.startsWith('data:image')) {
+               const photoRef = ref(storage, `status_updates/${uid}/${timestamp}_${i}.jpg`);
+               await uploadString(photoRef, photo, 'data_url');
+               finalPhotos.push(await getDownloadURL(photoRef));
+            } else {
+               finalPhotos.push(photo);
+            }
+          }
+
+          let finalVideo = formData.statusVideo || '';
+          if (finalVideo.startsWith('data:video')) {
+               // Assuming video is recorded or small enough, use a simple upload
+               const ext = finalVideo.split(';')[0].split('/')[1] || 'mp4';
+               const videoRef = ref(storage, `status_updates/${uid}/${timestamp}_video.${ext}`);
+               await uploadString(videoRef, finalVideo, 'data_url');
+               finalVideo = await getDownloadURL(videoRef);
+          }
+
+          await addDoc(collection(db, "statuses"), {
+            userId: uid,
+            username: user?.username || user?.name || "user",
+            name: user?.name || "User",
+            avatarUrl: user?.avatarUrl || '',
+            statusText: formData.statusText || '',
+            statusPhotos: finalPhotos,
+            statusVideo: finalVideo,
+            timestamp: timestamp,
+            likes: [],
+            comments: [],
+            gifts: [],
+            shares: 0
+          });
+
+          // Reset the status inputs in formData
+          setFormData(prev => ({
+            ...prev,
+            statusText: '',
+            statusPhotos: [],
+            statusVideo: ''
+          }));
+          
+          // Optionally notify success
+          alert("✅ Status berhasil disimpan!");
+        } catch (err) {
+          console.error("Error creating status document:", err);
+          alert(`❌ Gagal menyimpan status baru. Error: ${err.message || err}`);
+        }
+      }
+    } finally {
+      setIsUploadingMedia(false);
+      setIsEditingStatus(false);
+    }
   };
 
   const handleLike = async (status) => {
