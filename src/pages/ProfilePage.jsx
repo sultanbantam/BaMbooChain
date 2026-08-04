@@ -353,13 +353,23 @@ const ProfilePage = () => {
           const uid = user?.id || user?.uid || 'guest';
           const timestamp = Date.now();
           
+          const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dsieguutz';
+          const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'bamboo_preset';
+
           let finalPhotos = [];
           for (let i = 0; i < (formData.statusPhotos || []).length; i++) {
             const photo = formData.statusPhotos[i];
             if (photo.startsWith('data:image')) {
-               const photoRef = ref(storage, `status_updates/${uid}/${timestamp}_${i}.jpg`);
-               await uploadString(photoRef, photo, 'data_url');
-               finalPhotos.push(await getDownloadURL(photoRef));
+               const uploadData = new FormData();
+               uploadData.append('file', photo);
+               uploadData.append('upload_preset', uploadPreset);
+               const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+                 method: 'POST',
+                 body: uploadData
+               });
+               if (!res.ok) throw new Error("Gagal mengunggah foto ke Cloudinary");
+               const data = await res.json();
+               finalPhotos.push(data.secure_url);
             } else {
                finalPhotos.push(photo);
             }
@@ -367,11 +377,16 @@ const ProfilePage = () => {
 
           let finalVideo = formData.statusVideo || '';
           if (finalVideo.startsWith('data:video')) {
-               // Assuming video is recorded or small enough, use a simple upload
-               const ext = finalVideo.split(';')[0].split('/')[1] || 'mp4';
-               const videoRef = ref(storage, `status_updates/${uid}/${timestamp}_video.${ext}`);
-               await uploadString(videoRef, finalVideo, 'data_url');
-               finalVideo = await getDownloadURL(videoRef);
+               const uploadData = new FormData();
+               uploadData.append('file', finalVideo);
+               uploadData.append('upload_preset', uploadPreset);
+               const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/video/upload`, {
+                 method: 'POST',
+                 body: uploadData
+               });
+               if (!res.ok) throw new Error("Gagal mengunggah video ke Cloudinary");
+               const data = await res.json();
+               finalVideo = data.secure_url;
           }
 
           await addDoc(collection(db, "statuses"), {
