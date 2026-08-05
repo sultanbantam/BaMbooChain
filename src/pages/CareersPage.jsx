@@ -480,7 +480,7 @@ const CareersPage = () => {
 
                   <div style={{ display: 'flex', gap: '10px' }}>
                     <button 
-                      onClick={() => job.contactEmail ? window.location.href = `mailto:${job.contactEmail}?subject=Lamaran: ${job.title}` : alert('Mohon hubungi pihak yayasan terkait lamaran ini.')}
+                      onClick={() => navigate('/bambunusa/join-farmer')}
                       style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '12px 24px', borderRadius: '16px', fontWeight: 'bold', cursor: 'pointer' }}>Lamar</button>
                     <button style={{ background: 'var(--bg-secondary)', color: 'var(--text-main)', border: '1px solid var(--border-color)', width: '45px', height: '45px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} title="Refer a Friend">
                       <Users size={20} />
