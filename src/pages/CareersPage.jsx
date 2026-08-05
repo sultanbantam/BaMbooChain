@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import BackButton from '../components/BackButton';
 import { db } from '../firebase/config';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, deleteDoc, doc } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
 import { useCareerJobPosts, useCareerDemandPosts } from '../hooks/useFirestoreQueries';
 
@@ -40,7 +40,8 @@ const CareersPage = () => {
   const [demandForm, setDemandForm] = useState({
     title: '', category: 'Tenaga Kerja', expertise: '', location: '',
     quantity: '', duration: '', budgetRange: '', description: '',
-    qualifications: '', contactName: '', contactEmail: '', contactWa: '', bambooChat: ''
+    qualifications: '', contactName: '', contactEmail: '', contactWa: '', bambooChat: '',
+    projectLink: '', documentPdf: ''
   });
   const [jobSubmitted, setJobSubmitted] = useState(false);
   const [demandSubmitted, setDemandSubmitted] = useState(false);
@@ -82,11 +83,22 @@ const CareersPage = () => {
       setTimeout(() => {
         setDemandSubmitted(false);
         setShowUploadDemand(false);
-        setDemandForm({ title: '', category: 'Tenaga Kerja', expertise: '', location: '', quantity: '', duration: '', budgetRange: '', description: '', qualifications: '', contactName: '', contactEmail: '', contactWa: '', bambooChat: '' });
+        setDemandForm({ title: '', category: 'Tenaga Kerja', expertise: '', location: '', quantity: '', duration: '', budgetRange: '', description: '', qualifications: '', contactName: '', contactEmail: '', contactWa: '', bambooChat: '', projectLink: '', documentPdf: '' });
       }, 2500);
     } catch (err) {
       console.error('Error submitting demand:', err);
       alert('Gagal mengirim kebutuhan. Silakan coba lagi.');
+    }
+  };
+
+  const handleDeletePost = async (id, collectionName) => {
+    if (!window.confirm('Yakin ingin menghapus postingan ini?')) return;
+    try {
+      await deleteDoc(doc(db, collectionName, id));
+      alert('Postingan berhasil dihapus. Refresh halaman untuk melihat perubahan.');
+    } catch (err) {
+      console.error('Error deleting post:', err);
+      alert('Gagal menghapus postingan.');
     }
   };
 
@@ -147,7 +159,8 @@ const CareersPage = () => {
       contactName: post.contactName,
       contactEmail: post.contactEmail,
       contactWa: post.contactWa,
-      bambooChat: post.bambooChat
+      bambooChat: post.bambooChat,
+      submittedBy: post.submittedBy
     }))
   ];
 
@@ -287,10 +300,13 @@ const CareersPage = () => {
         reqs: post.description,
         specs: post.qualifications ? post.qualifications.split('\n') : []
       },
+      projectLink: post.projectLink,
+      documentPdf: post.documentPdf,
       contactName: post.contactName,
       contactEmail: post.contactEmail,
       contactWa: post.contactWa,
-      bambooChat: post.bambooChat
+      bambooChat: post.bambooChat,
+      submittedBy: post.submittedBy
     }))
   ];
 
@@ -407,8 +423,8 @@ const CareersPage = () => {
         <div id="profesional" className="profesional-section">
           <div className="section-header-flex">
             <div>
-              <h2 style={{ fontSize: '2.5rem', fontWeight: '900', color: '#1a1a1a', marginBottom: '12px' }}>Open Positions</h2>
-              <p style={{ color: '#666', fontSize: '1.1rem' }}>Bergabunglah membangun fondasi ekosistem triliunan rupiah.</p>
+              <h2 style={{ fontSize: '2.5rem', fontWeight: '900', color: 'var(--text-main)', marginBottom: '12px' }}>Open Positions</h2>
+              <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>Bergabunglah membangun fondasi ekosistem triliunan rupiah.</p>
             </div>
             <div className="section-header-actions">
                <button onClick={() => setShowUploadJob(true)} className="upload-btn-primary">
@@ -417,7 +433,7 @@ const CareersPage = () => {
                <div style={{ background: 'rgba(12, 166, 120, 0.1)', color: 'var(--primary)', padding: '10px 20px', borderRadius: '30px', fontWeight: 'bold', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                  <Users size={16} /> Community Hires
                </div>
-               <button style={{ background: 'white', color: '#1a1a1a', border: '1px solid #eee', padding: '10px 25px', borderRadius: '30px', fontWeight: 'bold', cursor: 'pointer' }}>Lihat Departemen</button>
+               <button style={{ background: 'var(--bg-secondary)', color: 'var(--text-main)', border: '1px solid var(--border-color)', padding: '10px 25px', borderRadius: '30px', fontWeight: 'bold', cursor: 'pointer' }}>Lihat Departemen</button>
             </div>
           </div>
 
@@ -428,7 +444,7 @@ const CareersPage = () => {
               placeholder="Cari pekerjaan atau proyek (Contoh: Web3, Bali, Konstruksi)..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              style={{ width: '100%', padding: '18px 20px 18px 50px', borderRadius: '20px', border: '1px solid #dee2e6', fontSize: '1rem', boxSizing: 'border-box', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}
+              style={{ width: '100%', padding: '18px 20px 18px 50px', borderRadius: '20px', border: '1px solid var(--border-color)', fontSize: '1rem', boxSizing: 'border-box', boxShadow: '0 4px 15px rgba(0,0,0,0.02)', background: 'var(--bg-secondary)', color: 'var(--text-main)' }}
             />
           </div>
 
@@ -441,10 +457,10 @@ const CareersPage = () => {
                   </div>
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px', flexWrap: 'wrap' }}>
-                      <h3 style={{ fontSize: '1.4rem', fontWeight: '800', color: '#1a1a1a', margin: 0 }}>{job.title}</h3>
-                      <span style={{ fontSize: '0.7rem', color: '#999', fontFamily: 'monospace' }}>#{job.id}</span>
+                      <h3 style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--text-main)', margin: 0 }}>{job.title}</h3>
+                      <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontFamily: 'monospace' }}>#{job.id}</span>
                     </div>
-                    <div style={{ display: 'flex', gap: '15px', color: '#666', fontSize: '0.9rem', flexWrap: 'wrap', marginTop: '8px' }}>
+                    <div style={{ display: 'flex', gap: '15px', color: 'var(--text-muted)', fontSize: '0.9rem', flexWrap: 'wrap', marginTop: '8px' }}>
                       <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><MapPin size={16} /> {job.location}</span>
                       <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Clock size={16} /> {job.type}</span>
                     </div>
@@ -453,8 +469,8 @@ const CareersPage = () => {
                 
                 <div className="job-actions-group">
                   <div className="job-salary">
-                    <div style={{ fontSize: '0.75rem', color: '#999', fontWeight: 'bold', textTransform: 'uppercase' }}>Kompensasi</div>
-                    <div style={{ fontWeight: '900', color: '#1a1a1a', fontSize: '1.1rem' }}>{job.salary}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 'bold', textTransform: 'uppercase' }}>Kompensasi</div>
+                    <div style={{ fontWeight: '900', color: 'var(--text-main)', fontSize: '1.1rem' }}>{job.salary}</div>
                   </div>
                   
                   <div style={{ textAlign: 'center', background: 'rgba(245, 159, 0, 0.05)', padding: '10px 20px', borderRadius: '15px', border: '1px solid rgba(245, 159, 0, 0.1)' }}>
@@ -463,10 +479,22 @@ const CareersPage = () => {
                   </div>
 
                   <div style={{ display: 'flex', gap: '10px' }}>
-                    <button style={{ background: '#1a1a1a', color: 'white', border: 'none', padding: '12px 24px', borderRadius: '16px', fontWeight: 'bold', cursor: 'pointer' }}>Lamar</button>
-                    <button style={{ background: 'white', color: '#1a1a1a', border: '1px solid #ddd', width: '45px', height: '45px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} title="Refer a Friend">
+                    <button 
+                      onClick={() => job.contactEmail ? window.location.href = `mailto:${job.contactEmail}?subject=Lamaran: ${job.title}` : alert('Mohon hubungi pihak yayasan terkait lamaran ini.')}
+                      style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '12px 24px', borderRadius: '16px', fontWeight: 'bold', cursor: 'pointer' }}>Lamar</button>
+                    <button style={{ background: 'var(--bg-secondary)', color: 'var(--text-main)', border: '1px solid var(--border-color)', width: '45px', height: '45px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} title="Refer a Friend">
                       <Users size={20} />
                     </button>
+                    {(user?.id === job.submittedBy || user?.username === 'admin_yayasan') && (
+                      <>
+                        <button onClick={() => alert('Fitur edit segera hadir')} style={{ background: 'transparent', color: '#1c7ed6', border: '1px solid #1c7ed6', width: '45px', height: '45px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} title="Edit">
+                          <Wrench size={18} />
+                        </button>
+                        <button onClick={() => handleDeletePost(job.id, 'career_job_posts')} style={{ background: 'transparent', color: '#fa5252', border: '1px solid #fa5252', width: '45px', height: '45px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} title="Hapus">
+                          <X size={18} />
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -479,13 +507,13 @@ const CareersPage = () => {
         </div>
 
         {/* SECTION: DEMAND BOARD */}
-        <div id="demand" className="profesional-section" style={{ background: '#fdfdfd', borderColor: '#e0313120' }}>
+        <div id="demand" className="profesional-section" style={{ background: 'var(--bg-card)', borderColor: '#e0313120' }}>
           <div className="section-header-flex">
             <div>
-              <h2 style={{ fontSize: '2.5rem', fontWeight: '900', color: '#1a1a1a', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <h2 style={{ fontSize: '2.5rem', fontWeight: '900', color: 'var(--text-main)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <Target color="#e03131" size={36} /> Demand Market
               </h2>
-              <p style={{ color: '#666', fontSize: '1.1rem' }}>Peluang proyek yang sudah memiliki konfirmasi pendanaan (PO/Funding Ready).</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>Peluang proyek yang sudah memiliki konfirmasi pendanaan (PO/Funding Ready).</p>
             </div>
             <div className="section-header-actions">
                <button onClick={() => setShowUploadDemand(true)} className="upload-btn-secondary">
@@ -506,10 +534,10 @@ const CareersPage = () => {
                   </div>
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px', flexWrap: 'wrap' }}>
-                      <h3 style={{ fontSize: '1.4rem', fontWeight: '800', color: '#1a1a1a', margin: 0 }}>{demand.title}</h3>
-                      <span style={{ fontSize: '0.7rem', color: '#999', fontFamily: 'monospace' }}>#{demand.id}</span>
+                      <h3 style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--text-main)', margin: 0 }}>{demand.title}</h3>
+                      <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontFamily: 'monospace' }}>#{demand.id}</span>
                     </div>
-                    <div style={{ display: 'flex', gap: '15px', color: '#666', fontSize: '0.9rem', flexWrap: 'wrap', marginTop: '8px' }}>
+                    <div style={{ display: 'flex', gap: '15px', color: 'var(--text-muted)', fontSize: '0.9rem', flexWrap: 'wrap', marginTop: '8px' }}>
                       <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><MapPin size={16} /> {demand.location}</span>
                       <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#0ca678', fontWeight: 'bold' }}><DollarSign size={16} /> {demand.funding}</span>
                     </div>
@@ -518,19 +546,29 @@ const CareersPage = () => {
                 
                 <div className="job-actions-group">
                   <div className="job-salary">
-                    <div style={{ fontSize: '0.75rem', color: '#999', fontWeight: 'bold', textTransform: 'uppercase' }}>Kategori</div>
-                    <div style={{ fontWeight: '900', color: '#1a1a1a', fontSize: '1.1rem' }}>{demand.demandType}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 'bold', textTransform: 'uppercase' }}>Kategori</div>
+                    <div style={{ fontWeight: '900', color: 'var(--text-main)', fontSize: '1.1rem' }}>{demand.demandType}</div>
                   </div>
                   
                   <div style={{ textAlign: 'center', background: 'rgba(224, 49, 49, 0.05)', padding: '10px 20px', borderRadius: '15px', border: '1px solid rgba(224, 49, 49, 0.1)' }}>
-                    <div style={{ fontSize: '0.7rem', color: '#e03131', fontWeight: 'bold' }}>STATUS</div>
-                    <div style={{ fontWeight: '900', color: '#e03131' }}>{demand.status}</div>
+                    <div style={{ fontSize: '0.7rem', color: '#ff6b6b', fontWeight: 'bold' }}>STATUS</div>
+                    <div style={{ fontWeight: '900', color: '#ff6b6b' }}>{demand.status}</div>
                   </div>
 
                   <div style={{ display: 'flex', gap: '10px' }}>
                     <button onClick={() => setSelectedDemand(demand)} style={{ background: demand.color, color: 'white', border: 'none', padding: '12px 24px', borderRadius: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
-                      {demand.details ? 'Detail Proyek' : 'Apply Proyek'}
+                      {demand.details || demand.projectLink || demand.documentPdf || demand.description ? 'Detail Proyek' : 'Apply Proyek'}
                     </button>
+                    {(user?.id === demand.submittedBy || user?.username === 'admin_yayasan') && (
+                      <>
+                        <button onClick={() => alert('Fitur edit segera hadir')} style={{ background: 'transparent', color: '#1c7ed6', border: '1px solid #1c7ed6', padding: '12px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} title="Edit">
+                          <Wrench size={18} />
+                        </button>
+                        <button onClick={() => handleDeletePost(demand.id, 'career_demand_posts')} style={{ background: 'transparent', color: '#fa5252', border: '1px solid #fa5252', padding: '12px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} title="Hapus">
+                          <X size={18} />
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -599,13 +637,13 @@ const CareersPage = () => {
         </div>
 
         {/* MODAL DETAIL DEMAND */}
-        {selectedDemand && selectedDemand.details && (
+        {selectedDemand && (
           <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.85)', zIndex: 60000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', backdropFilter: 'blur(5px)' }}>
             <div className="glass animate-scale-in" style={{ width: '100%', maxWidth: '900px', maxHeight: '90vh', background: 'white', borderRadius: '30px', overflow: 'hidden', position: 'relative', display: 'flex', flexDirection: window.innerWidth < 768 ? 'column' : 'row' }}>
               <button onClick={() => setSelectedDemand(null)} style={{ position: 'absolute', top: '20px', right: '20px', background: '#eee', border: 'none', borderRadius: '50%', padding: '8px', cursor: 'pointer', zIndex: 10 }}><X size={24} /></button>
               
               <div style={{ flex: 1, height: window.innerWidth < 768 ? '300px' : 'auto', background: '#f1f3f5', overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                {selectedDemand.details.images && selectedDemand.details.images.length > 0 && (
+                {selectedDemand.details?.images && selectedDemand.details.images.length > 0 && (
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '10px' }}>
                     {selectedDemand.details.images.map((img, idx) => (
                       <a key={idx} href={img} target="_blank" rel="noopener noreferrer">
@@ -614,14 +652,19 @@ const CareersPage = () => {
                     ))}
                   </div>
                 )}
-                {selectedDemand.details.pdf && (
+                {(selectedDemand.documentPdf || selectedDemand.details?.pdf) && (
                   <div style={{ background: 'white', padding: '20px', borderRadius: '16px', textAlign: 'center', border: '1px dashed #ccc' }}>
                     <div style={{ fontSize: '3rem', marginBottom: '10px' }}>📄</div>
                     <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>Dokumen Desain Acuan Tersedia</div>
-                    <div style={{ fontSize: '0.85rem', color: '#888', marginBottom: '15px' }}>Silakan unduh untuk melihat detail teknis.</div>
-                    <a href={selectedDemand.details.pdf} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', background: selectedDemand.color, color: 'white', textDecoration: 'none', padding: '10px 20px', borderRadius: '12px', fontWeight: 'bold', fontSize: '0.9rem' }}>
+                    <a href={selectedDemand.documentPdf || selectedDemand.details?.pdf} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', background: selectedDemand.color, color: 'white', textDecoration: 'none', padding: '10px 20px', borderRadius: '12px', fontWeight: 'bold', fontSize: '0.9rem' }}>
                       Buka Dokumen PDF
                     </a>
+                  </div>
+                )}
+                {selectedDemand.projectLink && (
+                  <div style={{ background: 'white', padding: '20px', borderRadius: '16px' }}>
+                    <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>Link Proyek</div>
+                    <a href={selectedDemand.projectLink} target="_blank" rel="noopener noreferrer" style={{ wordBreak: 'break-all', color: 'var(--primary)' }}>{selectedDemand.projectLink}</a>
                   </div>
                 )}
               </div>
@@ -637,27 +680,29 @@ const CareersPage = () => {
                   </div>
                   <div style={{ background: 'rgba(245, 159, 0, 0.05)', padding: '15px', borderRadius: '15px' }}>
                     <div style={{ fontSize: '0.75rem', color: selectedDemand.color, fontWeight: 'bold' }}>HARGA PENERIMAAN</div>
-                    <div style={{ fontWeight: 'bold', color: selectedDemand.color }}>{selectedDemand.details.price}</div>
+                    <div style={{ fontWeight: 'bold', color: selectedDemand.color }}>{selectedDemand.details?.price || selectedDemand.funding}</div>
                   </div>
                 </div>
 
                 <div style={{ marginBottom: '24px' }}>
                   <h4 style={{ marginBottom: '8px' }}>Kebutuhan Bulanan</h4>
-                  <p style={{ color: '#666', background: '#f1f3f5', padding: '12px', borderRadius: '10px', fontSize: '0.95rem' }}>{selectedDemand.details.reqs}</p>
+                  <p style={{ color: '#666', background: '#f1f3f5', padding: '12px', borderRadius: '10px', fontSize: '0.95rem' }}>{selectedDemand.details?.reqs || selectedDemand.description}</p>
                 </div>
 
-                <div style={{ marginBottom: '30px' }}>
-                  <h4 style={{ marginBottom: '12px' }}>Spesifikasi Teknis</h4>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {selectedDemand.details.specs.map((spec, i) => (
-                      <div key={i} style={{ fontSize: '0.85rem', background: 'white', border: '1px solid #eee', padding: '10px 12px', borderRadius: '8px', display: 'flex', gap: '10px' }}>
-                        <span style={{ color: selectedDemand.color }}>•</span> {spec}
-                      </div>
-                    ))}
+                {selectedDemand.details?.specs?.length > 0 && (
+                  <div style={{ marginBottom: '30px' }}>
+                    <h4 style={{ marginBottom: '12px' }}>Spesifikasi Teknis</h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {selectedDemand.details.specs.map((spec, i) => (
+                        <div key={i} style={{ fontSize: '0.85rem', background: 'white', border: '1px solid #eee', padding: '10px 12px', borderRadius: '8px', display: 'flex', gap: '10px' }}>
+                          <span style={{ color: selectedDemand.color }}>•</span> {spec}
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
-                <button onClick={() => { alert('Mengarahkan ke Chat WA...'); window.open('https://wa.me/628174139994', '_blank'); }} style={{ width: '100%', padding: '16px', borderRadius: '15px', background: selectedDemand.color, color: 'white', border: 'none', fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}>
+                <button onClick={() => { alert('Mengarahkan ke Chat WA...'); window.open(`https://wa.me/${selectedDemand.contactWa || '628174139994'}`, '_blank'); }} style={{ width: '100%', padding: '16px', borderRadius: '15px', background: selectedDemand.color, color: 'white', border: 'none', fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}>
                   Hubungi Pihak Pengumpul
                 </button>
               </div>
@@ -827,6 +872,14 @@ const CareersPage = () => {
                         <label>Kualifikasi yang Dibutuhkan</label>
                         <textarea rows={3} placeholder="Pengalaman, sertifikasi, kompetensi yang dibutuhkan..." value={demandForm.qualifications} onChange={e => setDemandForm({...demandForm, qualifications: e.target.value})} />
                       </div>
+                      <div className="upload-form-group">
+                        <label>Link Proyek / Referensi (opsional)</label>
+                        <input type="text" placeholder="https://..." value={demandForm.projectLink} onChange={e => setDemandForm({...demandForm, projectLink: e.target.value})} />
+                      </div>
+                      <div className="upload-form-group">
+                        <label>Link File / Dokumen PDF (opsional)</label>
+                        <input type="text" placeholder="https://..." value={demandForm.documentPdf} onChange={e => setDemandForm({...demandForm, documentPdf: e.target.value})} />
+                      </div>
 
                       <div className="upload-form-divider" />
 
@@ -861,7 +914,7 @@ const CareersPage = () => {
       </div>
 
       {/* 5. FLOATING BAMBUAI ASSISTANT - POSITIONED TO THE LEFT TO AVOID OVERLAP */}
-      <div style={{ position: 'fixed', bottom: '30px', left: '30px', zIndex: 11000 }}>
+      <div style={{ position: 'fixed', bottom: '110px', left: '30px', zIndex: 11000 }}>
         {!showAiChat ? (
           <button 
             onClick={() => setShowAiChat(true)}
