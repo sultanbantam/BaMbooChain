@@ -6,11 +6,10 @@ import BackButton from '../../components/BackButton';
 
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { usePartnerApplications } from '../../hooks/useFirestoreQueries';
+import { useVerifiedPartners } from '../../hooks/useFirestoreQueries';
 
 const FarmerListPage = () => {
-  const { user } = useAuth();
-  const { data: partnerApps = [] } = usePartnerApplications(user?.id, user?.username);
+  const { data: verifiedPartners = [] } = useVerifiedPartners();
   const navigate = useNavigate();
 
   const staticFarmers = [
@@ -23,13 +22,11 @@ const FarmerListPage = () => {
   // Merge static with verified new applications
   const allFarmers = [
     ...staticFarmers,
-    ...partnerApps
-      .filter(app => app.status === 'verified')
-      .map(app => ({
+    ...verifiedPartners.map(app => ({
         id: app.id,
-        name: app.name,
-        area: app.location,
-        species: app.role,
+        name: app.name || "Anonim",
+        area: app.location || "Indonesia",
+        species: app.role || "Mitra",
         trees: app.details?.capacity || "TBA",
         joined: new Date(app.date).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' }),
         status: "Verified",
@@ -37,8 +34,8 @@ const FarmerListPage = () => {
       }))
   ];
 
-  // Deduplicate by name
-  const farmers = Array.from(new Map(allFarmers.map(f => [f.name.toLowerCase(), f])).values());
+  // Deduplicate by name (case-insensitive)
+  const farmers = Array.from(new Map(allFarmers.map(f => [f.name?.toLowerCase() || '', f])).values());
 
   return (
     <div style={{ background: 'var(--bg-secondary)', minHeight: '100vh' }}>

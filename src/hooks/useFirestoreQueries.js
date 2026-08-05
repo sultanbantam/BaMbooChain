@@ -3,7 +3,7 @@ import { collection, getDocs, query, where, doc, getDoc, addDoc, updateDoc, serv
 import { ref, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../firebase/config';
 
-// 1. Hook for Partner Applications
+// 1. Hook for Partner Applications (User specific or Admin)
 export function usePartnerApplications(userId, username) {
   return useQuery({
     queryKey: ['partnerApplications', userId, username],
@@ -18,6 +18,20 @@ export function usePartnerApplications(userId, username) {
       return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     },
     enabled: !!userId,
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+  });
+}
+
+// 1b. Hook for All Verified Partners (Public Directory)
+export function useVerifiedPartners() {
+  return useQuery({
+    queryKey: ['verifiedPartners'],
+    queryFn: async () => {
+      const partnerAppsRef = collection(db, 'partner_applications');
+      const q = query(partnerAppsRef, where('status', '==', 'verified'));
+      const snapshot = await getDocs(q);
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    },
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   });
 }
