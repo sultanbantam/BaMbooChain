@@ -4,7 +4,7 @@ import {
   Briefcase, Leaf, GraduationCap, Target, ArrowRight, Zap, MapPin, 
   Clock, Coins, ChevronRight, MessageSquare, X, Send, Users, 
   TrendingUp, Award, DollarSign, Activity, Search,
-  Upload, Plus, FileText, Building2, UserCheck, Wrench, MessageCircle
+  Upload, Plus, FileText, Building2, UserCheck, Wrench, MessageCircle, Eye
 } from 'lucide-react';
 import BackButton from '../components/BackButton';
 import { db } from '../firebase/config';
@@ -160,6 +160,30 @@ const CareersPage = () => {
     setShowUploadDemand(true);
   };
 
+  const handleJobClick = async (job) => {
+    try {
+      if (!job.id.startsWith('JOB-')) {
+        await updateDoc(doc(db, 'career_job_posts', job.id), { clicks: (job.clicks || 0) + 1 });
+      }
+    } catch (e) {}
+    navigate('/bambunusa/join-farmer');
+  };
+
+  const handleDemandClick = async (demand) => {
+    try {
+      if (!demand.id.startsWith('DMD-')) {
+        await updateDoc(doc(db, 'career_demand_posts', demand.id), { clicks: (demand.clicks || 0) + 1 });
+      }
+    } catch (e) {}
+    if (demand.projectLink) {
+      window.open(demand.projectLink, '_blank');
+    } else if (demand.documentPdf) {
+      window.open(demand.documentPdf, '_blank');
+    } else {
+      setSelectedDemand(demand);
+    }
+  };
+
   useEffect(() => {
     setIsVisible(true);
   }, []);
@@ -218,7 +242,9 @@ const CareersPage = () => {
       contactEmail: post.contactEmail,
       contactWa: post.contactWa,
       bambooChat: post.bambooChat,
-      submittedBy: post.submittedBy
+      submittedBy: post.submittedBy,
+      createdAt: post.createdAt,
+      clicks: post.clicks || 0
     }))
   ];
 
@@ -364,7 +390,9 @@ const CareersPage = () => {
       contactEmail: post.contactEmail,
       contactWa: post.contactWa,
       bambooChat: post.bambooChat,
-      submittedBy: post.submittedBy
+      submittedBy: post.submittedBy,
+      createdAt: post.createdAt,
+      clicks: post.clicks || 0
     }))
   ];
 
@@ -507,7 +535,8 @@ const CareersPage = () => {
                     </div>
                     <div style={{ display: 'flex', gap: '15px', color: 'var(--text-muted)', fontSize: '0.9rem', flexWrap: 'wrap', marginTop: '8px' }}>
                       <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><MapPin size={16} /> {job.location}</span>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Clock size={16} /> {job.type}</span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Clock size={16} /> {job.createdAt ? new Date(job.createdAt.toDate ? job.createdAt.toDate() : job.createdAt).toLocaleDateString() : 'Baru saja'}</span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--primary)' }}><Eye size={16} /> {job.clicks || 0} Dilihat</span>
                     </div>
                   </div>
                 </div>
@@ -525,7 +554,7 @@ const CareersPage = () => {
 
                   <div style={{ display: 'flex', gap: '10px' }}>
                     <button 
-                      onClick={() => navigate('/bambunusa/join-farmer')}
+                      onClick={() => handleJobClick(job)}
                       style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '12px 24px', borderRadius: '16px', fontWeight: 'bold', cursor: 'pointer' }}>Lamar</button>
                     <button style={{ background: 'var(--bg-secondary)', color: 'var(--text-main)', border: '1px solid var(--border-color)', width: '45px', height: '45px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} title="Refer a Friend">
                       <Users size={20} />
@@ -585,6 +614,8 @@ const CareersPage = () => {
                     <div style={{ display: 'flex', gap: '15px', color: 'var(--text-muted)', fontSize: '0.9rem', flexWrap: 'wrap', marginTop: '8px' }}>
                       <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><MapPin size={16} /> {demand.location}</span>
                       <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#0ca678', fontWeight: 'bold' }}><DollarSign size={16} /> {demand.funding}</span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Clock size={16} /> {demand.createdAt ? new Date(demand.createdAt.toDate ? demand.createdAt.toDate() : demand.createdAt).toLocaleDateString() : 'Baru saja'}</span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--primary)' }}><Eye size={16} /> {demand.clicks || 0} Dilihat</span>
                     </div>
                   </div>
                 </div>
@@ -601,15 +632,7 @@ const CareersPage = () => {
                   </div>
 
                   <div style={{ display: 'flex', gap: '10px' }}>
-                    <button onClick={() => {
-                        if (demand.projectLink) {
-                          window.open(demand.projectLink, '_blank');
-                        } else if (demand.documentPdf) {
-                          window.open(demand.documentPdf, '_blank');
-                        } else {
-                          setSelectedDemand(demand);
-                        }
-                      }} style={{ background: demand.color, color: 'white', border: 'none', padding: '12px 24px', borderRadius: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
+                    <button onClick={() => handleDemandClick(demand)} style={{ background: demand.color, color: 'white', border: 'none', padding: '12px 24px', borderRadius: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
                       {demand.details || demand.projectLink || demand.documentPdf || demand.description ? 'Detail Proyek' : 'Apply Proyek'}
                     </button>
                     {(user?.id === demand.submittedBy || user?.username === 'admin_yayasan') && (
@@ -732,14 +755,14 @@ const CareersPage = () => {
                     <div style={{ fontWeight: 'bold', color: '#1a1a1a' }}>{selectedDemand.location}</div>
                   </div>
                   <div style={{ background: 'rgba(245, 159, 0, 0.05)', padding: '15px', borderRadius: '15px' }}>
-                    <div style={{ fontSize: '0.75rem', color: selectedDemand.color, fontWeight: 'bold' }}>HARGA PENERIMAAN</div>
+                    <div style={{ fontSize: '0.75rem', color: selectedDemand.color, fontWeight: 'bold' }}>ANGGARAN / HARGA</div>
                     <div style={{ fontWeight: 'bold', color: selectedDemand.color }}>{selectedDemand.details?.price || selectedDemand.funding}</div>
                   </div>
                 </div>
 
                 <div style={{ marginBottom: '24px' }}>
-                  <h4 style={{ marginBottom: '8px' }}>Kebutuhan Bulanan</h4>
-                  <p style={{ color: '#666', background: '#f1f3f5', padding: '12px', borderRadius: '10px', fontSize: '0.95rem' }}>{selectedDemand.details?.reqs || selectedDemand.description}</p>
+                  <h4 style={{ marginBottom: '8px' }}>Deskripsi Kebutuhan</h4>
+                  <p style={{ color: '#666', background: '#f1f3f5', padding: '12px', borderRadius: '10px', fontSize: '0.95rem', whiteSpace: 'pre-wrap' }}>{selectedDemand.details?.reqs || selectedDemand.description}</p>
                 </div>
 
                 {selectedDemand.details?.specs?.length > 0 && (
@@ -756,7 +779,7 @@ const CareersPage = () => {
                 )}
 
                 <button onClick={() => { alert('Mengarahkan ke Chat WA...'); window.open(`https://wa.me/${selectedDemand.contactWa || '628174139994'}`, '_blank'); }} style={{ width: '100%', padding: '16px', borderRadius: '15px', background: selectedDemand.color, color: 'white', border: 'none', fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}>
-                  Hubungi Pihak Pengumpul
+                  Hubungi Pemasang
                 </button>
               </div>
             </div>
