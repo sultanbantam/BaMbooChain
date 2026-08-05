@@ -32,12 +32,13 @@ const FarmerListPage = () => {
         species: app.role,
         trees: app.details?.capacity || "TBA",
         joined: new Date(app.date).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' }),
-        status: "Verified"
+        status: "Verified",
+        username: app.username || app.userId || app.id
       }))
   ];
 
   return (
-    <div style={{ background: '#f8f9fa', minHeight: '100vh' }}>
+    <div style={{ background: 'var(--bg-secondary)', minHeight: '100vh' }}>
       <Navbar />
       
       <div style={{ paddingTop: '250px', paddingBottom: '80px' }}>
@@ -68,7 +69,7 @@ const FarmerListPage = () => {
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem' }}>
                     <MapPin size={16} color="var(--text-muted)" />
                     <span style={{ color: 'var(--text-main)' }}>{farmer.area}</span>
@@ -87,7 +88,14 @@ const FarmerListPage = () => {
                   </div>
                 </div>
 
-                <button style={{ width: '100%', padding: '12px', background: 'rgba(12, 166, 120, 0.05)', border: '1px solid var(--primary)', color: 'var(--primary)', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>Lihat Portofolio</button>
+                <button 
+                  onClick={() => navigate(`/portfolio/${farmer.username || farmer.id}`)}
+                  style={{ width: '100%', padding: '12px', background: 'rgba(12, 166, 120, 0.05)', border: '1px solid var(--primary)', color: 'var(--primary)', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s' }}
+                  onMouseOver={(e) => { e.currentTarget.style.background = 'var(--primary)'; e.currentTarget.style.color = 'white'; }}
+                  onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(12, 166, 120, 0.05)'; e.currentTarget.style.color = 'var(--primary)'; }}
+                >
+                  Lihat Portofolio
+                </button>
               </div>
             ))}
           </div>

@@ -396,17 +396,26 @@ const CareersPage = () => {
     }))
   ];
 
-  const filteredJobs = allJobOpenings.filter(job => 
-    job.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    job.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    job.department.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const getSortTime = (item) => {
+    if (!item.createdAt) return 0;
+    return item.createdAt.toDate ? item.createdAt.toDate().getTime() : new Date(item.createdAt).getTime();
+  };
 
-  const filteredDemand = allDemandBoard.filter(demand => 
-    demand.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    demand.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    demand.demandType.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredJobs = allJobOpenings
+    .filter(job => 
+      job.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      job.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      job.department.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .sort((a, b) => getSortTime(b) - getSortTime(a));
+
+  const filteredDemand = allDemandBoard
+    .filter(demand => 
+      demand.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      demand.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      demand.demandType.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .sort((a, b) => getSortTime(b) - getSortTime(a));
 
   const tickerItems = [
     "User @mukoddas baru saja menerima 500 BMC untuk Audit Kontrak",
@@ -724,7 +733,7 @@ const CareersPage = () => {
               <button onClick={() => setSelectedDemand(null)} style={{ position: 'absolute', top: '20px', right: '20px', background: 'var(--bg-secondary)', color: 'var(--text-main)', border: 'none', borderRadius: '50%', padding: '8px', cursor: 'pointer', zIndex: 10 }}><X size={24} /></button>
               
               <div style={{ flex: 1, height: window.innerWidth < 768 ? '300px' : 'auto', background: 'var(--bg-secondary)', overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px', justifyContent: 'center' }}>
-                {selectedDemand.details?.images && selectedDemand.details.images.length > 0 ? (
+                {selectedDemand.details?.images && selectedDemand.details.images?.length > 0 ? (
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '10px' }}>
                     {selectedDemand.details.images.map((img, idx) => (
                       <a key={idx} href={img} target="_blank" rel="noopener noreferrer">
