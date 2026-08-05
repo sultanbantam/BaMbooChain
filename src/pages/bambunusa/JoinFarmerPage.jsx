@@ -165,12 +165,12 @@ const JoinFarmerPage = () => {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                     <div className="form-group">
                       <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}><User size={16} style={{display:'inline', marginBottom:'-3px', marginRight:'6px'}}/> Nama Lengkap (sesuai KTP)</label>
-                      <input name="name" value={formData.name} onChange={handleChange} type="text" placeholder="Contoh: Mukoddas Syuhada" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }} required />
+                      <input name="name" value={formData.name} onChange={handleChange} type="text" placeholder="Nama lengkap Anda" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }} required />
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                       <div>
                         <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}><Phone size={16} style={{display:'inline', marginBottom:'-3px', marginRight:'6px'}}/> Nomor WhatsApp</label>
-                        <input name="whatsapp" value={formData.whatsapp} onChange={handleChange} type="tel" placeholder="0811..." style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }} required />
+                        <input name="whatsapp" value={formData.whatsapp} onChange={handleChange} type="tel" placeholder="08xxxxxxxxxx" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }} required />
                       </div>
                       <div>
                         <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}><MapPin size={16} style={{display:'inline', marginBottom:'-3px', marginRight:'6px'}}/> Domisili / Wilayah</label>

@@ -195,6 +195,52 @@
   border-color: #3d4155 !important;
 }
 
+/* Force contrast on modal forms (white modals need white inputs with dark text) */
+[data-theme="dark"] .upload-modal {
+  background: #ffffff !important;
+  color: #1a1a1a !important;
+}
+[data-theme="dark"] .upload-modal h2,
+[data-theme="dark"] .upload-modal h3,
+[data-theme="dark"] .upload-modal h4,
+[data-theme="dark"] .upload-modal p,
+[data-theme="dark"] .upload-modal span,
+[data-theme="dark"] .upload-modal label {
+  color: #1a1a1a !important;
+}
+[data-theme="dark"] .upload-modal .upload-modal-subtitle {
+  color: #888 !important;
+}
+[data-theme="dark"] .upload-modal input,
+[data-theme="dark"] .upload-modal textarea,
+[data-theme="dark"] .upload-modal select {
+  background: #f8f9fa !important;
+  color: #1a1a1a !important;
+  border-color: #dee2e6 !important;
+}
+[data-theme="dark"] .upload-modal input::placeholder,
+[data-theme="dark"] .upload-modal textarea::placeholder {
+  color: #adb5bd !important;
+}
+[data-theme="dark"] .upload-modal input:focus,
+[data-theme="dark"] .upload-modal textarea:focus,
+[data-theme="dark"] .upload-modal select:focus {
+  background: #ffffff !important;
+  color: #1a1a1a !important;
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 4px rgba(12, 166, 120, 0.1) !important;
+}
+[data-theme="dark"] .upload-modal .upload-modal-close {
+  background: #f1f3f5 !important;
+  color: #495057 !important;
+}
+[data-theme="dark"] .upload-modal .upload-success-state h2 {
+  color: #1a1a1a !important;
+}
+[data-theme="dark"] .upload-modal .upload-success-state p {
+  color: #888 !important;
+}
+
 /* Tables */
 [data-theme="dark"] table { background: #1e2130; color: #e9ecef; }
 [data-theme="dark"] th { background: #252838 !important; color: #e9ecef !important; border-color: #3d4155 !important; }

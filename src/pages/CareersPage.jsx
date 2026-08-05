@@ -3,12 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import { 
   Briefcase, Leaf, GraduationCap, Target, ArrowRight, Zap, MapPin, 
   Clock, Coins, ChevronRight, MessageSquare, X, Send, Users, 
-  TrendingUp, Award, DollarSign, Activity, Search
+  TrendingUp, Award, DollarSign, Activity, Search,
+  Upload, Plus, FileText, Building2, UserCheck, Wrench, MessageCircle
 } from 'lucide-react';
 import BackButton from '../components/BackButton';
+import { db } from '../firebase/config';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { useAuth } from '../context/AuthContext';
 
 const CareersPage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [isVisible, setIsVisible] = useState(false);
   const [activeBountyTab, setActiveBountyTab] = useState('New');
   const [selectedDemand, setSelectedDemand] = useState(null);
@@ -18,6 +23,67 @@ const CareersPage = () => {
   ]);
   const [aiInput, setAiInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Upload modal states
+  const [showUploadJob, setShowUploadJob] = useState(false);
+  const [showUploadDemand, setShowUploadDemand] = useState(false);
+  const [jobForm, setJobForm] = useState({
+    title: '', department: '', location: '', type: 'Full-time',
+    salaryMin: '', salaryMax: '', description: '', requirements: '',
+    contactName: '', contactEmail: '', contactWa: '', bambooChat: ''
+  });
+  const [demandForm, setDemandForm] = useState({
+    title: '', category: 'Tenaga Kerja', expertise: '', location: '',
+    quantity: '', duration: '', budgetRange: '', description: '',
+    qualifications: '', contactName: '', contactEmail: '', contactWa: '', bambooChat: ''
+  });
+  const [jobSubmitted, setJobSubmitted] = useState(false);
+  const [demandSubmitted, setDemandSubmitted] = useState(false);
+
+  const handleJobSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await addDoc(collection(db, 'career_job_posts'), {
+        ...jobForm,
+        salary: `IDR ${jobForm.salaryMin} - ${jobForm.salaryMax}`,
+        status: 'pending',
+        submittedBy: user?.id || 'guest',
+        submittedByName: user?.username || 'Guest',
+        createdAt: serverTimestamp()
+      });
+      setJobSubmitted(true);
+      setTimeout(() => {
+        setJobSubmitted(false);
+        setShowUploadJob(false);
+        setJobForm({ title: '', department: '', location: '', type: 'Full-time', salaryMin: '', salaryMax: '', description: '', requirements: '', contactName: '', contactEmail: '', contactWa: '', bambooChat: '' });
+      }, 2500);
+    } catch (err) {
+      console.error('Error submitting job:', err);
+      alert('Gagal mengirim lowongan. Silakan coba lagi.');
+    }
+  };
+
+  const handleDemandSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await addDoc(collection(db, 'career_demand_posts'), {
+        ...demandForm,
+        status: 'pending',
+        submittedBy: user?.id || 'guest',
+        submittedByName: user?.username || 'Guest',
+        createdAt: serverTimestamp()
+      });
+      setDemandSubmitted(true);
+      setTimeout(() => {
+        setDemandSubmitted(false);
+        setShowUploadDemand(false);
+        setDemandForm({ title: '', category: 'Tenaga Kerja', expertise: '', location: '', quantity: '', duration: '', budgetRange: '', description: '', qualifications: '', contactName: '', contactEmail: '', contactWa: '', bambooChat: '' });
+      }, 2500);
+    } catch (err) {
+      console.error('Error submitting demand:', err);
+      alert('Gagal mengirim kebutuhan. Silakan coba lagi.');
+    }
+  };
 
   useEffect(() => {
     setIsVisible(true);
@@ -296,6 +362,9 @@ const CareersPage = () => {
               <p style={{ color: '#666', fontSize: '1.1rem' }}>Bergabunglah membangun fondasi ekosistem triliunan rupiah.</p>
             </div>
             <div className="section-header-actions">
+               <button onClick={() => setShowUploadJob(true)} className="upload-btn-primary">
+                 <Plus size={16} /> Upload Lowongan
+               </button>
                <div style={{ background: 'rgba(12, 166, 120, 0.1)', color: 'var(--primary)', padding: '10px 20px', borderRadius: '30px', fontWeight: 'bold', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                  <Users size={16} /> Community Hires
                </div>
@@ -370,6 +439,9 @@ const CareersPage = () => {
               <p style={{ color: '#666', fontSize: '1.1rem' }}>Peluang proyek yang sudah memiliki konfirmasi pendanaan (PO/Funding Ready).</p>
             </div>
             <div className="section-header-actions">
+               <button onClick={() => setShowUploadDemand(true)} className="upload-btn-secondary">
+                 <Upload size={16} /> Upload Kebutuhan
+               </button>
                <div style={{ background: 'rgba(224, 49, 49, 0.1)', color: '#e03131', padding: '10px 20px', borderRadius: '30px', fontWeight: 'bold', fontSize: '0.85rem' }}>
                  High Priority
                </div>
@@ -540,6 +612,199 @@ const CareersPage = () => {
                   Hubungi Pihak Pengumpul
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL: UPLOAD LOWONGAN KERJA */}
+        {showUploadJob && (
+          <div className="upload-modal-overlay" onClick={(e) => e.target === e.currentTarget && setShowUploadJob(false)}>
+            <div className="upload-modal animate-scale-in">
+              <button onClick={() => setShowUploadJob(false)} className="upload-modal-close"><X size={22} /></button>
+              
+              {jobSubmitted ? (
+                <div className="upload-success-state">
+                  <div className="upload-success-icon">✅</div>
+                  <h2>Lowongan Berhasil Dikirim!</h2>
+                  <p>Tim kami akan mereview dan mempublikasikan lowongan Anda dalam 1x24 jam.</p>
+                </div>
+              ) : (
+                <>
+                  <div className="upload-modal-header">
+                    <div className="upload-modal-icon" style={{ background: 'rgba(12, 166, 120, 0.1)' }}>
+                      <Briefcase size={28} color="var(--primary)" />
+                    </div>
+                    <div>
+                      <h2 className="upload-modal-title">Upload Lowongan Kerja</h2>
+                      <p className="upload-modal-subtitle">Pasang lowongan kerja Anda di ekosistem BambooChain</p>
+                    </div>
+                  </div>
+
+                  <form onSubmit={handleJobSubmit} className="upload-form">
+                    <div className="upload-form-grid">
+                      <div className="upload-form-group upload-form-full">
+                        <label><FileText size={14} /> Judul Posisi *</label>
+                        <input type="text" required placeholder="Contoh: Senior Smart Contract Developer" value={jobForm.title} onChange={e => setJobForm({...jobForm, title: e.target.value})} />
+                      </div>
+                      <div className="upload-form-group">
+                        <label><Building2 size={14} /> Departemen *</label>
+                        <input type="text" required placeholder="Contoh: Web3 Engineering" value={jobForm.department} onChange={e => setJobForm({...jobForm, department: e.target.value})} />
+                      </div>
+                      <div className="upload-form-group">
+                        <label><MapPin size={14} /> Lokasi *</label>
+                        <input type="text" required placeholder="Contoh: Remote / Jakarta" value={jobForm.location} onChange={e => setJobForm({...jobForm, location: e.target.value})} />
+                      </div>
+                      <div className="upload-form-group">
+                        <label><Clock size={14} /> Tipe Pekerjaan</label>
+                        <select value={jobForm.type} onChange={e => setJobForm({...jobForm, type: e.target.value})}>
+                          <option>Full-time</option>
+                          <option>Part-time</option>
+                          <option>Contract</option>
+                          <option>Freelance</option>
+                          <option>Magang</option>
+                        </select>
+                      </div>
+                      <div className="upload-form-group">
+                        <label><DollarSign size={14} /> Range Gaji (IDR)</label>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <input type="text" placeholder="Min (cth: 15M)" value={jobForm.salaryMin} onChange={e => setJobForm({...jobForm, salaryMin: e.target.value})} />
+                          <input type="text" placeholder="Max (cth: 30M)" value={jobForm.salaryMax} onChange={e => setJobForm({...jobForm, salaryMax: e.target.value})} />
+                        </div>
+                      </div>
+                      <div className="upload-form-group upload-form-full">
+                        <label>Deskripsi Pekerjaan *</label>
+                        <textarea required rows={4} placeholder="Jelaskan tanggung jawab dan lingkup kerja..." value={jobForm.description} onChange={e => setJobForm({...jobForm, description: e.target.value})} />
+                      </div>
+                      <div className="upload-form-group upload-form-full">
+                        <label>Persyaratan & Kualifikasi</label>
+                        <textarea rows={3} placeholder="Satu persyaratan per baris..." value={jobForm.requirements} onChange={e => setJobForm({...jobForm, requirements: e.target.value})} />
+                      </div>
+
+                      <div className="upload-form-divider" />
+
+                      <div className="upload-form-group">
+                        <label><UserCheck size={14} /> Nama Kontak *</label>
+                        <input type="text" required placeholder="Nama penanggung jawab" value={jobForm.contactName} onChange={e => setJobForm({...jobForm, contactName: e.target.value})} />
+                      </div>
+                      <div className="upload-form-group">
+                        <label><Send size={14} /> Email Kontak *</label>
+                        <input type="email" required placeholder="email@company.com" value={jobForm.contactEmail} onChange={e => setJobForm({...jobForm, contactEmail: e.target.value})} />
+                      </div>
+                      <div className="upload-form-group upload-form-full">
+                        <label>WhatsApp (opsional)</label>
+                        <input type="text" placeholder="08xxxxxxxxxx" value={jobForm.contactWa} onChange={e => setJobForm({...jobForm, contactWa: e.target.value})} />
+                      </div>
+                      <div className="upload-form-group upload-form-full">
+                        <label><MessageCircle size={14} /> Nickname BambooChat (opsional)</label>
+                        <input type="text" placeholder="Nickname Anda di BambooChat" value={jobForm.bambooChat} onChange={e => setJobForm({...jobForm, bambooChat: e.target.value})} />
+                      </div>
+                    </div>
+
+                    <button type="submit" className="upload-submit-btn" style={{ background: 'var(--primary)' }}>
+                      <Upload size={18} /> Kirim Lowongan
+                    </button>
+                  </form>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* MODAL: UPLOAD KEBUTUHAN TENAGA KERJA / AHLI */}
+        {showUploadDemand && (
+          <div className="upload-modal-overlay" onClick={(e) => e.target === e.currentTarget && setShowUploadDemand(false)}>
+            <div className="upload-modal animate-scale-in">
+              <button onClick={() => setShowUploadDemand(false)} className="upload-modal-close"><X size={22} /></button>
+              
+              {demandSubmitted ? (
+                <div className="upload-success-state">
+                  <div className="upload-success-icon">✅</div>
+                  <h2>Kebutuhan Berhasil Dikirim!</h2>
+                  <p>Tim kami akan mereview dan menampilkan permintaan Anda di Demand Market.</p>
+                </div>
+              ) : (
+                <>
+                  <div className="upload-modal-header">
+                    <div className="upload-modal-icon" style={{ background: 'rgba(224, 49, 49, 0.1)' }}>
+                      <Wrench size={28} color="#e03131" />
+                    </div>
+                    <div>
+                      <h2 className="upload-modal-title">Upload Kebutuhan Tenaga Kerja & Ahli</h2>
+                      <p className="upload-modal-subtitle">Publikasikan kebutuhan tenaga kerja atau tenaga ahli proyek Anda</p>
+                    </div>
+                  </div>
+
+                  <form onSubmit={handleDemandSubmit} className="upload-form">
+                    <div className="upload-form-grid">
+                      <div className="upload-form-group upload-form-full">
+                        <label><FileText size={14} /> Judul Kebutuhan *</label>
+                        <input type="text" required placeholder="Contoh: Tukang Kayu Spesialis Bambu Laminasi" value={demandForm.title} onChange={e => setDemandForm({...demandForm, title: e.target.value})} />
+                      </div>
+                      <div className="upload-form-group">
+                        <label><Target size={14} /> Kategori *</label>
+                        <select value={demandForm.category} onChange={e => setDemandForm({...demandForm, category: e.target.value})}>
+                          <option>Tenaga Kerja</option>
+                          <option>Tenaga Ahli</option>
+                          <option>Konsultan</option>
+                          <option>Kontraktor</option>
+                          <option>Tim Proyek</option>
+                        </select>
+                      </div>
+                      <div className="upload-form-group">
+                        <label><Award size={14} /> Bidang Keahlian *</label>
+                        <input type="text" required placeholder="Contoh: Arsitektur Bambu, Agronomi" value={demandForm.expertise} onChange={e => setDemandForm({...demandForm, expertise: e.target.value})} />
+                      </div>
+                      <div className="upload-form-group">
+                        <label><MapPin size={14} /> Lokasi Penempatan *</label>
+                        <input type="text" required placeholder="Contoh: Ubud, Bali" value={demandForm.location} onChange={e => setDemandForm({...demandForm, location: e.target.value})} />
+                      </div>
+                      <div className="upload-form-group">
+                        <label><Users size={14} /> Jumlah Dibutuhkan</label>
+                        <input type="text" placeholder="Contoh: 5 orang" value={demandForm.quantity} onChange={e => setDemandForm({...demandForm, quantity: e.target.value})} />
+                      </div>
+                      <div className="upload-form-group">
+                        <label><Clock size={14} /> Durasi Proyek</label>
+                        <input type="text" placeholder="Contoh: 6 bulan" value={demandForm.duration} onChange={e => setDemandForm({...demandForm, duration: e.target.value})} />
+                      </div>
+                      <div className="upload-form-group">
+                        <label><DollarSign size={14} /> Range Budget</label>
+                        <input type="text" placeholder="Contoh: Rp 50M - 100M" value={demandForm.budgetRange} onChange={e => setDemandForm({...demandForm, budgetRange: e.target.value})} />
+                      </div>
+                      <div className="upload-form-group upload-form-full">
+                        <label>Deskripsi Kebutuhan *</label>
+                        <textarea required rows={4} placeholder="Jelaskan detail proyek, lingkup kerja, dan ekspektasi..." value={demandForm.description} onChange={e => setDemandForm({...demandForm, description: e.target.value})} />
+                      </div>
+                      <div className="upload-form-group upload-form-full">
+                        <label>Kualifikasi yang Dibutuhkan</label>
+                        <textarea rows={3} placeholder="Pengalaman, sertifikasi, kompetensi yang dibutuhkan..." value={demandForm.qualifications} onChange={e => setDemandForm({...demandForm, qualifications: e.target.value})} />
+                      </div>
+
+                      <div className="upload-form-divider" />
+
+                      <div className="upload-form-group">
+                        <label><UserCheck size={14} /> Nama Kontak *</label>
+                        <input type="text" required placeholder="Nama penanggung jawab" value={demandForm.contactName} onChange={e => setDemandForm({...demandForm, contactName: e.target.value})} />
+                      </div>
+                      <div className="upload-form-group">
+                        <label><Send size={14} /> Email Kontak *</label>
+                        <input type="email" required placeholder="email@company.com" value={demandForm.contactEmail} onChange={e => setDemandForm({...demandForm, contactEmail: e.target.value})} />
+                      </div>
+                      <div className="upload-form-group upload-form-full">
+                        <label>WhatsApp (opsional)</label>
+                        <input type="text" placeholder="08xxxxxxxxxx" value={demandForm.contactWa} onChange={e => setDemandForm({...demandForm, contactWa: e.target.value})} />
+                      </div>
+                      <div className="upload-form-group upload-form-full">
+                        <label><MessageCircle size={14} /> Nickname BambooChat (opsional)</label>
+                        <input type="text" placeholder="Nickname Anda di BambooChat" value={demandForm.bambooChat} onChange={e => setDemandForm({...demandForm, bambooChat: e.target.value})} />
+                      </div>
+                    </div>
+
+                    <button type="submit" className="upload-submit-btn" style={{ background: '#e03131' }}>
+                      <Upload size={18} /> Kirim Kebutuhan
+                    </button>
+                  </form>
+                </>
+              )}
             </div>
           </div>
         )}
@@ -809,12 +1074,255 @@ const CareersPage = () => {
           transform: scale(1.01);
           box-shadow: 0 10px 30px rgba(0,0,0,0.05);
         }
-        .bounty-card:hover {
-          background: rgba(255,255,255,0.06) !important;
-          border-color: var(--primary) !important;
-          transform: translateY(-5px);
-        }
-      `}</style>
+         .bounty-card:hover {
+           background: rgba(255,255,255,0.06) !important;
+           border-color: var(--primary) !important;
+           transform: translateY(-5px);
+         }
+
+         /* Upload Buttons */
+         .upload-btn-primary {
+           background: linear-gradient(135deg, var(--primary), #0ca678);
+           color: white;
+           border: none;
+           padding: 12px 24px;
+           border-radius: 30px;
+           font-weight: bold;
+           font-size: 0.85rem;
+           cursor: pointer;
+           display: flex;
+           align-items: center;
+           gap: 8px;
+           transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+           box-shadow: 0 4px 15px rgba(12, 166, 120, 0.3);
+         }
+         .upload-btn-primary:hover {
+           transform: translateY(-2px) scale(1.05);
+           box-shadow: 0 8px 25px rgba(12, 166, 120, 0.4);
+         }
+         .upload-btn-secondary {
+           background: linear-gradient(135deg, #e03131, #c92a2a);
+           color: white;
+           border: none;
+           padding: 12px 24px;
+           border-radius: 30px;
+           font-weight: bold;
+           font-size: 0.85rem;
+           cursor: pointer;
+           display: flex;
+           align-items: center;
+           gap: 8px;
+           transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+           box-shadow: 0 4px 15px rgba(224, 49, 49, 0.3);
+         }
+         .upload-btn-secondary:hover {
+           transform: translateY(-2px) scale(1.05);
+           box-shadow: 0 8px 25px rgba(224, 49, 49, 0.4);
+         }
+
+         /* Upload Modal */
+         .upload-modal-overlay {
+           position: fixed;
+           top: 0; left: 0; width: 100%; height: 100%;
+           background: rgba(0,0,0,0.7);
+           backdrop-filter: blur(8px);
+           z-index: 70000;
+           display: flex;
+           align-items: center;
+           justify-content: center;
+           padding: 20px;
+         }
+         .upload-modal {
+           width: 100%;
+           max-width: 720px;
+           max-height: 90vh;
+           background: white;
+           border-radius: 32px;
+           overflow-y: auto;
+           position: relative;
+           padding: 48px;
+           box-shadow: 0 40px 80px rgba(0,0,0,0.25);
+         }
+         .upload-modal-close {
+           position: absolute;
+           top: 20px; right: 20px;
+           background: #f1f3f5;
+           border: none;
+           border-radius: 50%;
+           width: 44px; height: 44px;
+           display: flex;
+           align-items: center;
+           justify-content: center;
+           cursor: pointer;
+           transition: all 0.2s;
+           color: #495057;
+         }
+         .upload-modal-close:hover {
+           background: #e9ecef;
+           transform: rotate(90deg);
+         }
+         .upload-modal-header {
+           display: flex;
+           align-items: center;
+           gap: 20px;
+           margin-bottom: 36px;
+           padding-bottom: 24px;
+           border-bottom: 1px solid #f1f3f5;
+         }
+         .upload-modal-icon {
+           width: 64px; height: 64px;
+           border-radius: 20px;
+           display: flex;
+           align-items: center;
+           justify-content: center;
+           flex-shrink: 0;
+         }
+         .upload-modal-title {
+           font-size: 1.6rem;
+           font-weight: 900;
+           color: #1a1a1a;
+           margin: 0 0 4px 0;
+           line-height: 1.2;
+         }
+         .upload-modal-subtitle {
+           color: #888;
+           font-size: 0.95rem;
+           margin: 0;
+         }
+
+         /* Upload Form */
+         .upload-form-grid {
+           display: grid;
+           grid-template-columns: 1fr 1fr;
+           gap: 20px;
+           margin-bottom: 32px;
+         }
+         .upload-form-full {
+           grid-column: 1 / -1;
+         }
+         .upload-form-group label {
+           display: flex;
+           align-items: center;
+           gap: 6px;
+           font-size: 0.85rem;
+           font-weight: 700;
+           color: #495057;
+           margin-bottom: 8px;
+         }
+         .upload-form-group input,
+         .upload-form-group textarea,
+         .upload-form-group select {
+           width: 100%;
+           padding: 14px 16px;
+           border-radius: 14px;
+           border: 1.5px solid #dee2e6;
+           font-size: 0.95rem;
+           background: #f8f9fa;
+           transition: all 0.2s;
+           outline: none;
+           box-sizing: border-box;
+           font-family: inherit;
+           color: #1a1a1a;
+         }
+         .upload-form-group input:focus,
+         .upload-form-group textarea:focus,
+         .upload-form-group select:focus {
+           border-color: var(--primary);
+           background: white;
+           box-shadow: 0 0 0 4px rgba(12, 166, 120, 0.1);
+         }
+         .upload-form-group textarea {
+           resize: vertical;
+           min-height: 80px;
+         }
+         .upload-form-divider {
+           grid-column: 1 / -1;
+           height: 1px;
+           background: linear-gradient(to right, transparent, #dee2e6, transparent);
+           margin: 4px 0;
+         }
+         .upload-submit-btn {
+           width: 100%;
+           padding: 18px;
+           border-radius: 20px;
+           border: none;
+           color: white;
+           font-weight: 900;
+           font-size: 1.05rem;
+           cursor: pointer;
+           display: flex;
+           align-items: center;
+           justify-content: center;
+           gap: 10px;
+           transition: all 0.3s;
+           box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+         }
+         .upload-submit-btn:hover {
+           transform: translateY(-2px);
+           box-shadow: 0 12px 35px rgba(0,0,0,0.2);
+         }
+
+         /* Upload Success State */
+         .upload-success-state {
+           text-align: center;
+           padding: 60px 20px;
+         }
+         .upload-success-icon {
+           font-size: 4rem;
+           margin-bottom: 20px;
+           animation: bounceIn 0.6s ease;
+         }
+         .upload-success-state h2 {
+           font-size: 1.8rem;
+           font-weight: 900;
+           color: #1a1a1a;
+           margin-bottom: 12px;
+         }
+         .upload-success-state p {
+           color: #888;
+           font-size: 1.05rem;
+           max-width: 400px;
+           margin: 0 auto;
+           line-height: 1.6;
+         }
+
+         @keyframes bounceIn {
+           0% { transform: scale(0); opacity: 0; }
+           50% { transform: scale(1.2); }
+           100% { transform: scale(1); opacity: 1; }
+         }
+         @keyframes animate-scale-in {
+           from { opacity: 0; transform: scale(0.9) translateY(20px); }
+           to { opacity: 1; transform: scale(1) translateY(0); }
+         }
+         .animate-scale-in {
+           animation: animate-scale-in 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+         }
+
+         @media (max-width: 768px) {
+           .upload-modal {
+             padding: 30px 20px;
+             border-radius: 24px;
+             max-height: 95vh;
+           }
+           .upload-form-grid {
+             grid-template-columns: 1fr;
+           }
+           .upload-modal-header {
+             flex-direction: column;
+             align-items: flex-start;
+             gap: 12px;
+           }
+           .upload-modal-title {
+             font-size: 1.3rem;
+           }
+           .upload-btn-primary,
+           .upload-btn-secondary {
+             padding: 10px 16px;
+             font-size: 0.8rem;
+           }
+         }
+       `}</style>
     </div>
   );
 };
