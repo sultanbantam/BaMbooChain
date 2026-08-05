@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import BackButton from '../components/BackButton';
 import { db } from '../firebase/config';
-import { collection, addDoc, serverTimestamp, deleteDoc, doc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
 import { useCareerJobPosts, useCareerDemandPosts } from '../hooks/useFirestoreQueries';
 
@@ -45,24 +45,35 @@ const CareersPage = () => {
   });
   const [jobSubmitted, setJobSubmitted] = useState(false);
   const [demandSubmitted, setDemandSubmitted] = useState(false);
+  const [editingJobId, setEditingJobId] = useState(null);
+  const [editingDemandId, setEditingDemandId] = useState(null);
 
   const handleJobSubmit = async (e) => {
     e.preventDefault();
     try {
-      await addDoc(collection(db, 'career_job_posts'), {
-        ...jobForm,
-        salary: `IDR ${jobForm.salaryMin} - ${jobForm.salaryMax}`,
-        status: 'pending',
-        submittedBy: user?.id || 'guest',
-        submittedByName: user?.username || 'Guest',
-        createdAt: serverTimestamp()
-      });
+      if (editingJobId) {
+        await updateDoc(doc(db, 'career_job_posts', editingJobId), {
+          ...jobForm,
+          salary: `IDR ${jobForm.salaryMin} - ${jobForm.salaryMax}`
+        });
+        alert('Lowongan berhasil diperbarui!');
+      } else {
+        await addDoc(collection(db, 'career_job_posts'), {
+          ...jobForm,
+          salary: `IDR ${jobForm.salaryMin} - ${jobForm.salaryMax}`,
+          status: 'pending',
+          submittedBy: user?.id || 'guest',
+          submittedByName: user?.username || 'Guest',
+          createdAt: serverTimestamp()
+        });
+      }
       setJobSubmitted(true);
       setTimeout(() => {
         setJobSubmitted(false);
         setShowUploadJob(false);
+        setEditingJobId(null);
         setJobForm({ title: '', department: '', location: '', type: 'Full-time', salaryMin: '', salaryMax: '', description: '', requirements: '', contactName: '', contactEmail: '', contactWa: '', bambooChat: '' });
-      }, 2500);
+      }, 2000);
     } catch (err) {
       console.error('Error submitting job:', err);
       alert('Gagal mengirim lowongan. Silakan coba lagi.');
@@ -72,19 +83,25 @@ const CareersPage = () => {
   const handleDemandSubmit = async (e) => {
     e.preventDefault();
     try {
-      await addDoc(collection(db, 'career_demand_posts'), {
-        ...demandForm,
-        status: 'pending',
-        submittedBy: user?.id || 'guest',
-        submittedByName: user?.username || 'Guest',
-        createdAt: serverTimestamp()
-      });
+      if (editingDemandId) {
+        await updateDoc(doc(db, 'career_demand_posts', editingDemandId), demandForm);
+        alert('Kebutuhan berhasil diperbarui!');
+      } else {
+        await addDoc(collection(db, 'career_demand_posts'), {
+          ...demandForm,
+          status: 'pending',
+          submittedBy: user?.id || 'guest',
+          submittedByName: user?.username || 'Guest',
+          createdAt: serverTimestamp()
+        });
+      }
       setDemandSubmitted(true);
       setTimeout(() => {
         setDemandSubmitted(false);
         setShowUploadDemand(false);
+        setEditingDemandId(null);
         setDemandForm({ title: '', category: 'Tenaga Kerja', expertise: '', location: '', quantity: '', duration: '', budgetRange: '', description: '', qualifications: '', contactName: '', contactEmail: '', contactWa: '', bambooChat: '', projectLink: '', documentPdf: '' });
-      }, 2500);
+      }, 2000);
     } catch (err) {
       console.error('Error submitting demand:', err);
       alert('Gagal mengirim kebutuhan. Silakan coba lagi.');
@@ -100,6 +117,47 @@ const CareersPage = () => {
       console.error('Error deleting post:', err);
       alert('Gagal menghapus postingan.');
     }
+  };
+
+  const handleEditJob = (job) => {
+    setJobForm({
+      title: job.title || '',
+      department: job.department || '',
+      location: job.location || '',
+      type: job.type || 'Full-time',
+      salaryMin: job.salary ? job.salary.split(' - ')[0]?.replace('IDR ', '') : '',
+      salaryMax: job.salary ? job.salary.split(' - ')[1] : '',
+      description: job.description || '',
+      requirements: job.requirements || '',
+      contactName: job.contactName || '',
+      contactEmail: job.contactEmail || '',
+      contactWa: job.contactWa || '',
+      bambooChat: job.bambooChat || ''
+    });
+    setEditingJobId(job.id);
+    setShowUploadJob(true);
+  };
+
+  const handleEditDemand = (demand) => {
+    setDemandForm({
+      title: demand.title || '',
+      category: demand.demandType || 'Tenaga Kerja',
+      expertise: demand.details?.reqs || '',
+      location: demand.location || '',
+      quantity: demand.quantity || '',
+      duration: demand.duration || '',
+      budgetRange: demand.budgetRange || '',
+      description: demand.description || demand.details?.reqs || '',
+      qualifications: demand.qualifications || demand.details?.specs?.join('\n') || '',
+      contactName: demand.contactName || '',
+      contactEmail: demand.contactEmail || '',
+      contactWa: demand.contactWa || '',
+      bambooChat: demand.bambooChat || '',
+      projectLink: demand.projectLink || '',
+      documentPdf: demand.documentPdf || ''
+    });
+    setEditingDemandId(demand.id);
+    setShowUploadDemand(true);
   };
 
   useEffect(() => {
@@ -330,19 +388,6 @@ const CareersPage = () => {
     "Pendaftaran Magang batch Mei 2026 kini dibuka!"
   ];
 
-  const handleSendAi = () => {
-    if (!aiInput.trim()) return;
-    const userMsg = { role: 'user', text: aiInput };
-    setAiMessages(prev => [...prev, userMsg]);
-    setAiInput('');
-    
-    // Simulate AI response
-    setTimeout(() => {
-      const botMsg = { role: 'bot', text: 'Terima kasih pertanyaannya! Untuk posisi tersebut, kami mencari ahli yang memahami integrasi Blockchain dengan aset fisik (RWA). Apakah Anda memiliki portofolio terkait?' };
-      setAiMessages(prev => [...prev, botMsg]);
-    }, 1000);
-  };
-
   return (
     <div className="careers-page-wrapper">
       
@@ -427,7 +472,7 @@ const CareersPage = () => {
               <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>Bergabunglah membangun fondasi ekosistem triliunan rupiah.</p>
             </div>
             <div className="section-header-actions">
-               <button onClick={() => setShowUploadJob(true)} className="upload-btn-primary">
+               <button onClick={() => { setEditingJobId(null); setJobForm({ title: '', department: '', location: '', type: 'Full-time', salaryMin: '', salaryMax: '', description: '', requirements: '', contactName: '', contactEmail: '', contactWa: '', bambooChat: '' }); setShowUploadJob(true); }} className="upload-btn-primary">
                  <Plus size={16} /> Upload Lowongan
                </button>
                <div style={{ background: 'rgba(12, 166, 120, 0.1)', color: 'var(--primary)', padding: '10px 20px', borderRadius: '30px', fontWeight: 'bold', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -487,7 +532,7 @@ const CareersPage = () => {
                     </button>
                     {(user?.id === job.submittedBy || user?.username === 'admin_yayasan') && (
                       <>
-                        <button onClick={() => alert('Fitur edit segera hadir')} style={{ background: 'transparent', color: '#1c7ed6', border: '1px solid #1c7ed6', width: '45px', height: '45px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} title="Edit">
+                        <button onClick={() => handleEditJob(job)} style={{ background: 'transparent', color: '#1c7ed6', border: '1px solid #1c7ed6', width: '45px', height: '45px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} title="Edit">
                           <Wrench size={18} />
                         </button>
                         <button onClick={() => handleDeletePost(job.id, 'career_job_posts')} style={{ background: 'transparent', color: '#fa5252', border: '1px solid #fa5252', width: '45px', height: '45px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} title="Hapus">
@@ -516,7 +561,7 @@ const CareersPage = () => {
               <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>Peluang proyek yang sudah memiliki konfirmasi pendanaan (PO/Funding Ready).</p>
             </div>
             <div className="section-header-actions">
-               <button onClick={() => setShowUploadDemand(true)} className="upload-btn-secondary">
+               <button onClick={() => { setEditingDemandId(null); setDemandForm({ title: '', category: 'Tenaga Kerja', expertise: '', location: '', quantity: '', duration: '', budgetRange: '', description: '', qualifications: '', contactName: '', contactEmail: '', contactWa: '', bambooChat: '', projectLink: '', documentPdf: '' }); setShowUploadDemand(true); }} className="upload-btn-secondary">
                  <Upload size={16} /> Upload Kebutuhan
                </button>
                <div style={{ background: 'rgba(224, 49, 49, 0.1)', color: '#e03131', padding: '10px 20px', borderRadius: '30px', fontWeight: 'bold', fontSize: '0.85rem' }}>
@@ -556,12 +601,20 @@ const CareersPage = () => {
                   </div>
 
                   <div style={{ display: 'flex', gap: '10px' }}>
-                    <button onClick={() => setSelectedDemand(demand)} style={{ background: demand.color, color: 'white', border: 'none', padding: '12px 24px', borderRadius: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
+                    <button onClick={() => {
+                        if (demand.projectLink) {
+                          window.open(demand.projectLink, '_blank');
+                        } else if (demand.documentPdf) {
+                          window.open(demand.documentPdf, '_blank');
+                        } else {
+                          setSelectedDemand(demand);
+                        }
+                      }} style={{ background: demand.color, color: 'white', border: 'none', padding: '12px 24px', borderRadius: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
                       {demand.details || demand.projectLink || demand.documentPdf || demand.description ? 'Detail Proyek' : 'Apply Proyek'}
                     </button>
                     {(user?.id === demand.submittedBy || user?.username === 'admin_yayasan') && (
                       <>
-                        <button onClick={() => alert('Fitur edit segera hadir')} style={{ background: 'transparent', color: '#1c7ed6', border: '1px solid #1c7ed6', padding: '12px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} title="Edit">
+                        <button onClick={() => handleEditDemand(demand)} style={{ background: 'transparent', color: '#1c7ed6', border: '1px solid #1c7ed6', padding: '12px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} title="Edit">
                           <Wrench size={18} />
                         </button>
                         <button onClick={() => handleDeletePost(demand.id, 'career_demand_posts')} style={{ background: 'transparent', color: '#fa5252', border: '1px solid #fa5252', padding: '12px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} title="Hapus">

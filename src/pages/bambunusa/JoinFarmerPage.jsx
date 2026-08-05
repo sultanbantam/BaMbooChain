@@ -22,10 +22,10 @@ const JoinFarmerPage = () => {
   const [renderError, setRenderError] = useState(null);
 
   try {
-  // Form Data State
   const [formData, setFormData] = useState({
-    name: user?.name || '',
-    whatsapp: user?.phone || '',
+    name: '',
+    whatsapp: '',
+    bambooChat: '',
     location: '',
     paymentDetail: '',
     capacity: '',
@@ -178,6 +178,11 @@ const JoinFarmerPage = () => {
                         <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}><MapPin size={16} style={{display:'inline', marginBottom:'-3px', marginRight:'6px'}}/> Domisili / Wilayah</label>
                         <input name="location" value={formData.location} onChange={handleChange} type="text" placeholder="Contoh: Jakarta" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }} required />
                       </div>
+                    </div>
+                    
+                    <div className="form-group">
+                      <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}><User size={16} style={{display:'inline', marginBottom:'-3px', marginRight:'6px'}}/> Nickname BambooChat (opsional)</label>
+                      <input name="bambooChat" value={formData.bambooChat} onChange={handleChange} type="text" placeholder="Nickname BambooChat Anda" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #dee2e6', outline: 'none' }} />
                     </div>
 
                     <div style={{ marginTop: '20px' }}>
