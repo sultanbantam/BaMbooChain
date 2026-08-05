@@ -556,7 +556,12 @@ const CareersPage = () => {
                     <button 
                       onClick={() => handleJobClick(job)}
                       style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '12px 24px', borderRadius: '16px', fontWeight: 'bold', cursor: 'pointer' }}>Lamar</button>
-                    <button style={{ background: 'var(--bg-secondary)', color: 'var(--text-main)', border: '1px solid var(--border-color)', width: '45px', height: '45px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} title="Refer a Friend">
+                    <button 
+                      onClick={() => {
+                        navigator.clipboard.writeText(`${window.location.origin}/#/careers?job=${job.id}`);
+                        alert('Link lowongan berhasil disalin! Bagikan ke teman Anda untuk mendapatkan Finder\'s Fee.');
+                      }}
+                      style={{ background: 'var(--bg-secondary)', color: 'var(--text-main)', border: '1px solid var(--border-color)', width: '45px', height: '45px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} title="Refer a Friend">
                       <Users size={20} />
                     </button>
                     {(user?.id === job.submittedBy || user?.username === 'admin_yayasan') && (
@@ -715,11 +720,11 @@ const CareersPage = () => {
         {/* MODAL DETAIL DEMAND */}
         {selectedDemand && (
           <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.85)', zIndex: 60000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', backdropFilter: 'blur(5px)' }}>
-            <div className="glass animate-scale-in" style={{ width: '100%', maxWidth: '900px', maxHeight: '90vh', background: 'white', borderRadius: '30px', overflow: 'hidden', position: 'relative', display: 'flex', flexDirection: window.innerWidth < 768 ? 'column' : 'row' }}>
-              <button onClick={() => setSelectedDemand(null)} style={{ position: 'absolute', top: '20px', right: '20px', background: '#eee', border: 'none', borderRadius: '50%', padding: '8px', cursor: 'pointer', zIndex: 10 }}><X size={24} /></button>
+            <div className="glass animate-scale-in" style={{ width: '100%', maxWidth: '900px', maxHeight: '90vh', background: 'var(--bg-primary)', borderRadius: '30px', overflow: 'hidden', position: 'relative', display: 'flex', flexDirection: window.innerWidth < 768 ? 'column' : 'row' }}>
+              <button onClick={() => setSelectedDemand(null)} style={{ position: 'absolute', top: '20px', right: '20px', background: 'var(--bg-secondary)', color: 'var(--text-main)', border: 'none', borderRadius: '50%', padding: '8px', cursor: 'pointer', zIndex: 10 }}><X size={24} /></button>
               
-              <div style={{ flex: 1, height: window.innerWidth < 768 ? '300px' : 'auto', background: '#f1f3f5', overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                {selectedDemand.details?.images && selectedDemand.details.images.length > 0 && (
+              <div style={{ flex: 1, height: window.innerWidth < 768 ? '300px' : 'auto', background: 'var(--bg-secondary)', overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px', justifyContent: 'center' }}>
+                {selectedDemand.details?.images && selectedDemand.details.images.length > 0 ? (
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '10px' }}>
                     {selectedDemand.details.images.map((img, idx) => (
                       <a key={idx} href={img} target="_blank" rel="noopener noreferrer">
@@ -727,32 +732,39 @@ const CareersPage = () => {
                       </a>
                     ))}
                   </div>
+                ) : (
+                  (!selectedDemand.documentPdf && !selectedDemand.details?.pdf && !selectedDemand.projectLink) && (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', opacity: 0.5, color: 'var(--text-muted)' }}>
+                       <Layout size={64} style={{ marginBottom: '16px' }} />
+                       <p style={{ textAlign: 'center', fontSize: '0.9rem' }}>Tidak ada lampiran dokumen atau gambar untuk kebutuhan ini.</p>
+                    </div>
+                  )
                 )}
                 {(selectedDemand.documentPdf || selectedDemand.details?.pdf) && (
-                  <div style={{ background: 'white', padding: '20px', borderRadius: '16px', textAlign: 'center', border: '1px dashed #ccc' }}>
+                  <div style={{ background: 'var(--bg-primary)', padding: '20px', borderRadius: '16px', textAlign: 'center', border: '1px dashed var(--border-color)' }}>
                     <div style={{ fontSize: '3rem', marginBottom: '10px' }}>📄</div>
-                    <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>Dokumen Desain Acuan Tersedia</div>
+                    <div style={{ fontWeight: 'bold', marginBottom: '5px', color: 'var(--text-main)' }}>Dokumen Desain Acuan Tersedia</div>
                     <a href={selectedDemand.documentPdf || selectedDemand.details?.pdf} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', background: selectedDemand.color, color: 'white', textDecoration: 'none', padding: '10px 20px', borderRadius: '12px', fontWeight: 'bold', fontSize: '0.9rem' }}>
                       Buka Dokumen PDF
                     </a>
                   </div>
                 )}
                 {selectedDemand.projectLink && (
-                  <div style={{ background: 'white', padding: '20px', borderRadius: '16px' }}>
-                    <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>Link Proyek</div>
+                  <div style={{ background: 'var(--bg-primary)', padding: '20px', borderRadius: '16px' }}>
+                    <div style={{ fontWeight: 'bold', marginBottom: '5px', color: 'var(--text-main)' }}>Link Proyek</div>
                     <a href={selectedDemand.projectLink} target="_blank" rel="noopener noreferrer" style={{ wordBreak: 'break-all', color: 'var(--primary)' }}>{selectedDemand.projectLink}</a>
                   </div>
                 )}
               </div>
 
-              <div style={{ flex: 1.2, padding: '40px', overflowY: 'auto' }}>
+              <div style={{ flex: 1.2, padding: '40px', overflowY: 'auto', color: 'var(--text-main)' }}>
                 <div style={{ fontSize: '0.85rem', color: selectedDemand.color, fontWeight: 'bold', marginBottom: '8px' }}>{selectedDemand.demandType}</div>
                 <h2 style={{ fontSize: '1.8rem', margin: '0 0 16px 0', lineHeight: 1.3 }}>{selectedDemand.title}</h2>
                 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '24px' }}>
-                  <div style={{ background: '#f8f9fa', padding: '15px', borderRadius: '15px' }}>
-                    <div style={{ fontSize: '0.75rem', color: '#888', fontWeight: 'bold' }}>LOKASI</div>
-                    <div style={{ fontWeight: 'bold', color: '#1a1a1a' }}>{selectedDemand.location}</div>
+                  <div style={{ background: 'var(--bg-secondary)', padding: '15px', borderRadius: '15px' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>LOKASI</div>
+                    <div style={{ fontWeight: 'bold', color: 'var(--text-main)' }}>{selectedDemand.location}</div>
                   </div>
                   <div style={{ background: 'rgba(245, 159, 0, 0.05)', padding: '15px', borderRadius: '15px' }}>
                     <div style={{ fontSize: '0.75rem', color: selectedDemand.color, fontWeight: 'bold' }}>ANGGARAN / HARGA</div>
@@ -761,8 +773,8 @@ const CareersPage = () => {
                 </div>
 
                 <div style={{ marginBottom: '24px' }}>
-                  <h4 style={{ marginBottom: '8px' }}>Deskripsi Kebutuhan</h4>
-                  <p style={{ color: '#666', background: '#f1f3f5', padding: '12px', borderRadius: '10px', fontSize: '0.95rem', whiteSpace: 'pre-wrap' }}>{selectedDemand.details?.reqs || selectedDemand.description}</p>
+                  <h4 style={{ marginBottom: '8px', color: 'var(--text-main)' }}>Deskripsi Kebutuhan</h4>
+                  <p style={{ color: 'var(--text-main)', background: 'var(--bg-secondary)', padding: '12px', borderRadius: '10px', fontSize: '0.95rem', whiteSpace: 'pre-wrap' }}>{selectedDemand.details?.reqs || selectedDemand.description}</p>
                 </div>
 
                 {selectedDemand.details?.specs?.length > 0 && (
@@ -1247,10 +1259,9 @@ const CareersPage = () => {
           border-color: var(--primary);
         }
         .job-row:hover {
-          background: white !important;
-          border-color: #333 !important;
+          border-color: var(--primary) !important;
           transform: scale(1.01);
-          box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+          box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
          .bounty-card:hover {
            background: rgba(255,255,255,0.06) !important;

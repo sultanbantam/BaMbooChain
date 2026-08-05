@@ -61,6 +61,7 @@ const Navbar = () => {
 
   const bambooNusaFeatures = [
     { label: t('feature_overview'), path: '/bamboochain', icon: <Layout size={16} /> },
+    { label: 'Petani Binaan', path: '/bambunusa/farmers', icon: <Users size={16} /> },
     { label: t('feature_plantation'), path: '/bamboochain/plantation', icon: <TreeDeciduous size={16} /> },
     { label: t('feature_supply_chain'), path: '/bamboochain/supply-chain', icon: <Truck size={16} /> },
     { label: t('feature_build'), path: '/bamboochain/build', icon: <Factory size={16} /> },
