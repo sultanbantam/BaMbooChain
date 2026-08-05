@@ -410,3 +410,38 @@ export function useUserEvents(userId, userName) {
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   });
 }
+
+// 16. Hook for Career Job Posts
+export function useCareerJobPosts(statusFilter = null) {
+  return useQuery({
+    queryKey: ['careerJobPosts', statusFilter],
+    queryFn: async () => {
+      const postsRef = collection(db, 'career_job_posts');
+      let q = postsRef;
+      if (statusFilter) {
+        q = query(postsRef, where('status', '==', statusFilter));
+      }
+      const snapshot = await getDocs(q);
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+}
+
+// 17. Hook for Career Demand Posts
+export function useCareerDemandPosts(statusFilter = null) {
+  return useQuery({
+    queryKey: ['careerDemandPosts', statusFilter],
+    queryFn: async () => {
+      const postsRef = collection(db, 'career_demand_posts');
+      let q = postsRef;
+      if (statusFilter) {
+        q = query(postsRef, where('status', '==', statusFilter));
+      }
+      const snapshot = await getDocs(q);
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+}
+

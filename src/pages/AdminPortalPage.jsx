@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
-import { Shield, Users, MapPin, CheckCircle, XCircle, Clock, Eye, Filter, Download, Search, BookOpen, Leaf, Settings, Save, Wind, Droplets, DollarSign, Activity, Heart } from 'lucide-react';
+import { Shield, Users, MapPin, CheckCircle, XCircle, Clock, Eye, Filter, Download, Search, BookOpen, Leaf, Settings, Save, Wind, Droplets, DollarSign, Activity, Heart, Briefcase } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import BackButton from '../components/BackButton';
-import { usePartnerApplications, useLocationProposals, usePlantationDonations, useGlobalSettings, useEventRegistrations, useEventAttendance, useEventTransactions } from '../hooks/useFirestoreQueries';
+import { usePartnerApplications, useLocationProposals, usePlantationDonations, useGlobalSettings, useEventRegistrations, useEventAttendance, useEventTransactions, useCareerJobPosts, useCareerDemandPosts } from '../hooks/useFirestoreQueries';
 import { db } from '../firebase/config';
 import { doc, setDoc, addDoc, collection, serverTimestamp, getDocs, updateDoc, increment } from 'firebase/firestore';
 
@@ -25,6 +25,9 @@ const AdminPortalPage = () => {
   const { data: eventAttendance = [] } = useEventAttendance();
   const { data: eventTransactions = [], refetch: refetchEventTransactions } = useEventTransactions();
   const [volunteerApps, setVolunteerApps] = useState([]);
+  
+  const { data: pendingJobs = [], refetch: refetchJobs } = useCareerJobPosts('pending');
+  const { data: pendingDemands = [], refetch: refetchDemands } = useCareerDemandPosts('pending');
   
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('partners'); // 'partners', 'locations', 'donations', 'events', or 'settings'
@@ -156,6 +159,32 @@ const AdminPortalPage = () => {
     }
   };
 
+  const handleApproveCareer = async (id, collectionName) => {
+    try {
+      await updateDoc(doc(db, collectionName, id), { status: 'verified' });
+      alert('Berhasil disetujui!');
+      if (collectionName === 'career_job_posts') refetchJobs();
+      if (collectionName === 'career_demand_posts') refetchDemands();
+    } catch (err) {
+      console.error(err);
+      alert('Gagal menyetujui.');
+    }
+  };
+
+  const handleRejectCareer = async (id, collectionName) => {
+    if (!window.confirm('Yakin ingin menolak post ini?')) return;
+    try {
+      await updateDoc(doc(db, collectionName, id), { status: 'rejected' });
+      alert('Berhasil ditolak.');
+      if (collectionName === 'career_job_posts') refetchJobs();
+      if (collectionName === 'career_demand_posts') refetchDemands();
+    } catch (err) {
+      console.error(err);
+      alert('Gagal menolak.');
+    }
+  };
+
+
   return (
     <div style={{ paddingTop: '120px', minHeight: '100vh', background: '#f0f2f5' }}>
       <div className="container" style={{ padding: '40px 24px' }}>
@@ -242,6 +271,12 @@ const AdminPortalPage = () => {
             style={{ padding: '12px 24px', borderRadius: '14px', border: 'none', background: activeTab === 'settings' ? '#1c7ed6' : 'transparent', color: activeTab === 'settings' ? 'white' : '#495057', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}
           >
             <Settings size={18} /> Pengaturan AI & Variabel
+          </button>
+          <button 
+            onClick={() => setActiveTab('careers')}
+            style={{ padding: '12px 24px', borderRadius: '14px', border: 'none', background: activeTab === 'careers' ? '#1c7ed6' : 'transparent', color: activeTab === 'careers' ? 'white' : '#495057', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}
+          >
+            <Briefcase size={18} /> Manajemen Karir
           </button>
         </div>
 
@@ -519,9 +554,9 @@ const AdminPortalPage = () => {
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr style={{ textAlign: 'left', borderBottom: '2px solid #f1f3f5' }}>
-                  <th style={{ padding: '16px', color: '#868e96', fontSize: '0.85rem' }}>{activeTab === 'partners' ? t('admin_portal_table_name') : activeTab === 'donations' ? 'Nama Donatur' : t('admin_portal_table_loc_name')}</th>
-                  <th style={{ padding: '16px', color: '#868e96', fontSize: '0.85rem' }}>{activeTab === 'partners' ? t('admin_portal_table_role') : activeTab === 'donations' ? 'Lokasi & Paket' : t('admin_portal_table_owner')}</th>
-                  <th style={{ padding: '16px', color: '#868e96', fontSize: '0.85rem' }}>{activeTab === 'donations' ? 'Nominal & Metode' : t('admin_portal_table_date')}</th>
+                  <th style={{ padding: '16px', color: '#868e96', fontSize: '0.85rem' }}>{activeTab === 'partners' ? t('admin_portal_table_name') : activeTab === 'donations' ? 'Nama Donatur' : activeTab === 'careers' ? 'Posisi / Judul' : t('admin_portal_table_loc_name')}</th>
+                  <th style={{ padding: '16px', color: '#868e96', fontSize: '0.85rem' }}>{activeTab === 'partners' ? t('admin_portal_table_role') : activeTab === 'donations' ? 'Lokasi & Paket' : activeTab === 'careers' ? 'Lokasi & Jenis' : t('admin_portal_table_owner')}</th>
+                  <th style={{ padding: '16px', color: '#868e96', fontSize: '0.85rem' }}>{activeTab === 'donations' ? 'Nominal & Metode' : activeTab === 'careers' ? 'Pengirim' : t('admin_portal_table_date')}</th>
                   <th style={{ padding: '16px', color: '#868e96', fontSize: '0.85rem' }}>{activeTab === 'donations' ? 'Tanggal & Status' : t('admin_portal_table_status')}</th>
                   <th style={{ padding: '16px', color: '#868e96', fontSize: '0.85rem', textAlign: 'center' }}>{t('admin_portal_table_action')}</th>
                 </tr>
@@ -587,6 +622,43 @@ const AdminPortalPage = () => {
                           <button style={{ padding: '8px', borderRadius: '8px', border: '1px solid #dee2e6', background: 'white', cursor: 'pointer' }}><Eye size={16} /></button>
                           {loc.status === 'pending' && (
                              <button onClick={() => handleApproveLocation(loc.id)} style={{ padding: '8px', borderRadius: '8px', border: 'none', background: '#40c057', color: 'white', cursor: 'pointer' }}><CheckCircle size={16} /></button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : activeTab === 'careers' ? (
+                  [...pendingJobs.map(j => ({...j, source: 'career_job_posts'})), ...pendingDemands.map(d => ({...d, source: 'career_demand_posts'}))].map((post) => (
+                    <tr key={post.id} style={{ borderBottom: '1px solid #f1f3f5' }}>
+                      <td style={{ padding: '20px 16px' }}>
+                        <div style={{ fontWeight: 'bold' }}>{post.title}</div>
+                        <div style={{ fontSize: '0.8rem', color: '#868e96' }}>{post.department || post.category}</div>
+                      </td>
+                      <td style={{ padding: '20px 16px' }}>
+                        <div style={{ fontSize: '0.9rem', fontWeight: '600' }}>{post.location}</div>
+                        <div style={{ fontSize: '0.8rem', color: '#1c7ed6' }}>{post.type || 'Kebutuhan Tim'}</div>
+                      </td>
+                      <td style={{ padding: '20px 16px' }}>
+                        <div style={{ fontSize: '0.9rem', fontWeight: '600' }}>{post.submittedByName}</div>
+                        <div style={{ fontSize: '0.8rem', color: '#868e96' }}>{post.bambooChat ? `@${post.bambooChat}` : post.contactName}</div>
+                      </td>
+                      <td style={{ padding: '20px 16px' }}>
+                        <span style={{ 
+                          padding: '4px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 'bold',
+                          background: post.status === 'verified' ? '#ebfbee' : '#fff9db',
+                          color: post.status === 'verified' ? '#2b8a3e' : '#e67700'
+                        }}>
+                          {post.status.toUpperCase()}
+                        </span>
+                      </td>
+                      <td style={{ padding: '20px 16px', textAlign: 'center' }}>
+                         <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                          <button style={{ padding: '8px', borderRadius: '8px', border: '1px solid #dee2e6', background: 'white', cursor: 'pointer' }}><Eye size={16} /></button>
+                          {post.status === 'pending' && (
+                            <>
+                              <button onClick={() => handleApproveCareer(post.id, post.source)} style={{ padding: '8px', borderRadius: '8px', border: 'none', background: '#40c057', color: 'white', cursor: 'pointer' }}><CheckCircle size={16} /></button>
+                              <button onClick={() => handleRejectCareer(post.id, post.source)} style={{ padding: '8px', borderRadius: '8px', border: 'none', background: '#fa5252', color: 'white', cursor: 'pointer' }}><XCircle size={16} /></button>
+                            </>
                           )}
                         </div>
                       </td>

@@ -17,6 +17,7 @@ const ValidatorDashboardPage = () => {
   
   // GIS Proposal State
   const [locationProposals, setLocationProposals] = useState([]);
+  const [careerProposals, setCareerProposals] = useState([]);
   const [loadingProposals, setLoadingProposals] = useState(false);
 
   // Modal State
@@ -92,12 +93,21 @@ const ValidatorDashboardPage = () => {
   const fetchProposals = async () => {
     setLoadingProposals(true);
     try {
-      const q = query(collection(db, "location_proposals"), where("status", "==", "pending"));
-      const snapshot = await getDocs(q);
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setLocationProposals(data);
+      const qLoc = query(collection(db, "location_proposals"), where("status", "==", "pending"));
+      const snapLoc = await getDocs(qLoc);
+      setLocationProposals(snapLoc.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      
+      const qJob = query(collection(db, "career_job_posts"), where("status", "==", "pending"));
+      const snapJob = await getDocs(qJob);
+      const jobs = snapJob.docs.map(doc => ({ id: doc.id, ...doc.data(), type: 'job' }));
+      
+      const qDem = query(collection(db, "career_demand_posts"), where("status", "==", "pending"));
+      const snapDem = await getDocs(qDem);
+      const demands = snapDem.docs.map(doc => ({ id: doc.id, ...doc.data(), type: 'demand' }));
+      
+      setCareerProposals([...jobs, ...demands]);
     } catch (err) {
-      console.error("Error fetching location proposals:", err);
+      console.error("Error fetching proposals:", err);
     } finally {
       setLoadingProposals(false);
     }
@@ -119,6 +129,30 @@ const ValidatorDashboardPage = () => {
       await updateDoc(doc(db, "location_proposals", id), { status: "Rejected" });
       setLocationProposals(prev => prev.filter(item => item.id !== id));
       alert(`Berhasil menolak ${name}!`);
+    } catch (err) {
+      console.error(err);
+      alert('Gagal menolak.');
+    }
+  };
+
+  const handleVerifyCareer = async (id, title, type) => {
+    const colName = type === 'job' ? 'career_job_posts' : 'career_demand_posts';
+    try {
+      await updateDoc(doc(db, colName, id), { status: "verified" });
+      setCareerProposals(prev => prev.filter(item => item.id !== id));
+      alert(`Berhasil memverifikasi ${title}!`);
+    } catch (err) {
+      console.error(err);
+      alert('Gagal memverifikasi.');
+    }
+  };
+
+  const handleRejectCareer = async (id, title, type) => {
+    const colName = type === 'job' ? 'career_job_posts' : 'career_demand_posts';
+    try {
+      await updateDoc(doc(db, colName, id), { status: "rejected" });
+      setCareerProposals(prev => prev.filter(item => item.id !== id));
+      alert(`Berhasil menolak ${title}!`);
     } catch (err) {
       console.error(err);
       alert('Gagal menolak.');

@@ -10,10 +10,15 @@ import BackButton from '../components/BackButton';
 import { db } from '../firebase/config';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
+import { useCareerJobPosts, useCareerDemandPosts } from '../hooks/useFirestoreQueries';
 
 const CareersPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  
+  const { data: dbJobPosts = [] } = useCareerJobPosts('verified');
+  const { data: dbDemandPosts = [] } = useCareerDemandPosts('verified');
+  
   const [isVisible, setIsVisible] = useState(false);
   const [activeBountyTab, setActiveBountyTab] = useState('New');
   const [selectedDemand, setSelectedDemand] = useState(null);
@@ -123,6 +128,27 @@ const CareersPage = () => {
       icon: <Briefcase size={24} color="#3b82f6" />,
       color: "#3b82f6"
     }
+  ];
+
+  const allJobOpenings = [
+    ...jobOpenings,
+    ...dbJobPosts.map(post => ({
+      id: post.id,
+      title: post.title,
+      department: post.department,
+      location: post.location,
+      type: post.type,
+      salary: post.salary,
+      findersFee: "TBD",
+      icon: <Briefcase size={24} color="#0ca678" />,
+      color: "#0ca678",
+      description: post.description,
+      requirements: post.requirements,
+      contactName: post.contactName,
+      contactEmail: post.contactEmail,
+      contactWa: post.contactWa,
+      bambooChat: post.bambooChat
+    }))
   ];
 
   const bounties = [
@@ -245,13 +271,36 @@ const CareersPage = () => {
     }
   ];
 
-  const filteredJobs = jobOpenings.filter(job => 
+  const allDemandBoard = [
+    ...demandBoard,
+    ...dbDemandPosts.map(post => ({
+      id: post.id,
+      title: post.title,
+      location: post.location,
+      demandType: post.category,
+      funding: post.budgetRange || "Negosiasi",
+      status: "Mencari Tim",
+      icon: <Target size={24} color="#e03131" />,
+      color: "#e03131",
+      details: {
+        price: post.budgetRange || "Negosiasi",
+        reqs: post.description,
+        specs: post.qualifications ? post.qualifications.split('\n') : []
+      },
+      contactName: post.contactName,
+      contactEmail: post.contactEmail,
+      contactWa: post.contactWa,
+      bambooChat: post.bambooChat
+    }))
+  ];
+
+  const filteredJobs = allJobOpenings.filter(job => 
     job.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
     job.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
     job.department.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const filteredDemand = demandBoard.filter(demand => 
+  const filteredDemand = allDemandBoard.filter(demand => 
     demand.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
     demand.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
     demand.demandType.toLowerCase().includes(searchQuery.toLowerCase())
