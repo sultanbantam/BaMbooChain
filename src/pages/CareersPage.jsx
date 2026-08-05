@@ -4,7 +4,7 @@ import {
   Briefcase, Leaf, GraduationCap, Target, ArrowRight, Zap, MapPin, 
   Clock, Coins, ChevronRight, MessageSquare, X, Send, Users, 
   TrendingUp, Award, DollarSign, Activity, Search,
-  Upload, Plus, FileText, Building2, UserCheck, Wrench, MessageCircle, Eye
+  Upload, Plus, FileText, Building2, UserCheck, Wrench, MessageCircle, Eye, Layout
 } from 'lucide-react';
 import BackButton from '../components/BackButton';
 import { db } from '../firebase/config';
@@ -788,10 +788,10 @@ const CareersPage = () => {
 
                 {selectedDemand.details?.specs?.length > 0 && (
                   <div style={{ marginBottom: '30px' }}>
-                    <h4 style={{ marginBottom: '12px' }}>Spesifikasi Teknis</h4>
+                    <h4 style={{ marginBottom: '12px', color: 'var(--text-main)' }}>Spesifikasi Teknis</h4>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       {selectedDemand.details.specs.map((spec, i) => (
-                        <div key={i} style={{ fontSize: '0.85rem', background: 'white', border: '1px solid #eee', padding: '10px 12px', borderRadius: '8px', display: 'flex', gap: '10px' }}>
+                        <div key={i} style={{ fontSize: '0.85rem', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-main)', padding: '10px 12px', borderRadius: '8px', display: 'flex', gap: '10px' }}>
                           <span style={{ color: selectedDemand.color }}>•</span> {spec}
                         </div>
                       ))}

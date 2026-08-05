@@ -21,7 +21,7 @@ const FarmerListPage = () => {
   ];
 
   // Merge static with verified new applications
-  const farmers = [
+  const allFarmers = [
     ...staticFarmers,
     ...partnerApps
       .filter(app => app.status === 'verified')
@@ -37,6 +37,9 @@ const FarmerListPage = () => {
       }))
   ];
 
+  // Deduplicate by name
+  const farmers = Array.from(new Map(allFarmers.map(f => [f.name.toLowerCase(), f])).values());
+
   return (
     <div style={{ background: 'var(--bg-secondary)', minHeight: '100vh' }}>
       <Navbar />
@@ -49,8 +52,8 @@ const FarmerListPage = () => {
         <div className="container">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '40px' }}>
             <div>
-              <h1 style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--text-main)', marginBottom: '8px' }}>Daftar Petani Binaan</h1>
-              <p style={{ color: 'var(--text-muted)', margin: 0 }}>Ekosistem bambuNUSA memberdayakan petani lokal secara transparan dan berkelanjutan.</p>
+              <h1 style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--text-main)', marginBottom: '8px' }}>Daftar Mitra & Petani Binaan</h1>
+              <p style={{ color: 'var(--text-muted)', margin: 0 }}>Ekosistem bambuNUSA memberdayakan mitra dan petani lokal secara transparan dan berkelanjutan.</p>
             </div>
           </div>
 
@@ -58,33 +61,33 @@ const FarmerListPage = () => {
             {farmers.map((farmer) => (
               <div key={farmer.id} className="glass-card" style={{ padding: '30px', animation: 'fadeIn 0.4s ease-out' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
-                  <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'rgba(12, 166, 120, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
+                  <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'rgba(12, 166, 120, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)', flexShrink: 0 }}>
                     <Users size={28} />
                   </div>
-                  <div>
-                    <h3 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--text-main)' }}>{farmer.name}</h3>
+                  <div style={{ minWidth: 0 }}>
+                    <h3 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{farmer.name}</h3>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem', color: 'var(--primary)', fontWeight: 'bold' }}>
-                      <ShieldCheck size={14} /> {farmer.status} Petani
+                      <ShieldCheck size={14} /> Mitra {farmer.status}
                     </div>
                   </div>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem' }}>
-                    <MapPin size={16} color="var(--text-muted)" />
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '0.85rem' }}>
+                    <MapPin size={16} color="var(--text-muted)" style={{ marginTop: '2px', flexShrink: 0 }} />
                     <span style={{ color: 'var(--text-main)' }}>{farmer.area}</span>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem' }}>
-                    <Leaf size={16} color="var(--text-muted)" />
-                    <span style={{ color: 'var(--text-main)' }}>Spesialis {farmer.species}</span>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '0.85rem' }}>
+                    <Leaf size={16} color="var(--text-muted)" style={{ marginTop: '2px', flexShrink: 0 }} />
+                    <span style={{ color: 'var(--text-main)' }}>{farmer.species}</span>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem' }}>
-                    <TrendingUp size={16} color="var(--text-muted)" />
-                    <span style={{ color: 'var(--text-main)' }}>Mengelola {farmer.trees} Bibit</span>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '0.85rem' }}>
+                    <TrendingUp size={16} color="var(--text-muted)" style={{ marginTop: '2px', flexShrink: 0 }} />
+                    <span style={{ color: 'var(--text-main)' }}>Kapasitas: {farmer.trees}</span>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem' }}>
-                    <Calendar size={16} color="var(--text-muted)" />
-                    <span style={{ color: 'var(--text-main)' }}>Bergabung {farmer.joined}</span>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '0.85rem' }}>
+                    <Calendar size={16} color="var(--text-muted)" style={{ marginTop: '2px', flexShrink: 0 }} />
+                    <span style={{ color: 'var(--text-main)' }}>Sejak {farmer.joined}</span>
                   </div>
                 </div>
 
