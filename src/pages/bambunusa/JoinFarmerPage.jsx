@@ -130,7 +130,10 @@ const JoinFarmerPage = () => {
                     {ROLES.map((role) => (
                       <div 
                         key={role.id}
-                        onClick={() => setSelectedRole(role.id)}
+                        onClick={() => {
+                          setSelectedRole(role.id);
+                          setTimeout(() => setStep(2), 200); // 200ms delay for feedback
+                        }}
                         style={{ 
                           padding: '24px', 
                           borderRadius: '16px', 
