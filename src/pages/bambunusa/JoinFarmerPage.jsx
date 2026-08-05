@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Leaf, MapPin, ShieldCheck, CheckCircle, ArrowRight, User, Phone, Wallet, 
-  Handshake, Sprout, Axe, Trees, Hammer, BookOpen, Microscope, Ruler, Users 
+  Handshake, Sprout, Axe, Trees, Hammer, BookOpen, Microscope, Ruler, Users, Scissors, MoreHorizontal
 } from 'lucide-react';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
@@ -51,6 +51,8 @@ const JoinFarmerPage = () => {
     { id: 'peneliti', name: 'Peneliti', icon: <Microscope size={24} />, desc: 'Melakukan riset dan pengembangan inovasi produk turunan bambu.' },
     { id: 'arsitek', name: 'Arsitek', icon: <Ruler size={24} />, desc: 'Perancang desain bangunan dan interior berbasis material bambu.' },
     { id: 'mediator', name: 'Mediator', icon: <Users size={24} />, desc: 'Penghubung antar stakeholder dalam ekosistem ekonomi bambu dan bisa memediasi konflik.' },
+    { id: 'tebang', name: 'Tim Tebang', icon: <Scissors size={24} />, desc: 'Bertugas memanen dan menebang bambu yang sudah siap panen di lapangan.' },
+    { id: 'lainnya', name: 'Lainnya', icon: <MoreHorizontal size={24} />, desc: 'Spesialisasi atau peran lain yang belum tercantum dalam daftar ini.' },
   ];
 
   const handleSubmit = async (e) => {
