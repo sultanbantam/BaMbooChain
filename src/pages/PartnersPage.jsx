@@ -534,10 +534,10 @@ const PartnersPage = () => {
       {/* PARTNER PROFILE MODAL */}
       {selectedPartner && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000, padding: '20px' }}>
-          <div style={{ background: 'white', borderRadius: '24px', maxWidth: '600px', width: '100%', padding: '40px', position: 'relative', animation: 'zoomIn 0.3s' }}>
-            <button onClick={() => setSelectedPartner(null)} style={{ position: 'absolute', top: '20px', right: '20px', background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer' }}>&times;</button>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '30px' }}>
-              <div style={{ width: '80px', height: '80px', background: '#f1f3f5', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)', overflow: 'hidden' }}>
+          <div style={{ background: 'white', borderRadius: '24px', maxWidth: '600px', width: '100%', padding: '40px', position: 'relative', animation: 'zoomIn 0.3s', maxHeight: '90vh', overflowY: 'auto' }}>
+            <button onClick={() => setSelectedPartner(null)} style={{ position: 'absolute', top: '20px', right: '20px', background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', zIndex: 10 }} aria-label="Tutup">&times;</button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '30px', marginTop: '10px' }}>
+              <div style={{ width: '80px', height: '80px', background: '#f1f3f5', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)', overflow: 'hidden', flexShrink: 0 }}>
                 {selectedPartner.logoUrl ? (
                   <img src={selectedPartner.logoUrl} alt={selectedPartner.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 ) : (
