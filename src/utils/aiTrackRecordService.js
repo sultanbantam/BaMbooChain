@@ -23,7 +23,29 @@ Gunakan persis struktur kunci JSON di bawah ini:
   "summary": "<Kesimpulan intelijen yang kritis. Peringatkan jika ini adalah entitas tanpa rekam jejak digital yang jelas.>"
 }`;
 
-const buildUserPrompt = (partner) => {
+const fetchGoogleSearchContext = async (query) => {
+  try {
+    const apiKey = import.meta.env.VITE_GOOGLE_SEARCH_API_KEY;
+    const cx = import.meta.env.VITE_GOOGLE_SEARCH_CX;
+    
+    if (!apiKey || !cx) return null; // Fallback jika belum disetel
+    
+    // Gunakan proxy atau call langsung (CORS Google Custom Search biasanya membolehkan browser)
+    const url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${encodeURIComponent(query)}&num=5`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    
+    const data = await res.json();
+    if (!data.items || data.items.length === 0) return "Tidak ada hasil pencarian signifikan.";
+    
+    return data.items.map((item, index) => `${index + 1}. Judul: ${item.title}\nCuplikan: ${item.snippet}\nLink: ${item.link}`).join('\n\n');
+  } catch (err) {
+    console.error("Error fetching Google Search:", err);
+    return null;
+  }
+};
+
+const buildUserPrompt = (partner, searchContext = null) => {
   let prompt = `Lakukan investigasi OSINT terhadap entitas berikut:
 Klaim Nama Mitra: ${partner.name || 'Tidak diketahui'}
 Klaim Kategori: ${partner.category || partner.categoryLainnya || 'Lainnya'}
@@ -47,12 +69,22 @@ PERINGATAN UNTUK AI: Anggap informasi di atas HANYA SEBAGAI KLAIM SEPIHAK dari e
     prompt += `3. Menyatakan di analisis keuangan/hukum bahwa dokumen mereka telah tervalidasi secara internal oleh sistem.`;
   }
 
+  if (searchContext) {
+    prompt += `\n\n=== HASIL PENCARIAN ONLINE TERBARU ===\n`;
+    prompt += `Berikut adalah data lapangan terbaru dari internet mengenai entitas ini:\n\n`;
+    prompt += searchContext;
+    prompt += `\n\nGunakan temuan ini untuk memperkuat dan menajamkan analisis sentimen, dampak, dan portofolio.`;
+  }
+
   return prompt;
 };
 
 export const fetchTrackRecordGroq = async (partner) => {
   const apiKey = import.meta.env.VITE_GROQ_API_KEY;
   if (!apiKey) throw new Error("API Key Groq tidak ditemukan di konfigurasi.");
+
+  const searchContext = await fetchGoogleSearchContext(partner.name);
+  const finalPrompt = buildUserPrompt(partner, searchContext);
 
   const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
     method: "POST",
@@ -64,7 +96,7 @@ export const fetchTrackRecordGroq = async (partner) => {
       model: "llama3-70b-8192", 
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: buildUserPrompt(partner) }
+        { role: "user", content: finalPrompt }
       ],
       temperature: 0.1,
       response_format: { type: "json_object" }
@@ -84,6 +116,9 @@ export const fetchTrackRecordOpenAI = async (partner) => {
   const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
   if (!apiKey) throw new Error("API Key OpenAI tidak ditemukan di konfigurasi.");
 
+  const searchContext = await fetchGoogleSearchContext(partner.name);
+  const finalPrompt = buildUserPrompt(partner, searchContext);
+
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -94,7 +129,7 @@ export const fetchTrackRecordOpenAI = async (partner) => {
       model: "gpt-4o", 
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: buildUserPrompt(partner) }
+        { role: "user", content: finalPrompt }
       ],
       temperature: 0.1,
       response_format: { type: "json_object" }
