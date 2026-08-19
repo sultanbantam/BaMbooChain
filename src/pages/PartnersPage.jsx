@@ -310,11 +310,12 @@ const PartnersPage = () => {
 
       const uploadedDocs = [];
       for (const docItem of (formData.additionalDocs || [])) {
+        const finalType = docItem.type === 'Lainnya' ? (docItem.typeLainnya || 'Lainnya') : docItem.type;
         if (docItem.file) {
           const url = await uploadToCloudinary(docItem.file);
-          if (url) uploadedDocs.push({ type: docItem.type, fileName: docItem.fileName, fileUrl: url });
+          if (url) uploadedDocs.push({ type: finalType, fileName: docItem.fileName, fileUrl: url });
         } else if (docItem.fileUrl) {
-          uploadedDocs.push({ type: docItem.type, fileName: docItem.fileName, fileUrl: docItem.fileUrl });
+          uploadedDocs.push({ type: finalType, fileName: docItem.fileName, fileUrl: docItem.fileUrl });
         }
       }
 
@@ -424,9 +425,10 @@ const PartnersPage = () => {
 
       const uploadedDocs = [];
       for (const docItem of (formData.additionalDocs || [])) {
+        const finalType = docItem.type === 'Lainnya' ? (docItem.typeLainnya || 'Lainnya') : docItem.type;
         if (docItem.file) {
           const url = await uploadToCloudinary(docItem.file);
-          if (url) uploadedDocs.push({ type: docItem.type, fileName: docItem.fileName, fileUrl: url });
+          if (url) uploadedDocs.push({ type: finalType, fileName: docItem.fileName, fileUrl: url });
         }
       }
 
@@ -609,13 +611,6 @@ const PartnersPage = () => {
             <div style={{ marginBottom: '30px' }}>
               <h3 style={{ fontSize: '1rem', color: 'var(--text-main)', marginBottom: '10px' }}>{t('partners_modal_about')}</h3>
               <p style={{ color: 'var(--text-muted)', lineHeight: '1.6' }}>{selectedPartner.desc || "Deskripsi lengkap mitra strategis Yayasan Sabumi Nusantara Jaya dalam pengembangan ekosistem ekonomi hijau."}</p>
-              
-              <h3 style={{ fontSize: '1rem', color: 'var(--text-main)', marginTop: '20px', marginBottom: '10px' }}>{t('partners_modal_collab')}</h3>
-              <ul style={{ color: 'var(--text-muted)', paddingLeft: '20px', lineHeight: '1.8' }}>
-                <li>{t('partners_modal_status')}</li>
-                <li>{selectedPartner.since || t('partners_modal_since')}</li>
-                <li>{selectedPartner.focus || t('partners_modal_focus')}</li>
-              </ul>
               
               {selectedPartner.isUserSubmitted && selectedPartner.fileName && (
                 <div style={{ marginTop: '20px' }}>
@@ -893,7 +888,17 @@ const PartnersPage = () => {
                             <option value="Laporan Keuangan Audit">Laporan Keuangan Audit</option>
                             <option value="SOP/Pedoman">SOP/Pedoman/Kebijakan</option>
                             <option value="Perizinan Lainnya">Perizinan Lainnya</option>
+                            <option value="Lainnya">Lainnya</option>
                           </select>
+                          {docItem.type === 'Lainnya' && (
+                            <input 
+                              type="text" 
+                              placeholder="Sebutkan jenis dokumen..." 
+                              value={docItem.typeLainnya || ''}
+                              onChange={(e) => handleAdditionalDocChange(index, 'typeLainnya', e.target.value)}
+                              style={{ padding: '8px', borderRadius: '6px', border: '1px solid #ced4da', fontSize: '0.85rem', width: '100%', marginTop: '5px' }}
+                            />
+                          )}
                           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                             <label style={{ background: 'white', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', border: '1px solid #ced4da', display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '0.8rem' }}>
                               <Plus size={14} /> Pilih File PDF
