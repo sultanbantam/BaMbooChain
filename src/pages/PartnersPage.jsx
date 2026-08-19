@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, Factory, Cpu, GraduationCap, Landmark, ArrowRight, ShieldCheck, Building, Plus } from 'lucide-react';
+import { Users, Factory, Cpu, GraduationCap, Landmark, ArrowRight, ShieldCheck, Building, Plus, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { createKnowledgeItem } from '../utils/knowledgeService';
@@ -660,23 +660,47 @@ const PartnersPage = () => {
                 <>
                   <div>
                     <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '8px', fontWeight: 'bold' }}>Dokumen Profil/MoU (PDF, max 10MB)</label>
-                    <input 
-                      type="file" 
-                      accept="application/pdf"
-                      onChange={handleFileChange}
-                      style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ced4da', background: '#f8f9fa' }} 
-                    />
-                    {formData.fileName && <p style={{ fontSize: '0.8rem', color: 'var(--primary)', marginTop: '4px' }}>File terpilih: {formData.fileName}</p>}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <label style={{ background: '#f1f3f5', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', border: '1px solid #ced4da', display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)' }}>
+                        <Plus size={16} /> {formData.fileName ? 'Ganti Dokumen' : 'Tambah Dokumen'}
+                        <input 
+                          type="file" 
+                          accept="application/pdf"
+                          onChange={handleFileChange}
+                          style={{ display: 'none' }} 
+                        />
+                      </label>
+                      {formData.fileName && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(12, 166, 120, 0.1)', padding: '6px 12px', borderRadius: '8px' }}>
+                          <span style={{ fontSize: '0.85rem', color: 'var(--primary)', fontWeight: 'bold' }}>📄 {formData.fileName}</span>
+                          <button onClick={(e) => { e.preventDefault(); setFormData({ ...formData, file: null, fileName: '', fileUrl: '' }); }} style={{ background: 'none', border: 'none', color: '#e03131', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 0 }}>
+                            <X size={16} />
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <div>
                     <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '8px', fontWeight: 'bold' }}>Logo Mitra (Opsional, JPG/PNG, max 1MB)</label>
-                    <input 
-                      type="file" 
-                      accept="image/jpeg, image/png, image/jpg"
-                      onChange={handleLogoChange}
-                      style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ced4da', background: '#f8f9fa' }} 
-                    />
-                    {formData.logoFileName && <p style={{ fontSize: '0.8rem', color: 'var(--primary)', marginTop: '4px' }}>Logo terpilih: {formData.logoFileName}</p>}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <label style={{ background: '#f1f3f5', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', border: '1px solid #ced4da', display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)' }}>
+                        <Plus size={16} /> {formData.logoFileName ? 'Ganti Logo' : 'Tambah Logo'}
+                        <input 
+                          type="file" 
+                          accept="image/jpeg, image/png, image/jpg"
+                          onChange={handleLogoChange}
+                          style={{ display: 'none' }} 
+                        />
+                      </label>
+                      {formData.logoFileName && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(12, 166, 120, 0.1)', padding: '6px 12px', borderRadius: '8px' }}>
+                          <span style={{ fontSize: '0.85rem', color: 'var(--primary)', fontWeight: 'bold' }}>🖼️ {formData.logoFileName}</span>
+                          <button onClick={(e) => { e.preventDefault(); setFormData({ ...formData, logoFile: null, logoFileName: '', logoUrl: '' }); }} style={{ background: 'none', border: 'none', color: '#e03131', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 0 }}>
+                            <X size={16} />
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </>
               )}
