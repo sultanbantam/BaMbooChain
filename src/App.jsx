@@ -23,6 +23,7 @@ const MembershipPage = lazy(() => import('./pages/MembershipPage'));
 const AcademyPage = lazy(() => import('./pages/AcademyPage'));
 const DataToolsPage = lazy(() => import('./pages/DataToolsPage'));
 const CommunityPage = lazy(() => import('./pages/CommunityPage'));
+const WanipiroPage = lazy(() => import('./pages/WanipiroPage'));
 const BambupediaPage = lazy(() => import('./pages/bambupedia/Index'));
 const BambupediaTracker = lazy(() => import('./pages/bambupedia/Tracker'));
 const BambupediaPlant = lazy(() => import('./pages/bambupedia/Plant'));
@@ -261,7 +262,12 @@ function App() {
             <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
             <Route path="/membership" element={<ProtectedRoute><MembershipPage /></ProtectedRoute>} />
             <Route path="/academy" element={<ProtectedRoute><AcademyPage /></ProtectedRoute>} />
-            <Route path="/data-tools" element={<ProtectedRoute><DataToolsPage /></ProtectedRoute>} />
+            <Route path="/data-tools" element={
+              <Suspense fallback={<PageLoader />}><DataToolsPage /></Suspense>
+            } />
+            <Route path="/wanipiro" element={
+              <Suspense fallback={<PageLoader />}><WanipiroPage /></Suspense>
+            } />
             <Route path="/community" element={<ProtectedRoute><CommunityPage /></ProtectedRoute>} />
             <Route path="/bambupedia" element={<ProtectedRoute><BambupediaPage /></ProtectedRoute>} />
             <Route path="/bambupedia/tracker" element={<ProtectedRoute><BambupediaTracker /></ProtectedRoute>} />

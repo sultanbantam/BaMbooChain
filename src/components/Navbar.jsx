@@ -86,6 +86,7 @@ const Navbar = () => {
     { label: t('nav_contact'), path: '/contact' },
     { label: t('nav_bambupedia'), path: '/bambupedia' },
     { label: t('feature_academy'), path: '/bamboochain/academy' },
+    { label: 'Wanipiro AI', path: '/wanipiro' },
     { label: t('nav_datatools'), path: '/data-tools' },
     { label: t('nav_marketplace'), path: '/bamboochain/marketplace' },
     { label: t('nav_community'), path: '/community' },
@@ -211,6 +212,7 @@ const Navbar = () => {
           <div style={{ background: 'var(--bg-card)', height: '45px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '25px', padding: '0 32px', borderBottom: '1px solid var(--border-color)' }}>
             <Link to="/bambupedia" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('nav_bambupedia')}</Link>
             <Link to="/bamboochain/academy" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('feature_academy')}</Link>
+            <Link to="/wanipiro" style={{ fontSize: '0.85rem', color: 'var(--primary)', textDecoration: 'none', fontWeight: 'bold' }}>Wanipiro AI</Link>
             <Link to="/data-tools" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('nav_datatools')}</Link>
             
             <Link to="/bamboochain/marketplace" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('nav_marketplace')}</Link>
