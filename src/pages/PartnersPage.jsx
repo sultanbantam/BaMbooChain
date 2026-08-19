@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { Users, Factory, Cpu, GraduationCap, Landmark, ArrowRight, ShieldCheck, Building, Plus } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
+import { createKnowledgeItem } from '../utils/knowledgeService';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../firebase/config';
 
 const PartnersPage = () => {
   const navigate = useNavigate();
@@ -17,7 +20,8 @@ const PartnersPage = () => {
     return saved ? JSON.parse(saved) : [];
   });
   const [isRegistering, setIsRegistering] = useState(false);
-  const [formData, setFormData] = useState({ name: '', category: 'komunitas', desc: '', file: null, fileName: '' });
+  const [isUploading, setIsUploading] = useState(false);
+  const [formData, setFormData] = useState({ name: '', category: 'komunitas', categoryLainnya: '', desc: '', file: null, fileName: '', fileUrl: '' });
 
   useEffect(() => {
     setIsVisible(true);
@@ -228,16 +232,32 @@ const PartnersPage = () => {
   const { language } = useLanguage();
   const baseCategories = language === 'en' ? partnerCategories_en : partnerCategories_id;
 
-  const partnerCategories = baseCategories.map(cat => ({
-    ...cat,
-    partners: [
-      ...cat.partners,
-      ...userPartners.filter(p => p.category === cat.id).map(p => ({
-        ...p,
-        isUserSubmitted: true
-      }))
-    ]
+  const lainnyaPartners = userPartners.filter(p => p.category === 'lainnya').map(p => ({
+    ...p,
+    isUserSubmitted: true
   }));
+
+  const partnerCategories = [
+    ...baseCategories.map(cat => ({
+      ...cat,
+      partners: [
+        ...cat.partners,
+        ...userPartners.filter(p => p.category === cat.id).map(p => ({
+          ...p,
+          isUserSubmitted: true
+        }))
+      ]
+    })),
+    ...(lainnyaPartners.length > 0 ? [{
+      id: 'lainnya',
+      title: 'Lainnya',
+      icon: <Users size={32} />,
+      color: '#495057',
+      bgColor: 'rgba(73, 80, 87, 0.1)',
+      description: 'Mitra dari berbagai bidang dan bentuk lembaga lainnya.',
+      partners: lainnyaPartners
+    }] : [])
+  ];
 
   const handleViewProfile = (partner) => {
     if (!isAuthenticated) {
@@ -249,7 +269,7 @@ const PartnersPage = () => {
 
   const handleEditProfile = (partner) => {
     setEditData(partner);
-    setFormData({ name: partner.name, category: partner.category || 'komunitas', desc: partner.desc || '', file: null, fileName: partner.fileName || '' });
+    setFormData({ name: partner.name, category: partner.category || 'komunitas', categoryLainnya: partner.categoryLainnya || '', desc: partner.desc || '', file: null, fileName: partner.fileName || '', fileUrl: partner.fileUrl || '' });
     setIsEditing(true);
   };
 
@@ -262,7 +282,7 @@ const PartnersPage = () => {
   const handleSaveProfile = () => {
     if (editData?.isUserSubmitted) {
       setUserPartners(prev => prev.map(p => 
-        p.id === editData.id ? { ...p, name: formData.name, category: formData.category, desc: formData.desc, fileName: formData.fileName } : p
+        p.id === editData.id ? { ...p, name: formData.name, category: formData.category, categoryLainnya: formData.categoryLainnya, desc: formData.desc, fileName: formData.fileName, fileUrl: formData.fileUrl } : p
       ));
     }
     setIsEditing(false);
@@ -274,7 +294,7 @@ const PartnersPage = () => {
       navigate('/contact', { state: { from: 'partners', message: 'Silakan login terlebih dahulu untuk mendaftar menjadi mitra.' } });
       return;
     }
-    setFormData({ name: '', category: 'komunitas', desc: '', file: null, fileName: '' });
+    setFormData({ name: '', category: 'komunitas', categoryLainnya: '', desc: '', file: null, fileName: '', fileUrl: '' });
     setIsRegistering(true);
   };
 
@@ -293,24 +313,58 @@ const PartnersPage = () => {
     }
   };
 
-  const handleRegisterSubmit = () => {
+  const handleRegisterSubmit = async () => {
     if (!formData.name || !formData.desc || !formData.fileName) {
       alert('Harap lengkapi semua kolom dan unggah dokumen PDF.');
       return;
     }
-    const newPartner = {
-      id: 'partner_' + Date.now(),
-      userId: user.id,
-      name: formData.name,
-      category: formData.category,
-      desc: formData.desc,
-      fileName: formData.fileName,
-      createdAt: new Date().toISOString(),
-      isUserSubmitted: true
-    };
-    setUserPartners(prev => [...prev, newPartner]);
-    setIsRegistering(false);
-    alert('Pendaftaran mitra berhasil disubmit!');
+    if (formData.category === 'lainnya' && !formData.categoryLainnya) {
+      alert('Harap isi bentuk lembaga (lainnya).');
+      return;
+    }
+    
+    setIsUploading(true);
+    try {
+      const finalCategory = formData.category === 'lainnya' ? formData.categoryLainnya : formData.category;
+      
+      const docRef = await createKnowledgeItem({
+        form: {
+          title: formData.name,
+          type: 'Mitra',
+          summary: formData.desc,
+          extractedText: formData.desc,
+          tags: 'Mitra, ' + finalCategory,
+        },
+        file: formData.file,
+        user: user,
+      });
+
+      // Fetch newly created doc to get fileUrl
+      const docSnap = await getDoc(doc(db, 'knowledge_items', docRef.id));
+      const fileUrl = docSnap.exists() ? docSnap.data().fileUrl : '';
+
+      const newPartner = {
+        id: docRef.id,
+        userId: user.id,
+        name: formData.name,
+        category: formData.category,
+        categoryLainnya: formData.categoryLainnya,
+        desc: formData.desc,
+        fileName: formData.fileName,
+        fileUrl: fileUrl,
+        createdAt: new Date().toISOString(),
+        isUserSubmitted: true
+      };
+      
+      setUserPartners(prev => [...prev, newPartner]);
+      setIsRegistering(false);
+      alert('Pendaftaran mitra berhasil disubmit dan data telah terintegrasi ke sistem Bambupedia!');
+    } catch (err) {
+      console.error(err);
+      alert('Gagal mendaftarkan mitra: ' + err.message);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -454,8 +508,13 @@ const PartnersPage = () => {
               {selectedPartner.isUserSubmitted && selectedPartner.fileName && (
                 <div style={{ marginTop: '20px' }}>
                   <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', display: 'block', marginBottom: '8px' }}>Dokumen Terlampir:</span>
-                  <div style={{ background: '#f8f9fa', padding: '10px 16px', borderRadius: '8px', border: '1px solid #e9ecef', display: 'inline-block', fontSize: '0.9rem' }}>
-                    📄 {selectedPartner.fileName} (Simulasi tersimpan)
+                  <div style={{ background: '#f8f9fa', padding: '10px 16px', borderRadius: '8px', border: '1px solid #e9ecef', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ fontSize: '0.9rem' }}>📄 {selectedPartner.fileName}</span>
+                    {selectedPartner.fileUrl ? (
+                      <a href={selectedPartner.fileUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', fontWeight: 'bold', textDecoration: 'none', fontSize: '0.85rem' }}>Lihat / Unduh Dokumen</a>
+                    ) : (
+                      <span style={{ fontSize: '0.85rem', color: '#868e96' }}>(Tersimpan)</span>
+                    )}
                   </div>
                 </div>
               )}
@@ -521,21 +580,37 @@ const PartnersPage = () => {
                 />
               </div>
               {(isRegistering || (isEditing && editData?.isUserSubmitted)) && (
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '8px', fontWeight: 'bold' }}>Bentuk Lembaga</label>
-                  <select 
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ced4da', background: 'white' }}
-                  >
-                    <option value="komunitas">Komunitas & Masyarakat Adat</option>
-                    <option value="industri">Industri, Bisnis & Manufaktur</option>
-                    <option value="teknologi">Teknologi & Digital</option>
-                    <option value="akademisi">Akademisi & Riset</option>
-                    <option value="finansial">Finansial & Lembaga Pendanaan</option>
-                    <option value="pemerintah">Pemerintah & Regulasi</option>
-                  </select>
-                </div>
+                <>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '8px', fontWeight: 'bold' }}>Bentuk Lembaga</label>
+                    <select 
+                      value={formData.category}
+                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                      style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ced4da', background: 'white' }}
+                    >
+                      <option value="komunitas">Komunitas & Masyarakat Adat</option>
+                      <option value="industri">Industri, Bisnis & Manufaktur</option>
+                      <option value="teknologi">Teknologi & Digital</option>
+                      <option value="akademisi">Akademisi & Riset</option>
+                      <option value="finansial">Finansial & Lembaga Pendanaan</option>
+                      <option value="pemerintah">Pemerintah & Regulasi</option>
+                      <option value="lainnya">Lainnya</option>
+                    </select>
+                  </div>
+                  {formData.category === 'lainnya' && (
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '8px', fontWeight: 'bold' }}>Tuliskan Bentuk Lembaga (Lainnya)</label>
+                      <input 
+                        type="text" 
+                        value={formData.categoryLainnya} 
+                        onChange={(e) => setFormData({ ...formData, categoryLainnya: e.target.value })}
+                        style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ced4da' }} 
+                        placeholder="Misal: Yayasan Sosial, NGO, dll"
+                        disabled={isEditing && !editData?.isUserSubmitted}
+                      />
+                    </div>
+                  )}
+                </>
               )}
               <div>
                 <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '8px', fontWeight: 'bold' }}>Deskripsi</label>
@@ -562,13 +637,15 @@ const PartnersPage = () => {
               <div style={{ display: 'flex', gap: '15px' }}>
                 <button 
                   onClick={() => { setIsEditing(false); setIsRegistering(false); }}
-                  style={{ flex: 1, padding: '14px', borderRadius: '12px', border: '1px solid #ced4da', background: 'white', cursor: 'pointer' }}>
+                  disabled={isUploading}
+                  style={{ flex: 1, padding: '14px', borderRadius: '12px', border: '1px solid #ced4da', background: 'white', cursor: 'pointer', opacity: isUploading ? 0.6 : 1 }}>
                   Batal
                 </button>
                 <button 
                   onClick={isRegistering ? handleRegisterSubmit : handleSaveProfile}
-                  style={{ flex: 1, padding: '14px', borderRadius: '12px', border: 'none', background: 'var(--primary)', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}>
-                  Simpan
+                  disabled={isUploading}
+                  style={{ flex: 1, padding: '14px', borderRadius: '12px', border: 'none', background: 'var(--primary)', color: 'white', fontWeight: 'bold', cursor: 'pointer', opacity: isUploading ? 0.6 : 1 }}>
+                  {isUploading ? 'Menyimpan...' : 'Simpan'}
                 </button>
               </div>
             </div>
