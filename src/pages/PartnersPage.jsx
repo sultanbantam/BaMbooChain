@@ -6,7 +6,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { createKnowledgeItem } from '../utils/knowledgeService';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
-import { fetchTrackRecordGroq } from '../utils/aiTrackRecordService';
+import { fetchTrackRecordOpenAI } from '../utils/aiTrackRecordService';
 
 const PartnersPage = () => {
   const navigate = useNavigate();
@@ -278,7 +278,7 @@ const PartnersPage = () => {
     setIsAiAnalyzing(true);
     setAiAnalysisError('');
     try {
-      const data = await fetchTrackRecordGroq(selectedPartner);
+      const data = await fetchTrackRecordOpenAI(selectedPartner);
       setAiAnalysisData(data);
     } catch (err) {
       console.error(err);
