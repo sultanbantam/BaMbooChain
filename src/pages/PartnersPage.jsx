@@ -25,7 +25,7 @@ const PartnersPage = () => {
   });
   const [isRegistering, setIsRegistering] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [formData, setFormData] = useState({ name: '', category: 'komunitas', categoryLainnya: '', desc: '', file: null, fileName: '', fileUrl: '', logoFile: null, logoFileName: '', logoUrl: '' });
+  const [formData, setFormData] = useState({ name: '', category: 'komunitas', categoryLainnya: '', desc: '', file: null, fileName: '', fileUrl: '', logoFile: null, logoFileName: '', logoUrl: '', additionalDocs: [] });
 
   useEffect(() => {
     setIsVisible(true);
@@ -290,7 +290,7 @@ const PartnersPage = () => {
 
   const handleEditProfile = (partner) => {
     setEditData(partner);
-    setFormData({ name: partner.name, category: partner.category || 'komunitas', categoryLainnya: partner.categoryLainnya || '', desc: partner.desc || '', file: null, fileName: partner.fileName || '', fileUrl: partner.fileUrl || '', logoFile: null, logoFileName: partner.logoFileName || '', logoUrl: partner.logoUrl || '' });
+    setFormData({ name: partner.name, category: partner.category || 'komunitas', categoryLainnya: partner.categoryLainnya || '', desc: partner.desc || '', file: null, fileName: partner.fileName || '', fileUrl: partner.fileUrl || '', logoFile: null, logoFileName: partner.logoFileName || '', logoUrl: partner.logoUrl || '', additionalDocs: partner.additionalDocs || [] });
     setIsEditing(true);
   };
 
@@ -300,14 +300,37 @@ const PartnersPage = () => {
     }
   };
 
-  const handleSaveProfile = () => {
-    if (editData?.isUserSubmitted) {
-      setUserPartners(prev => prev.map(p => 
-        p.id === editData.id ? { ...p, name: formData.name, category: formData.category, categoryLainnya: formData.categoryLainnya, desc: formData.desc, fileName: formData.fileName, fileUrl: formData.fileUrl, logoFileName: formData.logoFileName, logoUrl: formData.logoUrl } : p
-      ));
+  const handleSaveProfile = async () => {
+    setIsUploading(true);
+    try {
+      let finalLogoUrl = formData.logoUrl;
+      if (formData.logoFile) {
+        finalLogoUrl = await uploadToCloudinary(formData.logoFile);
+      }
+
+      const uploadedDocs = [];
+      for (const docItem of (formData.additionalDocs || [])) {
+        if (docItem.file) {
+          const url = await uploadToCloudinary(docItem.file);
+          if (url) uploadedDocs.push({ type: docItem.type, fileName: docItem.fileName, fileUrl: url });
+        } else if (docItem.fileUrl) {
+          uploadedDocs.push({ type: docItem.type, fileName: docItem.fileName, fileUrl: docItem.fileUrl });
+        }
+      }
+
+      if (editData?.isUserSubmitted) {
+        setUserPartners(prev => prev.map(p => 
+          p.id === editData.id ? { ...p, name: formData.name, category: formData.category, categoryLainnya: formData.categoryLainnya, desc: formData.desc, fileName: formData.fileName, fileUrl: formData.fileUrl, logoFileName: formData.logoFileName, logoUrl: finalLogoUrl, additionalDocs: uploadedDocs } : p
+        ));
+      }
+      setIsEditing(false);
+      alert(t('partners_alert_saved') || 'Tersimpan!');
+    } catch (err) {
+      console.error(err);
+      alert('Gagal menyimpan profil: ' + err.message);
+    } finally {
+      setIsUploading(false);
     }
-    setIsEditing(false);
-    alert(t('partners_alert_saved') || 'Tersimpan!');
   };
 
   const handleRegisterClick = () => {
@@ -315,7 +338,7 @@ const PartnersPage = () => {
       navigate('/contact', { state: { from: 'partners', message: 'Silakan login terlebih dahulu untuk mendaftar menjadi mitra.' } });
       return;
     }
-    setFormData({ name: '', category: 'komunitas', categoryLainnya: '', desc: '', file: null, fileName: '', fileUrl: '', logoFile: null, logoFileName: '', logoUrl: '' });
+    setFormData({ name: '', category: 'komunitas', categoryLainnya: '', desc: '', file: null, fileName: '', fileUrl: '', logoFile: null, logoFileName: '', logoUrl: '', additionalDocs: [] });
     setIsRegistering(true);
   };
 
@@ -349,6 +372,39 @@ const PartnersPage = () => {
     }
   };
 
+  const handleAddAdditionalDoc = (e) => {
+    e.preventDefault();
+    setFormData({
+      ...formData,
+      additionalDocs: [...(formData.additionalDocs || []), { type: 'NIB', file: null, fileName: '', fileUrl: '' }]
+    });
+  };
+
+  const handleAdditionalDocChange = (index, field, value) => {
+    const updatedDocs = [...(formData.additionalDocs || [])];
+    updatedDocs[index][field] = value;
+    setFormData({ ...formData, additionalDocs: updatedDocs });
+  };
+
+  const handleRemoveAdditionalDoc = (index, e) => {
+    e.preventDefault();
+    const updatedDocs = [...(formData.additionalDocs || [])];
+    updatedDocs.splice(index, 1);
+    setFormData({ ...formData, additionalDocs: updatedDocs });
+  };
+
+  const uploadToCloudinary = async (file) => {
+    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+    const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+    const url = `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`;
+    const uploadData = new FormData();
+    uploadData.append('file', file);
+    uploadData.append('upload_preset', uploadPreset);
+    const res = await fetch(url, { method: 'POST', body: uploadData });
+    const data = await res.json();
+    return data.secure_url || '';
+  };
+
   const handleRegisterSubmit = async () => {
     if (!formData.name || !formData.desc || !formData.fileName) {
       alert('Harap lengkapi semua kolom dan unggah dokumen PDF.');
@@ -363,15 +419,15 @@ const PartnersPage = () => {
     try {
       let finalLogoUrl = '';
       if (formData.logoFile) {
-        const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-        const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
-        const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
-        const uploadData = new FormData();
-        uploadData.append('file', formData.logoFile);
-        uploadData.append('upload_preset', uploadPreset);
-        const res = await fetch(url, { method: 'POST', body: uploadData });
-        const data = await res.json();
-        finalLogoUrl = data.secure_url || '';
+        finalLogoUrl = await uploadToCloudinary(formData.logoFile);
+      }
+
+      const uploadedDocs = [];
+      for (const docItem of (formData.additionalDocs || [])) {
+        if (docItem.file) {
+          const url = await uploadToCloudinary(docItem.file);
+          if (url) uploadedDocs.push({ type: docItem.type, fileName: docItem.fileName, fileUrl: url });
+        }
       }
 
       const finalCategory = formData.category === 'lainnya' ? formData.categoryLainnya : formData.category;
@@ -403,6 +459,7 @@ const PartnersPage = () => {
         fileUrl: fileUrl,
         logoFileName: formData.logoFileName,
         logoUrl: finalLogoUrl,
+        additionalDocs: uploadedDocs,
         createdAt: new Date().toISOString(),
         isUserSubmitted: true
       };
@@ -564,13 +621,24 @@ const PartnersPage = () => {
                 <div style={{ marginTop: '20px' }}>
                   <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', display: 'block', marginBottom: '8px' }}>Dokumen Terlampir:</span>
                   <div style={{ background: '#f8f9fa', padding: '10px 16px', borderRadius: '8px', border: '1px solid #e9ecef', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ fontSize: '0.9rem' }}>📄 {selectedPartner.fileName}</span>
+                    <span style={{ fontSize: '0.9rem' }}>📄 {selectedPartner.fileName} (Profil/MoU)</span>
                     {selectedPartner.fileUrl ? (
                       <a href={selectedPartner.fileUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', fontWeight: 'bold', textDecoration: 'none', fontSize: '0.85rem' }}>Lihat / Unduh Dokumen</a>
                     ) : (
                       <span style={{ fontSize: '0.85rem', color: '#868e96' }}>(Tersimpan)</span>
                     )}
                   </div>
+                  
+                  {selectedPartner.additionalDocs && selectedPartner.additionalDocs.length > 0 && selectedPartner.additionalDocs.map((doc, idx) => (
+                    <div key={idx} style={{ background: '#f8f9fa', padding: '10px 16px', borderRadius: '8px', border: '1px solid #e9ecef', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '8px' }}>
+                      <span style={{ fontSize: '0.9rem' }}>📑 {doc.fileName} <strong style={{color: 'var(--text-muted)'}}>({doc.type})</strong></span>
+                      {doc.fileUrl ? (
+                        <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', fontWeight: 'bold', textDecoration: 'none', fontSize: '0.85rem' }}>Lihat / Unduh</a>
+                      ) : (
+                        <span style={{ fontSize: '0.85rem', color: '#868e96' }}>(Tersimpan)</span>
+                      )}
+                    </div>
+                  ))}
                 </div>
               )}
 
@@ -802,6 +870,56 @@ const PartnersPage = () => {
                       )}
                     </div>
                   </div>
+
+                  {/* ADDITIONAL DOCS UI */}
+                  <div style={{ borderTop: '1px solid #e9ecef', paddingTop: '16px', marginTop: '8px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                      <label style={{ fontSize: '0.9rem', fontWeight: 'bold', margin: 0 }}>Dokumen Pendukung Tambahan (Opsional)</label>
+                      <button onClick={handleAddAdditionalDoc} style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <Plus size={14} /> Tambah
+                      </button>
+                    </div>
+                    {formData.additionalDocs?.map((docItem, index) => (
+                      <div key={index} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', background: '#f8f9fa', padding: '12px', borderRadius: '8px', marginBottom: '10px', border: '1px solid #e9ecef' }}>
+                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <select 
+                            value={docItem.type} 
+                            onChange={(e) => handleAdditionalDocChange(index, 'type', e.target.value)}
+                            style={{ padding: '8px', borderRadius: '6px', border: '1px solid #ced4da', fontSize: '0.85rem', width: '100%' }}
+                          >
+                            <option value="NIB">NIB</option>
+                            <option value="Akta Pendirian">Akta Pendirian</option>
+                            <option value="Laporan Pajak">Laporan Pajak</option>
+                            <option value="Laporan Keuangan Audit">Laporan Keuangan Audit</option>
+                            <option value="SOP/Pedoman">SOP/Pedoman/Kebijakan</option>
+                            <option value="Perizinan Lainnya">Perizinan Lainnya</option>
+                          </select>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <label style={{ background: 'white', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', border: '1px solid #ced4da', display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '0.8rem' }}>
+                              <Plus size={14} /> Pilih File PDF
+                              <input 
+                                type="file" 
+                                accept="application/pdf"
+                                onChange={(e) => {
+                                  const file = e.target.files[0];
+                                  if(file) {
+                                    handleAdditionalDocChange(index, 'file', file);
+                                    handleAdditionalDocChange(index, 'fileName', file.name);
+                                  }
+                                }}
+                                style={{ display: 'none' }} 
+                              />
+                            </label>
+                            {docItem.fileName && <span style={{ fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 'bold' }}>{docItem.fileName}</span>}
+                          </div>
+                        </div>
+                        <button onClick={(e) => handleRemoveAdditionalDoc(index, e)} style={{ background: '#ffe3e3', color: '#e03131', border: 'none', padding: '8px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                          <X size={16} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+
                 </>
               )}
               <div style={{ display: 'flex', gap: '15px' }}>
