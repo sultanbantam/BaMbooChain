@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, Factory, Cpu, GraduationCap, Landmark, ArrowRight, ShieldCheck, Building } from 'lucide-react';
+import { Users, Factory, Cpu, GraduationCap, Landmark, ArrowRight, ShieldCheck, Building, Plus } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -12,10 +12,20 @@ const PartnersPage = () => {
   const [selectedPartner, setSelectedPartner] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState(null);
+  const [userPartners, setUserPartners] = useState(() => {
+    const saved = localStorage.getItem('bamboochain_user_partners');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [formData, setFormData] = useState({ name: '', category: 'komunitas', desc: '', file: null, fileName: '' });
 
   useEffect(() => {
     setIsVisible(true);
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem('bamboochain_user_partners', JSON.stringify(userPartners));
+  }, [userPartners]);
 
   const partnerCategories_id = [
     {
@@ -216,7 +226,18 @@ const PartnersPage = () => {
   ];
 
   const { language } = useLanguage();
-  const partnerCategories = language === 'en' ? partnerCategories_en : partnerCategories_id;
+  const baseCategories = language === 'en' ? partnerCategories_en : partnerCategories_id;
+
+  const partnerCategories = baseCategories.map(cat => ({
+    ...cat,
+    partners: [
+      ...cat.partners,
+      ...userPartners.filter(p => p.category === cat.id).map(p => ({
+        ...p,
+        isUserSubmitted: true
+      }))
+    ]
+  }));
 
   const handleViewProfile = (partner) => {
     if (!isAuthenticated) {
@@ -228,12 +249,68 @@ const PartnersPage = () => {
 
   const handleEditProfile = (partner) => {
     setEditData(partner);
+    setFormData({ name: partner.name, category: partner.category || 'komunitas', desc: partner.desc || '', file: null, fileName: partner.fileName || '' });
     setIsEditing(true);
   };
 
+  const handleDeleteProfile = (partnerId) => {
+    if (window.confirm('Apakah Anda yakin ingin menghapus mitra ini?')) {
+      setUserPartners(prev => prev.filter(p => p.id !== partnerId));
+    }
+  };
+
   const handleSaveProfile = () => {
+    if (editData?.isUserSubmitted) {
+      setUserPartners(prev => prev.map(p => 
+        p.id === editData.id ? { ...p, name: formData.name, category: formData.category, desc: formData.desc, fileName: formData.fileName } : p
+      ));
+    }
     setIsEditing(false);
-    alert(t('partners_alert_saved'));
+    alert(t('partners_alert_saved') || 'Tersimpan!');
+  };
+
+  const handleRegisterClick = () => {
+    if (!isAuthenticated) {
+      navigate('/contact', { state: { from: 'partners', message: 'Silakan login terlebih dahulu untuk mendaftar menjadi mitra.' } });
+      return;
+    }
+    setFormData({ name: '', category: 'komunitas', desc: '', file: null, fileName: '' });
+    setIsRegistering(true);
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.type !== 'application/pdf') {
+        alert('Format dokumen harus PDF.');
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        alert('Ukuran dokumen maksimal 10MB.');
+        return;
+      }
+      setFormData({ ...formData, file, fileName: file.name });
+    }
+  };
+
+  const handleRegisterSubmit = () => {
+    if (!formData.name || !formData.desc || !formData.fileName) {
+      alert('Harap lengkapi semua kolom dan unggah dokumen PDF.');
+      return;
+    }
+    const newPartner = {
+      id: 'partner_' + Date.now(),
+      userId: user.id,
+      name: formData.name,
+      category: formData.category,
+      desc: formData.desc,
+      fileName: formData.fileName,
+      createdAt: new Date().toISOString(),
+      isUserSubmitted: true
+    };
+    setUserPartners(prev => [...prev, newPartner]);
+    setIsRegistering(false);
+    alert('Pendaftaran mitra berhasil disubmit!');
   };
 
   return (
@@ -249,6 +326,16 @@ const PartnersPage = () => {
           <p style={{ fontSize: '1.15rem', color: 'var(--text-muted)', maxWidth: '800px', margin: '0 auto', lineHeight: '1.6' }}>
             {t('partners_desc')}
           </p>
+          <div style={{ marginTop: '30px' }}>
+            <button 
+              onClick={handleRegisterClick}
+              style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '14px 28px', borderRadius: '30px', fontSize: '1rem', fontWeight: 'bold', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 15px rgba(12, 166, 120, 0.3)', transition: '0.2s' }}
+              onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-3px)'}
+              onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+            >
+              <Plus size={20} /> Daftar Menjadi Mitra
+            </button>
+          </div>
         </div>
 
         {/* Partners Grid */}
@@ -291,12 +378,27 @@ const PartnersPage = () => {
                         style={{ background: 'white', border: `1px solid ${category.color}`, color: category.color, padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 'bold' }}>
                         {t('partners_btn_view')}
                       </button>
-                      {isAuthenticated && (user?.role === 'partner' || user?.email?.includes('admin')) && (
-                        <button 
-                          onClick={() => handleEditProfile(partner)}
-                          style={{ background: category.color, border: 'none', color: 'white', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 'bold' }}>
-                          {t('partners_btn_edit')}
-                        </button>
+                      {partner.isUserSubmitted && isAuthenticated && partner.userId === user?.id ? (
+                        <>
+                          <button 
+                            onClick={() => handleEditProfile(partner)}
+                            style={{ background: category.color, border: 'none', color: 'white', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 'bold' }}>
+                            Edit
+                          </button>
+                          <button 
+                            onClick={() => handleDeleteProfile(partner.id)}
+                            style={{ background: '#e03131', border: 'none', color: 'white', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 'bold' }}>
+                            Hapus
+                          </button>
+                        </>
+                      ) : (
+                        isAuthenticated && (user?.role === 'partner' || user?.email?.includes('admin')) && (
+                          <button 
+                            onClick={() => handleEditProfile(partner)}
+                            style={{ background: category.color, border: 'none', color: 'white', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 'bold' }}>
+                            {t('partners_btn_edit')}
+                          </button>
+                        )
                       )}
                     </div>
                   </div>
@@ -348,6 +450,15 @@ const PartnersPage = () => {
                 <li>{selectedPartner.since || t('partners_modal_since')}</li>
                 <li>{selectedPartner.focus || t('partners_modal_focus')}</li>
               </ul>
+              
+              {selectedPartner.isUserSubmitted && selectedPartner.fileName && (
+                <div style={{ marginTop: '20px' }}>
+                  <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', display: 'block', marginBottom: '8px' }}>Dokumen Terlampir:</span>
+                  <div style={{ background: '#f8f9fa', padding: '10px 16px', borderRadius: '8px', border: '1px solid #e9ecef', display: 'inline-block', fontSize: '0.9rem' }}>
+                    📄 {selectedPartner.fileName} (Simulasi tersimpan)
+                  </div>
+                </div>
+              )}
 
               {selectedPartner.name.includes('Cibarani') && (
                 <div style={{ marginTop: '24px', padding: '18px', background: 'rgba(12, 166, 120, 0.05)', borderRadius: '16px', border: '1px dashed var(--primary)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -393,38 +504,71 @@ const PartnersPage = () => {
         </div>
       )}
 
-      {/* EDIT PROFILE MODAL */}
-      {isEditing && (
+      {/* REGISTER / EDIT PROFILE MODAL */}
+      {(isEditing || isRegistering) && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000, padding: '20px' }}>
-          <div style={{ background: 'white', borderRadius: '24px', maxWidth: '600px', width: '100%', padding: '40px', position: 'relative' }}>
-            <h2 style={{ marginBottom: '30px', color: 'var(--text-main)' }}>{t('partners_edit_title')}</h2>
+          <div style={{ background: 'white', borderRadius: '24px', maxWidth: '600px', width: '100%', padding: '40px', position: 'relative', maxHeight: '90vh', overflowY: 'auto' }}>
+            <h2 style={{ marginBottom: '30px', color: 'var(--text-main)' }}>{isRegistering ? 'Pendaftaran Mitra Baru' : t('partners_edit_title')}</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '8px', fontWeight: 'bold' }}>{t('partners_edit_name')}</label>
+                <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '8px', fontWeight: 'bold' }}>Nama Mitra</label>
                 <input 
                   type="text" 
-                  defaultValue={editData?.name} 
+                  value={formData.name} 
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ced4da' }} 
+                  disabled={isEditing && !editData?.isUserSubmitted}
                 />
               </div>
+              {(isRegistering || (isEditing && editData?.isUserSubmitted)) && (
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '8px', fontWeight: 'bold' }}>Bentuk Lembaga</label>
+                  <select 
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ced4da', background: 'white' }}
+                  >
+                    <option value="komunitas">Komunitas & Masyarakat Adat</option>
+                    <option value="industri">Industri, Bisnis & Manufaktur</option>
+                    <option value="teknologi">Teknologi & Digital</option>
+                    <option value="akademisi">Akademisi & Riset</option>
+                    <option value="finansial">Finansial & Lembaga Pendanaan</option>
+                    <option value="pemerintah">Pemerintah & Regulasi</option>
+                  </select>
+                </div>
+              )}
               <div>
-                <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '8px', fontWeight: 'bold' }}>{t('partners_edit_desc')}</label>
+                <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '8px', fontWeight: 'bold' }}>Deskripsi</label>
                 <textarea 
                   rows="4" 
-                  defaultValue={editData?.desc} 
+                  value={formData.desc} 
+                  onChange={(e) => setFormData({ ...formData, desc: e.target.value })}
                   style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ced4da' }}
+                  disabled={isEditing && !editData?.isUserSubmitted}
                 ></textarea>
               </div>
+              {(isRegistering || (isEditing && editData?.isUserSubmitted)) && (
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '8px', fontWeight: 'bold' }}>Dokumen Profil/MoU (PDF, max 10MB)</label>
+                  <input 
+                    type="file" 
+                    accept="application/pdf"
+                    onChange={handleFileChange}
+                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ced4da', background: '#f8f9fa' }} 
+                  />
+                  {formData.fileName && <p style={{ fontSize: '0.8rem', color: 'var(--primary)', marginTop: '4px' }}>File terpilih: {formData.fileName}</p>}
+                </div>
+              )}
               <div style={{ display: 'flex', gap: '15px' }}>
                 <button 
-                  onClick={() => setIsEditing(false)}
+                  onClick={() => { setIsEditing(false); setIsRegistering(false); }}
                   style={{ flex: 1, padding: '14px', borderRadius: '12px', border: '1px solid #ced4da', background: 'white', cursor: 'pointer' }}>
-                  {t('partners_edit_cancel')}
+                  Batal
                 </button>
                 <button 
-                  onClick={handleSaveProfile}
+                  onClick={isRegistering ? handleRegisterSubmit : handleSaveProfile}
                   style={{ flex: 1, padding: '14px', borderRadius: '12px', border: 'none', background: 'var(--primary)', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}>
-                  {t('partners_edit_save')}
+                  Simpan
                 </button>
               </div>
             </div>
