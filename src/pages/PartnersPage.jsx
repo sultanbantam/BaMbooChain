@@ -21,7 +21,7 @@ const PartnersPage = () => {
   });
   const [isRegistering, setIsRegistering] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [formData, setFormData] = useState({ name: '', category: 'komunitas', categoryLainnya: '', desc: '', file: null, fileName: '', fileUrl: '' });
+  const [formData, setFormData] = useState({ name: '', category: 'komunitas', categoryLainnya: '', desc: '', file: null, fileName: '', fileUrl: '', logoFile: null, logoFileName: '', logoUrl: '' });
 
   useEffect(() => {
     setIsVisible(true);
@@ -269,7 +269,7 @@ const PartnersPage = () => {
 
   const handleEditProfile = (partner) => {
     setEditData(partner);
-    setFormData({ name: partner.name, category: partner.category || 'komunitas', categoryLainnya: partner.categoryLainnya || '', desc: partner.desc || '', file: null, fileName: partner.fileName || '', fileUrl: partner.fileUrl || '' });
+    setFormData({ name: partner.name, category: partner.category || 'komunitas', categoryLainnya: partner.categoryLainnya || '', desc: partner.desc || '', file: null, fileName: partner.fileName || '', fileUrl: partner.fileUrl || '', logoFile: null, logoFileName: partner.logoFileName || '', logoUrl: partner.logoUrl || '' });
     setIsEditing(true);
   };
 
@@ -282,7 +282,7 @@ const PartnersPage = () => {
   const handleSaveProfile = () => {
     if (editData?.isUserSubmitted) {
       setUserPartners(prev => prev.map(p => 
-        p.id === editData.id ? { ...p, name: formData.name, category: formData.category, categoryLainnya: formData.categoryLainnya, desc: formData.desc, fileName: formData.fileName, fileUrl: formData.fileUrl } : p
+        p.id === editData.id ? { ...p, name: formData.name, category: formData.category, categoryLainnya: formData.categoryLainnya, desc: formData.desc, fileName: formData.fileName, fileUrl: formData.fileUrl, logoFileName: formData.logoFileName, logoUrl: formData.logoUrl } : p
       ));
     }
     setIsEditing(false);
@@ -294,7 +294,7 @@ const PartnersPage = () => {
       navigate('/contact', { state: { from: 'partners', message: 'Silakan login terlebih dahulu untuk mendaftar menjadi mitra.' } });
       return;
     }
-    setFormData({ name: '', category: 'komunitas', categoryLainnya: '', desc: '', file: null, fileName: '', fileUrl: '' });
+    setFormData({ name: '', category: 'komunitas', categoryLainnya: '', desc: '', file: null, fileName: '', fileUrl: '', logoFile: null, logoFileName: '', logoUrl: '' });
     setIsRegistering(true);
   };
 
@@ -313,6 +313,21 @@ const PartnersPage = () => {
     }
   };
 
+  const handleLogoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (!['image/jpeg', 'image/jpg', 'image/png'].includes(file.type)) {
+        alert('Format logo harus JPG/JPEG/PNG.');
+        return;
+      }
+      if (file.size > 1 * 1024 * 1024) {
+        alert('Ukuran logo maksimal 1MB.');
+        return;
+      }
+      setFormData({ ...formData, logoFile: file, logoFileName: file.name });
+    }
+  };
+
   const handleRegisterSubmit = async () => {
     if (!formData.name || !formData.desc || !formData.fileName) {
       alert('Harap lengkapi semua kolom dan unggah dokumen PDF.');
@@ -325,6 +340,19 @@ const PartnersPage = () => {
     
     setIsUploading(true);
     try {
+      let finalLogoUrl = '';
+      if (formData.logoFile) {
+        const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+        const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+        const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+        const uploadData = new FormData();
+        uploadData.append('file', formData.logoFile);
+        uploadData.append('upload_preset', uploadPreset);
+        const res = await fetch(url, { method: 'POST', body: uploadData });
+        const data = await res.json();
+        finalLogoUrl = data.secure_url || '';
+      }
+
       const finalCategory = formData.category === 'lainnya' ? formData.categoryLainnya : formData.category;
       
       const docRef = await createKnowledgeItem({
@@ -352,6 +380,8 @@ const PartnersPage = () => {
         desc: formData.desc,
         fileName: formData.fileName,
         fileUrl: fileUrl,
+        logoFileName: formData.logoFileName,
+        logoUrl: finalLogoUrl,
         createdAt: new Date().toISOString(),
         isUserSubmitted: true
       };
@@ -486,8 +516,12 @@ const PartnersPage = () => {
           <div style={{ background: 'white', borderRadius: '24px', maxWidth: '600px', width: '100%', padding: '40px', position: 'relative', animation: 'zoomIn 0.3s' }}>
             <button onClick={() => setSelectedPartner(null)} style={{ position: 'absolute', top: '20px', right: '20px', background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer' }}>&times;</button>
             <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '30px' }}>
-              <div style={{ width: '80px', height: '80px', background: '#f1f3f5', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
-                <Building size={40} />
+              <div style={{ width: '80px', height: '80px', background: '#f1f3f5', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)', overflow: 'hidden' }}>
+                {selectedPartner.logoUrl ? (
+                  <img src={selectedPartner.logoUrl} alt={selectedPartner.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <Building size={40} />
+                )}
               </div>
               <div>
                 <h2 style={{ margin: 0, color: 'var(--text-main)' }}>{selectedPartner.name}</h2>
@@ -623,16 +657,28 @@ const PartnersPage = () => {
                 ></textarea>
               </div>
               {(isRegistering || (isEditing && editData?.isUserSubmitted)) && (
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '8px', fontWeight: 'bold' }}>Dokumen Profil/MoU (PDF, max 10MB)</label>
-                  <input 
-                    type="file" 
-                    accept="application/pdf"
-                    onChange={handleFileChange}
-                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ced4da', background: '#f8f9fa' }} 
-                  />
-                  {formData.fileName && <p style={{ fontSize: '0.8rem', color: 'var(--primary)', marginTop: '4px' }}>File terpilih: {formData.fileName}</p>}
-                </div>
+                <>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '8px', fontWeight: 'bold' }}>Dokumen Profil/MoU (PDF, max 10MB)</label>
+                    <input 
+                      type="file" 
+                      accept="application/pdf"
+                      onChange={handleFileChange}
+                      style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ced4da', background: '#f8f9fa' }} 
+                    />
+                    {formData.fileName && <p style={{ fontSize: '0.8rem', color: 'var(--primary)', marginTop: '4px' }}>File terpilih: {formData.fileName}</p>}
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '8px', fontWeight: 'bold' }}>Logo Mitra (Opsional, JPG/PNG, max 1MB)</label>
+                    <input 
+                      type="file" 
+                      accept="image/jpeg, image/png, image/jpg"
+                      onChange={handleLogoChange}
+                      style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ced4da', background: '#f8f9fa' }} 
+                    />
+                    {formData.logoFileName && <p style={{ fontSize: '0.8rem', color: 'var(--primary)', marginTop: '4px' }}>Logo terpilih: {formData.logoFileName}</p>}
+                  </div>
+                </>
               )}
               <div style={{ display: 'flex', gap: '15px' }}>
                 <button 
