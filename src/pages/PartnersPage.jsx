@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, Factory, Cpu, GraduationCap, Landmark, ArrowRight, ShieldCheck, Building, Plus, X } from 'lucide-react';
+import { Users, Factory, Cpu, GraduationCap, Landmark, ArrowRight, ShieldCheck, Building, Plus, X, Bot, AlertCircle, CheckCircle2, Activity } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { createKnowledgeItem } from '../utils/knowledgeService';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
+import { fetchTrackRecordGroq } from '../utils/aiTrackRecordService';
 
 const PartnersPage = () => {
   const navigate = useNavigate();
@@ -13,6 +14,9 @@ const PartnersPage = () => {
   const { t } = useLanguage();
   const [isVisible, setIsVisible] = useState(false);
   const [selectedPartner, setSelectedPartner] = useState(null);
+  const [aiAnalysisData, setAiAnalysisData] = useState(null);
+  const [isAiAnalyzing, setIsAiAnalyzing] = useState(false);
+  const [aiAnalysisError, setAiAnalysisError] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState(null);
   const [userPartners, setUserPartners] = useState(() => {
@@ -265,6 +269,23 @@ const PartnersPage = () => {
       return;
     }
     setSelectedPartner(partner);
+    setAiAnalysisData(null);
+    setAiAnalysisError('');
+  };
+
+  const handleAnalyzeTrackRecord = async () => {
+    if (!selectedPartner) return;
+    setIsAiAnalyzing(true);
+    setAiAnalysisError('');
+    try {
+      const data = await fetchTrackRecordGroq(selectedPartner);
+      setAiAnalysisData(data);
+    } catch (err) {
+      console.error(err);
+      setAiAnalysisError(err.message || 'Gagal melakukan analisis rekam jejak.');
+    } finally {
+      setIsAiAnalyzing(false);
+    }
   };
 
   const handleEditProfile = (partner) => {
@@ -587,6 +608,85 @@ const PartnersPage = () => {
                   </a>
                 </div>
               )}
+
+              {/* AI TRACK RECORD ANALYSIS SECTION */}
+              <div style={{ marginTop: '30px', borderTop: '1px solid #f1f3f5', paddingTop: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                  <h3 style={{ fontSize: '1.1rem', color: 'var(--text-main)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Bot size={20} color="var(--primary)" /> Analisis Rekam Jejak (AI)
+                  </h3>
+                  {!aiAnalysisData && !isAiAnalyzing && (
+                    <button 
+                      onClick={handleAnalyzeTrackRecord}
+                      style={{ background: 'rgba(12, 166, 120, 0.1)', color: 'var(--primary)', border: 'none', padding: '8px 16px', borderRadius: '12px', fontSize: '0.9rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                    >
+                      <Activity size={16} /> Mulai Analisis
+                    </button>
+                  )}
+                </div>
+
+                {isAiAnalyzing && (
+                  <div style={{ textAlign: 'center', padding: '20px', background: '#f8f9fa', borderRadius: '12px' }}>
+                    <div style={{ color: 'var(--primary)', fontWeight: 'bold', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                      <Activity size={18} className="animate-pulse" /> Sedang Menganalisis...
+                    </div>
+                    <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0 }}>
+                      AI sedang menelusuri data publik, profil, dan rekam jejak. Mohon tunggu.
+                    </p>
+                  </div>
+                )}
+
+                {aiAnalysisError && (
+                  <div style={{ background: '#fff5f5', color: '#e03131', padding: '12px', borderRadius: '12px', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <AlertCircle size={18} /> {aiAnalysisError}
+                  </div>
+                )}
+
+                {aiAnalysisData && (
+                  <div style={{ background: '#f8f9fa', borderRadius: '16px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                      <div style={{ background: 'white', padding: '12px', borderRadius: '12px', border: '1px solid #e9ecef' }}>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Trust Score</div>
+                        <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: aiAnalysisData.trustScore >= 80 ? 'var(--primary)' : aiAnalysisData.trustScore >= 50 ? '#f59f00' : '#e03131' }}>
+                          {aiAnalysisData.trustScore}%
+                        </div>
+                      </div>
+                      <div style={{ background: 'white', padding: '12px', borderRadius: '12px', border: '1px solid #e9ecef' }}>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Tingkat Risiko</div>
+                        <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: aiAnalysisData.riskLevel?.toLowerCase().includes('rendah') ? 'var(--primary)' : aiAnalysisData.riskLevel?.toLowerCase().includes('sedang') ? '#f59f00' : '#e03131' }}>
+                          {aiAnalysisData.riskLevel}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)', marginBottom: '4px' }}>Keuangan & Legalitas:</div>
+                      <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0, lineHeight: '1.5' }}>
+                        <strong>Keuangan:</strong> {aiAnalysisData.financialHealth}<br/>
+                        <strong>Legal:</strong> {aiAnalysisData.legalAndCompliance}
+                      </p>
+                    </div>
+
+                    <div>
+                      <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)', marginBottom: '4px' }}>Dampak & Portofolio:</div>
+                      <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0, lineHeight: '1.5' }}>
+                        <strong>Lokal:</strong> {aiAnalysisData.localImpact}<br/>
+                        <strong>Global:</strong> {aiAnalysisData.globalImpact}<br/>
+                        <strong>Portofolio:</strong> {aiAnalysisData.projectPortfolio}
+                      </p>
+                    </div>
+
+                    <div style={{ background: 'rgba(12, 166, 120, 0.1)', padding: '12px', borderRadius: '12px', border: '1px solid var(--primary)' }}>
+                      <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--primary)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <CheckCircle2 size={16} /> Kesimpulan (Sentimen: {aiAnalysisData.sentiment})
+                      </div>
+                      <p style={{ fontSize: '0.85rem', color: 'var(--text-main)', margin: 0, lineHeight: '1.5' }}>
+                        {aiAnalysisData.summary}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
             <button 
               onClick={() => setSelectedPartner(null)}
@@ -735,6 +835,13 @@ const PartnersPage = () => {
         @keyframes zoomIn {
           from { opacity: 0; transform: scale(0.9); }
           to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: .5; }
+        }
+        .animate-pulse {
+          animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
         .partner-card:hover {
           transform: translateY(-5px);
