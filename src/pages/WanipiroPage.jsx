@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Leaf, Search, DollarSign, CloudRain, ShieldCheck, Factory, AlertTriangle, ArrowRight, Loader, Tag, CheckCircle2, ThumbsUp, ThumbsDown, Info } from 'lucide-react';
+import { Leaf, Search, DollarSign, CloudRain, ShieldCheck, Factory, AlertTriangle, ArrowRight, Loader, Tag, CheckCircle2, ThumbsUp, ThumbsDown, Info, Upload, X, Camera } from 'lucide-react';
 import { fetchWanipiroAppraisal } from '../utils/wanipiroService';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -12,10 +12,11 @@ const WanipiroPage = () => {
 
   // Form State
   const [formData, setFormData] = useState({
-    provinsi: 'Jawa Barat',
-    kabupaten: 'Bandung',
+    lokasi: 'Bandung, Indonesia',
+    keterangan_lainnya: '',
     // Raw Bamboo
     jenis_bambu: 'Petung',
+    jenis_bambu_lainnya: '',
     jumlah_batang: 100,
     satuan_jual: 'per_batang',
     panjang_total_meter: 6.5,
@@ -26,9 +27,11 @@ const WanipiroPage = () => {
     usia: '3-5_tahun',
     kelurusan: 'lurus',
     kondisi_fisik: 'utuh',
+    kondisi_fisik_lainnya: '',
     // Finished Product
     nama_produk: '',
     kategori_produk: 'anyaman',
+    kategori_produk_lainnya: '',
     dimensi_p: 0,
     dimensi_l: 0,
     dimensi_t: 0,
@@ -36,9 +39,13 @@ const WanipiroPage = () => {
     tingkat_kesulitan: 'sedang',
     waktu_pengerjaan_jam: 8,
     teknik_utama: 'anyaman',
+    teknik_utama_lainnya: '',
     finishing_khusus: 'tidak_ada',
     punya_merek: false
   });
+
+  // Images State (Base64)
+  const [images, setImages] = useState([]);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -46,6 +53,30 @@ const WanipiroPage = () => {
       ...prev,
       [name]: type === 'checkbox' ? checked : (type === 'number' ? Number(value) : value)
     }));
+  };
+
+  const handleImageUpload = (e) => {
+    const files = Array.from(e.target.files);
+    if (images.length + files.length > 3) {
+      alert("Maksimal 3 foto!");
+      return;
+    }
+
+    files.forEach(file => {
+      if (file.size > 1024 * 1024) {
+        alert(`File ${file.name} melebihi 1 MB!`);
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setImages(prev => [...prev, event.target.result]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeImage = (index) => {
+    setImages(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleAnalyze = async (e) => {
@@ -57,13 +88,16 @@ const WanipiroPage = () => {
     const payload = {
       user_id: "user_web_123",
       tanggal_penaksiran: new Date().toISOString().split('T')[0],
-      lokasi: { provinsi: formData.provinsi, kabupaten: formData.kabupaten },
-      kategori: mode
+      lokasi: formData.lokasi,
+      kategori: mode,
+      keterangan_tambahan: formData.keterangan_lainnya
     };
+
+    const getVal = (main, other) => main === 'lainnya' ? other : main;
 
     if (mode === 'raw_bamboo') {
       payload.raw_data = {
-        jenis_bambu: formData.jenis_bambu,
+        jenis_bambu: getVal(formData.jenis_bambu, formData.jenis_bambu_lainnya),
         jumlah_batang: formData.jumlah_batang,
         satuan_jual: formData.satuan_jual,
         panjang_total_meter: formData.panjang_total_meter,
@@ -73,25 +107,25 @@ const WanipiroPage = () => {
         ketebalan_dinding_cm: formData.ketebalan_dinding_cm,
         usia: formData.usia,
         kelurusan: formData.kelurusan,
-        kondisi_fisik: formData.kondisi_fisik
+        kondisi_fisik: getVal(formData.kondisi_fisik, formData.kondisi_fisik_lainnya)
       };
     } else {
       payload.product_data = {
         nama_produk: formData.nama_produk || 'Produk Bambu',
-        kategori_produk: formData.kategori_produk,
-        jenis_bambu: formData.jenis_bambu,
+        kategori_produk: getVal(formData.kategori_produk, formData.kategori_produk_lainnya),
+        jenis_bambu: getVal(formData.jenis_bambu, formData.jenis_bambu_lainnya),
         dimensi: { panjang_cm: formData.dimensi_p, lebar_cm: formData.dimensi_l, tinggi_cm: formData.dimensi_t },
         berat_gram: formData.berat_gram,
         tingkat_kesulitan: formData.tingkat_kesulitan,
         waktu_pengerjaan_jam: formData.waktu_pengerjaan_jam,
-        teknik_utama: formData.teknik_utama,
+        teknik_utama: getVal(formData.teknik_utama, formData.teknik_utama_lainnya),
         finishing_khusus: formData.finishing_khusus,
         punya_merek: formData.punya_merek
       };
     }
 
     try {
-      const data = await fetchWanipiroAppraisal(payload);
+      const data = await fetchWanipiroAppraisal(payload, images);
       if (data.status === 'error') {
         setError(data.message || 'Data tidak lengkap atau terjadi kesalahan.');
       } else {
@@ -99,7 +133,7 @@ const WanipiroPage = () => {
       }
     } catch (err) {
       console.error(err);
-      setError('Gagal menghubungi Juru Taksir AI. Pastikan konfigurasi API sudah benar.');
+      setError('Gagal menghubungi Juru Taksir AI. Pastikan konfigurasi API OpenAI valid.');
     } finally {
       setIsLoading(false);
     }
@@ -116,7 +150,7 @@ const WanipiroPage = () => {
           </div>
           <h1 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '10px' }}>WaniPiro?</h1>
           <p style={{ color: 'var(--text-muted)', maxWidth: '800px', margin: '0 auto', lineHeight: '1.6' }}>
-            Juru Taksir Bambu Profesional PERPUBI. Dapatkan estimasi harga pasar paling akurat untuk bambu mentah maupun produk jadi berdasarkan ukuran, usia, dan kerumitan.
+            Juru Taksir Bambu Profesional PERPUBI. Dapatkan estimasi harga pasar paling akurat untuk bambu mentah maupun produk jadi berdasarkan ukuran, usia, spesifikasi, dan foto.
           </p>
         </div>
 
@@ -139,8 +173,8 @@ const WanipiroPage = () => {
             <form onSubmit={handleAnalyze} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                 <div>
-                  <label className="form-label">Provinsi Lokasi</label>
-                  <input type="text" name="provinsi" value={formData.provinsi} onChange={handleInputChange} className="form-input" required />
+                  <label className="form-label">Lokasi</label>
+                  <input type="text" name="lokasi" placeholder="Misal: Kyoto, Japan atau Bandung" value={formData.lokasi} onChange={handleInputChange} className="form-input" required />
                 </div>
                 <div>
                   <label className="form-label">Jenis Bambu</label>
@@ -150,7 +184,11 @@ const WanipiroPage = () => {
                     <option value="Hitam/Wulung">Hitam/Wulung</option>
                     <option value="Tali/Apus">Tali/Apus</option>
                     <option value="Gombong">Gombong</option>
+                    <option value="lainnya">Lainnya...</option>
                   </select>
+                  {formData.jenis_bambu === 'lainnya' && (
+                    <input type="text" name="jenis_bambu_lainnya" placeholder="Sebutkan jenis..." value={formData.jenis_bambu_lainnya} onChange={handleInputChange} className="form-input" style={{ marginTop: '8px' }} required />
+                  )}
                 </div>
               </div>
 
@@ -163,7 +201,7 @@ const WanipiroPage = () => {
                     </div>
                     <div>
                       <label className="form-label">Panjang (m)</label>
-                      <input type="number" step="0.1" name="panjang_total_meter" value={formData.panjang_total_meter} onChange={handleInputChange} className="form-input" min="1" required />
+                      <input type="number" step="0.1" name="panjang_total_meter" value={formData.panjang_total_meter} onChange={handleInputChange} className="form-input" min="0.1" required />
                     </div>
                   </div>
                   
@@ -205,7 +243,11 @@ const WanipiroPage = () => {
                         <option value="utuh">Utuh</option>
                         <option value="retak_ringan">Retak Ringan</option>
                         <option value="terserang_hama">Hama</option>
+                        <option value="lainnya">Lainnya...</option>
                       </select>
+                      {formData.kondisi_fisik === 'lainnya' && (
+                        <input type="text" name="kondisi_fisik_lainnya" placeholder="Jelaskan..." value={formData.kondisi_fisik_lainnya} onChange={handleInputChange} className="form-input" style={{ marginTop: '8px' }} required />
+                      )}
                     </div>
                   </div>
                 </div>
@@ -225,7 +267,11 @@ const WanipiroPage = () => {
                         <option value="anyaman">Anyaman</option>
                         <option value="furnitur">Furnitur</option>
                         <option value="ukiran_seni">Ukiran/Seni</option>
+                        <option value="lainnya">Lainnya...</option>
                       </select>
+                      {formData.kategori_produk === 'lainnya' && (
+                        <input type="text" name="kategori_produk_lainnya" placeholder="Kategori lain..." value={formData.kategori_produk_lainnya} onChange={handleInputChange} className="form-input" style={{ marginTop: '8px' }} required />
+                      )}
                     </div>
                     <div>
                       <label className="form-label">Teknik Utama</label>
@@ -234,7 +280,11 @@ const WanipiroPage = () => {
                         <option value="potong_sambung">Potong & Sambung</option>
                         <option value="ukiran">Ukiran</option>
                         <option value="kombinasi">Kombinasi</option>
+                        <option value="lainnya">Lainnya...</option>
                       </select>
+                      {formData.teknik_utama === 'lainnya' && (
+                        <input type="text" name="teknik_utama_lainnya" placeholder="Sebutkan teknik..." value={formData.teknik_utama_lainnya} onChange={handleInputChange} className="form-input" style={{ marginTop: '8px' }} required />
+                      )}
                     </div>
                   </div>
 
@@ -250,16 +300,51 @@ const WanipiroPage = () => {
                     </div>
                     <div>
                       <label className="form-label">Est. Waktu Kerja (Jam)</label>
-                      <input type="number" name="waktu_pengerjaan_jam" value={formData.waktu_pengerjaan_jam} onChange={handleInputChange} className="form-input" min="1" required />
+                      <input type="number" name="waktu_pengerjaan_jam" value={formData.waktu_pengerjaan_jam} onChange={handleInputChange} className="form-input" min="0" required />
                     </div>
                   </div>
                   
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', cursor: 'pointer', marginTop: '10px' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', cursor: 'pointer', marginTop: '10px', color: 'var(--text-main)' }}>
                     <input type="checkbox" name="punya_merek" checked={formData.punya_merek} onChange={handleInputChange} />
                     Produk ini memiliki Merek Terdaftar / Branding Kuat
                   </label>
                 </div>
               )}
+              
+              {/* Keterangan Lainnya */}
+              <div>
+                <label className="form-label">Keterangan Lainnya (Opsional)</label>
+                <textarea 
+                  name="keterangan_lainnya" 
+                  value={formData.keterangan_lainnya} 
+                  onChange={handleInputChange} 
+                  placeholder="Ceritakan detail spesifik yang membuat barang ini istimewa atau berikan penjelasan agar taksiran lebih akurat..." 
+                  className="form-input" 
+                  style={{ minHeight: '80px', resize: 'vertical' }}
+                />
+              </div>
+
+              {/* Upload Foto */}
+              <div style={{ background: 'var(--bg-secondary)', padding: '15px', borderRadius: '12px', border: '1px dashed var(--border-color)' }}>
+                <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Camera size={16}/> Upload Foto (Maks 3, < 1MB/foto)</label>
+                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '10px' }}>
+                  {images.map((img, idx) => (
+                    <div key={idx} style={{ position: 'relative', width: '80px', height: '80px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-color)' }}>
+                      <img src={img} alt={`Preview ${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <button type="button" onClick={() => removeImage(idx)} style={{ position: 'absolute', top: 2, right: 2, background: 'rgba(0,0,0,0.6)', color: 'white', border: 'none', borderRadius: '50%', padding: '4px', cursor: 'pointer' }}>
+                        <X size={12} />
+                      </button>
+                    </div>
+                  ))}
+                  
+                  {images.length < 3 && (
+                    <label style={{ width: '80px', height: '80px', borderRadius: '8px', border: '2px dashed var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)', cursor: 'pointer', background: 'rgba(12, 166, 120, 0.05)', transition: '0.2s' }}>
+                      <Upload size={24} />
+                      <input type="file" accept="image/png, image/jpeg, image/jpg" multiple onChange={handleImageUpload} style={{ display: 'none' }} />
+                    </label>
+                  )}
+                </div>
+              </div>
               
               <button 
                 type="submit" 
@@ -309,11 +394,11 @@ const WanipiroPage = () => {
                 <div style={{ background: 'var(--bg-secondary)', borderRadius: '16px', padding: '20px', marginBottom: '25px', border: '1px dashed var(--border-color)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '0.95rem' }}>
                     <span style={{ color: 'var(--text-muted)' }}>Kisaran Bawah:</span>
-                    <span style={{ fontWeight: 'bold' }}>Rp {result.data.kisaran_harga_rendah?.toLocaleString('id-ID')}</span>
+                    <span style={{ fontWeight: 'bold', color: 'var(--text-main)' }}>Rp {result.data.kisaran_harga_rendah?.toLocaleString('id-ID')}</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '0.95rem' }}>
                     <span style={{ color: 'var(--text-muted)' }}>Kisaran Atas:</span>
-                    <span style={{ fontWeight: 'bold' }}>Rp {result.data.kisaran_harga_tinggi?.toLocaleString('id-ID')}</span>
+                    <span style={{ fontWeight: 'bold', color: 'var(--text-main)' }}>Rp {result.data.kisaran_harga_tinggi?.toLocaleString('id-ID')}</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.95rem', borderTop: '1px solid var(--border-color)', paddingTop: '10px', marginTop: '5px' }}>
                     <span style={{ color: 'var(--text-muted)' }}>Harga Per {result.data.satuan}:</span>
@@ -343,7 +428,7 @@ const WanipiroPage = () => {
                 {result.data.rekomendasi_petani && (
                   <div style={{ background: 'rgba(51, 154, 240, 0.05)', padding: '15px', borderRadius: '12px', border: '1px solid rgba(51, 154, 240, 0.2)', marginBottom: '20px' }}>
                     <h4 style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem', color: '#1971c2', margin: '0 0 8px 0' }}><Info size={16} /> Rekomendasi Juru Taksir:</h4>
-                    <p style={{ margin: 0, fontSize: '0.85rem', color: '#333', lineHeight: '1.5' }}>{result.data.rekomendasi_petani}</p>
+                    <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-main)', lineHeight: '1.5' }}>{result.data.rekomendasi_petani}</p>
                   </div>
                 )}
                 

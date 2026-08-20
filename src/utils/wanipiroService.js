@@ -5,6 +5,8 @@ Karakteristikmu:
 - Objektif dan tidak memihak tengkulak atau pembeli.
 - Memberi edukasi singkat di balik setiap angka agar pengguna mengerti "kenapa" dihargai segitu.
 
+Jika pengguna melampirkan foto, gunakan kemampuan visualmu untuk mengevaluasi kondisi fisik bambu (kelurusan, warna, cacat) atau tingkat keindahan/kerumitan produk kerajinan (kualitas anyaman, finishing, detail ukiran). Jadikan temuan visual tersebut sebagai "Faktor Pendorong" atau "Faktor Penekan" harga.
+
 ---
 ATURAN PENAKSIRAN (LOGIKA HARGA)
 
@@ -20,19 +22,17 @@ A. Untuk Bambu Mentah (Raw Bamboo)
    · Kelurusan: Lurus (+10%), Agak Melengkung (0%), Melengkung (-25%).
    · Kondisi: Utuh (0%), Retak Ringan (-15%), Terserang Hama (-50%).
    · Usia: 3-5 tahun adalah prime (+5%), >5 tahun (-10% karena mulai keras/lapuk).
-   · Lokasi (Logistik): Jika lokasi jauh dari pabrik/kota besar (misal: Papua vs Jawa Tengah), sesuaikan biaya angkut dengan mengurangi harga base hingga -20% untuk daerah terpencil.
+   · Lokasi (Logistik): Jika lokasi jauh dari pabrik/kota besar, sesuaikan biaya angkut dengan mengurangi harga base hingga -20% untuk daerah terpencil.
 3. Perhitungan Akhir:
    Estimasi = Base Price * Jumlah_Batang * Faktor_Diameter * Faktor_Kelurusan * Faktor_Kondisi * Faktor_Lokasi
 
 B. Untuk Produk Jadi (Finished Product)
 1. Pendekatan Biaya + Nilai Seni:
    Harga Jual = (Biaya Bahan Baku + (Waktu_Pengerjaan * Upah_Harian_Lokal)) * Multiplier_Kerumitan * Multiplier_Seni * 1.3 (margin keuntungan)
-2. Upah Harian Lokal (estimasi berdasarkan provinsi):
-   · Jabodetabek: Rp 120.000/hari
-   · Jawa (luar Jabodetabek): Rp 85.000/hari
-   · Luar Jawa (Sumatra, Sulawesi, dll): Rp 75.000/hari
-   · Pabrikasi: Rp 100.000/hari
-   · Kerajinan: Rp 200.000/hari
+2. Upah Harian Lokal (estimasi berdasarkan provinsi/lokasi global):
+   · Jabodetabek/Kota Besar: Rp 120.000/hari
+   · Daerah Provinsi Standar: Rp 85.000 - Rp 100.000/hari
+   · Kerajinan/Seniman Tinggi: Rp 200.000 - Rp 300.000/hari
 3. Multiplier Kerumitan:
    · Mudah: 1.0
    · Sedang: 1.3
@@ -41,8 +41,7 @@ B. Untuk Produk Jadi (Finished Product)
 4. Multiplier Seni (untuk Ukiran/Anyaman motif khusus):
    · Tidak ada/finishing standar: 1.0
    · Motif tradisional/Detail tinggi: 1.5
-   · Edisi terbatas / Branding kuat (punya_merek == true): 2.0
-5. Jika user mengisi harga_pokok_produksi, gunakan itu sebagai base cost, lewati perhitungan estimasi biaya, namun tetap terapkan Multiplier untuk mencari harga jual ideal.
+   · Edisi terbatas / Branding kuat: 2.0
 
 ---
 FORMAT OUTPUT YANG DIMINTA (WAJIB JSON MURNI):
@@ -59,10 +58,10 @@ FORMAT OUTPUT YANG DIMINTA (WAJIB JSON MURNI):
     "jumlah_item": <integer>,
     "tingkat_keyakinan": "tinggi | sedang | rendah",
     "faktor_pendorong_harga": [
-      "<teks pendorong>"
+      "<teks pendorong (termasuk dari observasi foto jika ada)>"
     ],
     "faktor_penekan_harga": [
-      "<teks penekan>"
+      "<teks penekan (termasuk dari observasi foto jika ada)>"
     ],
     "rekomendasi_petani": "<Teks rekomendasi bisnis>",
     "detai_proses": "<Breakdown singkat hitungan matematika>"
@@ -72,13 +71,25 @@ FORMAT OUTPUT YANG DIMINTA (WAJIB JSON MURNI):
 
 BATASAN:
 1. Jika data tidak lengkap, tolak dengan format: {"status": "error", "message": "Maaf..."}
-2. Tidak boleh investasi kripto.
-3. Maksimal bambu mentah Rp 5jt/batang (kecuali wulung super antik).
-4. WAJIB JSON murni, JANGAN ADA TEKS APAPUN SEBELUM/SESUDAH JSON, jangan gunakan markdown \`\`\`json.`;
+2. WAJIB JSON murni, JANGAN ADA TEKS APAPUN SEBELUM/SESUDAH JSON, jangan gunakan markdown \`\`\`json.`;
 
-export const fetchWanipiroAppraisal = async (payload) => {
+export const fetchWanipiroAppraisal = async (payload, images = []) => {
   const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
   if (!apiKey) throw new Error("API Key OpenAI tidak ditemukan.");
+
+  const userContent = [
+    { type: "text", text: `Lakukan penaksiran terhadap data JSON berikut beserta deskripsi spesifikasinya:\n\n${JSON.stringify(payload, null, 2)}` }
+  ];
+
+  // Jika ada gambar (Base64), tambahkan ke pesan untuk dianalisis oleh model Vision
+  if (images && images.length > 0) {
+    images.forEach(img => {
+      userContent.push({
+        type: "image_url",
+        image_url: { url: img }
+      });
+    });
+  }
 
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
@@ -87,12 +98,12 @@ export const fetchWanipiroAppraisal = async (payload) => {
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      model: "gpt-4o",
+      model: "gpt-4o", // Menggunakan gpt-4o yang mendukung vision secara natif
       messages: [
         { role: "system", content: WANIPIRO_V2_SYSTEM_PROMPT },
-        { role: "user", content: `Lakukan penaksiran terhadap data JSON berikut:\n\n${JSON.stringify(payload, null, 2)}` }
+        { role: "user", content: userContent }
       ],
-      temperature: 0.1, // Sangat rendah untuk kalkulasi presisi
+      temperature: 0.1,
       response_format: { type: "json_object" }
     })
   });
