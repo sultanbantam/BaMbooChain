@@ -326,7 +326,7 @@ const WanipiroPage = () => {
 
               {/* Upload Foto */}
               <div style={{ background: 'var(--bg-secondary)', padding: '15px', borderRadius: '12px', border: '1px dashed var(--border-color)' }}>
-                <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Camera size={16}/> Upload Foto (Maks 3, < 1MB/foto)</label>
+                <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Camera size={16}/> Upload Foto (Maks 3, &lt; 1MB/foto)</label>
                 <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '10px' }}>
                   {images.map((img, idx) => (
                     <div key={idx} style={{ position: 'relative', width: '80px', height: '80px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-color)' }}>
