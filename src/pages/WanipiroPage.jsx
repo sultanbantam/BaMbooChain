@@ -106,7 +106,7 @@ const WanipiroPage = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-color)', paddingTop: '90px' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-color)', paddingTop: '140px' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
         
         {/* Header Section */}
@@ -114,8 +114,8 @@ const WanipiroPage = () => {
           <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '60px', height: '60px', background: 'rgba(12, 166, 120, 0.1)', borderRadius: '16px', color: 'var(--primary)', marginBottom: '15px' }}>
             <DollarSign size={32} />
           </div>
-          <h1 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '10px' }}>Wani Piro AI</h1>
-          <p style={{ color: 'var(--text-muted)', maxWidth: '600px', margin: '0 auto', lineHeight: '1.6' }}>
+          <h1 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '10px' }}>WaniPiro?</h1>
+          <p style={{ color: 'var(--text-muted)', maxWidth: '800px', margin: '0 auto', lineHeight: '1.6' }}>
             Juru Taksir Bambu Profesional PERPUBI. Dapatkan estimasi harga pasar paling akurat untuk bambu mentah maupun produk jadi berdasarkan ukuran, usia, dan kerumitan.
           </p>
         </div>
@@ -323,17 +323,17 @@ const WanipiroPage = () => {
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '25px' }}>
                   {result.data.faktor_pendorong_harga?.length > 0 && (
-                    <div style={{ background: '#f0fdf4', padding: '15px', borderRadius: '12px', border: '1px solid #d3f9d8' }}>
+                    <div style={{ background: 'rgba(43, 138, 62, 0.1)', padding: '15px', borderRadius: '12px', border: '1px solid rgba(43, 138, 62, 0.2)' }}>
                       <h4 style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem', color: '#2b8a3e', margin: '0 0 10px 0' }}><ThumbsUp size={16} /> Premium (+):</h4>
-                      <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '0.85rem', color: '#2b8a3e' }}>
+                      <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '0.85rem', color: 'var(--text-main)' }}>
                         {result.data.faktor_pendorong_harga.map((f, i) => <li key={i}>{f}</li>)}
                       </ul>
                     </div>
                   )}
                   {result.data.faktor_penekan_harga?.length > 0 && (
-                    <div style={{ background: '#fff0f0', padding: '15px', borderRadius: '12px', border: '1px solid #ffe3e3' }}>
+                    <div style={{ background: 'rgba(224, 49, 49, 0.1)', padding: '15px', borderRadius: '12px', border: '1px solid rgba(224, 49, 49, 0.2)' }}>
                       <h4 style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem', color: '#e03131', margin: '0 0 10px 0' }}><ThumbsDown size={16} /> Diskon (-):</h4>
-                      <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '0.85rem', color: '#e03131' }}>
+                      <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '0.85rem', color: 'var(--text-main)' }}>
                         {result.data.faktor_penekan_harga.map((f, i) => <li key={i}>{f}</li>)}
                       </ul>
                     </div>
