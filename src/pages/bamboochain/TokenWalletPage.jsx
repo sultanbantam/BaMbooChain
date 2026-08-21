@@ -2245,9 +2245,9 @@ const TokenUtilityTab = () => {
             <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '24px', flex: 1 }}>
               {language === 'id' ? 'Juru taksir harga AI untuk bahan baku, barang bekas, kerajinan, dan industri. Real-time, akurat, dan bisa pakai Pi Coin.' : 'AI price appraiser for raw materials, second-hand goods, crafts, and industry. Real-time, accurate, and accepts Pi Coin.'}
             </p>
-            <Link to="/wanipiro" style={{ background: '#38D9A9', color: '#111', textDecoration: 'none', padding: '14px', borderRadius: '16px', fontWeight: 'bold', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(56, 217, 169, 0.3)' }} onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}>
+            <a href="https://wanipiro.vercel.app/" target="_blank" rel="noopener noreferrer" style={{ background: '#38D9A9', color: '#111', textDecoration: 'none', padding: '14px', borderRadius: '16px', fontWeight: 'bold', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(56, 217, 169, 0.3)' }} onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}>
               {language === 'id' ? 'Buka Wanipiro?' : 'Open Wanipiro?'} <ChevronRight size={18} />
-            </Link>
+            </a>
           </div>
         </div>
 
