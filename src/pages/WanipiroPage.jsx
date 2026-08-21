@@ -4,6 +4,8 @@ import { fetchWanipiroAppraisal } from '../utils/wanipiroService';
 import { useLanguage } from '../context/LanguageContext';
 import { useMarketplace } from '../context/MarketplaceContext';
 import { useNavigate } from 'react-router-dom';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../firebase/config';
 
 const WanipiroPage = () => {
   const { language } = useLanguage();
@@ -159,7 +161,18 @@ const WanipiroPage = () => {
     }
 
     try {
-      const data = await fetchWanipiroAppraisal(payload, images);
+      // Ambil data bursa live untuk injeksi prompt
+      let marketContextStr = "";
+      if (db) {
+        try {
+          const mSnap = await getDoc(doc(db, "marketplace_bursa", "live_feed"));
+          if (mSnap.exists() && mSnap.data().data) {
+            marketContextStr = JSON.stringify(mSnap.data().data.map(d => ({ aset: d.typeKey, harga: d.price, tren: d.trend })));
+          }
+        } catch(e) { console.warn("Gagal mengambil data bursa", e); }
+      }
+
+      const data = await fetchWanipiroAppraisal(payload, images, marketContextStr);
       if (data.status === 'error') {
         setError(data.message || 'Data tidak lengkap atau terjadi kesalahan.');
       } else {

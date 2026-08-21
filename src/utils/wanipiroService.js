@@ -73,12 +73,16 @@ BATASAN:
 1. Jika data tidak lengkap, tolak dengan format: {"status": "error", "message": "Maaf..."}
 2. WAJIB JSON murni, JANGAN ADA TEKS APAPUN SEBELUM/SESUDAH JSON, jangan gunakan markdown \`\`\`json.`;
 
-export const fetchWanipiroAppraisal = async (payload, images = []) => {
+export const fetchWanipiroAppraisal = async (payload, images = [], marketContext = "") => {
   const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
   if (!apiKey) throw new Error("API Key OpenAI tidak ditemukan.");
 
+  const marketInstruction = marketContext 
+    ? `\n\n--- DATA BURSA GLOBAL (REAL-TIME) ---\nBerikut adalah harga acuan bursa bambu saat ini di dunia nyata:\n${marketContext}\n\nGunakan data dan tren harga bursa (Live Feed) ini sebagai referensi utama Anda untuk menimbang dan memodifikasi harga estimasi agar relevan dengan denyut nadi pasar detik ini!`
+    : "";
+
   const userContent = [
-    { type: "text", text: `Lakukan penaksiran terhadap data JSON berikut beserta deskripsi spesifikasinya:\n\n${JSON.stringify(payload, null, 2)}` }
+    { type: "text", text: `Lakukan penaksiran terhadap data JSON berikut beserta deskripsi spesifikasinya:\n\n${JSON.stringify(payload, null, 2)}${marketInstruction}` }
   ];
 
   // Jika ada gambar (Base64), tambahkan ke pesan untuk dianalisis oleh model Vision
