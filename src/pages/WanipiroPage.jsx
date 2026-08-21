@@ -55,6 +55,7 @@ const WanipiroPage = () => {
   
   // History State
   const [appraisalHistory, setAppraisalHistory] = useState([]);
+  const [historySearch, setHistorySearch] = useState('');
 
   // Load cached result and history on mount
   useEffect(() => {
@@ -572,16 +573,34 @@ const WanipiroPage = () => {
         {/* RIWAYAT TAKSIRAN */}
         {appraisalHistory.length > 0 && (
           <div className="fade-in" style={{ marginTop: '50px', background: 'var(--bg-card)', padding: '30px', borderRadius: '24px', border: '1px solid var(--border-color)', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}>
-            <h3 style={{ marginBottom: '20px', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '10px' }}><History size={24} style={{ color: 'var(--primary)' }}/> Riwayat Taksiran Anda</h3>
-            <div style={{ display: 'flex', gap: '20px', overflowX: 'auto', paddingBottom: '15px' }}>
-               {appraisalHistory.map((item, idx) => {
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px', marginBottom: '20px' }}>
+              <h3 style={{ color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '10px', margin: 0 }}><History size={24} style={{ color: 'var(--primary)' }}/> Riwayat Taksiran Anda</h3>
+              <div style={{ position: 'relative', width: '100%', maxWidth: '300px' }}>
+                <Search size={18} style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                <input 
+                  type="text" 
+                  placeholder="Cari riwayat..." 
+                  value={historySearch}
+                  onChange={(e) => setHistorySearch(e.target.value)}
+                  style={{ width: '100%', padding: '12px 15px 12px 45px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-main)', outline: 'none' }}
+                />
+              </div>
+            </div>
+            
+            <div style={{ display: 'flex', gap: '20px', overflowX: 'auto', paddingBottom: '15px', scrollbarWidth: 'thin' }}>
+               {appraisalHistory.filter(item => {
+                  const name = item.mode === 'raw_bamboo' 
+                    ? `Bambu ${item.formData?.jenis_bambu === 'lainnya' ? item.formData?.jenis_bambu_lainnya : item.formData?.jenis_bambu}`
+                    : (item.formData?.nama_produk || 'Produk Kerajinan');
+                  return name.toLowerCase().includes(historySearch.toLowerCase());
+               }).map((item, idx) => {
                   const itemName = item.mode === 'raw_bamboo' 
                     ? `Bambu ${item.formData?.jenis_bambu === 'lainnya' ? item.formData?.jenis_bambu_lainnya : item.formData?.jenis_bambu}`
                     : (item.formData?.nama_produk || 'Produk Kerajinan');
                   
                   return (
                     <div 
-                      key={idx} 
+                      key={item.date + idx} 
                       onClick={() => {
                         setResult(item.result);
                         setFormData(item.formData);
