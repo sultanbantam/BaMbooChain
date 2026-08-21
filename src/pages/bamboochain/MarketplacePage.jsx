@@ -11,8 +11,9 @@ import BackButton from '../../components/BackButton';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { useMarketplace } from '../../context/MarketplaceContext';
-import { storage } from '../../firebase/config';
+import { storage, db } from '../../firebase/config';
 import { ref, uploadString, getDownloadURL } from 'firebase/storage';
+import { doc, onSnapshot } from 'firebase/firestore';
 
 const compressImage = (file) => {
   return new Promise((resolve) => {
@@ -525,18 +526,26 @@ const MarketplacePage = () => {
   
   const products = [...fbProductsWithLocalImages, ...uniqueMockProducts];
 
-  // Simulation: Global Market & Forex Sync
+  // Real-Time Global Market Sync via Firestore
   useEffect(() => {
-    const interval = setInterval(() => {
-      setBursaData(prev => prev.map(item => {
-        if (item.typeKey === "market_bursa_other") return item;
-        const change = (Math.random() * 200 - 100); 
-        const up = change >= 0;
-        return { ...item, price: Math.max(1000, Math.round(item.price + change)), up, trend: `${up ? '+' : ''}${(Math.random() * 5).toFixed(1)}%` };
-      }));
-      setLastSync(new Date());
-    }, 10000);
-    return () => clearInterval(interval);
+    if (!db) return;
+    const unsub = onSnapshot(doc(db, "marketplace_bursa", "live_feed"), (docSnap) => {
+      if (docSnap.exists()) {
+        const liveData = docSnap.data().data;
+        if (liveData && Array.isArray(liveData)) {
+          // Merge with any local missing fields if needed, or just replace
+          setBursaData(prev => {
+            return prev.map(item => {
+              const incoming = liveData.find(d => d.typeKey === item.typeKey);
+              return incoming ? { ...item, ...incoming } : item;
+            });
+          });
+          setLastSync(new Date(docSnap.data().updatedAt || Date.now()));
+        }
+      }
+    });
+    
+    return () => unsub();
   }, []);
 
   const showToast = (msg) => {
