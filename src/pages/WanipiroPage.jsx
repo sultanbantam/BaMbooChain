@@ -1,10 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Leaf, Search, DollarSign, CloudRain, ShieldCheck, Factory, AlertTriangle, ArrowRight, Loader, Tag, CheckCircle2, ThumbsUp, ThumbsDown, Info, Upload, X, Camera } from 'lucide-react';
 import { fetchWanipiroAppraisal } from '../utils/wanipiroService';
 import { useLanguage } from '../context/LanguageContext';
+import { useMarketplace } from '../context/MarketplaceContext';
+import { useNavigate } from 'react-router-dom';
 
 const WanipiroPage = () => {
   const { language } = useLanguage();
+  const { addProduct } = useMarketplace();
+  const navigate = useNavigate();
   const [mode, setMode] = useState('raw_bamboo'); // 'raw_bamboo' | 'finished_product'
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState(null);
@@ -46,6 +50,22 @@ const WanipiroPage = () => {
 
   // Images State (Base64)
   const [images, setImages] = useState([]);
+
+  // Load cached result on mount
+  useEffect(() => {
+    const cached = localStorage.getItem('wanipiro_last_result');
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        if (parsed.result) setResult(parsed.result);
+        if (parsed.formData) setFormData(parsed.formData);
+        if (parsed.mode) setMode(parsed.mode);
+        if (parsed.images) setImages(parsed.images);
+      } catch (e) {
+        console.error("Failed to parse cached wanipiro data", e);
+      }
+    }
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -130,10 +150,45 @@ const WanipiroPage = () => {
         setError(data.message || 'Data tidak lengkap atau terjadi kesalahan.');
       } else {
         setResult(data);
+        localStorage.setItem('wanipiro_last_result', JSON.stringify({ result: data, formData, mode, images }));
       }
     } catch (err) {
       console.error(err);
       setError('Gagal menghubungi Juru Taksir AI. Pastikan konfigurasi API OpenAI valid.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePublishToMarketplace = async () => {
+    if (!result || !result.data) return;
+    setIsLoading(true);
+    
+    const itemName = mode === 'raw_bamboo' 
+      ? `Bambu ${formData.jenis_bambu === 'lainnya' ? formData.jenis_bambu_lainnya : formData.jenis_bambu} (${formData.panjang_total_meter}m)`
+      : (formData.nama_produk || 'Produk Kerajinan Bambu');
+      
+    const productDesc = `${result.data.rekomendasi_petani}\n\nSpesifikasi:\n- Lokasi: ${formData.lokasi}\n- Kondisi: ${formData.kondisi_fisik}\n- Total Estimasi: Rp ${result.data.harga_total_estimasi?.toLocaleString('id-ID')}\n\nSertifikat Penaksiran WaniPiro:\n${result.data.detai_proses}`;
+    
+    const productData = {
+      name: itemName,
+      description: productDesc,
+      priceIdr: result.data.harga_total_estimasi || 0,
+      category: mode === 'raw_bamboo' ? 'Bahan Baku' : 'Produk Jadi',
+      images: images && images.length > 0 ? images : []
+    };
+
+    try {
+      const added = await addProduct(productData);
+      if(added) {
+        alert("Berhasil dipublikasikan ke Marketplace!");
+        navigate('/bamboochain/marketplace');
+      } else {
+        alert("Gagal mempublikasikan. Pastikan Anda sudah login.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Terjadi kesalahan sistem saat mempublikasikan ke Marketplace.");
     } finally {
       setIsLoading(false);
     }
@@ -442,6 +497,15 @@ const WanipiroPage = () => {
                     "{result.pesan_ramah}"
                   </div>
                 )}
+                
+                <button 
+                  onClick={handlePublishToMarketplace}
+                  disabled={isLoading}
+                  style={{ marginTop: '30px', width: '100%', padding: '16px', background: '#e67e22', color: 'white', border: 'none', borderRadius: '12px', fontSize: '1.05rem', fontWeight: 'bold', cursor: isLoading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', transition: '0.2s' }}
+                >
+                  {isLoading ? <Loader className="spin" size={20} /> : <Tag size={20} />}
+                  Jual Langsung di Marketplace
+                </button>
 
               </div>
             )}
