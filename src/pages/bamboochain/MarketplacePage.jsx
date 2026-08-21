@@ -177,6 +177,7 @@ const MarketplacePage = () => {
   // eslint-disable-next-line no-unused-vars
   const [lastSync, setLastSync] = useState(new Date());
   const [usdtPrice, setUsdtPrice] = useState(17352); // Fallback if API fails
+  const [bursaSearch, setBursaSearch] = useState('');
 
   useEffect(() => {
     const fetchPrice = async () => {
@@ -1705,9 +1706,25 @@ const MarketplacePage = () => {
           {/* BURSA BAMBU */}
           <div className="container" style={{ marginBottom: '60px' }}>
              <div style={{ background: 'var(--bg-secondary)', borderRadius: '24px', padding: '30px', border: '1px solid var(--border-color)' }}>
-                <h3 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}><BarChart3 color="var(--primary)" /> {t('market_bursa_title')}</h3>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px', marginBottom: '20px' }}>
+                  <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}><BarChart3 color="var(--primary)" /> {t('market_bursa_title')}</h3>
+                  <div style={{ position: 'relative', width: '100%', maxWidth: '250px' }}>
+                    <Search size={16} style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                    <input 
+                      type="text" 
+                      placeholder="Cari komoditas..." 
+                      value={bursaSearch}
+                      onChange={(e) => setBursaSearch(e.target.value)}
+                      style={{ width: '100%', padding: '10px 15px 10px 40px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--bg-card)', color: 'var(--text-main)', outline: 'none', fontSize: '0.9rem' }}
+                    />
+                  </div>
+                </div>
+                
                 <div style={{ display: 'flex', gap: '15px', overflowX: 'auto', paddingBottom: '15px', scrollbarWidth: 'thin' }}>
-                   {bursaData.map((item, idx) => (
+                   {bursaData.filter(item => {
+                     const name = item.typeKey ? t(item.typeKey) : (item.type || '');
+                     return name.toLowerCase().includes(bursaSearch.toLowerCase());
+                   }).map((item, idx) => (
                      <div key={idx} style={{ minWidth: '200px', background: 'var(--bg-card)', padding: '15px', borderRadius: '15px', display: 'flex', justifyContent: 'space-between', border: '1px solid var(--border-color)' }}>
                         <div><div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{item.typeKey ? t(item.typeKey) : item.type}</div><div style={{ fontWeight: 'bold' }}>Rp {item.price.toLocaleString()}</div></div>
                         <div style={{ color: item.up ? 'var(--primary)' : '#fa5252', fontSize: '0.8rem' }}>{item.trend}</div>

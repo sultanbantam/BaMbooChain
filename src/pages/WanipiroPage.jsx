@@ -173,12 +173,46 @@ const WanipiroPage = () => {
         } catch(e) { console.warn("Gagal mengambil data bursa", e); }
       }
 
-      const data = await fetchWanipiroAppraisal(payload, images, marketContextStr);
+      let processedImages = [...images];
+      const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+      const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+      
+      if (processedImages.length > 0 && cloudName && uploadPreset) {
+         const uploadedUrls = [];
+         for (const imgBase64 of processedImages) {
+           try {
+             // Extract base64 part if it has data:image prefix
+             const base64Data = imgBase64.includes('base64,') ? imgBase64 : `data:image/jpeg;base64,${imgBase64}`;
+             
+             const fd = new FormData();
+             fd.append('file', base64Data);
+             fd.append('upload_preset', uploadPreset);
+             
+             const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+                method: 'POST',
+                body: fd
+             });
+             const json = await res.json();
+             
+             if (json.secure_url) {
+               uploadedUrls.push(json.secure_url);
+             } else {
+               uploadedUrls.push(imgBase64); // Fallback
+             }
+           } catch (e) {
+             console.warn("Cloudinary upload failed", e);
+             uploadedUrls.push(imgBase64);
+           }
+         }
+         processedImages = uploadedUrls;
+      }
+
+      const data = await fetchWanipiroAppraisal(payload, processedImages, marketContextStr);
       if (data.status === 'error') {
         setError(data.message || 'Data tidak lengkap atau terjadi kesalahan.');
       } else {
         setResult(data);
-        let payloadToSave = { result: data, formData, mode, images, date: new Date().toISOString() };
+        let payloadToSave = { result: data, formData, mode, images: processedImages, date: new Date().toISOString() };
         
         try {
           localStorage.setItem('wanipiro_last_result', JSON.stringify(payloadToSave));
