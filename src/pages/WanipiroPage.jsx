@@ -4,11 +4,13 @@ import { fetchWanipiroAppraisal } from '../utils/wanipiroService';
 import { useLanguage } from '../context/LanguageContext';
 import { useMarketplace } from '../context/MarketplaceContext';
 import { useNavigate } from 'react-router-dom';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, addDoc, onSnapshot, query, orderBy, limit } from 'firebase/firestore';
 import { db } from '../firebase/config';
+import { useAuth } from '../context/AuthContext';
 
 const WanipiroPage = () => {
   const { language } = useLanguage();
+  const { user } = useAuth();
   const { addProduct } = useMarketplace();
   const navigate = useNavigate();
   const [mode, setMode] = useState('raw_bamboo'); // 'raw_bamboo' | 'finished_product'
@@ -57,31 +59,35 @@ const WanipiroPage = () => {
   const [appraisalHistory, setAppraisalHistory] = useState([]);
   const [historySearch, setHistorySearch] = useState('');
 
-  // Load cached result and history on mount
+  // Load global history on mount
   useEffect(() => {
-    // Load last result
-    const cached = localStorage.getItem('wanipiro_last_result');
-    if (cached) {
+    // Load last result from local storage
+    const cachedResult = localStorage.getItem('wanipiro_last_result');
+    if (cachedResult) {
       try {
-        const parsed = JSON.parse(cached);
-        if (parsed.result) setResult(parsed.result);
-        if (parsed.formData) setFormData(parsed.formData);
-        if (parsed.mode) setMode(parsed.mode);
-        if (parsed.images) setImages(parsed.images);
-      } catch (e) {
-        console.error("Failed to parse cached wanipiro data", e);
+        const parsed = JSON.parse(cachedResult);
+        if (parsed.result) {
+          setResult(parsed.result);
+          setFormData(parsed.formData);
+          setMode(parsed.mode);
+          setImages(parsed.images || []);
+        }
+      } catch(e) {
+        console.error("Failed to parse cached result", e);
       }
     }
-    
-    // Load history
-    const historyCached = localStorage.getItem('wanipiro_appraisal_history');
-    if (historyCached) {
-      try {
-        setAppraisalHistory(JSON.parse(historyCached));
-      } catch (e) {
-        console.error("Failed to parse history", e);
-      }
-    }
+
+    // Subscribe to global history
+    if (!db) return;
+    const q = query(collection(db, 'wanipiro_public_history'), orderBy('date', 'desc'), limit(50));
+    const unsub = onSnapshot(q, (snap) => {
+      const historyData = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setAppraisalHistory(historyData);
+    }, (err) => {
+      console.error("Failed to sync Wanipiro history", err);
+    });
+
+    return () => unsub();
   }, []);
 
   const handleInputChange = (e) => {
@@ -222,18 +228,23 @@ const WanipiroPage = () => {
           localStorage.setItem('wanipiro_last_result', JSON.stringify(payloadToSave));
         }
         
-        // Save to history
-        setAppraisalHistory(prev => {
-           let newHistory = [payloadToSave, ...prev].slice(0, 20); // Keep last 20
-           try {
-             localStorage.setItem('wanipiro_appraisal_history', JSON.stringify(newHistory));
-           } catch (e) {
-             console.warn("History quota exceeded, stripping images from items");
-             newHistory = newHistory.map(item => ({ ...item, images: [] }));
-             localStorage.setItem('wanipiro_appraisal_history', JSON.stringify(newHistory));
-           }
-           return newHistory;
-        });
+        // Save to global history
+        try {
+          // Hanya simpan URL yang valid (bukan base64) ke Firebase agar tidak limit size
+          const safeImages = processedImages.filter(img => img.startsWith('http'));
+          const publicPayload = {
+            result: data,
+            formData,
+            mode,
+            images: safeImages,
+            date: new Date().toISOString(),
+            userId: user ? user.id : 'guest',
+            userName: user ? user.displayName : 'Guest User'
+          };
+          addDoc(collection(db, 'wanipiro_public_history'), publicPayload);
+        } catch (e) {
+          console.error("Failed to save to global history:", e);
+        }
       }
     } catch (err) {
       console.error(err);
@@ -259,40 +270,23 @@ const WanipiroPage = () => {
       priceIdr: result.data.harga_total_estimasi || 0,
       category: mode === 'raw_bamboo' ? 'Bahan Baku' : 'Produk Jadi',
       status: 'Approved',
-      // Jangan kirim base64 ke server karena batas 1MB Firestore, kita kirim array kosong
-      images: [] 
+      // Hanya kirim URL Cloudinary ke server (jangan kirim base64)
+      images: (images || []).filter(img => img.startsWith('http')) 
     };
 
     try {
       const added = await addProduct(productData);
-      
-      // Simpan item secara lokal dengan gambar Base64 (baik sukses maupun gagal di server)
-      // agar user bisa melihat fotonya sendiri di layar mereka.
-      const idToUse = added ? added.id : 'wanipiro_' + Date.now();
-      const localItems = JSON.parse(localStorage.getItem('wanipiro_marketplace_items') || '[]');
-      
-      const mockItem = {
-        ...productData,
-        id: idToUse,
-        vendor: added ? (added.vendor || 'Anda') : 'Anda (Guest)',
-        shopId: added ? (added.shopId || 'local_shop') : 'local_shop',
-        image: (images && images.length > 0) ? images[0] : 'https://images.unsplash.com/photo-1518623489648-a173ef7824f3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
-      };
-      
-      // Hapus jika sudah ada id yang sama (mencegah duplikat lokal)
-      const filtered = localItems.filter(i => i.id !== idToUse);
-      filtered.push(mockItem);
-      localStorage.setItem('wanipiro_marketplace_items', JSON.stringify(filtered));
 
       if (added) {
-        alert("Berhasil dipublikasikan ke Marketplace!");
+        alert("Berhasil dipublikasikan ke Marketplace secara Global!");
+        navigate('/bamboochain/marketplace');
       } else {
-        alert("Berhasil disimpan ke Etalase Lokal! (Silakan login nanti untuk mempublikasikannya ke server publik).");
+        alert("Terjadi kesalahan saat mempublikasikan ke server.");
       }
-      navigate('/bamboochain/marketplace');
+      
     } catch (err) {
       console.error(err);
-      alert("Terjadi kesalahan sistem saat mempublikasikan ke Marketplace.");
+      alert('Gagal mempublikasikan produk.');
     } finally {
       setIsLoading(false);
     }

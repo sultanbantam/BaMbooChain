@@ -529,39 +529,7 @@ const MarketplacePage = () => {
       specs: ["Handmade", "Estetik"]
     }
   ]);
-
-  // Load from local storage for guest published items (like from WaniPiro)
-  useEffect(() => {
-    const localItems = localStorage.getItem('wanipiro_marketplace_items');
-    if (localItems) {
-      try {
-        const parsed = JSON.parse(localItems);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setMockProducts(prev => {
-            // Keep hardcoded mocks (they don't start with wanipiro_)
-            const hardcodedMocks = prev.filter(p => !String(p.id).startsWith('wanipiro_'));
-            return [...parsed, ...hardcodedMocks];
-          });
-        }
-      } catch(e) {
-        console.error("Failed to parse local items", e);
-      }
-    }
-  }, []);
-
-  // Merge local images into fbProducts if available, and remove duplicates from mockProducts
-  const fbProductsWithLocalImages = fbProducts.map(p => {
-     const localMatch = mockProducts.find(m => m.id === p.id);
-     if (localMatch && localMatch.image) {
-        return { ...p, img: localMatch.image, image: localMatch.image, status: 'Approved' }; // Force approved if matched locally
-     }
-     return p;
-  });
-  
-  const fbProductIds = new Set(fbProducts.map(p => p.id));
-  const uniqueMockProducts = mockProducts.filter(p => !fbProductIds.has(p.id));
-  
-  const products = [...fbProductsWithLocalImages, ...uniqueMockProducts];
+  const products = [...fbProducts, ...mockProducts];
 
   // Real-Time Global Market Sync via Firestore
   useEffect(() => {
