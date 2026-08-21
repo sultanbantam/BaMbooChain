@@ -601,7 +601,8 @@ const HomePage = () => {
                     { id: 14, icon: <GraduationCap />, color: '#7950f2', bg: '#f3f0ff', label: t('guide_opt14'), path: '/academy' },
                     { id: 12, icon: <Users />, color: '#0ca678', bg: '#ebfbee', label: t('guide_opt12'), path: '/bamboochain/kodiba' },
                     { id: 13, icon: <Sparkles />, color: '#228be6', bg: '#e7f5ff', label: t('guide_opt13'), path: '/events' },
-                    { id: 15, icon: <Video />, color: '#0ca678', bg: '#ebfbee', label: t('guide_opt15'), path: '/bamboochain/meeting' }
+                    { id: 15, icon: <Video />, color: '#0ca678', bg: '#ebfbee', label: t('guide_opt15'), path: '/bamboochain/meeting' },
+                    { id: 16, icon: <Tag />, color: '#38d9a9', bg: '#e6fcf5', label: 'WANIPIRO?', path: '/wanipiro' }
                   ].map(opt => (
                     <Link key={opt.id} to={opt.path} onClick={(e) => {
                       if (opt.id === 12) {

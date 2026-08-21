@@ -295,7 +295,7 @@ export const translations = {
     welcome_intro_2: "Pilih langkah pertama Anda untuk membangun ekosistem bambu bersama kami.",
     welcome_btn_1: "TOBAT EKOLOGI",
     welcome_btn_2_1: "UTILITY BMC:",
-    welcome_btn_2_2: "1. BAMBOOGAME  2. BAMBOOCHAT\n3. WHALEOFSAVU  4. SIGNAL TRADING\n5. AdViPI 6. VotiVa 7. AIchitect\n8. YourFuture 9. ClimateMansion",
+    welcome_btn_2_2: "1. BAMBOOGAME  2. BAMBOOCHAT\n3. WHALEOFSAVU  4. SIGNAL TRADING\n5. AdViPI 6. VotiVa 7. AIchitect\n8. YourFuture 9. ClimateMansion 10. WANIPIRO?",
     welcome_footer: "Tanam kebaikan hari ini, petik masa depan esok pagi.",
 
     // Onboarding Smart Guide
@@ -1680,7 +1680,7 @@ export const translations = {
     welcome_btn: "START EXPLORING! 🚀",
     welcome_btn_1: "ECOLOGICAL REPENTANCE",
     welcome_btn_2_1: "BMC UTILITY:",
-    welcome_btn_2_2: "1. BAMBOOGAME  2. BAMBOOCHAT\n3. WHALEOFSAVU  4. SIGNAL TRADING\n5. AdViPI 6. VotiVa 7. AIchitect\n8. YourFuture 9. ClimateMansion",
+    welcome_btn_2_2: "1. BAMBOOGAME  2. BAMBOOCHAT\n3. WHALEOFSAVU  4. SIGNAL TRADING\n5. AdViPI 6. VotiVa 7. AIchitect\n8. YourFuture 9. ClimateMansion 10. WANIPIRO?",
     welcome_footer: "Plant goodness today, harvest the future tomorrow.",
 
     // Onboarding Smart Guide
