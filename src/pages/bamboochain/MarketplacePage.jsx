@@ -1706,9 +1706,9 @@ const MarketplacePage = () => {
           <div className="container" style={{ marginBottom: '60px' }}>
              <div style={{ background: 'var(--bg-secondary)', borderRadius: '24px', padding: '30px', border: '1px solid var(--border-color)' }}>
                 <h3 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}><BarChart3 color="var(--primary)" /> {t('market_bursa_title')}</h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
-                   {bursaData.slice(0, 4).map((item, idx) => (
-                     <div key={idx} style={{ background: 'var(--bg-card)', padding: '15px', borderRadius: '15px', display: 'flex', justifyContent: 'space-between', border: '1px solid var(--border-color)' }}>
+                <div style={{ display: 'flex', gap: '15px', overflowX: 'auto', paddingBottom: '15px', scrollbarWidth: 'thin' }}>
+                   {bursaData.map((item, idx) => (
+                     <div key={idx} style={{ minWidth: '200px', background: 'var(--bg-card)', padding: '15px', borderRadius: '15px', display: 'flex', justifyContent: 'space-between', border: '1px solid var(--border-color)' }}>
                         <div><div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{item.typeKey ? t(item.typeKey) : item.type}</div><div style={{ fontWeight: 'bold' }}>Rp {item.price.toLocaleString()}</div></div>
                         <div style={{ color: item.up ? 'var(--primary)' : '#fa5252', fontSize: '0.8rem' }}>{item.trend}</div>
                      </div>

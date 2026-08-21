@@ -626,7 +626,7 @@ const WanipiroPage = () => {
                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                          <div style={{ fontWeight: 'bold', color: 'var(--text-main)', fontSize: '1.1rem' }}>{itemName}</div>
                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                           {new Date(item.date).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })}
+                           {item.date ? new Date(item.date).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' }) : 'Baru-baru ini'}
                          </div>
                        </div>
                        
