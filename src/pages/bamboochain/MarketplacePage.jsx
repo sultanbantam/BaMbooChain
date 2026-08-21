@@ -500,10 +500,9 @@ const MarketplacePage = () => {
         const parsed = JSON.parse(localItems);
         if (Array.isArray(parsed) && parsed.length > 0) {
           setMockProducts(prev => {
-            // filter out duplicates by id just in case
-            const existingIds = new Set(prev.map(p => p.id));
-            const newItems = parsed.filter(item => !existingIds.has(item.id));
-            return [...newItems, ...prev];
+            // Keep hardcoded mocks (they don't start with wanipiro_)
+            const hardcodedMocks = prev.filter(p => !String(p.id).startsWith('wanipiro_'));
+            return [...parsed, ...hardcodedMocks];
           });
         }
       } catch(e) {
@@ -512,7 +511,19 @@ const MarketplacePage = () => {
     }
   }, []);
 
-  const products = [...fbProducts, ...mockProducts];
+  // Merge local images into fbProducts if available, and remove duplicates from mockProducts
+  const fbProductsWithLocalImages = fbProducts.map(p => {
+     const localMatch = mockProducts.find(m => m.id === p.id);
+     if (localMatch && localMatch.image) {
+        return { ...p, img: localMatch.image, image: localMatch.image, status: 'Approved' }; // Force approved if matched locally
+     }
+     return p;
+  });
+  
+  const fbProductIds = new Set(fbProducts.map(p => p.id));
+  const uniqueMockProducts = mockProducts.filter(p => !fbProductIds.has(p.id));
+  
+  const products = [...fbProductsWithLocalImages, ...uniqueMockProducts];
 
   // Simulation: Global Market & Forex Sync
   useEffect(() => {

@@ -175,30 +175,38 @@ const WanipiroPage = () => {
       description: productDesc,
       priceIdr: result.data.harga_total_estimasi || 0,
       category: mode === 'raw_bamboo' ? 'Bahan Baku' : 'Produk Jadi',
-      images: images && images.length > 0 ? images : []
+      status: 'Approved',
+      // Jangan kirim base64 ke server karena batas 1MB Firestore, kita kirim array kosong
+      images: [] 
     };
 
     try {
       const added = await addProduct(productData);
+      
+      // Simpan item secara lokal dengan gambar Base64 (baik sukses maupun gagal di server)
+      // agar user bisa melihat fotonya sendiri di layar mereka.
+      const idToUse = added ? added.id : 'wanipiro_' + Date.now();
+      const localItems = JSON.parse(localStorage.getItem('wanipiro_marketplace_items') || '[]');
+      
+      const mockItem = {
+        ...productData,
+        id: idToUse,
+        vendor: added ? (added.vendor || 'Anda') : 'Anda (Guest)',
+        shopId: added ? (added.shopId || 'local_shop') : 'local_shop',
+        image: (images && images.length > 0) ? images[0] : 'https://images.unsplash.com/photo-1518623489648-a173ef7824f3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+      };
+      
+      // Hapus jika sudah ada id yang sama (mencegah duplikat lokal)
+      const filtered = localItems.filter(i => i.id !== idToUse);
+      filtered.push(mockItem);
+      localStorage.setItem('wanipiro_marketplace_items', JSON.stringify(filtered));
+
       if (added) {
         alert("Berhasil dipublikasikan ke Marketplace!");
-        navigate('/bamboochain/marketplace');
       } else {
-        // Fallback to local storage for guests
-        const localItems = JSON.parse(localStorage.getItem('wanipiro_marketplace_items') || '[]');
-        const mockItem = {
-          ...productData,
-          id: 'wanipiro_' + Date.now(),
-          vendor: 'Anda (Guest)',
-          shopId: 'local_shop',
-          image: (productData.images && productData.images[0]) ? productData.images[0] : 'https://images.unsplash.com/photo-1518623489648-a173ef7824f3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
-        };
-        localItems.push(mockItem);
-        localStorage.setItem('wanipiro_marketplace_items', JSON.stringify(localItems));
-        
         alert("Berhasil disimpan ke Etalase Lokal! (Silakan login nanti untuk mempublikasikannya ke server publik).");
-        navigate('/bamboochain/marketplace');
       }
+      navigate('/bamboochain/marketplace');
     } catch (err) {
       console.error(err);
       alert("Terjadi kesalahan sistem saat mempublikasikan ke Marketplace.");
