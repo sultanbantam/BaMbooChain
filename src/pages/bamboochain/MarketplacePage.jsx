@@ -171,6 +171,7 @@ const MarketplacePage = () => {
     { typeKey: "market_bursa_vinegar", price: 45000, trend: "+1.2%", up: true },
     { typeKey: "market_bursa_charcoal", price: 125000, trend: "+0.8%", up: true },
     { typeKey: "market_bursa_briquette", price: 150000, trend: "+2.1%", up: true },
+    { typeKey: "Bibit Bambu", price: 15000, trend: "+0.5%", up: true },
     { typeKey: "market_bursa_other", price: 0, trend: "-", up: true },
   ]);
   

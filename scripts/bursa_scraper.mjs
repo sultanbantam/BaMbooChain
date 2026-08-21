@@ -25,6 +25,7 @@ const BASE_PRICES = {
   "market_bursa_vinegar": 45000,
   "market_bursa_charcoal": 125000,
   "market_bursa_briquette": 150000,
+  "Bibit Bambu": 15000,
 };
 
 async function scrapeMarketData() {
