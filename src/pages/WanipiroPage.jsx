@@ -180,11 +180,24 @@ const WanipiroPage = () => {
 
     try {
       const added = await addProduct(productData);
-      if(added) {
+      if (added) {
         alert("Berhasil dipublikasikan ke Marketplace!");
         navigate('/bamboochain/marketplace');
       } else {
-        alert("Gagal mempublikasikan. Pastikan Anda sudah login.");
+        // Fallback to local storage for guests
+        const localItems = JSON.parse(localStorage.getItem('wanipiro_marketplace_items') || '[]');
+        const mockItem = {
+          ...productData,
+          id: 'wanipiro_' + Date.now(),
+          vendor: 'Anda (Guest)',
+          shopId: 'local_shop',
+          image: (productData.images && productData.images[0]) ? productData.images[0] : 'https://images.unsplash.com/photo-1518623489648-a173ef7824f3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+        };
+        localItems.push(mockItem);
+        localStorage.setItem('wanipiro_marketplace_items', JSON.stringify(localItems));
+        
+        alert("Berhasil disimpan ke Etalase Lokal! (Silakan login nanti untuk mempublikasikannya ke server publik).");
+        navigate('/bamboochain/marketplace');
       }
     } catch (err) {
       console.error(err);

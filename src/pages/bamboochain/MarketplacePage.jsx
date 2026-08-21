@@ -492,6 +492,26 @@ const MarketplacePage = () => {
     }
   ]);
 
+  // Load from local storage for guest published items (like from WaniPiro)
+  useEffect(() => {
+    const localItems = localStorage.getItem('wanipiro_marketplace_items');
+    if (localItems) {
+      try {
+        const parsed = JSON.parse(localItems);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setMockProducts(prev => {
+            // filter out duplicates by id just in case
+            const existingIds = new Set(prev.map(p => p.id));
+            const newItems = parsed.filter(item => !existingIds.has(item.id));
+            return [...newItems, ...prev];
+          });
+        }
+      } catch(e) {
+        console.error("Failed to parse local items", e);
+      }
+    }
+  }, []);
+
   const products = [...fbProducts, ...mockProducts];
 
   // Simulation: Global Market & Forex Sync
