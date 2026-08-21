@@ -178,14 +178,26 @@ const WanipiroPage = () => {
         setError(data.message || 'Data tidak lengkap atau terjadi kesalahan.');
       } else {
         setResult(data);
+        let payloadToSave = { result: data, formData, mode, images, date: new Date().toISOString() };
         
-        const payloadToSave = { result: data, formData, mode, images, date: new Date().toISOString() };
-        localStorage.setItem('wanipiro_last_result', JSON.stringify(payloadToSave));
+        try {
+          localStorage.setItem('wanipiro_last_result', JSON.stringify(payloadToSave));
+        } catch (e) {
+          console.warn("Quota exceeded, omitting images from cache");
+          payloadToSave.images = [];
+          localStorage.setItem('wanipiro_last_result', JSON.stringify(payloadToSave));
+        }
         
         // Save to history
         setAppraisalHistory(prev => {
-           const newHistory = [payloadToSave, ...prev].slice(0, 20); // Keep last 20
-           localStorage.setItem('wanipiro_appraisal_history', JSON.stringify(newHistory));
+           let newHistory = [payloadToSave, ...prev].slice(0, 20); // Keep last 20
+           try {
+             localStorage.setItem('wanipiro_appraisal_history', JSON.stringify(newHistory));
+           } catch (e) {
+             console.warn("History quota exceeded, stripping images from items");
+             newHistory = newHistory.map(item => ({ ...item, images: [] }));
+             localStorage.setItem('wanipiro_appraisal_history', JSON.stringify(newHistory));
+           }
            return newHistory;
         });
       }
