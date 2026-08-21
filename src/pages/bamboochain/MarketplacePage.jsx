@@ -13,7 +13,8 @@ import { useAuth } from '../../context/AuthContext';
 import { useMarketplace } from '../../context/MarketplaceContext';
 import { storage, db } from '../../firebase/config';
 import { ref, uploadString, getDownloadURL } from 'firebase/storage';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { doc, setDoc, onSnapshot, collection, addDoc } from 'firebase/firestore';
+import { fetchDynamicCommodityPrice } from '../../utils/bursaAiService';
 
 const compressImage = (file) => {
   return new Promise((resolve) => {
@@ -179,6 +180,40 @@ const MarketplacePage = () => {
   const [lastSync, setLastSync] = useState(new Date());
   const [usdtPrice, setUsdtPrice] = useState(17352); // Fallback if API fails
   const [bursaSearch, setBursaSearch] = useState('');
+  const [isAiSearching, setIsAiSearching] = useState(false);
+
+  const handleGlobalBursaSearch = async () => {
+    if (!bursaSearch.trim()) return;
+    setIsAiSearching(true);
+    try {
+      const newCommodity = await fetchDynamicCommodityPrice(bursaSearch.trim());
+      
+      // Save to Firebase custom_commodities collection
+      const docRef = doc(db, "marketplace_bursa", "custom_commodities");
+      await setDoc(docRef, {
+        [newCommodity.typeKey]: {
+          price: newCommodity.price,
+          addedAt: new Date().toISOString()
+        }
+      }, { merge: true });
+
+      // Add to local state immediately so user sees it
+      setBursaData(prev => {
+        if (!prev.find(p => p.typeKey === newCommodity.typeKey)) {
+          return [...prev, newCommodity];
+        }
+        return prev;
+      });
+      
+      showToast(`Berhasil melacak indeks global untuk: ${newCommodity.typeKey}`);
+      setBursaSearch('');
+    } catch (e) {
+      console.error(e);
+      showToast("Gagal melacak komoditas di pasar global. Coba lagi.");
+    } finally {
+      setIsAiSearching(false);
+    }
+  };
 
   useEffect(() => {
     const fetchPrice = async () => {
@@ -1722,15 +1757,34 @@ const MarketplacePage = () => {
                 </div>
                 
                 <div style={{ display: 'flex', gap: '15px', overflowX: 'auto', paddingBottom: '15px', scrollbarWidth: 'thin' }}>
-                   {bursaData.filter(item => {
-                     const name = item.typeKey ? t(item.typeKey) : (item.type || '');
-                     return name.toLowerCase().includes(bursaSearch.toLowerCase());
-                   }).map((item, idx) => (
-                     <div key={idx} style={{ minWidth: '200px', background: 'var(--bg-card)', padding: '15px', borderRadius: '15px', display: 'flex', justifyContent: 'space-between', border: '1px solid var(--border-color)' }}>
-                        <div><div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{item.typeKey ? t(item.typeKey) : item.type}</div><div style={{ fontWeight: 'bold' }}>Rp {item.price.toLocaleString()}</div></div>
-                        <div style={{ color: item.up ? 'var(--primary)' : '#fa5252', fontSize: '0.8rem' }}>{item.trend}</div>
-                     </div>
-                   ))}
+                   {(() => {
+                     const filtered = bursaData.filter(item => {
+                       const name = item.typeKey ? t(item.typeKey) : (item.type || '');
+                       return name.toLowerCase().includes(bursaSearch.toLowerCase());
+                     });
+                     
+                     if (filtered.length === 0 && bursaSearch) {
+                       return (
+                         <div style={{ width: '100%', padding: '20px', textAlign: 'center', background: 'rgba(255,255,255,0.05)', borderRadius: '15px' }}>
+                            <p style={{ color: 'var(--text-muted)', marginBottom: '15px' }}>Komoditas "{bursaSearch}" tidak ditemukan di memori bursa lokal.</p>
+                            <button 
+                              onClick={handleGlobalBursaSearch}
+                              disabled={isAiSearching}
+                              style={{ padding: '10px 20px', borderRadius: '12px', background: 'var(--primary)', color: '#000', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}
+                            >
+                              {isAiSearching ? 'Melacak Intelijen Global...' : 'Lacak Harga Global Sekarang!'}
+                            </button>
+                         </div>
+                       );
+                     }
+                     
+                     return filtered.map((item, idx) => (
+                       <div key={idx} style={{ minWidth: '200px', background: 'var(--bg-card)', padding: '15px', borderRadius: '15px', display: 'flex', justifyContent: 'space-between', border: '1px solid var(--border-color)' }}>
+                          <div><div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{item.typeKey ? (t(item.typeKey) === item.typeKey ? item.typeKey : t(item.typeKey)) : item.type}</div><div style={{ fontWeight: 'bold' }}>Rp {item.price.toLocaleString()}</div></div>
+                          <div style={{ color: item.up ? 'var(--primary)' : '#fa5252', fontSize: '0.8rem' }}>{item.trend}</div>
+                       </div>
+                     ));
+                   })()}
                 </div>
              </div>
           </div>

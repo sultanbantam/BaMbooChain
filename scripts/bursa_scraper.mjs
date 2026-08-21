@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, doc, setDoc } from "firebase/firestore";
+import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
 import fetch from "node-fetch";
 
 // Konfigurasi Firebase dari file .env klien (karena kita tidak menggunakan Admin SDK)
@@ -31,9 +31,21 @@ const BASE_PRICES = {
 async function scrapeMarketData() {
   console.log(`[${new Date().toISOString()}] Mengambil data pasar global terbaru...`);
   
-  // Dalam skenario dunia nyata, kita akan melakukan 'fetch' ke API WorldBank/Alibaba
-  // const response = await fetch('https://api.tradingeconomics.com/commodities/lumber?c=guest:guest');
-  // const data = await response.json();
+  // Fetch custom commodities submitted by users globally
+  try {
+    const customDoc = await getDoc(doc(db, "marketplace_bursa", "custom_commodities"));
+    if (customDoc.exists()) {
+      const customData = customDoc.data();
+      for (const [key, value] of Object.entries(customData)) {
+        if (!BASE_PRICES[key]) {
+          console.log(`[AI SYNC] Menambahkan komoditas baru ke memori bursa: ${key} (Base: Rp ${value.price})`);
+          BASE_PRICES[key] = value.price;
+        }
+      }
+    }
+  } catch (e) {
+    console.error("[WARN] Gagal mengambil custom commodities", e.message);
+  }
   
   // Simulasi algoritma intelijen: Fluktuasi berdasarkan tren pasar dunia
   const marketTrend = (Math.random() - 0.5) * 500; // Makro tren global
