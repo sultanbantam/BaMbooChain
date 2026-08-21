@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Leaf, Search, DollarSign, CloudRain, ShieldCheck, Factory, AlertTriangle, ArrowRight, Loader, Tag, CheckCircle2, ThumbsUp, ThumbsDown, Info, Upload, X, Camera } from 'lucide-react';
+import { Leaf, Search, DollarSign, CloudRain, ShieldCheck, Factory, AlertTriangle, ArrowRight, Loader, Tag, CheckCircle2, ThumbsUp, ThumbsDown, Info, Upload, X, Camera, History } from 'lucide-react';
 import { fetchWanipiroAppraisal } from '../utils/wanipiroService';
 import { useLanguage } from '../context/LanguageContext';
 import { useMarketplace } from '../context/MarketplaceContext';
@@ -50,9 +50,13 @@ const WanipiroPage = () => {
 
   // Images State (Base64)
   const [images, setImages] = useState([]);
+  
+  // History State
+  const [appraisalHistory, setAppraisalHistory] = useState([]);
 
-  // Load cached result on mount
+  // Load cached result and history on mount
   useEffect(() => {
+    // Load last result
     const cached = localStorage.getItem('wanipiro_last_result');
     if (cached) {
       try {
@@ -63,6 +67,16 @@ const WanipiroPage = () => {
         if (parsed.images) setImages(parsed.images);
       } catch (e) {
         console.error("Failed to parse cached wanipiro data", e);
+      }
+    }
+    
+    // Load history
+    const historyCached = localStorage.getItem('wanipiro_appraisal_history');
+    if (historyCached) {
+      try {
+        setAppraisalHistory(JSON.parse(historyCached));
+      } catch (e) {
+        console.error("Failed to parse history", e);
       }
     }
   }, []);
@@ -150,7 +164,16 @@ const WanipiroPage = () => {
         setError(data.message || 'Data tidak lengkap atau terjadi kesalahan.');
       } else {
         setResult(data);
-        localStorage.setItem('wanipiro_last_result', JSON.stringify({ result: data, formData, mode, images }));
+        
+        const payloadToSave = { result: data, formData, mode, images, date: new Date().toISOString() };
+        localStorage.setItem('wanipiro_last_result', JSON.stringify(payloadToSave));
+        
+        // Save to history
+        setAppraisalHistory(prev => {
+           const newHistory = [payloadToSave, ...prev].slice(0, 20); // Keep last 20
+           localStorage.setItem('wanipiro_appraisal_history', JSON.stringify(newHistory));
+           return newHistory;
+        });
       }
     } catch (err) {
       console.error(err);
@@ -532,6 +555,68 @@ const WanipiroPage = () => {
             )}
           </div>
         </div>
+
+        {/* RIWAYAT TAKSIRAN */}
+        {appraisalHistory.length > 0 && (
+          <div className="fade-in" style={{ marginTop: '50px', background: 'var(--bg-card)', padding: '30px', borderRadius: '24px', border: '1px solid var(--border-color)', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}>
+            <h3 style={{ marginBottom: '20px', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '10px' }}><History size={24} style={{ color: 'var(--primary)' }}/> Riwayat Taksiran Anda</h3>
+            <div style={{ display: 'flex', gap: '20px', overflowX: 'auto', paddingBottom: '15px' }}>
+               {appraisalHistory.map((item, idx) => {
+                  const itemName = item.mode === 'raw_bamboo' 
+                    ? `Bambu ${item.formData?.jenis_bambu === 'lainnya' ? item.formData?.jenis_bambu_lainnya : item.formData?.jenis_bambu}`
+                    : (item.formData?.nama_produk || 'Produk Kerajinan');
+                  
+                  return (
+                    <div 
+                      key={idx} 
+                      onClick={() => {
+                        setResult(item.result);
+                        setFormData(item.formData);
+                        setMode(item.mode);
+                        setImages(item.images || []);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }} 
+                      style={{ 
+                        minWidth: '280px', 
+                        background: 'var(--bg-secondary)', 
+                        padding: '20px', 
+                        borderRadius: '16px', 
+                        cursor: 'pointer', 
+                        border: '1px solid var(--border-color)',
+                        transition: 'transform 0.2s',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '10px'
+                      }}
+                      onMouseOver={e => e.currentTarget.style.transform = 'translateY(-5px)'}
+                      onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}
+                    >
+                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                         <div style={{ fontWeight: 'bold', color: 'var(--text-main)', fontSize: '1.1rem' }}>{itemName}</div>
+                         <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                           {new Date(item.date).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })}
+                         </div>
+                       </div>
+                       
+                       <div style={{ display: 'flex', gap: '10px' }}>
+                         {item.images && item.images.length > 0 ? (
+                           <img src={item.images[0]} alt="thumb" style={{ width: '60px', height: '60px', borderRadius: '8px', objectFit: 'cover' }} />
+                         ) : (
+                           <div style={{ width: '60px', height: '60px', borderRadius: '8px', background: 'var(--bg-color)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                             <Leaf size={24} style={{ color: 'var(--text-muted)' }} />
+                           </div>
+                         )}
+                         <div style={{ flex: 1 }}>
+                           <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Estimasi:</div>
+                           <div style={{ fontWeight: '900', color: 'var(--primary)' }}>Rp {item.result?.data?.harga_total_estimasi?.toLocaleString('id-ID')}</div>
+                         </div>
+                       </div>
+                    </div>
+                  );
+               })}
+            </div>
+          </div>
+        )}
       </div>
       <style>{`
         .form-label { display: block; margin-bottom: 6px; font-size: 0.85rem; color: var(--text-muted); font-weight: 600; }
