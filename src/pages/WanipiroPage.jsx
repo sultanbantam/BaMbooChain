@@ -18,18 +18,18 @@ const WanipiroPage = () => {
 
   // Form State
   const [formData, setFormData] = useState({
-    lokasi: 'Bandung, Indonesia',
-    keterangan_lainnya: '',
     // Raw Bamboo
-    jenis_bambu: 'Petung',
+    lokasi: '',
+    keterangan_lainnya: '',
+    jenis_bambu: 'petung',
     jenis_bambu_lainnya: '',
-    jumlah_batang: 100,
+    jumlah_batang: '',
     satuan_jual: 'per_batang',
-    panjang_total_meter: 6.5,
-    diameter_pangkal_cm: 10,
-    diameter_tengah_cm: 8,
-    diameter_ujung_cm: 5,
-    ketebalan_dinding_cm: 1.5,
+    panjang_total_meter: '',
+    diameter_pangkal_cm: '',
+    diameter_tengah_cm: '',
+    diameter_ujung_cm: '',
+    ketebalan_dinding_cm: '',
     usia: '3-5_tahun',
     kelurusan: 'lurus',
     kondisi_fisik: 'utuh',
@@ -38,10 +38,10 @@ const WanipiroPage = () => {
     nama_produk: '',
     kategori_produk: 'anyaman',
     kategori_produk_lainnya: '',
-    dimensi_p: 0,
-    dimensi_l: 0,
-    dimensi_t: 0,
-    berat_gram: 0,
+    dimensi_p: '',
+    dimensi_l: '',
+    dimensi_t: '',
+    berat_gram: '',
     tingkat_kesulitan: 'sedang',
     waktu_pengerjaan_jam: 8,
     teknik_utama: 'anyaman',
@@ -88,7 +88,7 @@ const WanipiroPage = () => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : (type === 'number' ? Number(value) : value)
+      [name]: type === 'checkbox' ? checked : (type === 'number' ? (value === '' ? '' : Number(value)) : value)
     }));
   };
 
@@ -248,7 +248,7 @@ const WanipiroPage = () => {
     setIsLoading(true);
     
     const itemName = mode === 'raw_bamboo' 
-      ? `Bambu ${formData.jenis_bambu === 'lainnya' ? formData.jenis_bambu_lainnya : formData.jenis_bambu} (${formData.panjang_total_meter}m)`
+      ? `Bambu ${formData.jenis_bamboo === 'lainnya' ? formData.jenis_bamboo_lainnya : formData.jenis_bamboo} (${formData.panjang_total_meter}m)`
       : (formData.nama_produk || 'Produk Kerajinan Bambu');
       
     const productDesc = `${result.data.rekomendasi_petani}\n\nSpesifikasi:\n- Lokasi: ${formData.lokasi}\n- Kondisi: ${formData.kondisi_fisik}\n- Total Estimasi: Rp ${result.data.harga_total_estimasi?.toLocaleString('id-ID')}\n\nSertifikat Penaksiran WaniPiro:\n${result.data.detai_proses}`;
@@ -333,16 +333,16 @@ const WanipiroPage = () => {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                 <div>
                   <label className="form-label">Lokasi</label>
-                  <input type="text" name="lokasi" placeholder="Misal: Kyoto, Japan atau Bandung" value={formData.lokasi} onChange={handleInputChange} className="form-input" required />
+                  <input type="text" name="lokasi" placeholder="Misal: Bandung, Indonesia" value={formData.lokasi} onChange={handleInputChange} className="form-input" required />
                 </div>
                 <div>
                   <label className="form-label">Jenis Bambu</label>
                   <select name="jenis_bambu" value={formData.jenis_bambu} onChange={handleInputChange} className="form-input">
-                    <option value="Petung">Petung</option>
-                    <option value="Temen">Temen</option>
-                    <option value="Hitam/Wulung">Hitam/Wulung</option>
-                    <option value="Tali/Apus">Tali/Apus</option>
-                    <option value="Gombong">Gombong</option>
+                    <option value="petung">Petung</option>
+                    <option value="temen">Temen</option>
+                    <option value="hitam_wulung">Hitam/Wulung</option>
+                    <option value="tali_apus">Tali/Apus</option>
+                    <option value="gombong">Gombong</option>
                     <option value="lainnya">Lainnya...</option>
                   </select>
                   {formData.jenis_bambu === 'lainnya' && (
@@ -356,26 +356,26 @@ const WanipiroPage = () => {
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                     <div>
                       <label className="form-label">Jml Batang</label>
-                      <input type="number" name="jumlah_batang" value={formData.jumlah_batang} onChange={handleInputChange} className="form-input" min="1" required />
+                      <input type="number" name="jumlah_batang" placeholder="Contoh: 100" value={formData.jumlah_batang} onChange={handleInputChange} className="form-input" min="1" required />
                     </div>
                     <div>
                       <label className="form-label">Panjang (m)</label>
-                      <input type="number" step="0.1" name="panjang_total_meter" value={formData.panjang_total_meter} onChange={handleInputChange} className="form-input" min="0.1" required />
+                      <input type="number" step="0.1" name="panjang_total_meter" placeholder="Contoh: 6.5" value={formData.panjang_total_meter} onChange={handleInputChange} className="form-input" min="0.1" required />
                     </div>
                   </div>
                   
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
                     <div>
                       <label className="form-label">Ø Pangkal (cm)</label>
-                      <input type="number" step="0.1" name="diameter_pangkal_cm" value={formData.diameter_pangkal_cm} onChange={handleInputChange} className="form-input" required />
+                      <input type="number" step="0.1" name="diameter_pangkal_cm" placeholder="Contoh: 10" value={formData.diameter_pangkal_cm} onChange={handleInputChange} className="form-input" required />
                     </div>
                     <div>
-                      <label className="form-label">Ø Tengah</label>
-                      <input type="number" step="0.1" name="diameter_tengah_cm" value={formData.diameter_tengah_cm} onChange={handleInputChange} className="form-input" required />
+                      <label className="form-label">Ø Tengah (cm)</label>
+                      <input type="number" step="0.1" name="diameter_tengah_cm" placeholder="Contoh: 8" value={formData.diameter_tengah_cm} onChange={handleInputChange} className="form-input" required />
                     </div>
                     <div>
-                      <label className="form-label">Ø Ujung</label>
-                      <input type="number" step="0.1" name="diameter_ujung_cm" value={formData.diameter_ujung_cm} onChange={handleInputChange} className="form-input" required />
+                      <label className="form-label">Ø Ujung (cm)</label>
+                      <input type="number" step="0.1" name="diameter_ujung_cm" placeholder="Contoh: 5" value={formData.diameter_ujung_cm} onChange={handleInputChange} className="form-input" required />
                     </div>
                   </div>
 
@@ -459,7 +459,22 @@ const WanipiroPage = () => {
                     </div>
                     <div>
                       <label className="form-label">Est. Waktu Kerja (Jam)</label>
-                      <input type="number" name="waktu_pengerjaan_jam" value={formData.waktu_pengerjaan_jam} onChange={handleInputChange} className="form-input" min="0" required />
+                      <input type="number" name="waktu_pengerjaan_jam" placeholder="Contoh: 8" value={formData.waktu_pengerjaan_jam} onChange={handleInputChange} className="form-input" min="0" required />
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                    <div>
+                      <label className="form-label">Dimensi PxLxT (cm)</label>
+                      <div style={{ display: 'flex', gap: '5px' }}>
+                        <input type="number" name="dimensi_p" placeholder="P: 200" value={formData.dimensi_p} onChange={handleInputChange} className="form-input" required />
+                        <input type="number" name="dimensi_l" placeholder="L: 60" value={formData.dimensi_l} onChange={handleInputChange} className="form-input" required />
+                        <input type="number" name="dimensi_t" placeholder="T: 80" value={formData.dimensi_t} onChange={handleInputChange} className="form-input" required />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="form-label">Berat Est. (Gram)</label>
+                      <input type="number" name="berat_gram" placeholder="Contoh: 15000" value={formData.berat_gram} onChange={handleInputChange} className="form-input" required />
                     </div>
                   </div>
                   
@@ -699,6 +714,7 @@ const WanipiroPage = () => {
       <style>{`
         .form-label { display: block; margin-bottom: 6px; font-size: 0.85rem; color: var(--text-muted); font-weight: 600; }
         .form-input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-main); font-size: 0.95rem; transition: 0.2s; }
+        .form-input::placeholder { color: #8892b0; opacity: 1; font-style: italic; }
         .form-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(12,166,120,0.1); }
         .spin { animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
