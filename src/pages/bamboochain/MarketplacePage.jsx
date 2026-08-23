@@ -60,6 +60,25 @@ const compressImage = (file) => {
   });
 };
 
+export const uploadToCloudinary = async (base64Img) => {
+  if (!base64Img.startsWith('data:image')) return base64Img;
+  try {
+    const fd = new FormData();
+    fd.append('file', base64Img);
+    fd.append('upload_preset', 'ml_default');
+    const cloudName = 'dza0joxm6'; 
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+       method: 'POST',
+       body: fd
+    });
+    const json = await res.json();
+    return json.secure_url || base64Img;
+  } catch (e) {
+    console.warn("Cloudinary upload failed", e);
+    return base64Img;
+  }
+};
+
 const MarketplacePage = () => {
   const { t } = useLanguage();
   const { user } = useAuth();
@@ -289,30 +308,63 @@ const MarketplacePage = () => {
   const [brokenImages, setBrokenImages] = useState(new Set());
   const [storefrontId, setStorefrontId] = useState(null);
   const [showEditShopModal, setShowEditShopModal] = useState(false);
-  const [editShopData, setEditShopData] = useState({ shopName: '', description: '' });
+  const [editShopData, setEditShopData] = useState({ shopName: '', description: '', brandLogo: '', thumbnail: '' });
+  const [isSavingShop, setIsSavingShop] = useState(false);
 
   const getShopInfo = (vendorId) => {
     const shop = shops?.find(s => s.shopId === vendorId || s.ownerId === vendorId);
     if (shop) return shop;
-    return { shopName: vendorId, brandLogo: 'https://cdn-icons-png.flaticon.com/512/1909/1909848.png', description: t('market_shop_official').replace('{vendor}', vendorId) };
+    return { shopName: vendorId, brandLogo: 'https://cdn-icons-png.flaticon.com/512/1909/1909848.png', thumbnail: '', description: t('market_shop_official').replace('{vendor}', vendorId) };
   };
 
   const handleOpenEditShop = () => {
     if (!user) return showToast(t('market_shop_login_required'));
     const s = getShopInfo(user?.username);
-    setEditShopData({ shopName: s.shopName === user?.username ? '' : s.shopName, description: s.description.startsWith(t('market_shop_official').split('{')[0]) ? '' : s.description });
+    setEditShopData({ 
+        shopName: s.shopName === user?.username ? '' : s.shopName, 
+        description: s.description.startsWith(t('market_shop_official').split('{')[0]) ? '' : s.description,
+        brandLogo: s.brandLogo === 'https://cdn-icons-png.flaticon.com/512/1909/1909848.png' ? '' : s.brandLogo,
+        thumbnail: s.thumbnail || ''
+    });
     setShowEditShopModal(true);
+  };
+
+  const handleShopFileChange = async (e, field) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const base64 = await compressImage(file);
+    setEditShopData(prev => ({ ...prev, [field]: base64 }));
   };
 
   const handleSaveShop = async (e) => {
     e.preventDefault();
     if (!editShopData.shopName) return showToast(t('market_shop_name_required'));
+    setIsSavingShop(true);
+    
+    let finalLogo = editShopData.brandLogo;
+    let finalThumbnail = editShopData.thumbnail;
+    
+    if (finalLogo && finalLogo.startsWith('data:image')) {
+       finalLogo = await uploadToCloudinary(finalLogo);
+    }
+    if (finalThumbnail && finalThumbnail.startsWith('data:image')) {
+       finalThumbnail = await uploadToCloudinary(finalThumbnail);
+    }
+    
+    const payload = { 
+        shopName: editShopData.shopName, 
+        description: editShopData.description, 
+        brandLogo: finalLogo || 'https://cdn-icons-png.flaticon.com/512/1909/1909848.png',
+        thumbnail: finalThumbnail || ''
+    };
+    
     const existing = shops?.find(s => s.shopId === user?.username);
     if (existing) {
-       await updateShop(user?.username, { shopName: editShopData.shopName, description: editShopData.description, brandLogo: 'https://cdn-icons-png.flaticon.com/512/1909/1909848.png' });
+       await updateShop(user?.username, payload);
     } else {
-       await createShop({ shopName: editShopData.shopName, description: editShopData.description, brandLogo: 'https://cdn-icons-png.flaticon.com/512/1909/1909848.png' });
+       await createShop(payload);
     }
+    setIsSavingShop(false);
     setShowEditShopModal(false);
     showToast(t('market_shop_save_success'));
   };
@@ -731,31 +783,8 @@ const MarketplacePage = () => {
       
       for (let i = 0; i < newProduct.images.length; i++) {
         const base64Img = newProduct.images[i];
-        if (base64Img.startsWith('data:image')) {
-          try {
-            const fd = new FormData();
-            fd.append('file', base64Img);
-            fd.append('upload_preset', 'ml_default');
-            const cloudName = 'dza0joxm6'; 
-            
-            const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-               method: 'POST',
-               body: fd
-            });
-            const json = await res.json();
-            
-            if (json.secure_url) {
-              uploadedImageUrls.push(json.secure_url);
-            } else {
-              uploadedImageUrls.push(base64Img); // Fallback
-            }
-          } catch (e) {
-            console.warn("Cloudinary upload failed", e);
-            uploadedImageUrls.push(base64Img); // Fallback to base64 if Cloudinary fails
-          }
-        } else {
-          uploadedImageUrls.push(base64Img); // If already an URL
-        }
+        const uploadedUrl = await uploadToCloudinary(base64Img);
+        uploadedImageUrls.push(uploadedUrl);
       }
 
       const finalImages = uploadedImageUrls.length > 0 ? uploadedImageUrls : ["https://images.unsplash.com/photo-1590059345003-34537330756e?auto=format&fit=crop&w=400"];
@@ -1578,7 +1607,23 @@ const MarketplacePage = () => {
                       <label style={{ fontSize: '0.85rem', color: '#555', display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>{t('market_shop_desc_label')}</label>
                       <textarea placeholder={t('market_shop_desc_placeholder')} value={editShopData.description} onChange={e => setEditShopData({...editShopData, description: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '15px', border: '1px solid #ddd', fontSize: '1rem', minHeight: '100px', resize: 'vertical' }}></textarea>
                    </div>
-                   <button type="submit" style={{ width: '100%', padding: '18px', borderRadius: '15px', background: 'var(--primary)', color: 'white', border: 'none', fontWeight: 'bold', fontSize: '1.1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{t('market_shop_save_btn')}</button>
+                   <div style={{ marginBottom: '20px' }}>
+                      <label style={{ fontSize: '0.85rem', color: '#555', display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>Logo / Avatar Toko</label>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                          <img src={editShopData.brandLogo || 'https://cdn-icons-png.flaticon.com/512/1909/1909848.png'} style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover', border: '1px solid #ddd' }} alt="" />
+                          <input type="file" accept="image/*" onChange={(e) => handleShopFileChange(e, 'brandLogo')} style={{ fontSize: '0.85rem' }} />
+                      </div>
+                   </div>
+                   <div style={{ marginBottom: '20px' }}>
+                      <label style={{ fontSize: '0.85rem', color: '#555', display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>Thumbnail / Banner Toko</label>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                          {editShopData.thumbnail && <img src={editShopData.thumbnail} style={{ width: '100%', height: '100px', borderRadius: '15px', objectFit: 'cover', border: '1px solid #ddd' }} alt="" />}
+                          <input type="file" accept="image/*" onChange={(e) => handleShopFileChange(e, 'thumbnail')} style={{ fontSize: '0.85rem' }} />
+                      </div>
+                   </div>
+                   <button type="submit" disabled={isSavingShop} style={{ width: '100%', padding: '18px', borderRadius: '15px', background: 'var(--primary)', color: 'white', border: 'none', fontWeight: 'bold', fontSize: '1.1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: isSavingShop ? 0.7 : 1 }}>
+                     {isSavingShop ? 'Menyimpan...' : t('market_shop_save_btn')}
+                   </button>
                 </form>
               </div>
             </div>
@@ -1809,7 +1854,7 @@ const MarketplacePage = () => {
                  const sProducts = visibleProducts.filter(p => p.vendor === storefrontId);
                  return (
                    <div>
-                     <div style={{ width: '100%', height: '200px', background: 'linear-gradient(45deg, var(--primary), #12b886)', borderRadius: '30px', position: 'relative', marginBottom: '80px' }}>
+                     <div style={{ width: '100%', height: '200px', background: sInfo.thumbnail ? `url(${sInfo.thumbnail}) center/cover` : 'linear-gradient(45deg, var(--primary), #12b886)', borderRadius: '30px', position: 'relative', marginBottom: '80px' }}>
                         <img src={sInfo.brandLogo} style={{ width: '120px', height: '120px', borderRadius: '50%', border: '5px solid var(--bg-primary)', position: 'absolute', bottom: '-60px', left: '40px', objectFit: 'cover' }} alt="" />
                      </div>
                      <div style={{ padding: '0 20px', marginBottom: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '20px' }}>
