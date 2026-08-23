@@ -279,7 +279,11 @@ const WanipiroPage = () => {
           addDoc(collection(db, 'wanipiro_public_history'), publicPayload).catch(e => {
             console.error("Failed to save to global history:", e);
           });
-          setAppraisalHistory(prev => [{ id: 'temp-' + Date.now(), ...publicPayload }, ...prev]);
+          setAppraisalHistory(prev => {
+            const newHistory = [{ id: 'temp-' + Date.now(), ...publicPayload }, ...prev];
+            localStorage.setItem('wanipiro_history', JSON.stringify(newHistory));
+            return newHistory;
+          });
         } catch (e) {
           console.error("Failed to save to global history:", e);
         }
