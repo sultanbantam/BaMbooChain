@@ -83,8 +83,11 @@ const WanipiroPage = () => {
     const unsub = onSnapshot(q, (snap) => {
       const historyData = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setAppraisalHistory(historyData);
+      localStorage.setItem('wanipiro_history', JSON.stringify(historyData));
     }, (err) => {
       console.error("Failed to sync Wanipiro history", err);
+      const saved = localStorage.getItem('wanipiro_history');
+      if (saved) setAppraisalHistory(JSON.parse(saved));
     });
 
     return () => unsub();
@@ -273,7 +276,10 @@ const WanipiroPage = () => {
             userId: user ? user.id : 'guest',
             userName: user ? user.displayName : 'Guest User'
           };
-          addDoc(collection(db, 'wanipiro_public_history'), publicPayload);
+          addDoc(collection(db, 'wanipiro_public_history'), publicPayload).catch(e => {
+            console.error("Failed to save to global history:", e);
+          });
+          setAppraisalHistory(prev => [{ id: 'temp-' + Date.now(), ...publicPayload }, ...prev]);
         } catch (e) {
           console.error("Failed to save to global history:", e);
         }
@@ -660,24 +666,28 @@ const WanipiroPage = () => {
         </div>
 
         {/* RIWAYAT TAKSIRAN */}
-        {appraisalHistory.length > 0 && (
-          <div className="fade-in" style={{ marginTop: '50px', background: 'var(--bg-card)', padding: '30px', borderRadius: '24px', border: '1px solid var(--border-color)', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px', marginBottom: '20px' }}>
-              <h3 style={{ color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '10px', margin: 0 }}><History size={24} style={{ color: 'var(--primary)' }}/> Riwayat Taksiran Anda</h3>
-              <div style={{ position: 'relative', width: '100%', maxWidth: '300px' }}>
-                <Search size={18} style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                <input 
-                  type="text" 
-                  placeholder="Cari riwayat..." 
-                  value={historySearch}
-                  onChange={(e) => setHistorySearch(e.target.value)}
-                  style={{ width: '100%', padding: '12px 15px 12px 45px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-main)', outline: 'none' }}
-                />
-              </div>
+        <div className="fade-in" style={{ marginTop: '50px', background: 'var(--bg-card)', padding: '30px', borderRadius: '24px', border: '1px solid var(--border-color)', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px', marginBottom: '20px' }}>
+            <h3 style={{ color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '10px', margin: 0 }}><History size={24} style={{ color: 'var(--primary)' }}/> Riwayat Taksiran Publik</h3>
+            <div style={{ position: 'relative', width: '100%', maxWidth: '300px' }}>
+              <Search size={18} style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+              <input 
+                type="text" 
+                placeholder="Cari riwayat..." 
+                value={historySearch}
+                onChange={(e) => setHistorySearch(e.target.value)}
+                style={{ width: '100%', padding: '12px 15px 12px 45px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-main)', outline: 'none' }}
+              />
             </div>
-            
-            <div style={{ display: 'flex', gap: '20px', overflowX: 'auto', paddingBottom: '15px', scrollbarWidth: 'thin' }}>
-               {appraisalHistory.filter(item => {
+          </div>
+          
+          <div style={{ display: 'flex', gap: '20px', overflowX: 'auto', paddingBottom: '15px', scrollbarWidth: 'thin' }}>
+             {appraisalHistory.length === 0 ? (
+               <div style={{ padding: '20px', color: 'var(--text-muted)', width: '100%', textAlign: 'center' }}>
+                 Belum ada riwayat taksiran publik saat ini.
+               </div>
+             ) : (
+               appraisalHistory.filter(item => {
                   const name = item.mode === 'raw_bamboo' 
                     ? `Bambu ${item.formData?.jenis_bambu === 'lainnya' ? item.formData?.jenis_bambu_lainnya : item.formData?.jenis_bambu}`
                     : (item.formData?.nama_produk || 'Produk Kerajinan');
@@ -713,7 +723,10 @@ const WanipiroPage = () => {
                       onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}
                     >
                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                         <div style={{ fontWeight: 'bold', color: 'var(--text-main)', fontSize: '1.1rem' }}>{itemName}</div>
+                         <div>
+                           <div style={{ fontWeight: 'bold', color: 'var(--text-main)', fontSize: '1.1rem' }}>{itemName}</div>
+                           <div style={{ fontSize: '0.8rem', color: 'var(--primary)', marginTop: '5px' }}>Oleh: {item.userName || 'Guest User'}</div>
+                         </div>
                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                            {item.date ? new Date(item.date).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' }) : 'Baru-baru ini'}
                          </div>
@@ -735,9 +748,9 @@ const WanipiroPage = () => {
                     </div>
                   );
                })}
+             )}
             </div>
           </div>
-        )}
       </div>
       <style>{`
         .form-label { display: block; margin-bottom: 6px; font-size: 0.85rem; color: var(--text-muted); font-weight: 600; }
