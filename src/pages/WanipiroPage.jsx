@@ -281,15 +281,15 @@ const WanipiroPage = () => {
         try {
           // Hanya simpan URL yang valid (bukan base64) ke Firebase agar tidak limit size
           const safeImages = processedImages.filter(img => img.startsWith('http'));
-          const publicPayload = {
+          const publicPayload = JSON.parse(JSON.stringify({
             result: data,
             formData,
             mode,
             images: safeImages,
             date: new Date().toISOString(),
             userId: user ? user.id : 'guest',
-            userName: user ? user.displayName : 'Guest User'
-          };
+            userName: user ? (user.name || user.username || 'Guest User') : 'Guest User'
+          }));
           addDoc(collection(db, 'wanipiro_public_history'), publicPayload).catch(e => {
             console.error("Failed to save to global history:", e);
           });
