@@ -16,7 +16,8 @@ import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 import { doc, setDoc, onSnapshot, collection, addDoc } from 'firebase/firestore';
 import { fetchDynamicCommodityPrice } from '../../utils/bursaAiService';
 
-const compressImage = (file) => {
+const compressImage = (file, options = {}) => {
+  const { maxSize = 600, addWatermark = true } = options;
   return new Promise((resolve) => {
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -24,7 +25,7 @@ const compressImage = (file) => {
       img.src = e.target.result;
       img.onload = () => {
         const canvas = document.createElement('canvas');
-        const max_size = 600;
+        const max_size = maxSize;
         let width = img.width;
         let height = img.height;
         if (width > height) {
@@ -43,15 +44,16 @@ const compressImage = (file) => {
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
         
-        // Add Watermark bamboochain.id
-        const fontSize = Math.max(14, Math.floor(width * 0.05));
-        ctx.font = `bold ${fontSize}px Arial`;
-        ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
-        ctx.textAlign = "right";
-        ctx.textBaseline = "bottom";
-        ctx.shadowColor = "rgba(0, 0, 0, 0.8)";
-        ctx.shadowBlur = 4;
-        ctx.fillText("bamboochain.id", width - 15, height - 15);
+        if (addWatermark) {
+          const fontSize = Math.max(14, Math.floor(width * 0.05));
+          ctx.font = `bold ${fontSize}px Arial`;
+          ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+          ctx.textAlign = "right";
+          ctx.textBaseline = "bottom";
+          ctx.shadowColor = "rgba(0, 0, 0, 0.8)";
+          ctx.shadowBlur = 4;
+          ctx.fillText("bamboochain.id", width - 15, height - 15);
+        }
         
         resolve(canvas.toDataURL('image/jpeg', 0.8));
       };
@@ -332,7 +334,8 @@ const MarketplacePage = () => {
   const handleShopFileChange = async (e, field) => {
     const file = e.target.files[0];
     if (!file) return;
-    const base64 = await compressImage(file);
+    const maxSize = field === 'thumbnail' ? 1920 : 800;
+    const base64 = await compressImage(file, { maxSize, addWatermark: false });
     setEditShopData(prev => ({ ...prev, [field]: base64 }));
   };
 
@@ -1854,8 +1857,8 @@ const MarketplacePage = () => {
                  const sProducts = visibleProducts.filter(p => p.vendor === storefrontId);
                  return (
                    <div>
-                     <div style={{ width: '100%', height: '200px', background: sInfo.thumbnail ? `url(${sInfo.thumbnail}) center/cover` : 'linear-gradient(45deg, var(--primary), #12b886)', borderRadius: '30px', position: 'relative', marginBottom: '80px' }}>
-                        <img src={sInfo.brandLogo} style={{ width: '120px', height: '120px', borderRadius: '50%', border: '5px solid var(--bg-primary)', position: 'absolute', bottom: '-60px', left: '40px', objectFit: 'cover' }} alt="" />
+                     <div style={{ width: '100%', height: '200px', background: sInfo.thumbnail ? `url(${sInfo.thumbnail}) center/contain no-repeat` : 'linear-gradient(45deg, var(--primary), #12b886)', backgroundColor: 'var(--bg-secondary)', borderRadius: '30px', position: 'relative', marginBottom: '80px' }}>
+                        <img src={sInfo.brandLogo} style={{ width: '120px', height: '120px', borderRadius: '50%', border: '5px solid var(--bg-primary)', position: 'absolute', bottom: '-60px', left: '40px', objectFit: 'contain', backgroundColor: '#fff' }} alt="" />
                      </div>
                      <div style={{ padding: '0 20px', marginBottom: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '20px' }}>
                         <div>
