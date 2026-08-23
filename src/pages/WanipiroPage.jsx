@@ -82,8 +82,22 @@ const WanipiroPage = () => {
     const q = query(collection(db, 'wanipiro_public_history'), orderBy('date', 'desc'), limit(50));
     const unsub = onSnapshot(q, (snap) => {
       const historyData = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setAppraisalHistory(historyData);
-      localStorage.setItem('wanipiro_history', JSON.stringify(historyData));
+      
+      const saved = localStorage.getItem('wanipiro_history');
+      let localData = [];
+      try { if (saved) localData = JSON.parse(saved); } catch(e){}
+      
+      const combined = [...historyData];
+      localData.forEach(ld => {
+         // Keep local optimistic items that haven't synced
+         if (ld.id && ld.id.toString().startsWith('temp-') && !combined.find(c => c.date === ld.date)) {
+            combined.push(ld);
+         }
+      });
+      combined.sort((a, b) => new Date(b.date) - new Date(a.date));
+      
+      setAppraisalHistory(combined);
+      localStorage.setItem('wanipiro_history', JSON.stringify(combined));
     }, (err) => {
       console.error("Failed to sync Wanipiro history", err);
       const saved = localStorage.getItem('wanipiro_history');
