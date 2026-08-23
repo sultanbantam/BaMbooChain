@@ -732,10 +732,27 @@ const MarketplacePage = () => {
       for (let i = 0; i < newProduct.images.length; i++) {
         const base64Img = newProduct.images[i];
         if (base64Img.startsWith('data:image')) {
-          const fileRef = ref(storage, `marketplace/products/${vendorId}/${timestamp}_${i}.jpg`);
-          await uploadString(fileRef, base64Img, 'data_url');
-          const url = await getDownloadURL(fileRef);
-          uploadedImageUrls.push(url);
+          try {
+            const fd = new FormData();
+            fd.append('file', base64Img);
+            fd.append('upload_preset', 'ml_default');
+            const cloudName = 'dza0joxm6'; 
+            
+            const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+               method: 'POST',
+               body: fd
+            });
+            const json = await res.json();
+            
+            if (json.secure_url) {
+              uploadedImageUrls.push(json.secure_url);
+            } else {
+              uploadedImageUrls.push(base64Img); // Fallback
+            }
+          } catch (e) {
+            console.warn("Cloudinary upload failed", e);
+            uploadedImageUrls.push(base64Img); // Fallback to base64 if Cloudinary fails
+          }
         } else {
           uploadedImageUrls.push(base64Img); // If already an URL
         }
