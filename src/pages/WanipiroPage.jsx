@@ -11,7 +11,7 @@ import { useAuth } from '../context/AuthContext';
 const WanipiroPage = () => {
   const { language } = useLanguage();
   const { user } = useAuth();
-  const { addProduct } = useMarketplace();
+  const { addProduct, products } = useMarketplace();
   const navigate = useNavigate();
   const [mode, setMode] = useState('raw_bamboo'); // 'raw_bamboo' | 'finished_product'
   const [isLoading, setIsLoading] = useState(false);
@@ -112,7 +112,39 @@ const WanipiroPage = () => {
       }
       const reader = new FileReader();
       reader.onload = (event) => {
-        setImages(prev => [...prev, event.target.result]);
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          
+          const max_size = 800;
+          if (width > height && width > max_size) {
+            height = Math.round((height * max_size) / width);
+            width = max_size;
+          } else if (height > width && height > max_size) {
+            width = Math.round((width * max_size) / height);
+            height = max_size;
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          // Tambahkan Watermark bamboochain.id
+          const fontSize = Math.max(14, Math.floor(width * 0.05));
+          ctx.font = `bold ${fontSize}px Arial`;
+          ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+          ctx.textAlign = "right";
+          ctx.textBaseline = "bottom";
+          ctx.shadowColor = "rgba(0, 0, 0, 0.8)";
+          ctx.shadowBlur = 4;
+          ctx.fillText("bamboochain.id", width - 15, height - 15);
+          
+          setImages(prev => [...prev, canvas.toDataURL('image/jpeg', 0.8)]);
+        };
+        img.src = event.target.result;
       };
       reader.readAsDataURL(file);
     });
@@ -258,9 +290,11 @@ const WanipiroPage = () => {
     if (!result || !result.data) return;
     setIsLoading(true);
     
-    const itemName = mode === 'raw_bamboo' 
-      ? `Bambu ${formData.jenis_bamboo === 'lainnya' ? formData.jenis_bamboo_lainnya : formData.jenis_bamboo} (${formData.panjang_total_meter}m)`
+    const bmcNumber = 100 + (products ? products.length : 0);
+    const baseItemName = mode === 'raw_bamboo' 
+      ? `Bambu ${formData.jenis_bambu === 'lainnya' ? formData.jenis_bambu_lainnya : formData.jenis_bambu} (${formData.panjang_total_meter}m)`
       : (formData.nama_produk || 'Produk Kerajinan Bambu');
+    const itemName = `BMC${bmcNumber} ${baseItemName}`;
       
     const productDesc = `${result.data.rekomendasi_petani}\n\nSpesifikasi:\n- Lokasi: ${formData.lokasi}\n- Kondisi: ${formData.kondisi_fisik}\n- Total Estimasi: Rp ${result.data.harga_total_estimasi?.toLocaleString('id-ID')}\n\nSertifikat Penaksiran WaniPiro:\n${result.data.detai_proses}`;
     

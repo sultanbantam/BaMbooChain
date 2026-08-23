@@ -42,6 +42,17 @@ const compressImage = (file) => {
         canvas.height = height;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
+        
+        // Add Watermark bamboochain.id
+        const fontSize = Math.max(14, Math.floor(width * 0.05));
+        ctx.font = `bold ${fontSize}px Arial`;
+        ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+        ctx.textAlign = "right";
+        ctx.textBaseline = "bottom";
+        ctx.shadowColor = "rgba(0, 0, 0, 0.8)";
+        ctx.shadowBlur = 4;
+        ctx.fillText("bamboochain.id", width - 15, height - 15);
+        
         resolve(canvas.toDataURL('image/jpeg', 0.8));
       };
     };
@@ -732,9 +743,14 @@ const MarketplacePage = () => {
 
       const finalImages = uploadedImageUrls.length > 0 ? uploadedImageUrls : ["https://images.unsplash.com/photo-1590059345003-34537330756e?auto=format&fit=crop&w=400"];
 
+      // Add dynamic prefix BMC{100 + X}
+      const bmcNumber = 100 + fbProducts.length;
+      const prefixedName = `BMC${bmcNumber} ${newProduct.name}`;
+
       const productToAdd = {
         ...newProduct,
         id,
+        name: prefixedName,
         category: finalCategory,
         unit: finalUnit,
         priceIdr: priceNum,
