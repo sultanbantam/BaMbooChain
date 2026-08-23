@@ -89,8 +89,8 @@ const WanipiroPage = () => {
       
       const combined = [...historyData];
       localData.forEach(ld => {
-         // Keep local optimistic items that haven't synced
-         if (ld.id && ld.id.toString().startsWith('temp-') && !combined.find(c => c.date === ld.date)) {
+         // Keep local optimistic items that haven't synced, or items rolled back by Firebase
+         if (ld.id && !combined.find(c => c.date === ld.date)) {
             combined.push(ld);
          }
       });
