@@ -746,8 +746,8 @@ const WanipiroPage = () => {
                          </div>
                        </div>
                     </div>
-                  );
-               })}
+                   );
+                })
              )}
             </div>
           </div>
