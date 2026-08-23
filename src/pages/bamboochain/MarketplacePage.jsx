@@ -778,7 +778,7 @@ const MarketplacePage = () => {
         verified: false,
         specs: newProduct.specs.split(/[,;]\s+/).filter(s => s.trim() !== ''),
         storyTelling: newProduct.storyTelling,
-        status: 'Pending Curation'
+        status: 'Approved'
       };
       
       // Save to Firebase Database
@@ -1710,7 +1710,7 @@ const MarketplacePage = () => {
                       </div>
                    </div>
 
-                   <button type="submit" disabled={isUploadingProduct} style={{ width: '100%', padding: '16px', borderRadius: '15px', background: 'var(--primary)', color: 'white', border: 'none', fontWeight: 'bold', opacity: isUploadingProduct ? 0.7 : 1 }}>{isUploadingProduct ? 'Mengunggah...' : t('market_sell_btn')}</button>
+                   <button type="submit" disabled={isUploadingProduct} style={{ width: '100%', padding: '16px', borderRadius: '15px', background: 'var(--primary)', color: 'white', border: 'none', fontWeight: 'bold', opacity: isUploadingProduct ? 0.7 : 1 }}>{isUploadingProduct ? 'Sedang proses diupload, tunggu sampai selesai...' : t('market_sell_btn')}</button>
                 </form>
               </div>
             </div>
