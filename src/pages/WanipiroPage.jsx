@@ -286,7 +286,7 @@ const WanipiroPage = () => {
       }
     } catch (err) {
       console.error(err);
-      setError('Gagal menghubungi Juru Taksir AI. Pastikan konfigurasi API OpenAI valid.');
+      setError(`Gagal menghubungi Juru Taksir AI: ${err.message}`);
     } finally {
       setIsLoading(false);
     }

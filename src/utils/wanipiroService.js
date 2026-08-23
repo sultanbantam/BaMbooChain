@@ -113,7 +113,12 @@ export const fetchWanipiroAppraisal = async (payload, images = [], marketContext
   });
 
   if (!response.ok) {
-    throw new Error(`OpenAI API Error: ${response.statusText}`);
+    let errMsg = response.statusText;
+    try {
+      const errBody = await response.json();
+      errMsg = errBody.error?.message || errMsg;
+    } catch(e) {}
+    throw new Error(`OpenAI API Error: ${errMsg}`);
   }
 
   const data = await response.json();
