@@ -695,11 +695,21 @@ const MarketplacePage = () => {
 
   const handleAddProduct = async (e) => {
     e.preventDefault();
+    
+    const basePrice = parseInt(newProduct.price) || 0;
+    const finalPrice = basePrice * 2;
+    
+    const confirmMessage = `Apakah Anda yakin mendaftarkan produk ini?\n\nSesuai syarat dan ketentuan BaMbooChain, harga yang ditampilkan di halaman pasar akan otomatis dikalikan 2 menjadi Rp${finalPrice.toLocaleString('id-ID')}.`;
+    
+    if (!window.confirm(confirmMessage)) {
+      return;
+    }
+    
     setIsUploadingProduct(true);
     
     try {
       const id = products.length + 1;
-      const priceNum = parseInt(newProduct.price);
+      const priceNum = parseInt(newProduct.price) * 2;
       
       const finalCategory = newProduct.category === t('market_cat_other') ? newProduct.customCategory : newProduct.category;
       const finalUnit = newProduct.unit === t('market_unit_other') ? newProduct.customUnit : newProduct.unit;
@@ -1607,6 +1617,7 @@ const MarketplacePage = () => {
                       <div>
                         <label style={{ fontSize: '0.75rem', color: '#888', display: 'block', marginBottom: '5px' }}>{t('market_sell_price')}</label>
                         <input required type="number" placeholder="Contoh: 50000" value={newProduct.price} onChange={e => setNewProduct({...newProduct, price: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #ddd' }} />
+                        <div style={{ fontSize: '0.7rem', color: 'var(--primary)', marginTop: '5px', fontWeight: 'bold' }}>*Harga tampil di pasar: Rp {newProduct.price ? (newProduct.price * 2).toLocaleString('id-ID') : 0}</div>
                       </div>
                       <div>
                         <label style={{ fontSize: '0.75rem', color: '#888', display: 'block', marginBottom: '5px' }}>{t('market_sell_unit')}</label>
