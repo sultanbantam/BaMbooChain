@@ -90,8 +90,24 @@ const DataToolsPage = () => {
     type: 'Dashboard Data',
     icon: '📊',
     file: null, // For file uploads
-    linkUrl: '' // For external links
+    linkUrl: '', // For external links
+    cover: null // For image cover
   });
+
+  const handleCoverChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) { // 2MB limit for images
+        alert("Gambar terlalu besar (Maks 2MB).");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setUploadForm({ ...uploadForm, cover: reader.result });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -133,16 +149,15 @@ const DataToolsPage = () => {
     setIsUploading(true);
     try {
       let resourceUrl = uploadForm.linkUrl;
+      let coverUrl = '';
       
-      // Upload to Cloudinary if it's a file
-      if (uploadType === 'file' && uploadForm.file) {
+      const uploadToCloudinary = async (dataUrl) => {
         const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
         const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
-        
         if (!cloudName || !uploadPreset) throw new Error("Konfigurasi Cloudinary tidak ditemukan.");
 
         const formData = new FormData();
-        formData.append('file', uploadForm.file);
+        formData.append('file', dataUrl);
         formData.append('upload_preset', uploadPreset);
         
         const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, {
@@ -151,7 +166,17 @@ const DataToolsPage = () => {
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error?.message || "Gagal mengunggah ke Cloudinary");
-        resourceUrl = data.secure_url;
+        return data.secure_url;
+      };
+
+      // Upload file to Cloudinary
+      if (uploadType === 'file' && uploadForm.file) {
+        resourceUrl = await uploadToCloudinary(uploadForm.file);
+      }
+
+      // Upload cover to Cloudinary
+      if (uploadForm.cover) {
+        coverUrl = await uploadToCloudinary(uploadForm.cover);
       }
 
       const timestamp = new Date().getTime();
@@ -163,6 +188,7 @@ const DataToolsPage = () => {
         icon: uploadForm.icon,
         uploadType: uploadType,
         resourceUrl: resourceUrl,
+        coverImage: coverUrl,
         userId: user.id,
         author: user.name || user.username || "Anonim",
         timestamp: timestamp
@@ -200,7 +226,8 @@ const DataToolsPage = () => {
         type: 'Dashboard Data',
         icon: '📊',
         file: null,
-        linkUrl: ''
+        linkUrl: '',
+        cover: null
       });
       setIsUploadModalOpen(false);
 
@@ -278,6 +305,9 @@ const DataToolsPage = () => {
                 position: 'relative'
               }}>
                 <div style={{ height: '4px', background: accessible ? tierColor[tool.tier] : '#dee2e6' }} />
+                {tool.coverImage && (
+                  <div style={{ width: '100%', height: '140px', background: `url(${tool.coverImage}) center/cover no-repeat` }} />
+                )}
                 <div style={{ padding: '24px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                     <span style={{ fontSize: '0.72rem', fontWeight: '700', color: tierColor[tool.tier], background: `${tierColor[tool.tier]}15`, padding: '3px 10px', borderRadius: '20px' }}>
@@ -393,17 +423,29 @@ const DataToolsPage = () => {
                   </div>
                 </div>
 
-                {/* Emoji Icon */}
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '6px', color: '#495057' }}>Ikon (Emoji)</label>
-                  <input 
-                    type="text" 
-                    maxLength={2}
-                    value={uploadForm.icon} 
-                    onChange={(e) => setUploadForm({...uploadForm, icon: e.target.value})}
-                    placeholder="📊"
-                    style={{ width: '60px', textAlign: 'center', padding: '10px', border: '1px solid #ced4da', borderRadius: '8px', fontSize: '1.2rem' }}
-                  />
+                {/* Emoji Icon & Cover Image */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '16px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '6px', color: '#495057' }}>Ikon (Emoji)</label>
+                    <input 
+                      type="text" 
+                      maxLength={2}
+                      value={uploadForm.icon} 
+                      onChange={(e) => setUploadForm({...uploadForm, icon: e.target.value})}
+                      placeholder="📊"
+                      style={{ width: '100%', textAlign: 'center', padding: '10px', border: '1px solid #ced4da', borderRadius: '8px', fontSize: '1.2rem' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '6px', color: '#495057' }}>Gambar Cover (Opsional)</label>
+                    <input 
+                      type="file" 
+                      accept="image/*"
+                      onChange={handleCoverChange}
+                      style={{ width: '100%', padding: '7px', border: '1px solid #ced4da', borderRadius: '8px', fontSize: '0.85rem' }}
+                    />
+                    {uploadForm.cover && <span style={{ fontSize: '0.75rem', color: '#40c057', display: 'block', marginTop: '4px' }}>✅ Gambar terpilih</span>}
+                  </div>
                 </div>
 
                 {/* Upload Type Switch */}
