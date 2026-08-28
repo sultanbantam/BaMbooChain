@@ -223,12 +223,23 @@ const DataToolsPage = () => {
             <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--primary)' }}>{t('datatools_badge')}</span>
           </div>
           <h1 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '16px' }}>{t('datatools_title')}</h1>
-          <p style={{ color: 'var(--text-muted)', maxWidth: '600px', margin: '0 auto' }}>
+          <p style={{ color: 'var(--text-muted)', maxWidth: '600px', margin: '0 auto', marginBottom: '30px' }}>
             {t('datatools_desc')}
           </p>
+
+          {user?.kycStatus === 'verified' && (
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <button 
+                onClick={() => setIsUploadModalOpen(true)}
+                style={{ background: 'var(--primary)', color: 'white', padding: '12px 24px', borderRadius: '12px', border: 'none', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 15px rgba(12,166,120,0.2)' }}
+              >
+                <UploadCloud size={20} /> Unggah Data & Tools
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* Status Wallet & Upload Action */}
+        {/* Status Wallet */}
         {!isConnected ? (
           <div style={{ background: 'white', borderRadius: '16px', padding: '40px', textAlign: 'center', marginBottom: '40px', border: '2px dashed #dee2e6' }}>
             <Lock size={40} color="#adb5bd" style={{ marginBottom: '16px' }} />
@@ -251,17 +262,6 @@ const DataToolsPage = () => {
                 <Link to="/membership" style={{ fontSize: '0.82rem', color: 'var(--primary)', textDecoration: 'underline' }}>{t('datatools_upgrade_link')}</Link>
               </div>
             </div>
-
-            {user?.kycStatus === 'verified' && (
-              <div style={{ alignSelf: 'flex-end' }}>
-                <button 
-                  onClick={() => setIsUploadModalOpen(true)}
-                  style={{ background: 'var(--primary)', color: 'white', padding: '10px 20px', borderRadius: '8px', border: 'none', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 12px rgba(12,166,120,0.2)' }}
-                >
-                  <UploadCloud size={18} /> Unggah Data & Tools
-                </button>
-              </div>
-            )}
           </div>
         )}
 
