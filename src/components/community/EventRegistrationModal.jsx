@@ -58,6 +58,7 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
   const isSerenTaun = eventTitle?.includes('Seren Taun');
   const isFGD = eventId === 'fgd-rumah-modular-2026';
   const isFieldVisit = eventTitle?.includes('Field Visit');
+  const isUganda = eventTitle?.toLowerCase().includes('uganda');
   
   const isKodibaMember = user && ((user.stakedBalance || 0) >= 10 || (user.transactions || []).some(t => t.type === 'Fiat'));
 
@@ -542,6 +543,40 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
                 <tr><td style={{ padding: '6px 0', color: '#adb5bd', verticalAlign: 'top' }}>15.45 – 16.00</td><td style={{ padding: '6px 0' }}>Penandatanganan berita acara / komitmen bersama</td></tr>
                 <tr><td style={{ padding: '6px 0', color: '#adb5bd', verticalAlign: 'top' }}>16.00 – 16.30</td><td style={{ padding: '6px 0' }}>Closing statement</td></tr>
                 <tr><td style={{ padding: '6px 0', color: '#adb5bd', verticalAlign: 'top' }}>16.30 – 17.00</td><td style={{ padding: '6px 0' }}>Foto bersama dan penutupan</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {isUganda && (
+        <div style={{ marginBottom: '30px', backgroundColor: 'rgba(255,255,255,0.05)', padding: '20px', borderRadius: '15px' }}>
+          <h4 style={{ fontSize: '1.1rem', fontWeight: 'bold', marginBottom: '15px', color: '#51cf66' }}>ITINERARY ACARA</h4>
+          <p style={{ color: 'white', marginBottom: '15px', fontSize: '0.9rem' }}>Durasi: 6 hari (31 Agustus - 5 September 2026)</p>
+          
+          <div style={{ marginBottom: '20px' }}>
+            <table style={{ width: '100%', fontSize: '0.85rem', color: 'white' }}>
+              <tbody>
+                <tr>
+                  <td style={{ width: '110px', padding: '10px 0', color: '#fab005', verticalAlign: 'top', fontWeight: 'bold' }}>31 Ags 2026</td>
+                  <td style={{ padding: '10px 0', lineHeight: '1.5' }}>Delegasi Uganda tiba di Indonesia dan menginap di Jakarta.</td>
+                </tr>
+                <tr>
+                  <td style={{ padding: '10px 0', color: '#fab005', verticalAlign: 'top', fontWeight: 'bold' }}>1 Sept 2026</td>
+                  <td style={{ padding: '10px 0', lineHeight: '1.5' }}>Kunjungan ke kantor PT Katama Suryabumi untuk pertemuan awal dan pembahasan Non-Disclosure Agreement (NDA) serta ruang lingkup kerja sama.</td>
+                </tr>
+                <tr>
+                  <td style={{ padding: '10px 0', color: '#fab005', verticalAlign: 'top', fontWeight: 'bold' }}>2 Sept 2026</td>
+                  <td style={{ padding: '10px 0', lineHeight: '1.5' }}>Pertemuan di Wisma Bumiputera, Bandung, untuk pembahasan lanjutan NDA dan substansi rencana kerja sama.</td>
+                </tr>
+                <tr>
+                  <td style={{ padding: '10px 0', color: '#fab005', verticalAlign: 'top', fontWeight: 'bold' }}>3 Sept 2026</td>
+                  <td style={{ padding: '10px 0', lineHeight: '1.5' }}>Kunjungan ke ITB Jatinangor dan Cimekar untuk melihat prototipe Rumah Modular BlockBamboo dan Rumah RISHA/RISHAM, diskusi dengan periset serta penjajakan kerja sama riset dan transfer teknologi. Apabila waktu memungkinkan, dilanjutkan dengan kunjungan ke Puskim, Cileunyi, Bandung.</td>
+                </tr>
+                <tr>
+                  <td style={{ padding: '10px 0', color: '#fab005', verticalAlign: 'top', fontWeight: 'bold' }}>4–5 Sept 2026</td>
+                  <td style={{ padding: '10px 0', lineHeight: '1.5' }}>Kunjungan ke Tangerang Selatan, termasuk rencana kunjungan ke kawasan Puspiptek dan Pemerintah Kota Tangerang Selatan untuk melihat hasil-hasil penelitian terkait rumah dan teknologi konstruksi, serta implementasi Konstruksi Sarang Laba-Laba (KSLL) pada kawasan Pusat Pemerintahan Kota Tangerang Selatan.</td>
+                </tr>
               </tbody>
             </table>
           </div>
