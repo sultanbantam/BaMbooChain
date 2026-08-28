@@ -4,10 +4,12 @@ import { FaCalendarAlt, FaMapMarkerAlt, FaClock, FaUsers } from 'react-icons/fa'
 import { getAssetUrl } from '../../utils/assets';
 import { eventsData, featuredEventData } from '../../utils/eventsData';
 import { useApprovedCommunityEvents } from '../../hooks/useFirestoreQueries';
+import { useLanguage } from '../../context/LanguageContext';
 import EventRegistrationModal from '../../components/community/EventRegistrationModal';
 import SocialInteractions from '../../components/SocialInteractions';
 
 const EventsPage = () => {
+  const { t } = useLanguage();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
 
@@ -220,12 +222,12 @@ const EventsPage = () => {
       <div style={styles.wrapper}>
         <header style={styles.header}>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <h1 style={styles.title}>
-              KALENDER <span style={styles.highlight}>EVENT</span>
-            </h1>
-            <p style={styles.subtitle}>
-              Jelajahi berbagai kegiatan komunitas BaMbooChain. Mulai dari penanaman bersama hingga edukasi teknologi blockchain.
-            </p>
+            <div style={styles.header}>
+              <h1 style={{...styles.title, textTransform: 'uppercase'}}>{t('event_page_title')}</h1>
+              <p style={styles.subtitle}>
+                {t('event_page_subtitle')}
+              </p>
+            </div>
           </motion.div>
         </header>
 
@@ -267,7 +269,7 @@ const EventsPage = () => {
                 setIsModalOpen(true);
               }}
             >
-              IKUTI EVENT / INFORMASI
+              {t('event_join_btn')}
             </button>
             <SocialInteractions 
               entityId={featuredEvent.id} 
@@ -311,7 +313,7 @@ const EventsPage = () => {
                     setIsModalOpen(true);
                   }}
                 >
-                  IKUTI EVENT / INFORMASI
+                  {t('event_join_btn')}
                 </button>
                 <SocialInteractions 
                   entityId={event.id} 

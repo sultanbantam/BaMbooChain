@@ -4,12 +4,14 @@ import { db } from '../../firebase/config';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { X, CheckCircle, UploadCloud, ChevronRight, ChevronLeft, CreditCard } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { useSpeakerMaterials } from '../../hooks/useFirestoreQueries';
 import EventGallery from './EventGallery';
 import SocialInteractions from '../SocialInteractions';
 
 const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
   const { user, addNotification } = useAuth();
+  const { t } = useLanguage();
   const [activeModalTab, setActiveModalTab] = useState('info'); // 'info', 'register', 'attendance'
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -551,31 +553,31 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
 
       {isUganda && (
         <div style={{ marginBottom: '30px', backgroundColor: 'rgba(255,255,255,0.05)', padding: '20px', borderRadius: '15px' }}>
-          <h4 style={{ fontSize: '1.1rem', fontWeight: 'bold', marginBottom: '15px', color: '#51cf66' }}>ITINERARY ACARA</h4>
-          <p style={{ color: 'white', marginBottom: '15px', fontSize: '0.9rem' }}>Durasi: 6 hari (31 Agustus - 5 September 2026)</p>
+          <h4 style={{ fontSize: '1.1rem', fontWeight: 'bold', marginBottom: '15px', color: '#51cf66' }}>{t('event_itinerary_title') || 'ITINERARY ACARA'}</h4>
+          <p style={{ color: 'white', marginBottom: '15px', fontSize: '0.9rem' }}>{t('uganda_duration')}</p>
           
           <div style={{ marginBottom: '20px' }}>
             <table style={{ width: '100%', fontSize: '0.85rem', color: 'white' }}>
               <tbody>
                 <tr>
-                  <td style={{ width: '110px', padding: '10px 0', color: '#fab005', verticalAlign: 'top', fontWeight: 'bold' }}>31 Ags 2026</td>
-                  <td style={{ padding: '10px 0', lineHeight: '1.5' }}>Delegasi Uganda tiba di Indonesia dan menginap di Jakarta.</td>
+                  <td style={{ width: '110px', padding: '10px 0', color: '#fab005', verticalAlign: 'top', fontWeight: 'bold' }}>{t('uganda_day1_date')}</td>
+                  <td style={{ padding: '10px 0', lineHeight: '1.5' }}>{t('uganda_day1_desc')}</td>
                 </tr>
                 <tr>
-                  <td style={{ padding: '10px 0', color: '#fab005', verticalAlign: 'top', fontWeight: 'bold' }}>1 Sept 2026</td>
-                  <td style={{ padding: '10px 0', lineHeight: '1.5' }}>Kunjungan ke kantor PT Katama Suryabumi untuk pertemuan awal dan pembahasan Non-Disclosure Agreement (NDA) serta ruang lingkup kerja sama.</td>
+                  <td style={{ padding: '10px 0', color: '#fab005', verticalAlign: 'top', fontWeight: 'bold' }}>{t('uganda_day2_date')}</td>
+                  <td style={{ padding: '10px 0', lineHeight: '1.5' }}>{t('uganda_day2_desc')}</td>
                 </tr>
                 <tr>
-                  <td style={{ padding: '10px 0', color: '#fab005', verticalAlign: 'top', fontWeight: 'bold' }}>2 Sept 2026</td>
-                  <td style={{ padding: '10px 0', lineHeight: '1.5' }}>Pertemuan di Wisma Bumiputera, Bandung, untuk pembahasan lanjutan NDA dan substansi rencana kerja sama.</td>
+                  <td style={{ padding: '10px 0', color: '#fab005', verticalAlign: 'top', fontWeight: 'bold' }}>{t('uganda_day3_date')}</td>
+                  <td style={{ padding: '10px 0', lineHeight: '1.5' }}>{t('uganda_day3_desc')}</td>
                 </tr>
                 <tr>
-                  <td style={{ padding: '10px 0', color: '#fab005', verticalAlign: 'top', fontWeight: 'bold' }}>3 Sept 2026</td>
-                  <td style={{ padding: '10px 0', lineHeight: '1.5' }}>Kunjungan ke ITB Jatinangor dan Cimekar untuk melihat prototipe Rumah Modular BlockBamboo dan Rumah RISHA/RISHAM, diskusi dengan periset serta penjajakan kerja sama riset dan transfer teknologi. Apabila waktu memungkinkan, dilanjutkan dengan kunjungan ke Puskim, Cileunyi, Bandung.</td>
+                  <td style={{ padding: '10px 0', color: '#fab005', verticalAlign: 'top', fontWeight: 'bold' }}>{t('uganda_day4_date')}</td>
+                  <td style={{ padding: '10px 0', lineHeight: '1.5' }}>{t('uganda_day4_desc')}</td>
                 </tr>
                 <tr>
-                  <td style={{ padding: '10px 0', color: '#fab005', verticalAlign: 'top', fontWeight: 'bold' }}>4–5 Sept 2026</td>
-                  <td style={{ padding: '10px 0', lineHeight: '1.5' }}>Kunjungan ke Tangerang Selatan, termasuk rencana kunjungan ke kawasan Puspiptek dan Pemerintah Kota Tangerang Selatan untuk melihat hasil-hasil penelitian terkait rumah dan teknologi konstruksi, serta implementasi Konstruksi Sarang Laba-Laba (KSLL) pada kawasan Pusat Pemerintahan Kota Tangerang Selatan.</td>
+                  <td style={{ padding: '10px 0', color: '#fab005', verticalAlign: 'top', fontWeight: 'bold' }}>{t('uganda_day5_date')}</td>
+                  <td style={{ padding: '10px 0', lineHeight: '1.5' }}>{t('uganda_day5_desc')}</td>
                 </tr>
               </tbody>
             </table>
@@ -585,7 +587,7 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
 
       {speakers.length > 0 && (
         <div style={{ marginBottom: '30px' }}>
-          <h4 style={{ fontSize: '1rem', fontWeight: 'bold', marginBottom: '15px', color: 'white' }}>Narasumber</h4>
+          <h4 style={{ fontSize: '1rem', fontWeight: 'bold', marginBottom: '15px', color: 'white' }}>{t('event_speakers_title')}</h4>
           <div style={{ display: 'grid', gap: '15px' }}>
             {speakers.map((speaker, idx) => {
               const cvLink = getSpeakerCvUrl(speaker.name, speaker.cvUrl);
@@ -598,7 +600,7 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
                 </div>
                 {cvLink && (
                   <a href={cvLink} target="_blank" rel="noreferrer" style={{ backgroundColor: '#1c7ed6', color: 'white', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', textDecoration: 'none', fontWeight: 'bold', whiteSpace: 'nowrap', textAlign: 'center' }}>
-                    Download CV
+                    {t('event_download_cv')}
                   </a>
                 )}
               </div>
@@ -609,14 +611,14 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
 
       {allMaterials.length > 0 && (
         <div>
-          <h4 style={{ fontSize: '1rem', fontWeight: 'bold', marginBottom: '15px', color: 'white' }}>Materi Acara</h4>
+          <h4 style={{ fontSize: '1rem', fontWeight: 'bold', marginBottom: '15px', color: 'white' }}>{t('event_materials_title')}</h4>
           <div style={{ display: 'grid', gap: '15px' }}>
             {allMaterials.map((mat, idx) => (
               <div key={idx} style={{ backgroundColor: 'rgba(81, 207, 102, 0.05)', border: '1px solid rgba(81, 207, 102, 0.2)', padding: '15px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ fontWeight: 'bold', color: 'white', fontSize: '0.9rem' }}>{mat.title}</div>
                 {mat.fileUrl && (
                   <a href={mat.fileUrl} target="_blank" rel="noreferrer" style={{ backgroundColor: '#51cf66', color: 'black', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', textDecoration: 'none', fontWeight: 'bold', whiteSpace: 'nowrap', textAlign: 'center' }}>
-                    Unduh File
+                    {t('event_download_file')}
                   </a>
                 )}
               </div>
@@ -802,11 +804,11 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
 
             <div style={styles.content}>
               <div style={styles.tabContainer}>
-                <button onClick={() => setActiveModalTab('info')} style={styles.tabBtn(activeModalTab === 'info')}>Informasi</button>
-                <button onClick={() => setActiveModalTab('finance')} style={styles.tabBtn(activeModalTab === 'finance')}>Laporan</button>
-                <button onClick={() => setActiveModalTab('social')} style={styles.tabBtn(activeModalTab === 'social')}>Galeri & Diskusi</button>
-                <button onClick={() => setActiveModalTab('register')} style={styles.tabBtn(activeModalTab === 'register')}>Daftar</button>
-                <button onClick={() => setActiveModalTab('attendance')} style={styles.tabBtn(activeModalTab === 'attendance')}>Absen</button>
+                <button onClick={() => setActiveModalTab('info')} style={styles.tabBtn(activeModalTab === 'info')}>{t('event_tab_info')}</button>
+                <button onClick={() => setActiveModalTab('finance')} style={styles.tabBtn(activeModalTab === 'finance')}>{t('event_tab_report')}</button>
+                <button onClick={() => setActiveModalTab('social')} style={styles.tabBtn(activeModalTab === 'social')}>{t('event_tab_gallery')}</button>
+                <button onClick={() => setActiveModalTab('register')} style={styles.tabBtn(activeModalTab === 'register')}>{t('event_tab_register')}</button>
+                <button onClick={() => setActiveModalTab('attendance')} style={styles.tabBtn(activeModalTab === 'attendance')}>{t('event_tab_attendance')}</button>
               </div>
 
               {activeModalTab === 'info' && renderInfoTab()}
@@ -875,7 +877,7 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
             {(activeModalTab === 'info' || activeModalTab === 'attendance' || activeModalTab === 'finance' || activeModalTab === 'social') && (
               <div style={styles.footer}>
                 <button type="button" onClick={onClose} style={styles.btnSecondary}>
-                  Tutup
+                  {t('event_btn_close')}
                 </button>
               </div>
             )}
