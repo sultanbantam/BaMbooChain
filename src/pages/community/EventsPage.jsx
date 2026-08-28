@@ -35,27 +35,33 @@ const EventsPage = () => {
 
   const nowTime = new Date().setHours(0, 0, 0, 0);
 
-  const allEvents = [...eventsData, featuredEventData, ...communityEvents.map(ev => ({
-    id: ev.id,
-    title: ev.title?.includes('Revolusi Sebatang Bambu') ? 'Field Visit: Revolusi Sebatang Bambu di Indonesia Studi Lapangan Ekosistem Bambu Tangerang Raya bersama Tim Pusat Studi Arsitektur Nusantara FTSP Universitas Trisakti' : ev.title,
-    date: ev.date,
-    time: ev.title?.includes('Revolusi Sebatang Bambu') ? '09.00 - 17.00 WIB' : (ev.time || '10:00 - 15:00 WIB'),
-    location: ev.location,
-    category: ev.category,
-    description: ev.description,
-    image: ev.title?.includes('Revolusi Sebatang Bambu') ? getAssetUrl('event/ebtr.png') : (ev.title?.includes('Optimalisasi Teknologi') ? getAssetUrl('event/snai.png') : (ev.image || getAssetUrl('event/placeholder.jpg'))),
-    color: '#fab005', // default color for community events
-    organizer: ev.organizerName,
-    speakers: ev.title?.includes('Revolusi Sebatang Bambu') ? [
-      { name: 'Mukoddas Syuhada', role: 'Narasumber Utama', cvUrl: getAssetUrl('event/cv.pdf') }
-    ] : ev.speakers,
-    materials: ev.title?.includes('Revolusi Sebatang Bambu') ? [
-      { title: 'Itinerary Kegiatan', fileUrl: getAssetUrl('event/itinerary.pdf') },
-      { title: 'Materi Acara', fileUrl: getAssetUrl('event/materi.pdf') },
-      { title: 'Materi BLL', fileUrl: getAssetUrl('event/bll.pdf') },
-      { title: 'Materi Tambahan 2', fileUrl: getAssetUrl('event/materi2.pdf') }
-    ] : ev.materials
-  }))];
+  const allEvents = [...eventsData, featuredEventData, ...communityEvents.map(ev => {
+    const isUganda = ev.title?.toLowerCase().includes('uganda');
+    const isRevolusi = ev.title?.includes('Revolusi Sebatang Bambu');
+    const isSNAI = ev.title?.includes('Optimalisasi Teknologi');
+    
+    return {
+      id: ev.id,
+      title: isRevolusi ? 'Field Visit: Revolusi Sebatang Bambu di Indonesia Studi Lapangan Ekosistem Bambu Tangerang Raya bersama Tim Pusat Studi Arsitektur Nusantara FTSP Universitas Trisakti' : ev.title,
+      date: isUganda ? '1-5 September 2026' : ev.date,
+      time: isUganda ? '09:00 Sampai Dengan Selesai' : (isRevolusi ? '09.00 - 17.00 WIB' : (ev.time || '10:00 - 15:00 WIB')),
+      location: ev.location,
+      category: ev.category,
+      description: ev.description,
+      image: isUganda ? getAssetUrl('event/uganda.png') : (isRevolusi ? getAssetUrl('event/ebtr.png') : (isSNAI ? getAssetUrl('event/snai.png') : (ev.image || getAssetUrl('event/placeholder.jpg')))),
+      color: '#fab005', // default color for community events
+      organizer: ev.organizerName,
+      speakers: isRevolusi ? [
+        { name: 'Mukoddas Syuhada', role: 'Narasumber Utama', cvUrl: getAssetUrl('event/cv.pdf') }
+      ] : ev.speakers,
+      materials: isRevolusi ? [
+        { title: 'Itinerary Kegiatan', fileUrl: getAssetUrl('event/itinerary.pdf') },
+        { title: 'Materi Acara', fileUrl: getAssetUrl('event/materi.pdf') },
+        { title: 'Materi BLL', fileUrl: getAssetUrl('event/bll.pdf') },
+        { title: 'Materi Tambahan 2', fileUrl: getAssetUrl('event/materi2.pdf') }
+      ] : ev.materials
+    };
+  })];
 
   const sortedEvents = allEvents.sort((a, b) => {
     const timeA = parseEventDate(a.date);
