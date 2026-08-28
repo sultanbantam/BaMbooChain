@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useWeb3 } from '../context/Web3Context';
 import { useAuth } from '../context/AuthContext';
 import { getUserTier, getBMCNumber } from './MembershipPage';
-import { BarChart2, TrendingUp, Globe, Lock, ExternalLink, Download, UploadCloud, X, Link as LinkIcon, FileText } from 'lucide-react';
+import { BarChart2, TrendingUp, Globe, Lock, ExternalLink, Download, UploadCloud, X, Link as LinkIcon, FileText, Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useDataTools } from '../hooks/useFirestoreQueries';
@@ -75,8 +75,16 @@ const DataToolsPage = () => {
   // Fetch dynamic data tools from Firestore
   const { data: dynamicTools = [], isLoading: isLoadingTools } = useDataTools();
   
-  // Combine static and dynamic tools
-  const allTools = [...STATIC_TOOLS, ...dynamicTools];
+  // Search query state
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Sort dynamic tools (newest first) and combine with static tools
+  const sortedDynamicTools = [...dynamicTools].sort((a, b) => b.timestamp - a.timestamp);
+  const allTools = [...sortedDynamicTools, ...STATIC_TOOLS].filter(tool => 
+    tool.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    tool.desc.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    tool.type.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   // Upload Modal State
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -291,6 +299,20 @@ const DataToolsPage = () => {
             </div>
           </div>
         )}
+
+        {/* Search Bar */}
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '30px' }}>
+          <div style={{ position: 'relative', width: '100%', maxWidth: '500px' }}>
+            <Search size={18} color="#adb5bd" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)' }} />
+            <input 
+              type="text"
+              placeholder="Cari data, tools, atau dashboard..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{ width: '100%', padding: '14px 20px 14px 44px', border: '1px solid #ced4da', borderRadius: '50px', fontSize: '1rem', outline: 'none', background: 'white', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}
+            />
+          </div>
+        </div>
 
         {/* Tools Grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
