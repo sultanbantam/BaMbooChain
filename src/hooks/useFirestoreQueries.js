@@ -459,3 +459,15 @@ export function useCareerDemandPosts(statusFilter = null) {
   });
 }
 
+// 18. Hook for Data Tools
+export function useDataTools() {
+  return useQuery({
+    queryKey: ['dataTools'],
+    queryFn: async () => {
+      const toolsRef = collection(db, 'data_tools');
+      const snapshot = await getDocs(toolsRef);
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    },
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+  });
+}
