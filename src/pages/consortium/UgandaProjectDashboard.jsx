@@ -22,15 +22,15 @@ import {
 } from 'firebase/firestore';
 
 // ─────────────────────────────────────────────────────────────
-// MULTILINGUAL DICTIONARY (ID, EN, JA) - 100% UNIFIED TRANSLATION
+// MULTILINGUAL DICTIONARY (ID, EN, JA) - 100% UNIFIED
 // ─────────────────────────────────────────────────────────────
 const TRANSLATIONS = {
   id: {
     confidentialBadge: "🔒 Portal Konsorsium Rahasia",
     virtualRoomBtn: "Ruang Rapat Virtual",
-    subtitleBadge: "Inisiatif Kemitraan Strategis Infrastruktur Trilateral & Bambu",
-    mainTitle: "Dashboard Proyek Konsorsium Uganda – Indonesia",
-    heroDesc: "Pusat komando terpadu untuk koordinasi transfer teknologi konstruksi KSLL (PT Katama), modular sustainable housing RISHAM & BlockBamboo (PERPUBI & Panorama Agung), fasilitasi kelembagaan pemerintah SADO Uganda, dan implementasi lapangan Kangker Construction Ltd.",
+    subtitleBadge: "KEMITRAAN STRATEGIS INDONESIA – UGANDA",
+    mainTitle: "Dashboard Konsorsium Infrastruktur & Bambu",
+    heroDesc: "Pusat koordinasi resmi antara PT Katama Suryabumi, SADO Uganda, Kangker Construction Ltd, dan PERPUBI dalam memfasilitasi transfer teknologi konstruksi KSLL, hunian modular berkelanjutan RISHAM & BlockBamboo, serta pengembangan ekosistem agroforestri di Afrika.",
     badgeLead: "🏢 Koordinator Utama: PT Katama Suryabumi",
     badgeEnabling: "🏛️ Badan Fasilitator: SADO Uganda",
     badgeConstruction: "🏗️ Pelaksana Konstruksi: Kangker Construction Ltd",
@@ -41,7 +41,7 @@ const TRANSLATIONS = {
     kpiNdaStatus: "Aktif & Mengikat",
     kpiNdaSub: "Masa Berlaku: 5 Tahun (Pasal 16)",
     kpiRoadmapTitle: "Roadmap Kemitraan",
-    kpiRoadmapStatus: "Step 1 dari 11",
+    kpiRoadmapStatus: "11 Tahapan Dimulai",
     kpiRoadmapSub: "Target HoA: 90 Hari (Pasal 13)",
     kpiVaultTitle: "Total Dokumen Vault",
     kpiVaultStatus: "Berkas Terverifikasi",
@@ -57,14 +57,16 @@ const TRANSLATIONS = {
     tabGallery: "Dokumentasi & Galeri",
     tabStakeholders: "Direktori Stakeholders",
 
+    // Statuses
+    btnStatusInProgress: "Sedang Berjalan",
+    btnStatusPending: "Menunggu Tahap",
+    btnStatusCompleted: "Selesai",
+    statusJustStarted: "Baru Dimulai",
+
     // Roadmap Tab
     roadmapHeading: "Roadmap & Tahapan Eksekusi Kerja Sama (Pasal 26 & Lampiran)",
-    roadmapSub: "Pelacakan progres berjenjang mulai dari penandatanganan NDA hingga ekspansi proyek konstruksi di Afrika.",
-    statusCompleted: "SELESAI",
-    statusInProgress: "SEDANG BERJALAN",
-    statusPending: "MENUNGGU TAHAP",
+    roadmapSub: "Pilih status untuk setiap tahapan sesuai pembaruan data terkini konsorsium.",
     btnStepNotes: "Catatan Progres",
-    btnUpdateStatus: "Perbarui Status",
 
     // Vault Tab
     searchDocPlaceholder: "Cari berkas dokumen atau klausul...",
@@ -77,11 +79,10 @@ const TRANSLATIONS = {
 
     // Tasks Tab
     tasksHeading: "Matriks Tugas & Rencana Kerja Konsorsium",
-    tasksSub: "Pembagian penugasan PIC lintas instansi (Katama, SADO, Kangker, PERPUBI, Turkodom).",
+    tasksSub: "Kelola status dan penugasan PIC lintas instansi (Katama, SADO, Kangker, PERPUBI, Turkodom).",
     btnAddTask: "Tambah Tugas Baru",
     labelPic: "PIC Penanggung Jawab",
     labelTarget: "Target Selesai",
-    statusDone: "Selesai",
 
     // Gallery Tab
     itineraryHeading: "Itinerary Kunjungan Delegasi Uganda ke Indonesia (31 Ags – 5 Sept 2026)",
@@ -91,6 +92,7 @@ const TRANSLATIONS = {
     galleryHeading: "Dokumentasi Foto & Video Kegiatan Konsorsium",
     gallerySub: "Arsip dokumentasi resmi kunjungan lapangan, penandatanganan MoU, dan riset teknologi.",
     btnUploadMedia: "Unggah Foto / Video Dokumentasi",
+    btnResponses: "Tanggapan",
 
     // Stakeholders Tab
     stakeholdersHeading: "Direktori Entitas & Kontak Pimpinan Konsorsium",
@@ -123,9 +125,9 @@ const TRANSLATIONS = {
   en: {
     confidentialBadge: "🔒 Confidential Consortium Portal",
     virtualRoomBtn: "Virtual Meeting Room",
-    subtitleBadge: "Strategic Trilateral Infrastructure & Bamboo Partnership Initiative",
-    mainTitle: "Uganda – Indonesia Consortium Project Dashboard",
-    heroDesc: "Unified command center for coordinating KSLL construction technology transfer (PT Katama), modular sustainable housing RISHAM & BlockBamboo (PERPUBI & Panorama Agung), SADO Uganda government institutional facilitation, and Kangker Construction Ltd field implementation.",
+    subtitleBadge: "INDONESIA – UGANDA STRATEGIC PARTNERSHIP",
+    mainTitle: "Uganda Infrastructure & Bamboo Consortium Dashboard",
+    heroDesc: "Official command center coordinating PT Katama Suryabumi, SADO Uganda, Kangker Construction Ltd, and PERPUBI in facilitating KSLL construction technology transfer, RISHAM & BlockBamboo sustainable modular housing, and agroforestry ecosystem development in Africa.",
     badgeLead: "🏢 Lead Coordinator: PT Katama Suryabumi",
     badgeEnabling: "🏛️ Enabling Agency: SADO Uganda",
     badgeConstruction: "🏗️ Construction Partner: Kangker Construction Ltd",
@@ -136,7 +138,7 @@ const TRANSLATIONS = {
     kpiNdaStatus: "Active & Binding",
     kpiNdaSub: "Validity: 5 Years (Clause 16)",
     kpiRoadmapTitle: "Partnership Roadmap",
-    kpiRoadmapStatus: "Step 1 of 11",
+    kpiRoadmapStatus: "11 Steps Initiated",
     kpiRoadmapSub: "HoA Target: 90 Days (Clause 13)",
     kpiVaultTitle: "Total Vault Documents",
     kpiVaultStatus: "Verified Files",
@@ -152,14 +154,16 @@ const TRANSLATIONS = {
     tabGallery: "Documentation & Gallery",
     tabStakeholders: "Stakeholder Directory",
 
+    // Statuses
+    btnStatusInProgress: "In Progress",
+    btnStatusPending: "Pending Stage",
+    btnStatusCompleted: "Completed",
+    statusJustStarted: "Just Started",
+
     // Roadmap Tab
     roadmapHeading: "Roadmap & Execution Steps (Clause 26 & Annex)",
-    roadmapSub: "Milestone tracking from NDA signing to large-scale construction expansion across Africa.",
-    statusCompleted: "COMPLETED",
-    statusInProgress: "IN PROGRESS",
-    statusPending: "PENDING STAGE",
+    roadmapSub: "Select and update the real-time execution status for each milestone.",
     btnStepNotes: "Progress Notes",
-    btnUpdateStatus: "Update Status",
 
     // Vault Tab
     searchDocPlaceholder: "Search documents or clauses...",
@@ -172,11 +176,10 @@ const TRANSLATIONS = {
 
     // Tasks Tab
     tasksHeading: "Task Matrix & Consortium Work Plan",
-    tasksSub: "Cross-organizational task delegation (Katama, SADO, Kangker, PERPUBI, Turkodom).",
+    tasksSub: "Manage task statuses and PIC delegations (Katama, SADO, Kangker, PERPUBI, Turkodom).",
     btnAddTask: "Add New Task",
     labelPic: "Assigned PIC",
     labelTarget: "Due Date",
-    statusDone: "Done",
 
     // Gallery Tab
     itineraryHeading: "Official Itinerary: Uganda Delegation Visit to Indonesia (Aug 31 – Sept 5, 2026)",
@@ -186,6 +189,7 @@ const TRANSLATIONS = {
     galleryHeading: "Photo & Video Documentation of Consortium Activities",
     gallerySub: "Official documentation archive of field visits, MoU signings, and technology research.",
     btnUploadMedia: "Upload Photo / Video",
+    btnResponses: "Responses",
 
     // Stakeholders Tab
     stakeholdersHeading: "Consortium Leadership & Stakeholder Directory",
@@ -218,9 +222,9 @@ const TRANSLATIONS = {
   ja: {
     confidentialBadge: "🔒 機密コンソーシアムポータル",
     virtualRoomBtn: "バーチャル会議室",
-    subtitleBadge: "ウガンダ・インドネシア戦略的インフラ＆竹イノベーション共同事業",
-    mainTitle: "ウガンダ–インドネシア コンソーシアムプロジェクトダッシュボード",
-    heroDesc: "KSLL建築工法（PT Katama）、モジュール式住宅RISHAM＆BlockBamboo（PERPUBI＆Panorama Agung）、ウガンダ政府機関連携（SADO）、および現地施工（Kangker Construction Ltd）の技術移転と事業推進を統括する専用コマンドセンターです。",
+    subtitleBadge: "インドネシア–ウガンダ 戦略的パートナーシップ",
+    mainTitle: "ウガンダ インフラ＆竹産業コンソーシアム ダッシュボード",
+    heroDesc: "PT Katama Suryabumi、SADO Uganda、Kangker Construction Ltd、およびPERPUBIによる、KSLL建築工法、モジュール式住宅RISHAM＆BlockBamboo、アフリカにおける竹アグロフォレストリーの技術移転と事業推進を統括する公式センターです。",
     badgeLead: "🏢 主幹コーディネーター: PT Katama Suryabumi",
     badgeEnabling: "🏛️ 推進機関: SADO Uganda",
     badgeConstruction: "🏗️ 施工パートナー: Kangker Construction Ltd",
@@ -231,7 +235,7 @@ const TRANSLATIONS = {
     kpiNdaStatus: "締結済・有効",
     kpiNdaSub: "有効期間: 5年間（第16条）",
     kpiRoadmapTitle: "ロードマップ進行度",
-    kpiRoadmapStatus: "ステップ 1 / 11",
+    kpiRoadmapStatus: "11段階始動",
     kpiRoadmapSub: "HoA策定目標: 90日以内（第13条）",
     kpiVaultTitle: "保管文書数",
     kpiVaultStatus: "検証済みファイル",
@@ -247,14 +251,16 @@ const TRANSLATIONS = {
     tabGallery: "記録・ギャラリー",
     tabStakeholders: "関係者ディレクトリ",
 
+    // Statuses
+    btnStatusInProgress: "進行中",
+    btnStatusPending: "待機中",
+    btnStatusCompleted: "完了",
+    statusJustStarted: "開始",
+
     // Roadmap Tab
     roadmapHeading: "事業ロードマップ＆実行段階（第26条および付属書）",
-    roadmapSub: "NDA締結からアフリカ全域への建築事業展開までの進捗管理。",
-    statusCompleted: "完了",
-    statusInProgress: "進行中",
-    statusPending: "待機中",
+    roadmapSub: "コンソーシアムの最新進捗に合わせて各ステップのステータスを選択・更新できます。",
     btnStepNotes: "進捗メモ",
-    btnUpdateStatus: "ステータス更新",
 
     // Vault Tab
     searchDocPlaceholder: "文書名や条項を検索...",
@@ -267,11 +273,10 @@ const TRANSLATIONS = {
 
     // Tasks Tab
     tasksHeading: "タスク管理・実施計画マトリクス",
-    tasksSub: "関係機関（Katama、SADO、Kangker、PERPUBI、Turkodom）による担当タスク分担。",
+    tasksSub: "担当機関ごとのタスク進捗（Katama、SADO、Kangker、PERPUBI、Turkodom）を管理します。",
     btnAddTask: "新規タスク追加",
     labelPic: "担当責任者",
     labelTarget: "完了予定日",
-    statusDone: "完了",
 
     // Gallery Tab
     itineraryHeading: "ウガンダ代表団来日公式日程（2026年8月31日～9月5日）",
@@ -281,6 +286,7 @@ const TRANSLATIONS = {
     galleryHeading: "コンソーシアム活動 写真・映像アーカイブ",
     gallerySub: "現地視察、MoU署名式、技術研究の公式記録資料。",
     btnUploadMedia: "写真 / 動画をアップロード",
+    btnResponses: "件の回答",
 
     // Stakeholders Tab
     stakeholdersHeading: "コンソーシアム代表・関係機関ディレクトリ",
@@ -313,93 +319,216 @@ const TRANSLATIONS = {
 };
 
 // ─────────────────────────────────────────────────────────────
-// ROADMAP STEPS DATA (Multilingual support)
+// ROADMAP STEPS DATA (All start in 'in-progress', with 3 toggle buttons)
 // ─────────────────────────────────────────────────────────────
-const ROADMAP_STEPS = [
-  { step: 1, title_id: 'Penandatanganan NDA & Non-Circumvention Agreement', title_en: 'Signing of NDA & Non-Circumvention Agreement', title_ja: 'NDAおよび不正競争防止協定の締結', status: 'completed', date: 'Sept 2026', desc_id: 'Penandatanganan Perjanjian Kerahasiaan & Kerangka Kemitraan di Jakarta antara Katama, SADO, Kangker, dan mitra Indonesia.', desc_en: 'Signing of NDA and Strategic Framework in Jakarta between Katama, SADO, Kangker, and Indonesian partners.', desc_ja: 'ジャカルタにてKatama、SADO、Kangker、およびインドネシアパートナー間での秘密保持契約・枠組み合意の調印。' },
-  { step: 2, title_id: 'Heads of Agreement / Interim Partnership Agreement', title_en: 'Heads of Agreement / Interim Partnership Agreement', title_ja: '基本合意書（HoA）/ 暫定パートナーシップ契約', status: 'in-progress', date: 'Okt 2026', desc_id: 'Penyusunan kesepakatan transisi operasional, jalur komunikasi, focal person, serta pembagian fee fasilitasi.', desc_en: 'Drafting operational transition agreements, communication channels, focal persons, and facilitation fee mechanisms.', desc_ja: '暫定運用協定、連絡窓口、担当者、および推進手数料メカニズムの策定。' },
-  { step: 3, title_id: 'Main Strategic Partnership Agreement', title_en: 'Main Strategic Partnership Agreement', title_ja: '本戦略的パートナーシップ協定の締結', status: 'pending', date: 'Des 2026', desc_id: 'Penyelesaian Main Agreement dalam 90 hari setelah konfirmasi tertulis implementasi proyek.', desc_en: 'Finalizing Main Agreement within 90 days following written confirmation of project advancement.', desc_ja: 'プロジェクト推進の書面確認後90日以内における本協定の締結完了。' },
-  { step: 4, title_id: 'Government & Bilateral Engagement', title_en: 'Government & Bilateral Engagement', title_ja: '政府間協議・二国間エンゲージメント', status: 'in-progress', date: 'Sept - Nov 2026', desc_id: 'Fasilitasi pertemuan tingkat kementerian dan bilateral institusional di Uganda melalui peran SADO.', desc_en: 'Facilitating ministerial and institutional bilateral meetings in Uganda through SADO.', desc_ja: 'SADOを通じたウガンダ政府省庁および関係機関との二国間ハイレベル会談の推進。' },
-  { step: 5, title_id: 'Uganda Technical & Business Mission', title_en: 'Uganda Technical & Business Mission', title_ja: 'ウガンダ技術・ビジネス公式視察団派遣', status: 'pending', date: 'Q1 2027', desc_id: 'Misi kunjungan tim teknis dan bisnis Indonesia ke Kampala untuk survei lapangan dan lokasi proyek.', desc_en: 'Indonesian technical and business delegation mission to Kampala for field and site surveys.', desc_ja: '現地調査および建設予定地視察のためのインドネシア技術・ビジネス代表団のカンパラ派遣。' },
-  { step: 6, title_id: 'Pilot Project / Proof of Concept (PoC)', title_en: 'Pilot Project / Proof of Concept (PoC)', title_ja: 'パイロットプロジェクト / 概念実証（PoC）', status: 'pending', date: 'Q2 2027', desc_id: 'Pengiriman mould, komponen, dan sistem teknis KSLL serta prototype Rumah Modular BlockBamboo/RISHAM.', desc_en: 'Dispatching KSLL moulds, components, and technical systems along with BlockBamboo/RISHAM modular housing prototypes.', desc_ja: 'KSLL型枠・部材・技術システムおよびBlockBamboo/RISHAMモジュール住宅試作機の搬送と実証。' },
-  { step: 7, title_id: 'Technical & Commercial Feasibility', title_en: 'Technical & Commercial Feasibility', title_ja: '技術的・商業的フィージビリティスタディ', status: 'pending', date: 'Q2 2027', desc_id: 'Investigasi tanah setempat, regulasi bangunan Uganda, uji struktur, dan kelayakan finansial.', desc_en: 'Local geotechnical soil investigation, Uganda building codes, structural testing, and financial feasibility.', desc_ja: 'ウガンダ現地の土質調査、建築基準適合性、構造試験、および財務採算性分析。' },
-  { step: 8, title_id: 'Development Financing & IsDB Engagement', title_en: 'Development Financing & IsDB Engagement', title_ja: '開発金融・イスラム開発銀行（IsDB）連携', status: 'pending', date: 'Q3 2027', desc_id: 'Eksplorasi pendanaan pembangunan dari Islamic Development Bank (IsDB), multilateral banks, dan climate fund.', desc_en: 'Exploring development funding from Islamic Development Bank (IsDB), multilateral institutions, and climate finance.', desc_ja: 'イスラム開発銀行（IsDB）、多国間開発銀行、気候変動ファンドからの開発融資・グラント調達。' },
-  { step: 9, title_id: 'Technology Transfer & Local Manufacturing', title_en: 'Technology Transfer & Local Manufacturing', title_ja: '技術移転・現地製造・人材育成', status: 'pending', date: 'Q4 2027', desc_id: 'Pelatihan tenaga kerja lokal Uganda, perakitan lokal, dan standardisasi Quality Control/QA.', desc_en: 'Local workforce training in Uganda, local assembly, and Quality Control/QA standardization.', desc_ja: 'ウガンダ現地技術者の育成・トレーニング、現地製造体制の確立および品質管理標準化。' },
-  { step: 10, title_id: 'Project-Specific Implementation', title_en: 'Project-Specific Implementation', title_ja: '個別プロジェクトの本格着工・施工', status: 'pending', date: '2028', desc_id: 'Pelaksanaan konstruksi perumahan, rumah sakit, diagnostic centres, dan fasilitas publik.', desc_en: 'Executing construction for housing, healthcare facilities, diagnostic centers, and civic infrastructure.', desc_ja: '住宅地造成、病院、診断センター、および公共インフラの本格的な建設工事実施。' },
-  { step: 11, title_id: 'Scale-Up in Uganda & African Markets', title_en: 'Scale-Up in Uganda & African Markets', title_ja: 'ウガンダ国内およびアフリカ全域への展開', status: 'pending', date: '2028+', desc_id: 'Ekspansi regional ke negara-negara Afrika yang disepakati bersama konsorsium.', desc_en: 'Regional scaling across mutually agreed African markets by the consortium.', desc_ja: 'コンソーシアム合意に基づくウガンダ全土および東アフリカ周辺市場へのスケール拡大。' }
+const INITIAL_ROADMAP_STEPS = [
+  { step: 1, title_id: 'Penandatanganan NDA & Non-Circumvention Agreement', title_en: 'Signing of NDA & Non-Circumvention Agreement', title_ja: 'NDAおよび不正競争防止協定の締結', status: 'in-progress', date_id: 'Sept 2026', date_en: 'Sept 2026', date_ja: '2026年9月', desc_id: 'Penandatanganan Perjanjian Kerahasiaan & Kerangka Kemitraan di Jakarta antara Katama, SADO, Kangker, dan mitra Indonesia.', desc_en: 'Signing of NDA and Strategic Framework in Jakarta between Katama, SADO, Kangker, and Indonesian partners.', desc_ja: 'ジャカルタにてKatama、SADO、Kangker、およびインドネシアパートナー間での秘密保持契約・枠組み合意の調印。' },
+  { step: 2, title_id: 'Heads of Agreement / Interim Partnership Agreement', title_en: 'Heads of Agreement / Interim Partnership Agreement', title_ja: '基本合意書（HoA）/ 暫定パートナーシップ契約', status: 'in-progress', date_id: 'Okt 2026', date_en: 'Oct 2026', date_ja: '2026年10月', desc_id: 'Penyusunan kesepakatan transisi operasional, jalur komunikasi, focal person, serta pembagian fee fasilitasi.', desc_en: 'Drafting operational transition agreements, communication channels, focal persons, and facilitation fee mechanisms.', desc_ja: '暫定運用協定、連絡窓口、担当者、および推進手数料メカニズムの策定。' },
+  { step: 3, title_id: 'Main Strategic Partnership Agreement', title_en: 'Main Strategic Partnership Agreement', title_ja: '本戦略的パートナーシップ協定の締結', status: 'in-progress', date_id: 'Des 2026', date_en: 'Dec 2026', date_ja: '2026年12月', desc_id: 'Penyelesaian Main Agreement dalam 90 hari setelah konfirmasi tertulis implementasi proyek.', desc_en: 'Finalizing Main Agreement within 90 days following written confirmation of project advancement.', desc_ja: 'プロジェクト推進の書面確認後90日以内における本協定の締結完了。' },
+  { step: 4, title_id: 'Government & Bilateral Engagement', title_en: 'Government & Bilateral Engagement', title_ja: '政府間協議・二国間エンゲージメント', status: 'in-progress', date_id: 'Sept - Nov 2026', date_en: 'Sept - Nov 2026', date_ja: '2026年9月〜11月', desc_id: 'Fasilitasi pertemuan tingkat kementerian dan bilateral institusional di Uganda melalui peran SADO.', desc_en: 'Facilitating ministerial and institutional bilateral meetings in Uganda through SADO.', desc_ja: 'SADOを通じたウガンダ政府省庁および関係機関との二国間ハイレベル会談の推進。' },
+  { step: 5, title_id: 'Uganda Technical & Business Mission', title_en: 'Uganda Technical & Business Mission', title_ja: 'ウガンダ技術・ビジネス公式視察団派遣', status: 'in-progress', date_id: 'Kuartal 1 2027', date_en: 'Q1 2027', date_ja: '2027年第1四半期', desc_id: 'Misi kunjungan tim teknis dan bisnis Indonesia ke Kampala untuk survei lapangan dan lokasi proyek.', desc_en: 'Indonesian technical and business delegation mission to Kampala for field and site surveys.', desc_ja: '現地調査および建設予定地視察のためのインドネシア技術・ビジネス代表団のカンパラ派遣。' },
+  { step: 6, title_id: 'Pilot Project / Proof of Concept (PoC)', title_en: 'Pilot Project / Proof of Concept (PoC)', title_ja: 'パイロットプロジェクト / 概念実証（PoC）', status: 'in-progress', date_id: 'Kuartal 2 2027', date_en: 'Q2 2027', date_ja: '2027年第2四半期', desc_id: 'Pengiriman mould, komponen, dan sistem teknis KSLL serta prototype Rumah Modular BlockBamboo/RISHAM.', desc_en: 'Dispatching KSLL moulds, components, and technical systems along with BlockBamboo/RISHAM modular housing prototypes.', desc_ja: 'KSLL型枠・部材・技術システムおよびBlockBamboo/RISHAMモジュール住宅試作機の搬送と実証。' },
+  { step: 7, title_id: 'Technical & Commercial Feasibility', title_en: 'Technical & Commercial Feasibility', title_ja: '技術的・商業的フィージビリティスタディ', status: 'in-progress', date_id: 'Kuartal 2 2027', date_en: 'Q2 2027', date_ja: '2027年第2四半期', desc_id: 'Investigasi tanah setempat, regulasi bangunan Uganda, uji struktur, dan kelayakan finansial.', desc_en: 'Local geotechnical soil investigation, Uganda building codes, structural testing, and financial feasibility.', desc_ja: 'ウガンダ現地の土質調査、建築基準適合性、構造試験、および財務採算性分析。' },
+  { step: 8, title_id: 'Development Financing & IsDB Engagement', title_en: 'Development Financing & IsDB Engagement', title_ja: '開発金融・イスラム開発銀行（IsDB）連携', status: 'in-progress', date_id: 'Kuartal 3 2027', date_en: 'Q3 2027', date_ja: '2027年第3四半期', desc_id: 'Eksplorasi pendanaan pembangunan dari Islamic Development Bank (IsDB), multilateral banks, dan climate fund.', desc_en: 'Exploring development funding from Islamic Development Bank (IsDB), multilateral institutions, and climate finance.', desc_ja: 'イスラム開発銀行（IsDB）、多国間開発銀行、気候変動ファンドからの開発融資・グラント調達。' },
+  { step: 9, title_id: 'Technology Transfer & Local Manufacturing', title_en: 'Technology Transfer & Local Manufacturing', title_ja: '技術移転・現地製造・人材育成', status: 'in-progress', date_id: 'Kuartal 4 2027', date_en: 'Q4 2027', date_ja: '2027年第4四半期', desc_id: 'Pelatihan tenaga kerja lokal Uganda, perakitan lokal, dan standardisasi Quality Control/QA.', desc_en: 'Local workforce training in Uganda, local assembly, and Quality Control/QA standardization.', desc_ja: 'ウガンダ現地技術者の育成・トレーニング、現地製造体制の確立および品質管理標準化。' },
+  { step: 10, title_id: 'Project-Specific Implementation', title_en: 'Project-Specific Implementation', title_ja: '個別プロジェクトの本格着工・施工', status: 'in-progress', date_id: '2028', date_en: '2028', date_ja: '2028年', desc_id: 'Pelaksanaan konstruksi perumahan, rumah sakit, diagnostic centres, dan fasilitas publik.', desc_en: 'Executing construction for housing, healthcare facilities, diagnostic centers, and civic infrastructure.', desc_ja: '住宅地造成、病院、診断センター、および公共インフラの本格的な建設工事実施。' },
+  { step: 11, title_id: 'Scale-Up in Uganda & African Markets', title_en: 'Scale-Up in Uganda & African Markets', title_ja: 'ウガンダ国内およびアフリカ全域への展開', status: 'in-progress', date_id: '2028+', date_en: '2028+', date_ja: '2028年以降', desc_id: 'Ekspansi regional ke negara-negara Afrika yang disepakati bersama konsorsium.', desc_en: 'Regional scaling across mutually agreed African markets by the consortium.', desc_ja: 'コンソーシアム合意に基づくウガンダ全土および東アフリカ周辺市場へのスケール拡大。' }
 ];
 
-// Initial default documents
+// ─────────────────────────────────────────────────────────────
+// LEGAL VAULT DOCUMENTS (Fully localized)
+// ─────────────────────────────────────────────────────────────
 const INITIAL_DOCUMENTS = [
   {
     id: 'doc-nda-001',
-    title: 'Perjanjian Kerahasiaan, Non-Pengungkapan, Non-Circumvention & Kemitraan Strategis (NDA)',
-    type: 'Legal Agreement',
-    parties: 'PT Katama Suryabumi, SADO, Kangker Construction',
-    date: 'September 2026',
-    status: 'Signed & Active',
+    title_id: 'Perjanjian Kerahasiaan, Non-Pengungkapan, Non-Circumvention & Kemitraan Strategis (NDA)',
+    title_en: 'Non-Disclosure, Non-Circumvention & Strategic Partnership Agreement (NDA)',
+    title_ja: '秘密保持・不正競争防止および戦略的パートナーシップ協定書（NDA）',
+    type_id: 'Perjanjian Legal',
+    type_en: 'Legal Agreement',
+    type_ja: '法的合意書',
+    parties_id: 'PT Katama Suryabumi, SADO, Kangker Construction',
+    parties_en: 'PT Katama Suryabumi, SADO, Kangker Construction',
+    parties_ja: 'PT Katama Suryabumi, SADO, Kangker Construction',
+    date_id: 'September 2026',
+    date_en: 'Sept 2026',
+    date_ja: '2026年9月',
+    status_id: 'Aktif & Mengikat',
+    status_en: 'Active & Binding',
+    status_ja: '締結済・有効',
     fileUrl: '/event/uganda.png',
-    clauses: '26 Pasal (KSLL, RISHAM, Non-Circumvention, IsDB Funding, Fee SADO & Jimmy)',
+    clauses_id: '26 Pasal (Lisensi KSLL, RISHAM, Non-Circumvention, Pembiayaan IsDB, Fee SADO & Jimmy)',
+    clauses_en: '26 Clauses (KSLL License, RISHAM, Non-Circumvention, IsDB Funding, SADO & Jimmy Fee)',
+    clauses_ja: '全26条項（KSLLライセンス、RISHAM、不正競争防止、IsDB開発資金、SADO・Jimmy手数料）',
     comments: [
-      { id: 'c1', author: 'PT Katama (Drs. M. Kris Suyanto)', text: 'Perjanjian NDA resmi mengikat dan melindungi lisensi KSLL di wilayah Uganda & Afrika.', timestamp: '2026-09-01T10:00:00Z', role: 'Lead Indonesian Party' },
+      { id: 'c1', author: 'PT Katama (Drs. M. Kris Suyanto)', text: 'Perjanjian NDA resmi mengikat dan melindungi lisensi KSLL di wilayah Uganda & Afrika.', timestamp: '2026-09-01T10:00:00Z', role: 'Lead Coordinator' },
       { id: 'c2', author: 'SADO Uganda (Dr. Nelson Muzira)', text: 'Received and confirmed. Ministry coordination in Kampala has been initiated.', timestamp: '2026-09-01T14:30:00Z', role: 'Enabling Agency' }
     ]
   },
   {
     id: 'doc-ksll-002',
-    title: 'Spesifikasi Teknis & Lisensi Penerapan Konstruksi Sarang Laba-Laba (KSLL)',
-    type: 'Technical License',
-    parties: 'PT Katama Suryabumi',
-    date: 'Agustus 2026',
-    status: 'Verified',
+    title_id: 'Spesifikasi Teknis & Lisensi Penerapan Konstruksi Sarang Laba-Laba (KSLL)',
+    title_en: 'KSLL Technical Specifications & Construction License',
+    title_ja: 'クモの巣構造（KSLL）建築工法 技術仕様書および施工ライセンス',
+    type_id: 'Lisensi Teknis',
+    type_en: 'Technical License',
+    type_ja: '技術ライセンス',
+    parties_id: 'PT Katama Suryabumi',
+    parties_en: 'PT Katama Suryabumi',
+    parties_ja: 'PT Katama Suryabumi',
+    date_id: 'Agustus 2026',
+    date_en: 'Aug 2026',
+    date_ja: '2026年8月',
+    status_id: 'Terverifikasi',
+    status_en: 'Verified',
+    status_ja: '認証済',
     fileUrl: '#',
-    clauses: 'Analisis Geoteknik, Investigasi Tanah, Desain Beban Bangunan Tahan Gempa',
+    clauses_id: 'Analisis Geoteknik, Investigasi Tanah, Desain Beban Bangunan Tahan Gempa',
+    clauses_en: 'Geotechnical Analysis, Soil Investigation, Earthquake-Resistant Load Design',
+    clauses_ja: '地盤工学解析、土質調査、耐震荷重構造設計基準',
     comments: [
       { id: 'c3', author: 'Kangker Construction (Mr. Samuel)', text: 'We are preparing our engineering team to review the soil parameters in Kampala.', timestamp: '2026-09-02T09:15:00Z', role: 'Construction Lead' }
     ]
   },
   {
     id: 'doc-risham-003',
-    title: 'Kerangka Lisensi & Alih Teknologi RISHAM (Rumah Instan Sehat Aman)',
-    type: 'Technology Transfer',
-    parties: 'PT Panorama Agung Utama & PERPUBI',
-    date: 'Agustus 2026',
-    status: 'Verified',
+    title_id: 'Kerangka Lisensi & Alih Teknologi RISHAM (Rumah Instan Sehat Aman)',
+    title_en: 'RISHAM Modular Technology Transfer Framework',
+    title_ja: 'モジュール式迅速組立住宅（RISHAM）技術移転およびライセンス枠組み',
+    type_id: 'Alih Teknologi',
+    type_en: 'Technology Transfer',
+    type_ja: '技術移転',
+    parties_id: 'PT Panorama Agung Utama & PERPUBI',
+    parties_en: 'PT Panorama Agung Utama & PERPUBI',
+    parties_ja: 'PT Panorama Agung Utama & PERPUBI',
+    date_id: 'Agustus 2026',
+    date_en: 'Aug 2026',
+    date_ja: '2026年8月',
+    status_id: 'Terverifikasi',
+    status_en: 'Verified',
+    status_ja: '認証済',
     fileUrl: '#',
-    clauses: 'Desain Modular, Prefabrikasi BlockBamboo, Standar Hunian Berkelanjutan',
+    clauses_id: 'Desain Modular, Prefabrikasi BlockBamboo, Standar Hunian Berkelanjutan',
+    clauses_en: 'Modular Architecture, BlockBamboo Prefabrication, Sustainable Living Standards',
+    clauses_ja: 'モジュール設計、BlockBambooプレハブ構造、持続可能な住宅基準',
     comments: []
   },
   {
     id: 'doc-annex-004',
-    title: 'Annex A & B: Register of Introduced Contacts & African Territories',
-    type: 'Annex / Register',
-    parties: 'SADO & PT Katama Suryabumi',
-    date: 'September 2026',
-    status: 'Active',
+    title_id: 'Annex A & B: Register of Introduced Contacts & African Territories',
+    title_en: 'Annex A & B: Register of Introduced Contacts & African Territories',
+    title_ja: '付属書A・B：紹介先コンタクト登録簿およびアフリカ対象地域',
+    type_id: 'Lampiran / Register',
+    type_en: 'Annex / Register',
+    type_ja: '付属書 / 登録簿',
+    parties_id: 'SADO & PT Katama Suryabumi',
+    parties_en: 'SADO & PT Katama Suryabumi',
+    parties_ja: 'SADO & PT Katama Suryabumi',
+    date_id: 'September 2026',
+    date_en: 'Sept 2026',
+    date_ja: '2026年9月',
+    status_id: 'Aktif & Mengikat',
+    status_en: 'Active & Binding',
+    status_ja: '有効',
     fileUrl: '#',
-    clauses: 'Perlindungan Kontak Non-Circumvention 5 Tahun di Uganda dan Pasar Afrika',
+    clauses_id: 'Perlindungan Kontak Non-Circumvention 5 Tahun di Uganda dan Pasar Afrika',
+    clauses_en: '5-Year Non-Circumvention Protection for Contacts in Uganda and African Markets',
+    clauses_ja: 'ウガンダおよびアフリカ市場における5年間の不正迂回取引防止保護規定',
     comments: []
   }
 ];
 
+// ─────────────────────────────────────────────────────────────
+// INITIAL TASKS (All start in 'in-progress' / 'Baru Dimulai')
+// ─────────────────────────────────────────────────────────────
 const INITIAL_TASKS = [
-  { id: 't-1', title: 'Finalisasi Penandatanganan NDA Trilateral di Jakarta', category: 'Legal', assignee: 'Katama / SADO / Kangker', status: 'Done', dueDate: 'Sept 2026', comments: [] },
-  { id: 't-2', title: 'Penyusunan Draft Heads of Agreement (HoA)', category: 'Legal', assignee: 'Lead Indonesian Party & SADO', status: 'In Progress', dueDate: 'Okt 2026', comments: [] },
-  { id: 't-3', title: 'Persiapan Dokumen Teknis KSLL untuk Karakteristik Tanah Uganda', category: 'Engineering', assignee: 'Tim Engineer PT Katama', status: 'In Progress', dueDate: 'Nov 2026', comments: [] },
-  { id: 't-4', title: 'Pembuatan Mockup Modular BlockBamboo untuk Display Ekspor', category: 'R&D', assignee: 'PERPUBI & Panorama Agung', status: 'In Progress', dueDate: 'Nov 2026', comments: [] },
-  { id: 't-5', title: 'Audiensi dengan Perwakilan IsDB & Lembaga Pembiayaan Pembangunan', category: 'Financing', assignee: 'SADO & Turkodom Consulting', status: 'Pending', dueDate: 'Des 2026', comments: [] },
-  { id: 't-6', title: 'Penjadwalan Kunjungan Balasan (Indonesian Mission to Kampala)', category: 'Bilateral', assignee: 'SADO & Fasilitator', status: 'Pending', dueDate: 'Jan 2027', comments: [] },
+  { id: 't-1', title_id: 'Finalisasi Penandatanganan NDA Trilateral di Jakarta', title_en: 'Finalizing Trilateral NDA Signing in Jakarta', title_ja: 'ジャカルタにおける3者間秘密保持契約（NDA）の締結完了', category_id: 'Legal', category_en: 'Legal', category_ja: '法務・MoU', assignee_id: 'Katama / SADO / Kangker', assignee_en: 'Katama / SADO / Kangker', assignee_ja: 'Katama / SADO / Kangker', status: 'in-progress', dueDate_id: 'Sept 2026', dueDate_en: 'Sept 2026', dueDate_ja: '2026年9月', comments: [] },
+  { id: 't-2', title_id: 'Penyusunan Draft Heads of Agreement (HoA)', title_en: 'Drafting Heads of Agreement (HoA)', title_ja: '基本合意書（HoA）草案の作成', category_id: 'Legal', category_en: 'Legal', category_ja: '法務・MoU', assignee_id: 'Lead Indonesian Party & SADO', assignee_en: 'Lead Indonesian Party & SADO', assignee_ja: 'インドネシア主幹企業 & SADO', status: 'in-progress', dueDate_id: 'Okt 2026', dueDate_en: 'Oct 2026', dueDate_ja: '2026年10月', comments: [] },
+  { id: 't-3', title_id: 'Persiapan Dokumen Teknis KSLL untuk Karakteristik Tanah Uganda', title_en: 'Preparing KSLL Technical Specs for Uganda Soil Profile', title_ja: 'ウガンダの土質特性に合わせたKSLL技術仕様書の準備', category_id: 'Engineering', category_en: 'Engineering', category_ja: '技術・KSLL', assignee_id: 'Tim Engineer PT Katama', assignee_en: 'PT Katama Engineering Team', assignee_ja: 'PT Katama エンジニアチーム', status: 'in-progress', dueDate_id: 'Nov 2026', dueDate_en: 'Nov 2026', dueDate_ja: '2026年11月', comments: [] },
+  { id: 't-4', title_id: 'Pembuatan Mockup Modular BlockBamboo untuk Display Ekspor', title_en: 'Fabricating Modular BlockBamboo Mockup for Export Showcase', title_ja: '輸出展示用BlockBambooモジュール住宅モックアップの製作', category_id: 'R&D', category_en: 'R&D', category_ja: '研究開発', assignee_id: 'PERPUBI & Panorama Agung', assignee_en: 'PERPUBI & Panorama Agung', assignee_ja: 'PERPUBI & Panorama Agung', status: 'in-progress', dueDate_id: 'Nov 2026', dueDate_en: 'Nov 2026', dueDate_ja: '2026年11月', comments: [] },
+  { id: 't-5', title_id: 'Audiensi dengan Perwakilan IsDB & Lembaga Pembiayaan Pembangunan', title_en: 'Institutional Engagement with IsDB & Development Financiers', title_ja: 'イスラム開発銀行（IsDB）および開発金融機関との公式協議', category_id: 'Financing', category_en: 'Financing', category_ja: '資金調達', assignee_id: 'SADO & Turkodom Consulting', assignee_en: 'SADO & Turkodom Consulting', assignee_ja: 'SADO & Turkodom Consulting', status: 'in-progress', dueDate_id: 'Des 2026', dueDate_en: 'Dec 2026', dueDate_ja: '2026年12月', comments: [] },
+  { id: 't-6', title_id: 'Penjadwalan Kunjungan Balasan (Indonesian Mission to Kampala)', title_en: 'Scheduling Reciprocal Delegation (Indonesian Mission to Kampala)', title_ja: 'インドネシア公式視察団のカンパラ派遣日程調整', category_id: 'Bilateral', category_en: 'Bilateral', category_ja: '二国間協議', assignee_id: 'SADO & Fasilitator', assignee_en: 'SADO & Facilitator', assignee_ja: 'SADO & 推進役', status: 'in-progress', dueDate_id: 'Jan 2027', dueDate_en: 'Jan 2027', dueDate_ja: '2027年1月', comments: [] },
 ];
 
+// ─────────────────────────────────────────────────────────────
+// ITINERARY ROWS (100% Multilingual)
+// ─────────────────────────────────────────────────────────────
+const ITINERARY_ROWS = [
+  {
+    date_id: '31 Ags 2026',
+    date_en: 'Aug 31, 2026',
+    date_ja: '2026年8月31日',
+    agenda_id: 'Delegasi Uganda tiba di Indonesia dan menginap di Jakarta.',
+    agenda_en: 'Uganda delegation arrives in Indonesia and checks in at Jakarta hotel.',
+    agenda_ja: 'ウガンダ公式代表団がインドネシアに到着、ジャカルタ市内に宿泊。',
+    focus_id: 'Penyambutan Resmi',
+    focus_en: 'Official Arrival',
+    focus_ja: '公式歓迎・オリエンテーション'
+  },
+  {
+    date_id: '1 Sept 2026',
+    date_en: 'Sept 1, 2026',
+    date_ja: '2026年9月1日',
+    agenda_id: 'Kunjungan ke kantor PT Katama Suryabumi untuk pembahasan awal NDA serta ruang lingkup kerja sama.',
+    agenda_en: 'Visit to PT Katama Suryabumi head office for preliminary NDA and scope discussions.',
+    agenda_ja: 'PT Katama Suryabumi本社を訪問、秘密保持契約（NDA）および協力範囲の初期協議。',
+    focus_id: 'Pembahasan NDA & KSLL',
+    focus_en: 'NDA & KSLL Scope',
+    focus_ja: 'NDA協議・KSLL工法検討'
+  },
+  {
+    date_id: '2 Sept 2026',
+    date_en: 'Sept 2, 2026',
+    date_ja: '2026年9月2日',
+    agenda_id: 'Pertemuan di Wisma Bumiputera, Bandung, untuk pembahasan lanjutan NDA dan substansi rencana kerja sama.',
+    agenda_en: 'Meeting at Wisma Bumiputera, Bandung, for detailed NDA follow-up and strategic roadmap drafting.',
+    agenda_ja: 'バンドン・Wisma Bumiputeraにて会合、NDA詳細および事業ロードマップ策定の協議。',
+    focus_id: 'Roadmap Kemitraan',
+    focus_en: 'Partnership Roadmap',
+    focus_ja: '事業ロードマップ策定'
+  },
+  {
+    date_id: '3 Sept 2026',
+    date_en: 'Sept 3, 2026',
+    date_ja: '2026年9月3日',
+    agenda_id: 'Kunjungan ke ITB Jatinangor & Cimekar (Prototipe BlockBamboo & RISHAM) serta Puskim Cileunyi.',
+    agenda_en: 'Field visit to ITB Jatinangor & Cimekar (BlockBamboo & RISHAM prototypes) and Puskim Cileunyi.',
+    agenda_ja: 'ITBジャティナンゴールおよびチメカル視察（BlockBamboo＆RISHAM試作機）とPuskim建築研究所訪問。',
+    focus_id: 'Alih Teknologi Hunian',
+    focus_en: 'Housing Tech Transfer',
+    focus_ja: 'モジュール住宅技術移転'
+  },
+  {
+    date_id: '4–5 Sept 2026',
+    date_en: 'Sept 4–5, 2026',
+    date_ja: '2026年9月4〜5日',
+    agenda_id: 'Kunjungan Tangerang Selatan (Puspiptek, Pemkot Tangsel) untuk melihat implementasi nyata Konstruksi Sarang Laba-Laba (KSLL).',
+    agenda_en: 'Visit to South Tangerang (Puspiptek, City Hall) to inspect real-world implementation of KSLL structural foundation.',
+    agenda_ja: '南タンゲラン視察（Puspiptek国立科学技術研究センター、市庁舎）にてKSLL基礎構造の実装現場を見学。',
+    focus_id: 'Implementasi Nyata KSLL',
+    focus_en: 'KSLL Construction Proof',
+    focus_ja: 'KSLL基礎構造の実装確認'
+  }
+];
+
+// Initial gallery
 const INITIAL_GALLERY = [
   {
     id: 'gal-001',
-    title: 'Pertemuan Bilateral Inovasi Hijau Indonesia - Uganda',
+    title_id: 'Pertemuan Bilateral Inovasi Hijau Indonesia - Uganda',
+    title_en: 'Indonesia – Uganda Green Innovation Bilateral Meeting',
+    title_ja: 'インドネシア–ウガンダ グリーンイノベーション二国間会合',
     type: 'photo',
     mediaUrl: '/event/uganda.png',
-    date: '1 Sept 2026',
-    location: 'Kantor PT Katama Suryabumi, Jakarta',
-    caption: 'Momen penandatanganan dan pembahasan awal kemitraan teknologi konstruksi KSLL, RISHAM, dan agroforestry bambu.',
+    date_id: '1 Sept 2026',
+    date_en: 'Sept 1, 2026',
+    date_ja: '2026年9月1日',
+    location_id: 'Kantor PT Katama Suryabumi, Jakarta',
+    location_en: 'PT Katama Suryabumi Office, Jakarta',
+    location_ja: 'PT Katama Suryabumi 本社（ジャカルタ）',
+    caption_id: 'Momen penandatanganan dan pembahasan awal kemitraan teknologi konstruksi KSLL, RISHAM, dan agroforestry bambu.',
+    caption_en: 'Signing moment and preliminary discussions on KSLL construction, RISHAM, and bamboo agroforestry technology.',
+    caption_ja: 'KSLL建築工法、RISHAM、および竹アグロフォレストリー技術協力に関する調印と初期協議の様子。',
     author: 'Sekretariat Konsorsium',
     likes: 12,
     comments: [
@@ -408,73 +537,138 @@ const INITIAL_GALLERY = [
   }
 ];
 
+// ─────────────────────────────────────────────────────────────
+// STAKEHOLDERS (100% Multilingual)
+// ─────────────────────────────────────────────────────────────
 const STAKEHOLDERS = [
   {
-    role: 'Lead Indonesian Party & Coordinator',
+    role_id: 'Koordinator Utama Pihak Indonesia',
+    role_en: 'Lead Indonesian Party & Coordinator',
+    role_ja: 'インドネシア側 主幹コーディネーター',
     org: 'PT KATAMA SURYABUMI',
     representative: 'Drs. M. Kris Suyanto',
-    title: 'Direktur Utama',
-    country: '🇮🇩 Indonesia',
-    address: 'Gedung Sentra Pemuda, Jl. Pemuda Kav. 61 No. 38, Rawamangun, Jakarta Timur',
-    scope: 'Pemegang Lisensi KSLL, Koordinator Mitra Teknologi Indonesia, Rekayasa Struktur & Manufaktur',
+    title_id: 'Direktur Utama',
+    title_en: 'President Director',
+    title_ja: '代表取締役社長',
+    country_id: '🇮🇩 Indonesia',
+    country_en: '🇮🇩 Indonesia',
+    country_ja: '🇮🇩 インドネシア',
+    address_id: 'Gedung Sentra Pemuda, Jl. Pemuda Kav. 61 No. 38, Rawamangun, Jakarta Timur',
+    address_en: 'Gedung Sentra Pemuda, Jl. Pemuda Kav. 61 No. 38, Rawamangun, East Jakarta',
+    address_ja: '東ジャカルタ ラワマングン プムダ通り61号 セン虎プムダビル',
+    scope_id: 'Pemegang Lisensi KSLL, Koordinator Mitra Teknologi Indonesia, Rekayasa Struktur & Manufaktur',
+    scope_en: 'Holder of KSLL Patent, Coordinator of Indonesian Technology Partners, Structural Engineering & Manufacturing',
+    scope_ja: 'KSLL特許保有企業、インドネシア技術パートナー統括、構造設計・製造',
     badgeColor: '#1c7ed6'
   },
   {
-    role: 'Enabling Agency Partner',
+    role_id: 'Badan Fasilitator Kemitraan Afrika',
+    role_en: 'Enabling Agency Partner',
+    role_ja: 'アフリカ側 推進・政府連携機関',
     org: 'SMART AFRICAN VILLAGE DEVELOPMENT CONSORTIUM (SADO)',
     representative: 'Dr. Nelson Tenywa Muzira',
-    title: 'Country Director',
+    title_id: 'Country Director',
+    title_en: 'Country Director',
+    title_ja: '国代表ディレクター',
     regNo: '80034021034253',
-    country: '🇺🇬 Uganda',
-    address: 'Plot 1191, Masembe Rd, Kamomboga, Kampala, Uganda',
-    scope: 'Fasilitasi Hubungan Pemerintah Uganda, Koordinasi Pemangku Kepentingan, Peluang IsDB/Funding',
+    country_id: '🇺🇬 Uganda',
+    country_en: '🇺🇬 Uganda',
+    country_ja: '🇺🇬 ウガンダ',
+    address_id: 'Plot 1191, Masembe Rd, Kamomboga, Kampala, Uganda',
+    address_en: 'Plot 1191, Masembe Rd, Kamomboga, Kampala, Uganda',
+    address_ja: 'ウガンダ カンパラ市 カモンボガ マセンベ通り 1191番地',
+    scope_id: 'Fasilitasi Hubungan Pemerintah Uganda, Koordinasi Pemangku Kepentingan, Peluang IsDB/Funding',
+    scope_en: 'Uganda Government Institutional Facilitation, Stakeholder Engagement, IsDB/Funding Opportunities',
+    scope_ja: 'ウガンダ政府機関連携、ステークホルダー調整、IsDB等の資金調達機会の創出',
     badgeColor: '#f59f00'
   },
   {
-    role: 'Construction & Execution Partner',
+    role_id: 'Pelaksana Konstruksi & Fabrikasi',
+    role_en: 'Construction & Execution Partner',
+    role_ja: '施工・現地製造パートナー',
     org: 'KANGKER CONSTRUCTION INTERNATIONAL LTD',
     representative: 'Mr. Samuel Humphry Kennedy',
-    title: 'Executive Director',
+    title_id: 'Executive Director',
+    title_en: 'Executive Director',
+    title_ja: '執行役員ディレクター',
     regNo: '80045062387527',
-    country: '🇺🇬 Uganda',
-    address: 'Plot 1191, Masembe Rd, Kamomboga, Kampala, Uganda',
-    scope: 'Pelaksana Konstruksi Lapangan, Manajemen Tenaga Kerja Lokal, Logistik & Fabrikasi Uganda',
+    country_id: '🇺🇬 Uganda',
+    country_en: '🇺🇬 Uganda',
+    country_ja: '🇺🇬 ウガンダ',
+    address_id: 'Plot 1191, Masembe Rd, Kamomboga, Kampala, Uganda',
+    address_en: 'Plot 1191, Masembe Rd, Kamomboga, Kampala, Uganda',
+    address_ja: 'ウガンダ カンパラ市 カモンボガ マセンベ通り 1191番地',
+    scope_id: 'Pelaksana Konstruksi Lapangan, Manajemen Tenaga Kerja Lokal, Logistik & Fabrikasi Uganda',
+    scope_en: 'On-site Construction Execution, Local Workforce Management, Uganda Logistics & Local Fabrication',
+    scope_ja: '現地施工管理、ウガンダ人労働力の組織化、現地物流・部材加工',
     badgeColor: '#e03131'
   },
   {
-    role: 'Strategic Bamboo & Agroforestry Partner',
+    role_id: 'Mitra Strategis Bambu & Agroforestri',
+    role_en: 'Strategic Bamboo & Agroforestry Partner',
+    role_ja: '竹産業・アグロフォレストリー戦略パートナー',
     org: 'PERPUBI (Perkumpulan Pelaku Usaha Bambu Indonesia)',
     representative: 'Ar. Mukoddas Syuhada, S.T., M.T., IAI., CIM.',
-    title: 'Ketua Umum PERPUBI',
-    country: '🇮🇩 Indonesia',
-    scope: 'Pengembangan Ekosistem Bambu, Konstruksi Berkelanjutan, Supply Chain & Transfer Pengetahuan',
+    title_id: 'Ketua Umum PERPUBI',
+    title_en: 'Chairman of PERPUBI',
+    title_ja: 'PERPUBI会長（建築家）',
+    country_id: '🇮🇩 Indonesia',
+    country_en: '🇮🇩 Indonesia',
+    country_ja: '🇮🇩 インドネシア',
+    scope_id: 'Pengembangan Ekosistem Bambu, Konstruksi Berkelanjutan, Supply Chain & Transfer Pengetahuan',
+    scope_en: 'Bamboo Ecosystem Development, Sustainable Construction, Supply Chain & Knowledge Transfer',
+    scope_ja: '竹エコシステム構築、持続可能建築、サプライチェーン開発、知識移転',
     badgeColor: '#40c057'
   },
   {
-    role: 'Modular Technology Partner',
+    role_id: 'Mitra Teknologi Hunian Modular',
+    role_en: 'Modular Technology Partner',
+    role_ja: 'モジュール建築技術パートナー',
     org: 'PT PANORAMA AGUNG UTAMA',
     representative: 'Ir. Doddy Sudradjat',
-    title: 'Direktur',
-    country: '🇮🇩 Indonesia',
-    scope: 'Pemilik Sah Hak Teknologi RISHAM (Rumah Instan Sehat Aman)',
+    title_id: 'Direktur',
+    title_en: 'Director',
+    title_ja: '取締役',
+    country_id: '🇮🇩 Indonesia',
+    country_en: '🇮🇩 Indonesia',
+    country_ja: '🇮🇩 インドネシア',
+    scope_id: 'Pemilik Sah Hak Teknologi RISHAM (Rumah Instan Sehat Aman)',
+    scope_en: 'Legitimate Rights Holder of RISHAM (Instant Healthy Safe Housing) Technology',
+    scope_ja: 'RISHAM（迅速・健全・安全住宅）工法の正規権利保有企業',
     badgeColor: '#7950f2'
   },
   {
-    role: 'Global Strategic Advisory & Sustainability',
+    role_id: 'Penasihat Strategis & Keberlanjutan Global',
+    role_en: 'Global Strategic Advisory & Sustainability',
+    role_ja: 'グローバル戦略顧問・サステナビリティ',
     org: 'TURKODOM CONSULTING',
     representative: 'Cecilia Crista Tumini',
-    title: 'Konsultan Turkodom',
-    country: '🇮🇩 Indonesia / Global',
-    scope: 'Strategic Advisory, Riset ESG & SDGs, Fasilitasi Kemitraan Global & Perdagangan Lintas Negara',
+    title_id: 'Konsultan Turkodom',
+    title_en: 'Turkodom Consultant',
+    title_ja: 'コンサルタント',
+    country_id: '🇮🇩 Indonesia / Global',
+    country_en: '🇮🇩 Indonesia / Global',
+    country_ja: '🇮🇩 インドネシア / グローバル',
+    scope_id: 'Strategic Advisory, Riset ESG & SDGs, Fasilitasi Kemitraan Global & Perdagangan Lintas Negara',
+    scope_en: 'Strategic Advisory, ESG & SDG Research, Cross-Border Trade & Global Partnerships',
+    scope_ja: '戦略的アドバイザリー、ESG・SDGs調査、国境を越えた貿易・国際パートナーシップ支援',
     badgeColor: '#1098ad'
   },
   {
-    role: 'Facilitator & Intermediary',
+    role_id: 'Fasilitator & Intermediary Konsorsium',
+    role_en: 'Facilitator & Intermediary',
+    role_ja: 'コンソーシアム推進役・仲介者',
     org: 'INDEPENDENT FACILITATOR',
     representative: 'Jimmy Ricky, ST.',
-    title: 'Fasilitator Konsorsium',
-    country: '🇮🇩 Indonesia',
-    scope: 'Penghubung Kemitraan Strategis, Koordinasi Operasional & Monitoring Kemitraan',
+    title_id: 'Fasilitator Konsorsium',
+    title_en: 'Consortium Facilitator',
+    title_ja: 'コンソーシアム推進役',
+    country_id: '🇮🇩 Indonesia',
+    country_en: '🇮🇩 Indonesia',
+    country_ja: '🇮🇩 インドネシア',
+    scope_id: 'Penghubung Kemitraan Strategis, Koordinasi Operasional & Monitoring Kemitraan',
+    scope_en: 'Strategic Partnership Connector, Operational Coordination & Partnership Monitoring',
+    scope_ja: '戦略的パートナーシップ連携、運用調整、事業モニタリング',
     badgeColor: '#d6336c'
   }
 ];
@@ -490,7 +684,7 @@ const UgandaProjectDashboard = () => {
   // Role Access Control (Whitelist)
   const allowedUsernames = [
     'admin_yayasan', 'admin', 'mukoddas', 'katama', 'sado', 
-    'kangker', 'perpubi', 'doddy', 'turkodom', 'jimmy', 'kris_suyanto'
+    'kangker', 'perpubi', 'doddy', 'turkodom', 'jimmy', 'kris_suyanto', 'albantani'
   ];
   
   const isAuthorized = isAuthenticated && (
@@ -509,7 +703,8 @@ const UgandaProjectDashboard = () => {
   const { data: dynamicTasks = [] } = useUgandaProjectTasks();
   const { data: dynamicGallery = [] } = useUgandaProjectGallery();
 
-  // Local state for active items to support immediate comment updates
+  // Local state for active items to support immediate comment & status updates
+  const [localRoadmap, setLocalRoadmap] = useState(INITIAL_ROADMAP_STEPS);
   const [localDocs, setLocalDocs] = useState(INITIAL_DOCUMENTS);
   const [localTasks, setLocalTasks] = useState(INITIAL_TASKS);
   const [localGallery, setLocalGallery] = useState(INITIAL_GALLERY);
@@ -533,7 +728,7 @@ const UgandaProjectDashboard = () => {
   }, [dynamicGallery]);
 
   // Comment Thread Drawer / Active Item State
-  const [activeCommentTarget, setActiveCommentTarget] = useState(null); // { type: 'doc'|'task'|'gallery'|'step', id: string, item: object }
+  const [activeCommentTarget, setActiveCommentTarget] = useState(null);
   const [newCommentText, setNewCommentText] = useState('');
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
 
@@ -554,7 +749,7 @@ const UgandaProjectDashboard = () => {
     title: '',
     category: 'Engineering',
     assignee: 'PT Katama Suryabumi',
-    status: 'In Progress',
+    status: 'in-progress',
     dueDate: 'Nov 2026'
   });
 
@@ -568,6 +763,34 @@ const UgandaProjectDashboard = () => {
     file: null,
     mediaUrl: ''
   });
+
+  // ─────────────────────────────────────────────────────────────
+  // HANDLERS: ROADMAP STATUS TOGGLE (3-BUTTON SELECTOR)
+  // ─────────────────────────────────────────────────────────────
+  const handleSetRoadmapStatus = (stepNum, newStatus) => {
+    const updated = localRoadmap.map(s => {
+      if (s.step === stepNum) {
+        return { ...s, status: newStatus };
+      }
+      return s;
+    });
+    setLocalRoadmap(updated);
+  };
+
+  // ─────────────────────────────────────────────────────────────
+  // HANDLERS: TASK STATUS TOGGLE (3-BUTTON SELECTOR)
+  // ─────────────────────────────────────────────────────────────
+  const handleSetTaskStatus = async (taskId, newStatus) => {
+    const updated = localTasks.map(t => t.id === taskId ? { ...t, status: newStatus } : t);
+    setLocalTasks(updated);
+
+    try {
+      const taskRef = doc(db, "uganda_project_tasks", taskId);
+      await updateDoc(taskRef, { status: newStatus });
+    } catch (err) {
+      console.log("Updated locally");
+    }
+  };
 
   // ─────────────────────────────────────────────────────────────
   // HANDLERS: COMMENTS & INTERACTIONS
@@ -603,7 +826,6 @@ const UgandaProjectDashboard = () => {
         });
         setLocalDocs(updated);
 
-        // If it's a dynamic Firestore doc, update in DB
         if (!activeCommentTarget.item.isStatic && activeCommentTarget.item.id) {
           const docRef = doc(db, "uganda_project_documents", activeCommentTarget.item.id);
           await updateDoc(docRef, { comments: arrayUnion(newComment) });
@@ -646,21 +868,8 @@ const UgandaProjectDashboard = () => {
     }
   };
 
-  const handleToggleTaskStatus = async (taskId, currentStatus) => {
-    const nextStatus = currentStatus === 'Done' ? 'Pending' : currentStatus === 'Pending' ? 'In Progress' : 'Done';
-    const updated = localTasks.map(t => t.id === taskId ? { ...t, status: nextStatus } : t);
-    setLocalTasks(updated);
-
-    try {
-      const taskRef = doc(db, "uganda_project_tasks", taskId);
-      await updateDoc(taskRef, { status: nextStatus });
-    } catch (err) {
-      console.log("Updated locally");
-    }
-  };
-
   // ─────────────────────────────────────────────────────────────
-  // HANDLERS: UPLOAD MODALS
+  // HANDLERS: CLOUDINARY UPLOADS
   // ─────────────────────────────────────────────────────────────
   const uploadToCloudinary = async (dataUrl) => {
     const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
@@ -691,13 +900,25 @@ const UgandaProjectDashboard = () => {
       }
 
       const newDoc = {
-        title: docForm.title,
-        type: docForm.type,
-        parties: docForm.parties,
-        clauses: docForm.clauses,
+        title_id: docForm.title,
+        title_en: docForm.title,
+        title_ja: docForm.title,
+        type_id: docForm.type,
+        type_en: docForm.type,
+        type_ja: docForm.type,
+        parties_id: docForm.parties,
+        parties_en: docForm.parties,
+        parties_ja: docForm.parties,
+        clauses_id: docForm.clauses,
+        clauses_en: docForm.clauses,
+        clauses_ja: docForm.clauses,
         fileUrl: fileUrl,
-        date: new Date().toLocaleDateString(langKey === 'en' ? 'en-US' : langKey === 'ja' ? 'ja-JP' : 'id-ID', { month: 'short', year: 'numeric' }),
-        status: 'Uploaded',
+        date_id: new Date().toLocaleDateString('id-ID', { month: 'short', year: 'numeric' }),
+        date_en: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+        date_ja: new Date().toLocaleDateString('ja-JP', { month: 'short', year: 'numeric' }),
+        status_id: 'Terunggah',
+        status_en: 'Uploaded',
+        status_ja: 'アップロード済',
         uploadedBy: user?.name || user?.username || 'Konsorsium',
         comments: [],
         timestamp: serverTimestamp()
@@ -721,7 +942,19 @@ const UgandaProjectDashboard = () => {
     if (!taskForm.title) return alert("Harap isi nama tugas.");
     try {
       const newTask = {
-        ...taskForm,
+        title_id: taskForm.title,
+        title_en: taskForm.title,
+        title_ja: taskForm.title,
+        category_id: taskForm.category,
+        category_en: taskForm.category,
+        category_ja: taskForm.category,
+        assignee_id: taskForm.assignee,
+        assignee_en: taskForm.assignee,
+        assignee_ja: taskForm.assignee,
+        dueDate_id: taskForm.dueDate,
+        dueDate_en: taskForm.dueDate,
+        dueDate_ja: taskForm.dueDate,
+        status: taskForm.status || 'in-progress',
         comments: [],
         createdAt: serverTimestamp(),
         createdBy: user?.name || user?.username
@@ -729,7 +962,7 @@ const UgandaProjectDashboard = () => {
       const ref = await addDoc(collection(db, "uganda_project_tasks"), newTask);
       setLocalTasks([{ id: ref.id, ...newTask }, ...localTasks]);
       alert("✅ Tugas baru berhasil ditambahkan!");
-      setTaskForm({ title: '', category: 'Engineering', assignee: 'PT Katama Suryabumi', status: 'In Progress', dueDate: 'Nov 2026' });
+      setTaskForm({ title: '', category: 'Engineering', assignee: 'PT Katama Suryabumi', status: 'in-progress', dueDate: 'Nov 2026' });
       setIsTaskModalOpen(false);
     } catch (err) {
       console.error(err);
@@ -749,12 +982,20 @@ const UgandaProjectDashboard = () => {
       }
 
       const newMedia = {
-        title: mediaForm.title,
+        title_id: mediaForm.title,
+        title_en: mediaForm.title,
+        title_ja: mediaForm.title,
         type: mediaForm.type,
         mediaUrl: finalMediaUrl,
-        caption: mediaForm.caption,
-        location: mediaForm.location,
-        date: new Date().toLocaleDateString(langKey === 'en' ? 'en-US' : langKey === 'ja' ? 'ja-JP' : 'id-ID', { day: 'numeric', month: 'short', year: 'numeric' }),
+        caption_id: mediaForm.caption,
+        caption_en: mediaForm.caption,
+        caption_ja: mediaForm.caption,
+        location_id: mediaForm.location,
+        location_en: mediaForm.location,
+        location_ja: mediaForm.location,
+        date_id: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }),
+        date_en: new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
+        date_ja: new Date().toLocaleDateString('ja-JP', { day: 'numeric', month: 'short', year: 'numeric' }),
         author: user?.name || user?.username || 'Konsorsium',
         likes: 1,
         comments: [],
@@ -836,38 +1077,48 @@ const UgandaProjectDashboard = () => {
           </div>
         </div>
 
-        {/* Hero Banner / Header */}
-        <div style={{ background: 'linear-gradient(135deg, #092c20 0%, #0d4a34 50%, #082117 100%)', borderRadius: '24px', padding: '36px 32px', color: 'white', marginBottom: '32px', position: 'relative', overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
+        {/* ── IMAGE 1 FIX: REFINED HERO BANNER CARD ── */}
+        <div style={{ 
+          background: 'linear-gradient(135deg, #0b3d2c 0%, #08291e 100%)', 
+          borderRadius: '24px', 
+          padding: '36px 36px', 
+          color: 'white', 
+          marginBottom: '32px', 
+          position: 'relative', 
+          overflow: 'hidden', 
+          border: '1px solid rgba(105, 219, 124, 0.2)',
+          boxShadow: '0 20px 40px rgba(0,0,0,0.25)' 
+        }}>
           <div style={{ position: 'relative', zIndex: 2 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-              <span style={{ fontSize: '1.6rem' }}>🇺🇬 🤝 🇮🇩</span>
-              <span style={{ textTransform: 'uppercase', letterSpacing: '1.5px', fontSize: '0.8rem', fontWeight: 'bold', color: '#69db7c' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(8px)', padding: '6px 14px', borderRadius: '20px', marginBottom: '16px' }}>
+              <span style={{ fontSize: '1.2rem' }}>🇺🇬 🤝 🇮🇩</span>
+              <span style={{ textTransform: 'uppercase', letterSpacing: '1.2px', fontSize: '0.78rem', fontWeight: '700', color: '#69db7c' }}>
                 {L.subtitleBadge}
               </span>
             </div>
             
-            <h1 style={{ fontSize: '2.1rem', fontWeight: '900', margin: '0 0 12px 0', lineHeight: '1.2' }}>
+            <h1 style={{ fontSize: '2.2rem', fontWeight: '900', margin: '0 0 14px 0', lineHeight: '1.25', letterSpacing: '-0.5px' }}>
               {L.mainTitle}
             </h1>
             
-            <p style={{ fontSize: '0.95rem', color: '#d3f9d8', maxWidth: '850px', lineHeight: '1.6', margin: '0 0 24px 0' }}>
+            <p style={{ fontSize: '0.96rem', color: '#d3f9d8', maxWidth: '880px', lineHeight: '1.7', margin: '0 0 24px 0', opacity: 0.95 }}>
               {L.heroDesc}
             </p>
 
-            {/* Trilateral Partner Tags */}
-            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-              <span style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: '600' }}>
+            {/* Trilateral Partner Tags Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '10px', marginTop: '10px' }}>
+              <div style={{ background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(10px)', padding: '10px 14px', borderRadius: '12px', fontSize: '0.82rem', fontWeight: '600', border: '1px solid rgba(255,255,255,0.1)' }}>
                 {L.badgeLead}
-              </span>
-              <span style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: '600' }}>
+              </div>
+              <div style={{ background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(10px)', padding: '10px 14px', borderRadius: '12px', fontSize: '0.82rem', fontWeight: '600', border: '1px solid rgba(255,255,255,0.1)' }}>
                 {L.badgeEnabling}
-              </span>
-              <span style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: '600' }}>
+              </div>
+              <div style={{ background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(10px)', padding: '10px 14px', borderRadius: '12px', fontSize: '0.82rem', fontWeight: '600', border: '1px solid rgba(255,255,255,0.1)' }}>
                 {L.badgeConstruction}
-              </span>
-              <span style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: '600' }}>
+              </div>
+              <div style={{ background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(10px)', padding: '10px 14px', borderRadius: '12px', fontSize: '0.82rem', fontWeight: '600', border: '1px solid rgba(255,255,255,0.1)' }}>
                 {L.badgeAgro}
-              </span>
+              </div>
             </div>
           </div>
         </div>
@@ -885,7 +1136,7 @@ const UgandaProjectDashboard = () => {
           <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '18px 20px', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
             <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '6px' }}>{L.kpiRoadmapTitle}</div>
             <div style={{ fontSize: '1.2rem', fontWeight: '800', color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Layers size={18} /> {L.kpiRoadmapStatus}
+              <Layers size={18} /> {localRoadmap.filter(s => s.status === 'completed').length} / 11 {L.btnStatusCompleted}
             </div>
             <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>{L.kpiRoadmapSub}</div>
           </div>
@@ -941,7 +1192,7 @@ const UgandaProjectDashboard = () => {
         </div>
 
         {/* ───────────────────────────────────────────────────────────── */}
-        {/* TAB 1: 11-STEP ROADMAP TRACKER                                */}
+        {/* TAB 1: 11-STEP ROADMAP TRACKER (IMAGE 2 FIX: 3 BUTTONS/STEP) */}
         {/* ───────────────────────────────────────────────────────────── */}
         {activeTab === 'roadmap' && (
           <div>
@@ -955,25 +1206,27 @@ const UgandaProjectDashboard = () => {
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px' }}>
-              {ROADMAP_STEPS.map((step) => {
-                const isCompleted = step.status === 'completed';
-                const isInProgress = step.status === 'in-progress';
+              {localRoadmap.map((step) => {
                 const title = step[`title_${langKey}`] || step.title_id;
                 const desc = step[`desc_${langKey}`] || step.desc_id;
-                const statusLabel = isCompleted ? L.statusCompleted : isInProgress ? L.statusInProgress : L.statusPending;
+                const date = step[`date_${langKey}`] || step.date_id;
+
+                const isCompleted = step.status === 'completed';
+                const isInProgress = step.status === 'in-progress';
+                const isPending = step.status === 'pending';
 
                 return (
                   <div 
                     key={step.step}
                     style={{
                       background: 'var(--bg-card)',
-                      border: `1px solid ${isCompleted ? '#40c05750' : isInProgress ? 'var(--primary)' : 'var(--border-color)'}`,
+                      border: `1px solid ${isCompleted ? '#40c05760' : isInProgress ? 'rgba(12,166,120,0.4)' : 'var(--border-color)'}`,
                       borderRadius: '16px',
                       padding: '20px 24px',
                       display: 'flex',
                       alignItems: 'flex-start',
                       gap: '20px',
-                      boxShadow: isInProgress ? '0 6px 20px rgba(12,166,120,0.1)' : 'none'
+                      boxShadow: isInProgress ? '0 6px 20px rgba(12,166,120,0.06)' : 'none'
                     }}
                   >
                     <div style={{
@@ -993,36 +1246,81 @@ const UgandaProjectDashboard = () => {
                     </div>
 
                     <div style={{ flex: 1 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', flexWrap: 'wrap', gap: '8px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
                         <h4 style={{ fontSize: '1.05rem', fontWeight: '700', color: 'var(--text-main)', margin: 0 }}>
                           STEP {step.step}: {title}
                         </h4>
-                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                          <span style={{ fontSize: '0.75rem', background: 'var(--bg-secondary)', color: 'var(--text-muted)', padding: '3px 10px', borderRadius: '12px', fontWeight: 'bold' }}>
-                            📅 {step.date}
-                          </span>
-                          <span style={{
-                            fontSize: '0.75rem',
-                            padding: '3px 10px',
-                            borderRadius: '12px',
-                            fontWeight: 'bold',
-                            background: isCompleted ? '#40c05720' : isInProgress ? 'rgba(12,166,120,0.2)' : 'var(--bg-secondary)',
-                            color: isCompleted ? '#40c057' : isInProgress ? 'var(--primary)' : 'var(--text-muted)'
-                          }}>
-                            {statusLabel}
-                          </span>
-                        </div>
+                        <span style={{ fontSize: '0.75rem', background: 'var(--bg-secondary)', color: 'var(--text-muted)', padding: '3px 10px', borderRadius: '12px', fontWeight: 'bold' }}>
+                          📅 {date}
+                        </span>
                       </div>
-                      <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', margin: '0 0 12px 0', lineHeight: '1.5' }}>
+
+                      <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', margin: '0 0 14px 0', lineHeight: '1.5' }}>
                         {desc}
                       </p>
 
-                      <button 
-                        onClick={() => handleOpenComment('step', step)}
-                        style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-main)', padding: '6px 12px', borderRadius: '8px', fontSize: '0.78rem', fontWeight: 'bold', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                      >
-                        <MessageSquare size={13} color="var(--primary)" /> {L.btnStepNotes}
-                      </button>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', paddingTop: '10px', borderTop: '1px solid var(--border-color)' }}>
+                        {/* 3 Interactive Status Buttons as requested in Image 2 */}
+                        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                          <button
+                            onClick={() => handleSetRoadmapStatus(step.step, 'in-progress')}
+                            style={{
+                              padding: '5px 12px',
+                              borderRadius: '8px',
+                              fontSize: '0.76rem',
+                              fontWeight: 'bold',
+                              cursor: 'pointer',
+                              border: isInProgress ? '2px solid var(--primary)' : '1px solid var(--border-color)',
+                              background: isInProgress ? 'rgba(12,166,120,0.2)' : 'var(--bg-secondary)',
+                              color: isInProgress ? 'var(--primary)' : 'var(--text-muted)',
+                              transition: '0.2s'
+                            }}
+                          >
+                            ⏳ {L.btnStatusInProgress}
+                          </button>
+
+                          <button
+                            onClick={() => handleSetRoadmapStatus(step.step, 'pending')}
+                            style={{
+                              padding: '5px 12px',
+                              borderRadius: '8px',
+                              fontSize: '0.76rem',
+                              fontWeight: 'bold',
+                              cursor: 'pointer',
+                              border: isPending ? '2px solid #f59f00' : '1px solid var(--border-color)',
+                              background: isPending ? 'rgba(245,159,0,0.15)' : 'var(--bg-secondary)',
+                              color: isPending ? '#f59f00' : 'var(--text-muted)',
+                              transition: '0.2s'
+                            }}
+                          >
+                            ⏱️ {L.btnStatusPending}
+                          </button>
+
+                          <button
+                            onClick={() => handleSetRoadmapStatus(step.step, 'completed')}
+                            style={{
+                              padding: '5px 12px',
+                              borderRadius: '8px',
+                              fontSize: '0.76rem',
+                              fontWeight: 'bold',
+                              cursor: 'pointer',
+                              border: isCompleted ? '2px solid #40c057' : '1px solid var(--border-color)',
+                              background: isCompleted ? 'rgba(64,192,87,0.2)' : 'var(--bg-secondary)',
+                              color: isCompleted ? '#40c057' : 'var(--text-muted)',
+                              transition: '0.2s'
+                            }}
+                          >
+                            ✅ {L.btnStatusCompleted}
+                          </button>
+                        </div>
+
+                        <button 
+                          onClick={() => handleOpenComment('step', step)}
+                          style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-main)', padding: '6px 12px', borderRadius: '8px', fontSize: '0.78rem', fontWeight: 'bold', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          <MessageSquare size={13} color="var(--primary)" /> {L.btnStepNotes}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );
@@ -1032,7 +1330,7 @@ const UgandaProjectDashboard = () => {
         )}
 
         {/* ───────────────────────────────────────────────────────────── */}
-        {/* TAB 2: LEGAL VAULT & DOKUMEN                                  */}
+        {/* TAB 2: LEGAL VAULT (IMAGE 3 FIX: FULL MULTILINGUAL FIELDS)   */}
         {/* ───────────────────────────────────────────────────────────── */}
         {activeTab === 'vault' && (
           <div>
@@ -1057,81 +1355,94 @@ const UgandaProjectDashboard = () => {
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
-              {localDocs.filter(d => d.title.toLowerCase().includes(searchDocQuery.toLowerCase()) || d.clauses?.toLowerCase().includes(searchDocQuery.toLowerCase())).map((doc) => (
-                <div 
-                  key={doc.id}
-                  style={{
-                    background: 'var(--bg-card)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: '16px',
-                    padding: '24px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    boxShadow: '0 4px 16px rgba(0,0,0,0.02)'
-                  }}
-                >
-                  <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-                      <span style={{ fontSize: '0.75rem', background: 'rgba(12,166,120,0.1)', color: 'var(--primary)', padding: '4px 10px', borderRadius: '8px', fontWeight: 'bold' }}>
-                        {doc.type}
-                      </span>
-                      <span style={{ fontSize: '0.75rem', color: '#40c057', background: '#40c05715', padding: '4px 10px', borderRadius: '8px', fontWeight: 'bold' }}>
-                        {doc.status}
-                      </span>
-                    </div>
+              {localDocs.filter(d => {
+                const title = d[`title_${langKey}`] || d.title_id || d.title || '';
+                const clauses = d[`clauses_${langKey}`] || d.clauses_id || d.clauses || '';
+                return title.toLowerCase().includes(searchDocQuery.toLowerCase()) || clauses.toLowerCase().includes(searchDocQuery.toLowerCase());
+              }).map((doc) => {
+                const title = doc[`title_${langKey}`] || doc.title_id || doc.title;
+                const type = doc[`type_${langKey}`] || doc.type_id || doc.type;
+                const parties = doc[`parties_${langKey}`] || doc.parties_id || doc.parties;
+                const clauses = doc[`clauses_${langKey}`] || doc.clauses_id || doc.clauses;
+                const date = doc[`date_${langKey}`] || doc.date_id || doc.date;
+                const status = doc[`status_${langKey}`] || doc.status_id || doc.status;
 
-                    <h4 style={{ fontSize: '1.05rem', color: 'var(--text-main)', margin: '0 0 10px 0', lineHeight: '1.4' }}>
-                      {doc.title}
-                    </h4>
-
-                    <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: '0 0 12px 0' }}>
-                      <strong>{L.labelParties}:</strong> {doc.parties}
-                    </p>
-
-                    <div style={{ background: 'var(--bg-secondary)', padding: '12px', borderRadius: '10px', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '18px', border: '1px solid var(--border-color)' }}>
-                      <strong>{L.labelClauses}:</strong> {doc.clauses}
-                    </div>
-                  </div>
-
-                  <div style={{ paddingTop: '14px', borderTop: '1px solid var(--border-color)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                      <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                        📅 {doc.date}
-                      </span>
-                      {doc.fileUrl && doc.fileUrl !== '#' ? (
-                        <a 
-                          href={doc.fileUrl} 
-                          target="_blank" 
-                          rel="noreferrer"
-                          style={{ color: 'var(--primary)', fontWeight: 'bold', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '4px', textDecoration: 'none' }}
-                        >
-                          <Download size={15} /> {L.btnDownloadDoc}
-                        </a>
-                      ) : (
-                        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                          {L.internalDraft}
+                return (
+                  <div 
+                    key={doc.id}
+                    style={{
+                      background: 'var(--bg-card)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '16px',
+                      padding: '24px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      boxShadow: '0 4px 16px rgba(0,0,0,0.02)'
+                    }}
+                  >
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+                        <span style={{ fontSize: '0.75rem', background: 'rgba(12,166,120,0.1)', color: 'var(--primary)', padding: '4px 10px', borderRadius: '8px', fontWeight: 'bold' }}>
+                          {type}
                         </span>
-                      )}
+                        <span style={{ fontSize: '0.75rem', color: '#40c057', background: '#40c05715', padding: '4px 10px', borderRadius: '8px', fontWeight: 'bold' }}>
+                          {status}
+                        </span>
+                      </div>
+
+                      <h4 style={{ fontSize: '1.05rem', color: 'var(--text-main)', margin: '0 0 10px 0', lineHeight: '1.4' }}>
+                        {title}
+                      </h4>
+
+                      <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: '0 0 12px 0' }}>
+                        <strong>{L.labelParties}:</strong> {parties}
+                      </p>
+
+                      <div style={{ background: 'var(--bg-secondary)', padding: '12px', borderRadius: '10px', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '18px', border: '1px solid var(--border-color)' }}>
+                        <strong>{L.labelClauses}:</strong> {clauses}
+                      </div>
                     </div>
 
-                    {/* Interactive Discussion Button */}
-                    <button 
-                      onClick={() => handleOpenComment('doc', doc)}
-                      style={{ width: '100%', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', padding: '8px 12px', borderRadius: '8px', color: 'var(--text-main)', fontSize: '0.82rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
-                    >
-                      <MessageSquare size={14} color="var(--primary)" /> 
-                      {L.btnDiscussDoc} ({doc.comments?.length || 0})
-                    </button>
+                    <div style={{ paddingTop: '14px', borderTop: '1px solid var(--border-color)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                        <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                          📅 {date}
+                        </span>
+                        {doc.fileUrl && doc.fileUrl !== '#' ? (
+                          <a 
+                            href={doc.fileUrl} 
+                            target="_blank" 
+                            rel="noreferrer"
+                            style={{ color: 'var(--primary)', fontWeight: 'bold', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '4px', textDecoration: 'none' }}
+                          >
+                            <Download size={15} /> {L.btnDownloadDoc}
+                          </a>
+                        ) : (
+                          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                            {L.internalDraft}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Interactive Discussion Button */}
+                      <button 
+                        onClick={() => handleOpenComment('doc', doc)}
+                        style={{ width: '100%', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', padding: '8px 12px', borderRadius: '8px', color: 'var(--text-main)', fontSize: '0.82rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                      >
+                        <MessageSquare size={14} color="var(--primary)" /> 
+                        {L.btnDiscussDoc} ({doc.comments?.length || 0})
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
 
         {/* ───────────────────────────────────────────────────────────── */}
-        {/* TAB 3: MANAJEMEN PROYEK & TUGAS                               */}
+        {/* TAB 3: TASKS (IMAGE 4 FIX: FULL I18N & 3 STATUS BUTTONS)      */}
         {/* ───────────────────────────────────────────────────────────── */}
         {activeTab === 'tasks' && (
           <div>
@@ -1154,70 +1465,123 @@ const UgandaProjectDashboard = () => {
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
-              {localTasks.map((t, idx) => (
-                <div 
-                  key={t.id || idx}
-                  style={{
-                    background: 'var(--bg-card)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: '16px',
-                    padding: '20px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
-                  }}
-                >
-                  <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                      <span style={{ fontSize: '0.75rem', background: 'var(--bg-secondary)', color: 'var(--text-muted)', padding: '3px 10px', borderRadius: '8px', fontWeight: 'bold' }}>
-                        {t.category}
-                      </span>
-                      
-                      {/* Clickable interactive status toggle */}
-                      <button
-                        onClick={() => handleToggleTaskStatus(t.id, t.status)}
-                        title="Klik untuk mengubah status"
-                        style={{
-                          fontSize: '0.75rem',
-                          padding: '4px 10px',
-                          borderRadius: '8px',
-                          fontWeight: 'bold',
-                          border: 'none',
-                          cursor: 'pointer',
-                          background: t.status === 'Done' ? '#40c05720' : t.status === 'In Progress' ? 'rgba(12,166,120,0.15)' : '#f59f0015',
-                          color: t.status === 'Done' ? '#40c057' : t.status === 'In Progress' ? 'var(--primary)' : '#f59f00'
-                        }}
+              {localTasks.map((t, idx) => {
+                const title = t[`title_${langKey}`] || t.title_id || t.title;
+                const category = t[`category_${langKey}`] || t.category_id || t.category;
+                const assignee = t[`assignee_${langKey}`] || t.assignee_id || t.assignee;
+                const dueDate = t[`dueDate_${langKey}`] || t.dueDate_id || t.dueDate;
+
+                const isInProgress = t.status === 'in-progress' || t.status === 'In Progress';
+                const isPending = t.status === 'pending' || t.status === 'Pending';
+                const isDone = t.status === 'completed' || t.status === 'Done';
+
+                return (
+                  <div 
+                    key={t.id || idx}
+                    style={{
+                      background: 'var(--bg-card)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '16px',
+                      padding: '20px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
+                    }}
+                  >
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                        <span style={{ fontSize: '0.75rem', background: 'var(--bg-secondary)', color: 'var(--text-muted)', padding: '3px 10px', borderRadius: '8px', fontWeight: 'bold' }}>
+                          {category}
+                        </span>
+                        
+                        <span style={{ fontSize: '0.75rem', color: isDone ? '#40c057' : isInProgress ? 'var(--primary)' : '#f59f00', fontWeight: 'bold' }}>
+                          {isDone ? `✅ ${L.btnStatusCompleted}` : isInProgress ? `⏳ ${L.btnStatusInProgress}` : `⏱️ ${L.btnStatusPending}`}
+                        </span>
+                      </div>
+
+                      <h4 style={{ fontSize: '0.98rem', color: 'var(--text-main)', margin: '0 0 12px 0', lineHeight: '1.4' }}>
+                        {title}
+                      </h4>
+
+                      <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '14px' }}>
+                        <div>👤 <strong>{L.labelPic}:</strong> {assignee}</div>
+                        <div>⏰ <strong>{L.labelTarget}:</strong> {dueDate}</div>
+                      </div>
+                    </div>
+
+                    <div style={{ paddingTop: '10px', borderTop: '1px solid var(--border-color)' }}>
+                      {/* 3 Status Switcher Buttons for Tasks */}
+                      <div style={{ display: 'flex', gap: '4px', marginBottom: '10px' }}>
+                        <button
+                          onClick={() => handleSetTaskStatus(t.id, 'in-progress')}
+                          style={{
+                            flex: 1,
+                            padding: '4px 6px',
+                            borderRadius: '6px',
+                            fontSize: '0.72rem',
+                            fontWeight: 'bold',
+                            border: isInProgress ? '1px solid var(--primary)' : '1px solid var(--border-color)',
+                            background: isInProgress ? 'rgba(12,166,120,0.2)' : 'var(--bg-secondary)',
+                            color: isInProgress ? 'var(--primary)' : 'var(--text-muted)',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          ⏳ {L.btnStatusInProgress}
+                        </button>
+
+                        <button
+                          onClick={() => handleSetTaskStatus(t.id, 'pending')}
+                          style={{
+                            flex: 1,
+                            padding: '4px 6px',
+                            borderRadius: '6px',
+                            fontSize: '0.72rem',
+                            fontWeight: 'bold',
+                            border: isPending ? '1px solid #f59f00' : '1px solid var(--border-color)',
+                            background: isPending ? 'rgba(245,159,0,0.15)' : 'var(--bg-secondary)',
+                            color: isPending ? '#f59f00' : 'var(--text-muted)',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          ⏱️ {L.btnStatusPending}
+                        </button>
+
+                        <button
+                          onClick={() => handleSetTaskStatus(t.id, 'completed')}
+                          style={{
+                            flex: 1,
+                            padding: '4px 6px',
+                            borderRadius: '6px',
+                            fontSize: '0.72rem',
+                            fontWeight: 'bold',
+                            border: isDone ? '1px solid #40c057' : '1px solid var(--border-color)',
+                            background: isDone ? 'rgba(64,192,87,0.2)' : 'var(--bg-secondary)',
+                            color: isDone ? '#40c057' : 'var(--text-muted)',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          ✅ {L.btnStatusCompleted}
+                        </button>
+                      </div>
+
+                      <button 
+                        onClick={() => handleOpenComment('task', t)}
+                        style={{ width: '100%', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', padding: '6px 12px', borderRadius: '8px', color: 'var(--text-main)', fontSize: '0.78rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                       >
-                        {t.status === 'Done' ? '✅ ' + L.statusDone : t.status === 'In Progress' ? '⏳ ' + L.statusInProgress : '⏱️ ' + L.statusPending}
+                        <MessageSquare size={13} color="var(--primary)" /> 
+                        {L.btnDiscussDoc} ({t.comments?.length || 0})
                       </button>
                     </div>
-
-                    <h4 style={{ fontSize: '0.98rem', color: 'var(--text-main)', margin: '0 0 12px 0', lineHeight: '1.4' }}>
-                      {t.title}
-                    </h4>
-
-                    <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '14px' }}>
-                      <div>👤 <strong>{L.labelPic}:</strong> {t.assignee}</div>
-                      <div>⏰ <strong>{L.labelTarget}:</strong> {t.dueDate}</div>
-                    </div>
                   </div>
-
-                  <button 
-                    onClick={() => handleOpenComment('task', t)}
-                    style={{ width: '100%', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', padding: '6px 12px', borderRadius: '8px', color: 'var(--text-main)', fontSize: '0.78rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
-                  >
-                    <MessageSquare size={13} color="var(--primary)" /> 
-                    {L.btnDiscussDoc} ({t.comments?.length || 0})
-                  </button>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
 
         {/* ───────────────────────────────────────────────────────────── */}
-        {/* TAB 4: DOKUMENTASI & GALERI (FOTO / VIDEO)                    */}
+        {/* TAB 4: GALLERY & ITINERARY (IMAGE 5 FIX: FULL MULTILINGUAL)   */}
         {/* ───────────────────────────────────────────────────────────── */}
         {activeTab === 'gallery' && (
           <div>
@@ -1238,31 +1602,19 @@ const UgandaProjectDashboard = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
-                      <td style={{ padding: '12px 16px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>31 Aug 2026</td>
-                      <td style={{ padding: '12px 16px' }}>Delegasi Uganda tiba di Indonesia dan menginap di Jakarta.</td>
-                      <td style={{ padding: '12px 16px', color: 'var(--text-muted)' }}>Official Arrival</td>
-                    </tr>
-                    <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
-                      <td style={{ padding: '12px 16px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>1 Sept 2026</td>
-                      <td style={{ padding: '12px 16px' }}>Kunjungan ke kantor PT Katama Suryabumi, Rawamangun Jakarta.</td>
-                      <td style={{ padding: '12px 16px', color: 'var(--text-muted)' }}>NDA & KSLL Scope</td>
-                    </tr>
-                    <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
-                      <td style={{ padding: '12px 16px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>2 Sept 2026</td>
-                      <td style={{ padding: '12px 16px' }}>Pertemuan di Wisma Bumiputera, Bandung.</td>
-                      <td style={{ padding: '12px 16px', color: 'var(--text-muted)' }}>Partnership Roadmap</td>
-                    </tr>
-                    <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
-                      <td style={{ padding: '12px 16px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>3 Sept 2026</td>
-                      <td style={{ padding: '12px 16px' }}>Kunjungan ITB Jatinangor & Cimekar (Prototipe BlockBamboo & RISHAM) serta Puskim Cileunyi.</td>
-                      <td style={{ padding: '12px 16px', color: 'var(--text-muted)' }}>Housing & Technology Transfer</td>
-                    </tr>
-                    <tr>
-                      <td style={{ padding: '12px 16px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>4–5 Sept 2026</td>
-                      <td style={{ padding: '12px 16px' }}>Kunjungan Tangerang Selatan (Puspiptek, Pemkot Tangsel).</td>
-                      <td style={{ padding: '12px 16px', color: 'var(--text-muted)' }}>KSLL Structural Implementation</td>
-                    </tr>
+                    {ITINERARY_ROWS.map((row, idx) => (
+                      <tr key={idx} style={{ borderBottom: idx < ITINERARY_ROWS.length - 1 ? '1px solid var(--border-color)' : 'none' }}>
+                        <td style={{ padding: '12px 16px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+                          {row[`date_${langKey}`] || row.date_id}
+                        </td>
+                        <td style={{ padding: '12px 16px' }}>
+                          {row[`agenda_${langKey}`] || row.agenda_id}
+                        </td>
+                        <td style={{ padding: '12px 16px', color: 'var(--text-muted)' }}>
+                          {row[`focus_${langKey}`] || row.focus_id}
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
@@ -1289,77 +1641,84 @@ const UgandaProjectDashboard = () => {
 
             {/* Gallery Grid */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
-              {localGallery.map((media) => (
-                <div 
-                  key={media.id}
-                  style={{
-                    background: 'var(--bg-card)',
-                    borderRadius: '16px',
-                    overflow: 'hidden',
-                    border: '1px solid var(--border-color)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    boxShadow: '0 4px 16px rgba(0,0,0,0.02)'
-                  }}
-                >
-                  <div>
-                    {media.type === 'video' ? (
-                      <div style={{ width: '100%', height: '200px', background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        {media.mediaUrl.includes('youtube.com') || media.mediaUrl.includes('youtu.be') ? (
-                          <iframe 
-                            src={media.mediaUrl.replace('watch?v=', 'embed/')} 
-                            title={media.title}
-                            style={{ width: '100%', height: '100%', border: 'none' }}
-                          />
-                        ) : (
-                          <video src={media.mediaUrl} controls style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        )}
+              {localGallery.map((media) => {
+                const title = media[`title_${langKey}`] || media.title_id || media.title;
+                const caption = media[`caption_${langKey}`] || media.caption_id || media.caption;
+                const location = media[`location_${langKey}`] || media.location_id || media.location;
+                const date = media[`date_${langKey}`] || media.date_id || media.date;
+
+                return (
+                  <div 
+                    key={media.id}
+                    style={{
+                      background: 'var(--bg-card)',
+                      borderRadius: '16px',
+                      overflow: 'hidden',
+                      border: '1px solid var(--border-color)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      boxShadow: '0 4px 16px rgba(0,0,0,0.02)'
+                    }}
+                  >
+                    <div>
+                      {media.type === 'video' ? (
+                        <div style={{ width: '100%', height: '200px', background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          {media.mediaUrl.includes('youtube.com') || media.mediaUrl.includes('youtu.be') ? (
+                            <iframe 
+                              src={media.mediaUrl.replace('watch?v=', 'embed/')} 
+                              title={title}
+                              style={{ width: '100%', height: '100%', border: 'none' }}
+                            />
+                          ) : (
+                            <video src={media.mediaUrl} controls style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          )}
+                        </div>
+                      ) : (
+                        <img src={media.mediaUrl} alt={title} style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
+                      )}
+
+                      <div style={{ padding: '18px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                          <span style={{ fontSize: '0.72rem', background: 'var(--bg-secondary)', color: 'var(--text-muted)', padding: '2px 8px', borderRadius: '6px', fontWeight: 'bold' }}>
+                            📍 {location || 'Indonesia'}
+                          </span>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                            📅 {date}
+                          </span>
+                        </div>
+
+                        <h4 style={{ margin: '0 0 8px 0', fontSize: '1rem', color: 'var(--text-main)', lineHeight: '1.4' }}>
+                          {title}
+                        </h4>
+
+                        <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: '1.5' }}>
+                          {caption}
+                        </p>
                       </div>
-                    ) : (
-                      <img src={media.mediaUrl} alt={media.title} style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
-                    )}
+                    </div>
 
-                    <div style={{ padding: '18px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                        <span style={{ fontSize: '0.72rem', background: 'var(--bg-secondary)', color: 'var(--text-muted)', padding: '2px 8px', borderRadius: '6px', fontWeight: 'bold' }}>
-                          📍 {media.location || 'Indonesia'}
-                        </span>
-                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                          📅 {media.date}
-                        </span>
-                      </div>
+                    <div style={{ padding: '12px 18px', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                        {media.author}
+                      </span>
 
-                      <h4 style={{ margin: '0 0 8px 0', fontSize: '1rem', color: 'var(--text-main)', lineHeight: '1.4' }}>
-                        {media.title}
-                      </h4>
-
-                      <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: '1.5' }}>
-                        {media.caption}
-                      </p>
+                      <button 
+                        onClick={() => handleOpenComment('gallery', media)}
+                        style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: '0.8rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                      >
+                        <MessageSquare size={14} /> {media.comments?.length || 0} {L.btnResponses}
+                      </button>
                     </div>
                   </div>
-
-                  <div style={{ padding: '12px 18px', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                      Oleh: <strong>{media.author}</strong>
-                    </span>
-
-                    <button 
-                      onClick={() => handleOpenComment('gallery', media)}
-                      style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: '0.8rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
-                    >
-                      <MessageSquare size={14} /> {media.comments?.length || 0} Tanggapan
-                    </button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
 
         {/* ───────────────────────────────────────────────────────────── */}
-        {/* TAB 5: DIREKTORI STAKEHOLDERS                                 */}
+        {/* TAB 5: STAKEHOLDERS DIRECTORY (FULL MULTILINGUAL)             */}
         {/* ───────────────────────────────────────────────────────────── */}
         {activeTab === 'stakeholders' && (
           <div>
@@ -1373,44 +1732,53 @@ const UgandaProjectDashboard = () => {
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
-              {STAKEHOLDERS.map((s, idx) => (
-                <div 
-                  key={idx}
-                  style={{
-                    background: 'var(--bg-card)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: '16px',
-                    padding: '24px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    boxShadow: '0 4px 14px rgba(0,0,0,0.02)'
-                  }}
-                >
-                  <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                      <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: s.badgeColor, background: `${s.badgeColor}15`, padding: '4px 10px', borderRadius: '8px' }}>
-                        {s.role}
-                      </span>
-                      <span style={{ fontSize: '0.85rem' }}>{s.country}</span>
+              {STAKEHOLDERS.map((s, idx) => {
+                const role = s[`role_${langKey}`] || s.role_id;
+                const title = s[`title_${langKey}`] || s.title_id;
+                const country = s[`country_${langKey}`] || s.country_id;
+                const address = s[`address_${langKey}`] || s.address_id;
+                const scope = s[`scope_${langKey}`] || s.scope_id;
+
+                return (
+                  <div 
+                    key={idx}
+                    style={{
+                      background: 'var(--bg-card)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '16px',
+                      padding: '24px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      boxShadow: '0 4px 14px rgba(0,0,0,0.02)'
+                    }}
+                  >
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: s.badgeColor, background: `${s.badgeColor}15`, padding: '4px 10px', borderRadius: '8px' }}>
+                          {role}
+                        </span>
+                        <span style={{ fontSize: '0.85rem' }}>{country}</span>
+                      </div>
+
+                      <h4 style={{ fontSize: '1.1rem', color: 'var(--text-main)', margin: '0 0 8px 0', fontWeight: '800' }}>
+                        {s.org}
+                      </h4>
+
+                      <div style={{ background: 'var(--bg-secondary)', padding: '12px', borderRadius: '10px', marginBottom: '14px', border: '1px solid var(--border-color)' }}>
+                        <div style={{ fontSize: '0.92rem', fontWeight: 'bold', color: 'var(--text-main)' }}>{s.representative}</div>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{title}</div>
+                        {s.regNo && <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>Reg No: {s.regNo}</div>}
+                        {address && <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>📍 {address}</div>}
+                      </div>
+
+                      <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: 0, lineHeight: '1.5' }}>
+                        <strong>{L.labelMandate}:</strong> {scope}
+                      </p>
                     </div>
-
-                    <h4 style={{ fontSize: '1.1rem', color: 'var(--text-main)', margin: '0 0 8px 0', fontWeight: '800' }}>
-                      {s.org}
-                    </h4>
-
-                    <div style={{ background: 'var(--bg-secondary)', padding: '12px', borderRadius: '10px', marginBottom: '14px', border: '1px solid var(--border-color)' }}>
-                      <div style={{ fontSize: '0.92rem', fontWeight: 'bold', color: 'var(--text-main)' }}>{s.representative}</div>
-                      <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{s.title}</div>
-                      {s.regNo && <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>Reg No: {s.regNo}</div>}
-                    </div>
-
-                    <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: 0, lineHeight: '1.5' }}>
-                      <strong>{L.labelMandate}:</strong> {s.scope}
-                    </p>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -1418,26 +1786,24 @@ const UgandaProjectDashboard = () => {
       </div>
 
       {/* ───────────────────────────────────────────────────────────── */}
-      {/* INTERACTIVE COMMENT & DISCUSSION DRAWER / MODAL               */}
+      {/* INTERACTIVE COMMENT & DISCUSSION DRAWER                       */}
       {/* ───────────────────────────────────────────────────────────── */}
       {activeCommentTarget && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10005, padding: '20px' }} onClick={() => setActiveCommentTarget(null)}>
           <div style={{ background: 'var(--bg-card)', borderRadius: '24px', width: '100%', maxWidth: '600px', maxHeight: '85vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', border: '1px solid var(--border-color)', boxShadow: '0 25px 60px rgba(0,0,0,0.3)' }} onClick={(e) => e.stopPropagation()}>
             
-            {/* Header */}
             <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-secondary)' }}>
               <div>
                 <h3 style={{ margin: '0 0 4px 0', fontSize: '1.15rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <MessageSquare size={18} color="var(--primary)" /> {L.commentSectionTitle}
                 </h3>
                 <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-                  {activeCommentTarget.item.title || `STEP ${activeCommentTarget.item.step}: ${activeCommentTarget.item[`title_${langKey}`] || activeCommentTarget.item.title_id}`}
+                  {activeCommentTarget.item[`title_${langKey}`] || activeCommentTarget.item.title_id || activeCommentTarget.item.title || `STEP ${activeCommentTarget.item.step}`}
                 </span>
               </div>
               <button onClick={() => setActiveCommentTarget(null)} style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--text-muted)' }}><X size={20} /></button>
             </div>
 
-            {/* Comments Stream */}
             <div style={{ padding: '24px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '14px' }}>
               {(!activeCommentTarget.item.comments || activeCommentTarget.item.comments.length === 0) ? (
                 <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
@@ -1467,7 +1833,6 @@ const UgandaProjectDashboard = () => {
               )}
             </div>
 
-            {/* Input Form */}
             <form onSubmit={handlePostComment} style={{ padding: '16px 20px', borderTop: '1px solid var(--border-color)', display: 'flex', gap: '10px', background: 'var(--bg-card)' }}>
               <input 
                 type="text" 
@@ -1692,7 +2057,7 @@ const UgandaProjectDashboard = () => {
 
             <form onSubmit={handleSaveTask} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 'bold', marginBottom: '4px', color: 'var(--text-main)' }}>Nama Tugas</label>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 'bold', marginBottom: '4px', color: 'var(--text-main)' }}>{L.labelTitle}</label>
                 <input 
                   type="text" 
                   value={taskForm.title} 
@@ -1705,7 +2070,7 @@ const UgandaProjectDashboard = () => {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 'bold', marginBottom: '4px', color: 'var(--text-main)' }}>Kategori</label>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 'bold', marginBottom: '4px', color: 'var(--text-main)' }}>{L.labelType}</label>
                   <select 
                     value={taskForm.category} 
                     onChange={(e) => setTaskForm({...taskForm, category: e.target.value})}
@@ -1731,30 +2096,15 @@ const UgandaProjectDashboard = () => {
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 'bold', marginBottom: '4px', color: 'var(--text-main)' }}>Status</label>
-                  <select 
-                    value={taskForm.status} 
-                    onChange={(e) => setTaskForm({...taskForm, status: e.target.value})}
-                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-main)', fontSize: '0.85rem' }}
-                  >
-                    <option value="Pending">Pending</option>
-                    <option value="In Progress">In Progress</option>
-                    <option value="Done">Done</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 'bold', marginBottom: '4px', color: 'var(--text-main)' }}>{L.labelTarget}</label>
-                  <input 
-                    type="text" 
-                    value={taskForm.dueDate} 
-                    onChange={(e) => setTaskForm({...taskForm, dueDate: e.target.value})}
-                    placeholder="Contoh: Des 2026"
-                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-main)', fontSize: '0.85rem' }}
-                  />
-                </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 'bold', marginBottom: '4px', color: 'var(--text-main)' }}>{L.labelTarget}</label>
+                <input 
+                  type="text" 
+                  value={taskForm.dueDate} 
+                  onChange={(e) => setTaskForm({...taskForm, dueDate: e.target.value})}
+                  placeholder="Contoh: Des 2026"
+                  style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-main)', fontSize: '0.85rem' }}
+                />
               </div>
 
               <button 
