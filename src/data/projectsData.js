@@ -206,5 +206,33 @@ export const PROJECTS = [
     impact: 'Pusat Ekonomi Maritim, Konservasi Lingkungan, Wisata Heritage',
     impact_en: 'Maritime Economic Center, Environment Conservation, Heritage Tourism',
     impact_ja: '海洋経済センター、環境保全、遺産観光'
+  },
+  {
+    id: 9,
+    status: 'Terkunci',
+    status_en: 'Locked',
+    status_ja: '限定公開',
+    category: 'Konsorsium Global',
+    category_en: 'Global Consortium',
+    category_ja: '国際コンソーシアム',
+    title: 'Inisiatif Kemitraan Infrastruktur & Bambu Uganda – Indonesia',
+    title_en: 'Uganda – Indonesia Strategic Infrastructure & Bamboo Initiative',
+    title_ja: 'ウガンダ–インドネシア 戦略的インフラ＆竹イノベーション共同事業',
+    shortDesc: 'Fasilitasi alih teknologi konstruksi KSLL, hunian modular RISHAM & BlockBamboo, dan kemitraan pemerintah di Uganda & Afrika.',
+    shortDesc_en: 'Facilitating KSLL construction technology transfer, RISHAM & BlockBamboo modular housing, and government partnership in Uganda & Africa.',
+    shortDesc_ja: 'KSLL建築工法、RISHAM＆BlockBambooモジュール住宅の技術移転およびウガンダ・アフリカ政府機関連携の推進。',
+    fullDesc: 'Proyek konsorsium strategis trilateral antara PT Katama Suryabumi (Lead Indonesian Party), SADO Uganda (Enabling Agency), Kangker Construction International Ltd, dan PERPUBI yang terikat dalam Perjanjian Kerahasiaan (NDA) untuk pengembangan infrastruktur berkelanjutan di Uganda dan wilayah Afrika.',
+    fullDesc_en: 'Trilateral strategic consortium project between PT Katama Suryabumi (Lead Indonesian Party), SADO Uganda (Enabling Agency), Kangker Construction International Ltd, and PERPUBI bound by a Non-Disclosure Agreement (NDA) for sustainable infrastructure development in Uganda and Africa.',
+    fullDesc_ja: 'PT Katama Suryabumi、SADO Uganda、Kangker Construction International Ltd、PERPUBI間の秘密保持契約（NDA）に基づく、ウガンダおよびアフリカにおける持続可能なインフラ開発のための3者間戦略的コンソーシアム事業。',
+    image: '/event/uganda.png',
+    location: 'Kampala, Uganda & Jakarta',
+    location_en: 'Kampala, Uganda & Jakarta',
+    location_ja: 'カンパラ（ウガンダ）＆ ジャカルタ',
+    impact: 'Konsorsium Trilateral KSLL, RISHAM, Bambu, IsDB Funding',
+    impact_en: 'Trilateral Consortium KSLL, RISHAM, Bamboo, IsDB Funding',
+    impact_ja: 'KSLL・RISHAM・竹・IsDB開発資金 3者間コンソーシアム',
+    project_code: 'UG-ID-001',
+    isConsortiumProject: true,
+    consortiumPath: '/consortium/uganda'
   }
 ];

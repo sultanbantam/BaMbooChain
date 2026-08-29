@@ -14,10 +14,24 @@ import BackButton from '../components/BackButton';
 const ProjectsPage = () => {
   const { t, language } = useLanguage();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isAuthenticated, openLoginModal } = useAuth();
   const { isConnected, rawBmcBalance, connectWallet } = useWeb3();
   const [selectedProject, setSelectedProject] = useState(null);
   const [showLockModal, setShowLockModal] = useState(false);
+  const [showConsortiumLockModal, setShowConsortiumLockModal] = useState(false);
+
+  // Whitelist check for Uganda consortium stakeholders
+  const allowedUsernames = [
+    'admin_yayasan', 'admin', 'mukoddas', 'katama', 'sado', 
+    'kangker', 'perpubi', 'doddy', 'turkodom', 'jimmy', 'kris_suyanto', 'albantani'
+  ];
+  const isAuthorizedStakeholder = isAuthenticated && (
+    allowedUsernames.includes(user?.username?.toLowerCase()) ||
+    allowedUsernames.some(name => user?.email?.toLowerCase().includes(name)) ||
+    user?.consortiumRole === 'uganda_partner' ||
+    user?.role === 'admin' ||
+    user?.kycStatus === 'verified'
+  );
 
   // Tab State for Project Treasury Detail View
   const [activeTab, setActiveTab] = useState('explore');
@@ -425,7 +439,14 @@ const ProjectsPage = () => {
   };
 
   const handleViewDetail = (project) => {
-    if (project.id === 8) {
+    if (project.id === 9 || project.isConsortiumProject) {
+      if (isAuthorizedStakeholder) {
+        navigate(project.consortiumPath || '/consortium/uganda');
+      } else {
+        setShowConsortiumLockModal(true);
+      }
+      return;
+    } else if (project.id === 8) {
       window.open("https://www.whaleofsavu.org/" + (language === 'id' ? 'id' : 'en'), "_blank");
       setSelectedProject(project);
       setActiveTab('explore');
@@ -601,7 +622,17 @@ const ProjectsPage = () => {
                   onClick={() => handleViewDetail(project)}
                   style={{ 
                     width: '100%', padding: '14px', borderRadius: '14px',
-                    border: 'none', background: (project.id === 8 || project.id === 1 || project.id === 2) ? 'var(--primary)' : 'var(--text-main)', color: (project.id === 8 || project.id === 1 || project.id === 2) ? 'white' : 'var(--bg-color)',
+                    border: (project.id === 9 && !isAuthorizedStakeholder) ? '1px solid rgba(245, 159, 0, 0.4)' : 'none',
+                    background: (project.id === 8 || project.id === 1 || project.id === 2 || (project.id === 9 && isAuthorizedStakeholder)) 
+                      ? 'var(--primary)' 
+                      : (project.id === 9) 
+                        ? 'rgba(245, 159, 0, 0.12)' 
+                        : 'var(--text-main)', 
+                    color: (project.id === 8 || project.id === 1 || project.id === 2 || (project.id === 9 && isAuthorizedStakeholder)) 
+                      ? 'white' 
+                      : (project.id === 9) 
+                        ? '#f59f00' 
+                        : 'var(--bg-color)',
                     fontWeight: 'bold', cursor: 'pointer', display: 'flex', 
                     alignItems: 'center', justifyContent: 'center', gap: '10px',
                     transition: 'opacity 0.2s'
@@ -609,8 +640,30 @@ const ProjectsPage = () => {
                   onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
                   onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                 >
-                  {project.id === 8 ? t('projects_btn_visit_web') : (project.id === 1 || project.id === 2) ? t('projects_btn_watch_video') : hasAccess ? t('projects_btn_detail_treasury') : t('projects_btn_locked')}
-                  {project.id === 8 || project.id === 1 || project.id === 2 ? <ArrowRight size={18} /> : hasAccess ? <ArrowRight size={18} /> : <Lock size={18} />}
+                  {project.id === 9 ? (
+                    isAuthorizedStakeholder ? (
+                      language === 'id' ? 'Buka Portal Konsorsium 🔐' : language === 'ja' ? 'コンソーシアムを開く 🔐' : 'Open Consortium Portal 🔐'
+                    ) : (
+                      language === 'id' ? 'Akses Terkunci (Khusus NDA) 🔒' : language === 'ja' ? '限定アクセス（NDA専用） 🔒' : 'Locked (NDA Stakeholders Only) 🔒'
+                    )
+                  ) : project.id === 8 ? (
+                    t('projects_btn_visit_web')
+                  ) : (project.id === 1 || project.id === 2) ? (
+                    t('projects_btn_watch_video')
+                  ) : hasAccess ? (
+                    t('projects_btn_detail_treasury')
+                  ) : (
+                    t('projects_btn_locked')
+                  )}
+                  {project.id === 9 ? (
+                    isAuthorizedStakeholder ? <ArrowRight size={18} /> : <Lock size={18} />
+                  ) : (project.id === 8 || project.id === 1 || project.id === 2) ? (
+                    <ArrowRight size={18} />
+                  ) : hasAccess ? (
+                    <ArrowRight size={18} />
+                  ) : (
+                    <Lock size={18} />
+                  )}
                 </button>
               </div>
             </div>
@@ -1486,6 +1539,99 @@ const ProjectsPage = () => {
             >
               {t('projects_modal_lock_btn_cancel')}
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: PROYEK KONSORSIUM TERKUNCI (NDA RESTRICTED) */}
+      {showConsortiumLockModal && (
+        <div style={{ 
+          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', 
+          background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000,
+          padding: '20px'
+        }}>
+          <div className="animate-scale-in" style={{ 
+            background: 'var(--bg-card)', maxWidth: '560px', width: '100%', 
+            borderRadius: '24px', padding: '36px', textAlign: 'center',
+            boxShadow: '0 25px 60px rgba(0,0,0,0.3)', border: '1px solid var(--border-color)',
+            position: 'relative'
+          }}>
+            <button 
+              onClick={() => setShowConsortiumLockModal(false)}
+              style={{ position: 'absolute', top: '18px', right: '18px', background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
+            >
+              <X size={20} />
+            </button>
+
+            <div style={{ 
+              width: '64px', height: '64px', background: 'rgba(245, 159, 0, 0.12)', 
+              color: '#f59f00', borderRadius: '50%', display: 'flex', 
+              alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px auto' 
+            }}>
+              <Lock size={30} />
+            </div>
+
+            <span style={{ fontSize: '0.78rem', background: 'rgba(245, 159, 0, 0.15)', color: '#f59f00', padding: '4px 12px', borderRadius: '12px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
+              {language === 'id' ? 'Kerahasiaan NDA Konsorsium' : language === 'ja' ? 'コンソーシアム機密NDA' : 'Confidential NDA Consortium'}
+            </span>
+
+            <h3 style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--text-main)', margin: '14px 0 10px 0' }}>
+              {language === 'id' ? 'Proyek Konsorsium Terkunci' : language === 'ja' ? '限定公開：ウガンダコンソーシアム' : 'Consortium Project Locked'}
+            </h3>
+
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.6', marginBottom: '20px' }}>
+              {language === 'id' 
+                ? 'Proyek ini merupakan kemitraan strategis trilateral antara PT Katama Suryabumi, SADO Uganda, Kangker Construction Ltd, dan PERPUBI yang dilindungi oleh Perjanjian Kerahasiaan (NDA). Akses dashboard dibatasi khusus bagi pemangku kepentingan yang terdaftar.'
+                : language === 'ja'
+                ? '本事業はPT Katama、SADO Uganda、Kangker Construction、PERPUBI間の秘密保持契約（NDA）により保護されています。アクセス権は登録された関係当事者のみに限定されています。'
+                : 'This initiative is a trilateral strategic partnership between PT Katama Suryabumi, SADO Uganda, Kangker Construction Ltd, and PERPUBI protected by a Non-Disclosure Agreement (NDA). Dashboard access is restricted to authorized stakeholders.'}
+            </p>
+
+            <div style={{ background: 'var(--bg-secondary)', padding: '16px', borderRadius: '14px', fontSize: '0.82rem', color: 'var(--text-muted)', textAlign: 'left', marginBottom: '24px', border: '1px solid var(--border-color)' }}>
+              <strong style={{ color: 'var(--text-main)', display: 'block', marginBottom: '6px' }}>
+                {language === 'id' ? 'Pemangku Kepentingan Resmi (NDA):' : language === 'ja' ? '公式関係機関（NDA署名当事者）：' : 'Authorized NDA Stakeholders:'}
+              </strong>
+              <ul style={{ margin: 0, paddingLeft: '18px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <li>PT Katama Suryabumi (Drs. M. Kris Suyanto)</li>
+                <li>SADO Uganda (Dr. Nelson Tenywa Muzira)</li>
+                <li>Kangker Construction International Ltd (Mr. Samuel Humphry Kennedy)</li>
+                <li>PERPUBI, Panorama Agung, Turkodom & Tim Fasilitator</li>
+              </ul>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {!isAuthenticated ? (
+                <button 
+                  onClick={() => { setShowConsortiumLockModal(false); openLoginModal(); }}
+                  style={{ 
+                    width: '100%', padding: '14px', borderRadius: '12px', border: 'none',
+                    background: 'var(--primary)', color: 'white', fontWeight: 'bold', cursor: 'pointer',
+                    fontSize: '0.92rem'
+                  }}
+                >
+                  {language === 'id' ? 'Login Akun Stakeholder Terdaftar' : language === 'ja' ? '関係者アカウントでログイン' : 'Log in as Authorized Stakeholder'}
+                </button>
+              ) : (
+                <button 
+                  onClick={() => { setShowConsortiumLockModal(false); navigate('/contact'); }}
+                  style={{ 
+                    width: '100%', padding: '14px', borderRadius: '12px', border: 'none',
+                    background: 'var(--primary)', color: 'white', fontWeight: 'bold', cursor: 'pointer',
+                    fontSize: '0.92rem'
+                  }}
+                >
+                  {language === 'id' ? 'Ajukan Izin Akses Konsorsium' : language === 'ja' ? 'アクセス権を申請' : 'Request Consortium Access'}
+                </button>
+              )}
+
+              <button 
+                onClick={() => setShowConsortiumLockModal(false)}
+                style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', padding: '10px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem' }}
+              >
+                {t('projects_modal_lock_btn_cancel')}
+              </button>
+            </div>
           </div>
         </div>
       )}
