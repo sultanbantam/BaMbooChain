@@ -83,6 +83,7 @@ const PublicPortfolioPage = lazy(() => import('./pages/PublicPortfolioPage'));
 const AuthorizePage = lazy(() => import('./pages/AuthorizePage'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
+const UgandaProjectDashboard = lazy(() => import('./pages/consortium/UgandaProjectDashboard'));
 const PageLoader = () => (
   <div style={{
     display: 'flex',
@@ -311,6 +312,7 @@ function App() {
             <Route path="/admin-portal/knowledge" element={<ProtectedRoute><KnowledgeAdminPage /></ProtectedRoute>} />
             <Route path="/tobat-ekologi" element={<TobatEkologiDashboard />} />
             <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+            <Route path="/consortium/uganda" element={<ProtectedRoute><UgandaProjectDashboard /></ProtectedRoute>} />
             
             <Route path="/faq" element={<FAQPage />} />
           </Routes>

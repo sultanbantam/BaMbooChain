@@ -471,3 +471,41 @@ export function useDataTools() {
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   });
 }
+
+// 19. Hooks for Uganda Project Consortium
+export function useUgandaProjectDocuments() {
+  return useQuery({
+    queryKey: ['ugandaProjectDocuments'],
+    queryFn: async () => {
+      const docsRef = collection(db, 'uganda_project_documents');
+      const snapshot = await getDocs(docsRef);
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    },
+    staleTime: 1000 * 60 * 3,
+  });
+}
+
+export function useUgandaProjectTasks() {
+  return useQuery({
+    queryKey: ['ugandaProjectTasks'],
+    queryFn: async () => {
+      const tasksRef = collection(db, 'uganda_project_tasks');
+      const snapshot = await getDocs(tasksRef);
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    },
+    staleTime: 1000 * 60 * 3,
+  });
+}
+
+export function useUgandaProjectGallery() {
+  return useQuery({
+    queryKey: ['ugandaProjectGallery'],
+    queryFn: async () => {
+      const galleryRef = collection(db, 'uganda_project_gallery');
+      const snapshot = await getDocs(galleryRef);
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    },
+    staleTime: 1000 * 60 * 3,
+  });
+}
+

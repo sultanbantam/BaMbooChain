@@ -173,6 +173,9 @@ const Navbar = () => {
                    <Link to={`/portfolio/${user?.username || user?.id}`} onClick={() => setIsMobileMenuOpen(false)} style={{ background: 'var(--bg-secondary)', color: 'var(--text-main)', border: '1px solid var(--border-color)', padding: '12px', borderRadius: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', textDecoration: 'none', fontSize: '0.9rem' }}>
                      🌿 Passport
                    </Link>
+                   <Link to="/consortium/uganda" onClick={() => setIsMobileMenuOpen(false)} style={{ background: 'rgba(12, 166, 120, 0.1)', color: 'var(--primary)', border: '1px solid var(--primary)', padding: '12px', borderRadius: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', textDecoration: 'none', fontSize: '0.9rem' }}>
+                     🇺🇬 Uganda Portal
+                   </Link>
                    <Link to="/event-organizer" onClick={() => setIsMobileMenuOpen(false)} style={{ background: 'var(--bg-secondary)', color: 'var(--text-main)', border: '1px solid var(--border-color)', padding: '12px', borderRadius: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', textDecoration: 'none', fontSize: '0.9rem' }}>
                      📅 Event Organizer
                    </Link>
@@ -367,6 +370,7 @@ const Navbar = () => {
                   {showProfileMenu && (
                     <div style={{ position: 'absolute', top: '40px', right: '0', width: '200px', background: 'var(--bg-card)', boxShadow: '0 10px 40px rgba(0,0,0,0.1)', borderRadius: '16px', overflow: 'hidden', zIndex: 10006, border: '1px solid var(--border-color)' }}>
                       <Link to="/profile" style={{ display: 'block', padding: '12px 16px', color: 'var(--text-main)', textDecoration: 'none', borderBottom: '1px solid var(--border-color)' }}>👤 {t('nav_profile')}</Link>
+                      <Link to="/consortium/uganda" style={{ display: 'block', padding: '12px 16px', color: 'var(--primary)', fontWeight: 'bold', textDecoration: 'none', borderBottom: '1px solid var(--border-color)', background: 'rgba(12, 166, 120, 0.05)' }}>🇺🇬 Konsorsium Uganda</Link>
                       <Link to={`/portfolio/${user?.username || user?.id}`} style={{ display: 'block', padding: '12px 16px', color: 'var(--text-main)', textDecoration: 'none', borderBottom: '1px solid var(--border-color)' }}>🌿 {t('nav_passport')}</Link>
                       <Link to="/event-organizer" style={{ display: 'block', padding: '12px 16px', color: 'var(--text-main)', textDecoration: 'none', borderBottom: '1px solid var(--border-color)' }}>📅 Event Organizer</Link>
                       <Link to="/settings" style={{ display: 'block', padding: '12px 16px', color: 'var(--text-main)', textDecoration: 'none', borderBottom: '1px solid var(--border-color)' }}>⚙️ Settings / Developer</Link>
