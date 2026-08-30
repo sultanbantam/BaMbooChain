@@ -17,7 +17,7 @@ import {
 } from '../../hooks/useFirestoreQueries';
 import { db } from '../../firebase/config';
 import { 
-  collection, addDoc, updateDoc, doc, deleteDoc, 
+  collection, addDoc, updateDoc, setDoc, doc, deleteDoc, 
   serverTimestamp, arrayUnion, onSnapshot, query, orderBy 
 } from 'firebase/firestore';
 
@@ -322,17 +322,17 @@ const TRANSLATIONS = {
 // ROADMAP STEPS DATA (All start in 'in-progress', with 3 toggle buttons)
 // ─────────────────────────────────────────────────────────────
 const INITIAL_ROADMAP_STEPS = [
-  { step: 1, title_id: 'Penandatanganan NDA & Non-Circumvention Agreement', title_en: 'Signing of NDA & Non-Circumvention Agreement', title_ja: 'NDAおよび不正競争防止協定の締結', status: 'in-progress', date_id: 'Sept 2026', date_en: 'Sept 2026', date_ja: '2026年9月', desc_id: 'Penandatanganan Perjanjian Kerahasiaan & Kerangka Kemitraan di Jakarta antara Katama, SADO, Kangker, dan mitra Indonesia.', desc_en: 'Signing of NDA and Strategic Framework in Jakarta between Katama, SADO, Kangker, and Indonesian partners.', desc_ja: 'ジャカルタにてKatama、SADO、Kangker、およびインドネシアパートナー間での秘密保持契約・枠組み合意の調印。' },
-  { step: 2, title_id: 'Heads of Agreement / Interim Partnership Agreement', title_en: 'Heads of Agreement / Interim Partnership Agreement', title_ja: '基本合意書（HoA）/ 暫定パートナーシップ契約', status: 'in-progress', date_id: 'Okt 2026', date_en: 'Oct 2026', date_ja: '2026年10月', desc_id: 'Penyusunan kesepakatan transisi operasional, jalur komunikasi, focal person, serta pembagian fee fasilitasi.', desc_en: 'Drafting operational transition agreements, communication channels, focal persons, and facilitation fee mechanisms.', desc_ja: '暫定運用協定、連絡窓口、担当者、および推進手数料メカニズムの策定。' },
-  { step: 3, title_id: 'Main Strategic Partnership Agreement', title_en: 'Main Strategic Partnership Agreement', title_ja: '本戦略的パートナーシップ協定の締結', status: 'in-progress', date_id: 'Des 2026', date_en: 'Dec 2026', date_ja: '2026年12月', desc_id: 'Penyelesaian Main Agreement dalam 90 hari setelah konfirmasi tertulis implementasi proyek.', desc_en: 'Finalizing Main Agreement within 90 days following written confirmation of project advancement.', desc_ja: 'プロジェクト推進の書面確認後90日以内における本協定の締結完了。' },
-  { step: 4, title_id: 'Government & Bilateral Engagement', title_en: 'Government & Bilateral Engagement', title_ja: '政府間協議・二国間エンゲージメント', status: 'in-progress', date_id: 'Sept - Nov 2026', date_en: 'Sept - Nov 2026', date_ja: '2026年9月〜11月', desc_id: 'Fasilitasi pertemuan tingkat kementerian dan bilateral institusional di Uganda melalui peran SADO.', desc_en: 'Facilitating ministerial and institutional bilateral meetings in Uganda through SADO.', desc_ja: 'SADOを通じたウガンダ政府省庁および関係機関との二国間ハイレベル会談の推進。' },
-  { step: 5, title_id: 'Uganda Technical & Business Mission', title_en: 'Uganda Technical & Business Mission', title_ja: 'ウガンダ技術・ビジネス公式視察団派遣', status: 'in-progress', date_id: 'Kuartal 1 2027', date_en: 'Q1 2027', date_ja: '2027年第1四半期', desc_id: 'Misi kunjungan tim teknis dan bisnis Indonesia ke Kampala untuk survei lapangan dan lokasi proyek.', desc_en: 'Indonesian technical and business delegation mission to Kampala for field and site surveys.', desc_ja: '現地調査および建設予定地視察のためのインドネシア技術・ビジネス代表団のカンパラ派遣。' },
-  { step: 6, title_id: 'Pilot Project / Proof of Concept (PoC)', title_en: 'Pilot Project / Proof of Concept (PoC)', title_ja: 'パイロットプロジェクト / 概念実証（PoC）', status: 'in-progress', date_id: 'Kuartal 2 2027', date_en: 'Q2 2027', date_ja: '2027年第2四半期', desc_id: 'Pengiriman mould, komponen, dan sistem teknis KSLL serta prototype Rumah Modular BlockBamboo/RISHAM.', desc_en: 'Dispatching KSLL moulds, components, and technical systems along with BlockBamboo/RISHAM modular housing prototypes.', desc_ja: 'KSLL型枠・部材・技術システムおよびBlockBamboo/RISHAMモジュール住宅試作機の搬送と実証。' },
-  { step: 7, title_id: 'Technical & Commercial Feasibility', title_en: 'Technical & Commercial Feasibility', title_ja: '技術的・商業的フィージビリティスタディ', status: 'in-progress', date_id: 'Kuartal 2 2027', date_en: 'Q2 2027', date_ja: '2027年第2四半期', desc_id: 'Investigasi tanah setempat, regulasi bangunan Uganda, uji struktur, dan kelayakan finansial.', desc_en: 'Local geotechnical soil investigation, Uganda building codes, structural testing, and financial feasibility.', desc_ja: 'ウガンダ現地の土質調査、建築基準適合性、構造試験、および財務採算性分析。' },
-  { step: 8, title_id: 'Development Financing & IsDB Engagement', title_en: 'Development Financing & IsDB Engagement', title_ja: '開発金融・イスラム開発銀行（IsDB）連携', status: 'in-progress', date_id: 'Kuartal 3 2027', date_en: 'Q3 2027', date_ja: '2027年第3四半期', desc_id: 'Eksplorasi pendanaan pembangunan dari Islamic Development Bank (IsDB), multilateral banks, dan climate fund.', desc_en: 'Exploring development funding from Islamic Development Bank (IsDB), multilateral institutions, and climate finance.', desc_ja: 'イスラム開発銀行（IsDB）、多国間開発銀行、気候変動ファンドからの開発融資・グラント調達。' },
-  { step: 9, title_id: 'Technology Transfer & Local Manufacturing', title_en: 'Technology Transfer & Local Manufacturing', title_ja: '技術移転・現地製造・人材育成', status: 'in-progress', date_id: 'Kuartal 4 2027', date_en: 'Q4 2027', date_ja: '2027年第4四半期', desc_id: 'Pelatihan tenaga kerja lokal Uganda, perakitan lokal, dan standardisasi Quality Control/QA.', desc_en: 'Local workforce training in Uganda, local assembly, and Quality Control/QA standardization.', desc_ja: 'ウガンダ現地技術者の育成・トレーニング、現地製造体制の確立および品質管理標準化。' },
-  { step: 10, title_id: 'Project-Specific Implementation', title_en: 'Project-Specific Implementation', title_ja: '個別プロジェクトの本格着工・施工', status: 'in-progress', date_id: '2028', date_en: '2028', date_ja: '2028年', desc_id: 'Pelaksanaan konstruksi perumahan, rumah sakit, diagnostic centres, dan fasilitas publik.', desc_en: 'Executing construction for housing, healthcare facilities, diagnostic centers, and civic infrastructure.', desc_ja: '住宅地造成、病院、診断センター、および公共インフラの本格的な建設工事実施。' },
-  { step: 11, title_id: 'Scale-Up in Uganda & African Markets', title_en: 'Scale-Up in Uganda & African Markets', title_ja: 'ウガンダ国内およびアフリカ全域への展開', status: 'in-progress', date_id: '2028+', date_en: '2028+', date_ja: '2028年以降', desc_id: 'Ekspansi regional ke negara-negara Afrika yang disepakati bersama konsorsium.', desc_en: 'Regional scaling across mutually agreed African markets by the consortium.', desc_ja: 'コンソーシアム合意に基づくウガンダ全土および東アフリカ周辺市場へのスケール拡大。' }
+  { step: 1, title_id: 'Penandatanganan NDA & Non-Circumvention Agreement', title_en: 'Signing of NDA & Non-Circumvention Agreement', title_ja: 'NDAおよび不正競争防止協定の締結', status: 'in-progress', date_id: 'Sept 2026', date_en: 'Sept 2026', date_ja: '2026年9月', desc_id: 'Penandatanganan Perjanjian Kerahasiaan & Kerangka Kemitraan di Jakarta antara Katama, SADO, Kangker, dan mitra Indonesia.', desc_en: 'Signing of NDA and Strategic Framework in Jakarta between Katama, SADO, Kangker, and Indonesian partners.', desc_ja: 'ジャカルタにてKatama、SADO、Kangker、およびインドネシアパートナー間での秘密保持契約・枠組み合意の調印。', comments: [] },
+  { step: 2, title_id: 'Heads of Agreement / Interim Partnership Agreement', title_en: 'Heads of Agreement / Interim Partnership Agreement', title_ja: '基本合意書（HoA）/ 暫定パートナーシップ契約', status: 'in-progress', date_id: 'Okt 2026', date_en: 'Oct 2026', date_ja: '2026年10月', desc_id: 'Penyusunan kesepakatan transisi operasional, jalur komunikasi, focal person, serta pembagian fee fasilitasi.', desc_en: 'Drafting operational transition agreements, communication channels, focal persons, and facilitation fee mechanisms.', desc_ja: '暫定運用協定、連絡窓口、担当者、および推進手数料メカニズムの策定。', comments: [] },
+  { step: 3, title_id: 'Main Strategic Partnership Agreement', title_en: 'Main Strategic Partnership Agreement', title_ja: '本戦略的パートナーシップ協定の締結', status: 'in-progress', date_id: 'Des 2026', date_en: 'Dec 2026', date_ja: '2026年12月', desc_id: 'Penyelesaian Main Agreement dalam 90 hari setelah konfirmasi tertulis implementasi proyek.', desc_en: 'Finalizing Main Agreement within 90 days following written confirmation of project advancement.', desc_ja: 'プロジェクト推進の書面確認後90日以内における本協定の締結完了。', comments: [] },
+  { step: 4, title_id: 'Government & Bilateral Engagement', title_en: 'Government & Bilateral Engagement', title_ja: '政府間協議・二国間エンゲージメント', status: 'in-progress', date_id: 'Sept - Nov 2026', date_en: 'Sept - Nov 2026', date_ja: '2026年9月〜11月', desc_id: 'Fasilitasi pertemuan tingkat kementerian dan bilateral institusional di Uganda melalui peran SADO.', desc_en: 'Facilitating ministerial and institutional bilateral meetings in Uganda through SADO.', desc_ja: 'SADOを通じたウガンダ政府省庁および関係機関との二国間ハイレベル会談の推進。', comments: [] },
+  { step: 5, title_id: 'Uganda Technical & Business Mission', title_en: 'Uganda Technical & Business Mission', title_ja: 'ウガンダ技術・ビジネス公式視察団派遣', status: 'in-progress', date_id: 'Kuartal 1 2027', date_en: 'Q1 2027', date_ja: '2027年第1四半期', desc_id: 'Misi kunjungan tim teknis dan bisnis Indonesia ke Kampala untuk survei lapangan dan lokasi proyek.', desc_en: 'Indonesian technical and business delegation mission to Kampala for field and site surveys.', desc_ja: '現地調査および建設予定地視察のためのインドネシア技術・ビジネス代表団のカンパラ派遣。', comments: [] },
+  { step: 6, title_id: 'Pilot Project / Proof of Concept (PoC)', title_en: 'Pilot Project / Proof of Concept (PoC)', title_ja: 'パイロットプロジェクト / 概念実証（PoC）', status: 'in-progress', date_id: 'Kuartal 2 2027', date_en: 'Q2 2027', date_ja: '2027年第2四半期', desc_id: 'Pengiriman mould, komponen, dan sistem teknis KSLL serta prototype Rumah Modular BlockBamboo/RISHAM.', desc_en: 'Dispatching KSLL moulds, components, and technical systems along with BlockBamboo/RISHAM modular housing prototypes.', desc_ja: 'KSLL型枠・部材・技術システムおよびBlockBamboo/RISHAMモジュール住宅試作機の搬送と実証。', comments: [] },
+  { step: 7, title_id: 'Technical & Commercial Feasibility', title_en: 'Technical & Commercial Feasibility', title_ja: '技術的・商業的フィージビリティスタディ', status: 'in-progress', date_id: 'Kuartal 2 2027', date_en: 'Q2 2027', date_ja: '2027年第2四半期', desc_id: 'Investigasi tanah setempat, regulasi bangunan Uganda, uji struktur, dan kelayakan finansial.', desc_en: 'Local geotechnical soil investigation, Uganda building codes, structural testing, and financial feasibility.', desc_ja: 'ウガンダ現地の土質調査、建築基準適合性、構造試験、および財務採算性分析。', comments: [] },
+  { step: 8, title_id: 'Development Financing & IsDB Engagement', title_en: 'Development Financing & IsDB Engagement', title_ja: '開発金融・イスラム開発銀行（IsDB）連携', status: 'in-progress', date_id: 'Kuartal 3 2027', date_en: 'Q3 2027', date_ja: '2027年第3四半期', desc_id: 'Eksplorasi pendanaan pembangunan dari Islamic Development Bank (IsDB), multilateral banks, dan climate fund.', desc_en: 'Exploring development funding from Islamic Development Bank (IsDB), multilateral institutions, and climate finance.', desc_ja: 'イスラム開発銀行（IsDB）、多国間開発銀行、気候変動ファンドからの開発融資・グラント調達。', comments: [] },
+  { step: 9, title_id: 'Technology Transfer & Local Manufacturing', title_en: 'Technology Transfer & Local Manufacturing', title_ja: '技術移転・現地製造・人材育成', status: 'in-progress', date_id: 'Kuartal 4 2027', date_en: 'Q4 2027', date_ja: '2027年第4四半期', desc_id: 'Pelatihan tenaga kerja lokal Uganda, perakitan lokal, dan standardisasi Quality Control/QA.', desc_en: 'Local workforce training in Uganda, local assembly, and Quality Control/QA standardization.', desc_ja: 'ウガンダ現地技術者の育成・トレーニング、現地製造体制の確立および品質管理標準化。', comments: [] },
+  { step: 10, title_id: 'Project-Specific Implementation', title_en: 'Project-Specific Implementation', title_ja: '個別プロジェクトの本格着工・施工', status: 'in-progress', date_id: '2028', date_en: '2028', date_ja: '2028年', desc_id: 'Pelaksanaan konstruksi perumahan, rumah sakit, diagnostic centres, dan fasilitas publik.', desc_en: 'Executing construction for housing, healthcare facilities, diagnostic centers, and civic infrastructure.', desc_ja: '住宅地造成、病院、診断センター、および公共インフラの本格的な建設工事実施。', comments: [] },
+  { step: 11, title_id: 'Scale-Up in Uganda & African Markets', title_en: 'Scale-Up in Uganda & African Markets', title_ja: 'ウガンダ国内およびアフリカ全域への展開', status: 'in-progress', date_id: '2028+', date_en: '2028+', date_ja: '2028年以降', desc_id: 'Ekspansi regional ke negara-negara Afrika yang disepakati bersama konsorsium.', desc_en: 'Regional scaling across mutually agreed African markets by the consortium.', desc_ja: 'コンソーシアム合意に基づくウガンダ全土および東アフリカ周辺市場へのスケール拡大。', comments: [] }
 ];
 
 // ─────────────────────────────────────────────────────────────
@@ -704,7 +704,18 @@ const UgandaProjectDashboard = () => {
   const { data: dynamicGallery = [] } = useUgandaProjectGallery();
 
   // Local state for active items to support immediate comment & status updates
-  const [localRoadmap, setLocalRoadmap] = useState(INITIAL_ROADMAP_STEPS);
+  const [localRoadmap, setLocalRoadmap] = useState(() => {
+    const saved = localStorage.getItem('uganda_consortium_roadmap_v3');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return INITIAL_ROADMAP_STEPS;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('uganda_consortium_roadmap_v3', JSON.stringify(localRoadmap));
+  }, [localRoadmap]);
+
   const [localDocs, setLocalDocs] = useState(INITIAL_DOCUMENTS);
   const [localTasks, setLocalTasks] = useState(INITIAL_TASKS);
   const [localGallery, setLocalGallery] = useState(INITIAL_GALLERY);
@@ -767,7 +778,7 @@ const UgandaProjectDashboard = () => {
   // ─────────────────────────────────────────────────────────────
   // HANDLERS: ROADMAP STATUS TOGGLE (3-BUTTON SELECTOR)
   // ─────────────────────────────────────────────────────────────
-  const handleSetRoadmapStatus = (stepNum, newStatus) => {
+  const handleSetRoadmapStatus = async (stepNum, newStatus) => {
     const updated = localRoadmap.map(s => {
       if (s.step === stepNum) {
         return { ...s, status: newStatus };
@@ -775,6 +786,13 @@ const UgandaProjectDashboard = () => {
       return s;
     });
     setLocalRoadmap(updated);
+
+    try {
+      const stepRef = doc(db, "uganda_project_steps", `step_${stepNum}`);
+      await setDoc(stepRef, { step: stepNum, status: newStatus }, { merge: true });
+    } catch (err) {
+      console.log("Status updated locally");
+    }
   };
 
   // ─────────────────────────────────────────────────────────────
@@ -816,7 +834,27 @@ const UgandaProjectDashboard = () => {
     };
 
     try {
-      if (activeCommentTarget.type === 'doc') {
+      if (activeCommentTarget.type === 'step') {
+        const stepNum = activeCommentTarget.item.step;
+        const updated = localRoadmap.map(s => {
+          if (s.step === stepNum) {
+            const comments = [...(s.comments || []), newComment];
+            return { ...s, comments };
+          }
+          return s;
+        });
+        setLocalRoadmap(updated);
+
+        try {
+          const stepRef = doc(db, "uganda_project_steps", `step_${stepNum}`);
+          await setDoc(stepRef, { 
+            step: stepNum,
+            comments: arrayUnion(newComment)
+          }, { merge: true });
+        } catch (e) {
+          console.log("Step note saved locally");
+        }
+      } else if (activeCommentTarget.type === 'doc') {
         const updated = localDocs.map(d => {
           if (d.id === activeCommentTarget.id) {
             const comments = [...(d.comments || []), newComment];
@@ -1318,7 +1356,7 @@ const UgandaProjectDashboard = () => {
                           onClick={() => handleOpenComment('step', step)}
                           style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-main)', padding: '6px 12px', borderRadius: '8px', fontSize: '0.78rem', fontWeight: 'bold', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                         >
-                          <MessageSquare size={13} color="var(--primary)" /> {L.btnStepNotes}
+                          <MessageSquare size={13} color="var(--primary)" /> {L.btnStepNotes} ({step.comments?.length || 0})
                         </button>
                       </div>
                     </div>
@@ -1788,71 +1826,86 @@ const UgandaProjectDashboard = () => {
       {/* ───────────────────────────────────────────────────────────── */}
       {/* INTERACTIVE COMMENT & DISCUSSION DRAWER                       */}
       {/* ───────────────────────────────────────────────────────────── */}
-      {activeCommentTarget && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10005, padding: '20px' }} onClick={() => setActiveCommentTarget(null)}>
-          <div style={{ background: 'var(--bg-card)', borderRadius: '24px', width: '100%', maxWidth: '600px', maxHeight: '85vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', border: '1px solid var(--border-color)', boxShadow: '0 25px 60px rgba(0,0,0,0.3)' }} onClick={(e) => e.stopPropagation()}>
-            
-            <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-secondary)' }}>
-              <div>
-                <h3 style={{ margin: '0 0 4px 0', fontSize: '1.15rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <MessageSquare size={18} color="var(--primary)" /> {L.commentSectionTitle}
-                </h3>
-                <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-                  {activeCommentTarget.item[`title_${langKey}`] || activeCommentTarget.item.title_id || activeCommentTarget.item.title || `STEP ${activeCommentTarget.item.step}`}
-                </span>
-              </div>
-              <button onClick={() => setActiveCommentTarget(null)} style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--text-muted)' }}><X size={20} /></button>
-            </div>
+      {activeCommentTarget && (() => {
+        const activeLiveItem = 
+          activeCommentTarget.type === 'step' 
+            ? (localRoadmap.find(s => s.step === activeCommentTarget.item.step) || activeCommentTarget.item)
+            : activeCommentTarget.type === 'doc'
+            ? (localDocs.find(d => d.id === activeCommentTarget.id) || activeCommentTarget.item)
+            : activeCommentTarget.type === 'task'
+            ? (localTasks.find(t => t.id === activeCommentTarget.id) || activeCommentTarget.item)
+            : activeCommentTarget.type === 'gallery'
+            ? (localGallery.find(g => g.id === activeCommentTarget.id) || activeCommentTarget.item)
+            : activeCommentTarget.item;
 
-            <div style={{ padding: '24px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              {(!activeCommentTarget.item.comments || activeCommentTarget.item.comments.length === 0) ? (
-                <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                  💬 {L.noCommentsYet}
+        const liveComments = activeLiveItem?.comments || [];
+
+        return (
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10005, padding: '20px' }} onClick={() => setActiveCommentTarget(null)}>
+            <div style={{ background: 'var(--bg-card)', borderRadius: '24px', width: '100%', maxWidth: '600px', maxHeight: '85vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', border: '1px solid var(--border-color)', boxShadow: '0 25px 60px rgba(0,0,0,0.3)' }} onClick={(e) => e.stopPropagation()}>
+              
+              <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-secondary)' }}>
+                <div>
+                  <h3 style={{ margin: '0 0 4px 0', fontSize: '1.15rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <MessageSquare size={18} color="var(--primary)" /> {L.commentSectionTitle}
+                  </h3>
+                  <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+                    {activeLiveItem[`title_${langKey}`] || activeLiveItem.title_id || activeLiveItem.title || `STEP ${activeLiveItem.step}`}
+                  </span>
                 </div>
-              ) : (
-                activeCommentTarget.item.comments.map((c, i) => (
-                  <div key={c.id || i} style={{ background: 'var(--bg-secondary)', padding: '14px 16px', borderRadius: '14px', border: '1px solid var(--border-color)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontWeight: 'bold', fontSize: '0.88rem', color: 'var(--text-main)' }}>{c.author}</span>
-                        {c.role && (
-                          <span style={{ fontSize: '0.7rem', background: 'rgba(12,166,120,0.1)', color: 'var(--primary)', padding: '2px 6px', borderRadius: '6px', fontWeight: 'bold' }}>
-                            {c.role}
-                          </span>
-                        )}
-                      </div>
-                      <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-                        {new Date(c.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                    </div>
-                    <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-main)', lineHeight: '1.5' }}>
-                      {c.text}
-                    </p>
-                  </div>
-                ))
-              )}
-            </div>
+                <button onClick={() => setActiveCommentTarget(null)} style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--text-muted)' }}><X size={20} /></button>
+              </div>
 
-            <form onSubmit={handlePostComment} style={{ padding: '16px 20px', borderTop: '1px solid var(--border-color)', display: 'flex', gap: '10px', background: 'var(--bg-card)' }}>
-              <input 
-                type="text" 
-                value={newCommentText} 
-                onChange={(e) => setNewCommentText(e.target.value)}
-                placeholder={L.commentPlaceholder}
-                style={{ flex: 1, padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-main)', fontSize: '0.9rem', outline: 'none' }}
-                required
-              />
-              <button 
-                type="submit" 
-                disabled={isSubmittingComment}
-                style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '12px 20px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
-              >
-                <Send size={16} /> {L.btnSendComment}
-              </button>
-            </form>
+              <div style={{ padding: '24px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                {liveComments.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                    💬 {L.noCommentsYet}
+                  </div>
+                ) : (
+                  liveComments.map((c, i) => (
+                    <div key={c.id || i} style={{ background: 'var(--bg-secondary)', padding: '14px 16px', borderRadius: '14px', border: '1px solid var(--border-color)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontWeight: 'bold', fontSize: '0.88rem', color: 'var(--text-main)' }}>{c.author}</span>
+                          {c.role && (
+                            <span style={{ fontSize: '0.7rem', background: 'rgba(12,166,120,0.1)', color: 'var(--primary)', padding: '2px 6px', borderRadius: '6px', fontWeight: 'bold' }}>
+                              {c.role}
+                            </span>
+                          )}
+                        </div>
+                        <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                          {new Date(c.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                      <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-main)', lineHeight: '1.5' }}>
+                        {c.text}
+                      </p>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <form onSubmit={handlePostComment} style={{ padding: '16px 20px', borderTop: '1px solid var(--border-color)', display: 'flex', gap: '10px', background: 'var(--bg-card)' }}>
+                <input 
+                  type="text" 
+                  value={newCommentText} 
+                  onChange={(e) => setNewCommentText(e.target.value)}
+                  placeholder={L.commentPlaceholder}
+                  style={{ flex: 1, padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-main)', fontSize: '0.9rem', outline: 'none' }}
+                  required
+                />
+                <button 
+                  type="submit" 
+                  disabled={isSubmittingComment}
+                  style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '12px 20px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <Send size={16} /> {L.btnSendComment}
+                </button>
+              </form>
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* ───────────────────────────────────────────────────────────── */}
       {/* MODAL: UNGGAH DOKUMEN                                         */}
