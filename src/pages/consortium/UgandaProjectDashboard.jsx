@@ -122,7 +122,12 @@ const TRANSLATIONS = {
     restrictedDesc: "Dashboard ini dilindungi oleh Perjanjian Kerahasiaan (NDA) & Non-Circumvention trilateral antara PT Katama Suryabumi, SADO, dan Kangker Construction International Ltd.",
     authorizedListTitle: "Entitas yang Berhak Mengakses:",
     btnBackHome: "Kembali ke Beranda",
-    btnRequestAccess: "Ajukan Izin Akses"
+    btnRequestAccess: "Ajukan Izin Akses",
+    btnLoginSignup: "Masuk / Daftar Akun 🔐",
+    loginRequiredDesc: "Silakan Masuk (Login) atau Buat Akun (Sign Up) untuk mengakses dokumen, roadmap, dan koordinasi proyek konsorsium Uganda.",
+    notWhitelistedDesc: "Akun Anda saat ini belum terdaftar dalam daftar izin akses (whitelist) NDA konsorsium Uganda. Hubungi Admin untuk didaftarkan.",
+    loggedInAs: "Masuk sebagai:",
+    btnSwitchAccount: "Ganti Akun"
   },
   en: {
     confidentialBadge: "🔒 Confidential Consortium Portal",
@@ -219,7 +224,12 @@ const TRANSLATIONS = {
     restrictedDesc: "This dashboard is protected by the trilateral Non-Disclosure Agreement (NDA) & Non-Circumvention between PT Katama Suryabumi, SADO, and Kangker Construction International Ltd.",
     authorizedListTitle: "Authorized Entities:",
     btnBackHome: "Back to Home",
-    btnRequestAccess: "Request Access"
+    btnRequestAccess: "Request Access",
+    btnLoginSignup: "Log In / Sign Up 🔐",
+    loginRequiredDesc: "Please Log In or Sign Up to access Uganda consortium documents, roadmap, and project coordination.",
+    notWhitelistedDesc: "Your account is not currently on the NDA consortium whitelist. Contact Admin to request clearance.",
+    loggedInAs: "Logged in as:",
+    btnSwitchAccount: "Switch Account"
   },
   ja: {
     confidentialBadge: "🔒 機密コンソーシアムポータル",
@@ -316,7 +326,12 @@ const TRANSLATIONS = {
     restrictedDesc: "本ダッシュボードは、PT Katama Suryabumi、SADO、およびKangker Construction International Ltd間で締結された秘密保持契約（NDA）により保護されています。",
     authorizedListTitle: "アクセス権限保有機関：",
     btnBackHome: "ホームへ戻る",
-    btnRequestAccess: "アクセス権を申請"
+    btnRequestAccess: "アクセス権を申請",
+    btnLoginSignup: "ログイン / 新規登録 🔐",
+    loginRequiredDesc: "ウガンダ・コンソーシアムの文書、ロードマップ、プロジェクト調整にアクセスするにはログインまたは新規登録してください。",
+    notWhitelistedDesc: "現在のアカウントはNDAコンソーシアムのアクセス許可リストに登録されていません。管理者にアクセス権を申請してください。",
+    loggedInAs: "ログイン中:",
+    btnSwitchAccount: "アカウント切り替え"
   }
 };
 
@@ -678,10 +693,15 @@ const STAKEHOLDERS = [
 const UgandaProjectDashboard = () => {
   const { language } = useLanguage();
   const langKey = (language === 'en' || language === 'ja') ? language : 'id';
-  const L = TRANSLATIONS[langKey];
-
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isAuthReady, openLoginModal } = useAuth();
   const navigate = useNavigate();
+
+  // Automatically trigger login/signup modal if user is not authenticated
+  useEffect(() => {
+    if (isAuthReady && !isAuthenticated) {
+      openLoginModal();
+    }
+  }, [isAuthReady, isAuthenticated, openLoginModal]);
 
   // Role Access Control (Whitelist)
   const allowedUsernames = [
@@ -1140,9 +1160,16 @@ const UgandaProjectDashboard = () => {
           <h2 style={{ fontSize: '1.6rem', color: 'var(--text-main)', marginBottom: '12px', fontWeight: '800' }}>
             {L.restrictedTitle}
           </h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.92rem', lineHeight: '1.6', marginBottom: '24px' }}>
-            {L.restrictedDesc}
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.92rem', lineHeight: '1.6', marginBottom: '20px' }}>
+            {!isAuthenticated ? L.loginRequiredDesc : L.notWhitelistedDesc}
           </p>
+
+          {isAuthenticated && (
+            <div style={{ background: 'rgba(12, 166, 120, 0.08)', border: '1px solid rgba(12, 166, 120, 0.2)', padding: '10px 16px', borderRadius: '10px', fontSize: '0.82rem', color: 'var(--text-main)', marginBottom: '20px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+              <span>{L.loggedInAs} <strong>{user?.email || user?.username}</strong></span>
+            </div>
+          )}
+
           <div style={{ background: 'var(--bg-secondary)', padding: '16px', borderRadius: '12px', fontSize: '0.85rem', color: 'var(--text-muted)', textAlign: 'left', marginBottom: '24px', border: '1px solid var(--border-color)' }}>
             <strong>{L.authorizedListTitle}</strong>
             <ul style={{ margin: '8px 0 0 18px', padding: 0 }}>
@@ -1153,12 +1180,31 @@ const UgandaProjectDashboard = () => {
               <li>PERPUBI, PT Panorama Agung Utama, Turkodom Consulting</li>
             </ul>
           </div>
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-            <Link to="/" className="btn" style={{ padding: '12px 24px', borderRadius: '10px', background: 'var(--bg-secondary)', color: 'var(--text-main)', textDecoration: 'none', fontWeight: '600' }}>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            {!isAuthenticated ? (
+              <button 
+                onClick={openLoginModal} 
+                className="btn btn-primary" 
+                style={{ padding: '12px 28px', borderRadius: '10px', fontWeight: 'bold', fontSize: '0.95rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 14px rgba(12,166,120,0.3)' }}
+              >
+                <Lock size={16} /> {L.btnLoginSignup}
+              </button>
+            ) : (
+              <>
+                <Link to="/contact" className="btn btn-primary" style={{ padding: '12px 24px', borderRadius: '10px', fontWeight: 'bold' }}>
+                  {L.btnRequestAccess}
+                </Link>
+                <button 
+                  onClick={openLoginModal} 
+                  className="btn" 
+                  style={{ padding: '12px 20px', borderRadius: '10px', background: 'var(--bg-secondary)', color: 'var(--text-main)', fontWeight: '600', cursor: 'pointer', border: '1px solid var(--border-color)' }}
+                >
+                  {L.btnSwitchAccount}
+                </button>
+              </>
+            )}
+            <Link to="/" className="btn" style={{ padding: '12px 24px', borderRadius: '10px', background: 'var(--bg-secondary)', color: 'var(--text-main)', textDecoration: 'none', fontWeight: '600', border: '1px solid var(--border-color)' }}>
               {L.btnBackHome}
-            </Link>
-            <Link to="/contact" className="btn btn-primary" style={{ padding: '12px 24px', borderRadius: '10px', fontWeight: 'bold' }}>
-              {L.btnRequestAccess}
             </Link>
           </div>
         </div>
