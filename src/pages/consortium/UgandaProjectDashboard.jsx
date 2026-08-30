@@ -6,14 +6,16 @@ import {
   UploadCloud, Download, ExternalLink, Calendar, Users, 
   Layers, MapPin, Building2, Briefcase, Plus, X, Video, 
   CheckSquare, ArrowRight, Lock, Eye, Search, Sparkles,
-  MessageSquare, Send, Image, Film, Tag, ThumbsUp, Trash2
+  MessageSquare, Send, Image, Film, Tag, ThumbsUp, Trash2,
+  UserCheck, UserPlus
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import BackButton from '../../components/BackButton';
 import { 
   useUgandaProjectDocuments, 
   useUgandaProjectTasks, 
-  useUgandaProjectGallery 
+  useUgandaProjectGallery,
+  useUgandaAuthorizedStakeholders
 } from '../../hooks/useFirestoreQueries';
 import { db } from '../../firebase/config';
 import { 
@@ -687,12 +689,27 @@ const UgandaProjectDashboard = () => {
     'kangker', 'perpubi', 'doddy', 'turkodom', 'jimmy', 'kris_suyanto', 'albantani'
   ];
   
+  const { data: dynamicAuthorized = [], refetch: refetchAuthorized } = useUgandaAuthorizedStakeholders();
+  
+  const dynamicAllowedEmails = (dynamicAuthorized || []).map(s => s.email?.toLowerCase()).filter(Boolean);
+  const dynamicAllowedUsernames = (dynamicAuthorized || []).map(s => s.username?.toLowerCase() || s.identifier?.toLowerCase()).filter(Boolean);
+
   const isAuthorized = isAuthenticated && (
     allowedUsernames.includes(user?.username?.toLowerCase()) ||
     allowedUsernames.some(name => user?.email?.toLowerCase().includes(name)) ||
+    dynamicAllowedEmails.includes(user?.email?.toLowerCase()) ||
+    dynamicAllowedUsernames.includes(user?.username?.toLowerCase()) ||
     user?.consortiumRole === 'uganda_partner' ||
     user?.role === 'admin' ||
     user?.kycStatus === 'verified'
+  );
+
+  const isAdmin = isAuthenticated && (
+    user?.username === 'admin_yayasan' || 
+    user?.username === 'admin' || 
+    user?.username === 'mukoddas' || 
+    user?.username === 'albantani' ||
+    user?.role === 'admin'
   );
 
   const [activeTab, setActiveTab] = useState('roadmap');
@@ -774,6 +791,63 @@ const UgandaProjectDashboard = () => {
     file: null,
     mediaUrl: ''
   });
+
+  const [isStakeholderModalOpen, setIsStakeholderModalOpen] = useState(false);
+  const [isSavingStakeholder, setIsSavingStakeholder] = useState(false);
+  const [stakeholderForm, setStakeholderForm] = useState({
+    name: '',
+    identifier: '',
+    organization: 'PT Katama Suryabumi',
+    role: 'Tim Manajemen / Stakeholder',
+    country: 'Indonesia'
+  });
+
+  const handleSaveStakeholder = async (e) => {
+    e.preventDefault();
+    if (!stakeholderForm.name || !stakeholderForm.identifier) {
+      return alert("Harap isi nama dan email/username stakeholder.");
+    }
+    setIsSavingStakeholder(true);
+    try {
+      const cleanIdentifier = stakeholderForm.identifier.trim().toLowerCase();
+      const isEmail = cleanIdentifier.includes('@');
+      
+      const newAuth = {
+        name: stakeholderForm.name.trim(),
+        identifier: cleanIdentifier,
+        email: isEmail ? cleanIdentifier : '',
+        username: !isEmail ? cleanIdentifier : '',
+        organization: stakeholderForm.organization,
+        role: stakeholderForm.role,
+        country: stakeholderForm.country,
+        addedBy: user?.name || user?.username || 'Admin',
+        createdAt: serverTimestamp()
+      };
+
+      await addDoc(collection(db, "uganda_authorized_stakeholders"), newAuth);
+      alert(`✅ Berhasil memberikan izin akses ke: ${stakeholderForm.name} (${cleanIdentifier})`);
+      setStakeholderForm({ name: '', identifier: '', organization: 'PT Katama Suryabumi', role: 'Tim Manajemen / Stakeholder', country: 'Indonesia' });
+      setIsStakeholderModalOpen(false);
+      refetchAuthorized();
+    } catch (err) {
+      console.error(err);
+      alert("Gagal menambahkan stakeholder: " + err.message);
+    } finally {
+      setIsSavingStakeholder(false);
+    }
+  };
+
+  const handleRevokeStakeholder = async (docId, name) => {
+    if (!window.confirm(`Apakah Anda yakin ingin mencabut izin akses untuk ${name}?`)) return;
+    try {
+      await deleteDoc(doc(db, "uganda_authorized_stakeholders", docId));
+      alert("Izin akses berhasil dicabut.");
+      refetchAuthorized();
+    } catch (err) {
+      console.error(err);
+      alert("Gagal mencabut izin akses.");
+    }
+  };
 
   // ─────────────────────────────────────────────────────────────
   // HANDLERS: ROADMAP STATUS TOGGLE (3-BUTTON SELECTOR)
@@ -1760,16 +1834,41 @@ const UgandaProjectDashboard = () => {
         {/* ───────────────────────────────────────────────────────────── */}
         {activeTab === 'stakeholders' && (
           <div>
-            <div style={{ marginBottom: '20px' }}>
-              <h3 style={{ fontSize: '1.25rem', color: 'var(--text-main)', margin: '0 0 4px 0' }}>
-                {L.stakeholdersHeading}
-              </h3>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0 }}>
-                {L.stakeholdersSub}
-              </p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '14px' }}>
+              <div>
+                <h3 style={{ fontSize: '1.25rem', color: 'var(--text-main)', margin: '0 0 4px 0' }}>
+                  {L.stakeholdersHeading}
+                </h3>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0 }}>
+                  {L.stakeholdersSub}
+                </p>
+              </div>
+
+              {isAdmin && (
+                <button
+                  onClick={() => setIsStakeholderModalOpen(true)}
+                  style={{
+                    background: 'linear-gradient(135deg, #0ca678 0%, #099268 100%)',
+                    color: 'white',
+                    border: 'none',
+                    padding: '10px 18px',
+                    borderRadius: '12px',
+                    fontWeight: 'bold',
+                    fontSize: '0.88rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    boxShadow: '0 4px 14px rgba(12,166,120,0.25)'
+                  }}
+                >
+                  <UserPlus size={16} /> Tambah Izin Stakeholder Baru
+                </button>
+              )}
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+            {/* Official Consortium Signatories */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px', marginBottom: '32px' }}>
               {STAKEHOLDERS.map((s, idx) => {
                 const role = s[`role_${langKey}`] || s.role_id;
                 const title = s[`title_${langKey}`] || s.title_id;
@@ -1818,6 +1917,82 @@ const UgandaProjectDashboard = () => {
                 );
               })}
             </div>
+
+            {/* Dynamically Added / Whitelisted Stakeholders */}
+            {dynamicAuthorized.length > 0 && (
+              <div>
+                <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <UserCheck size={18} color="var(--primary)" />
+                  <h4 style={{ margin: 0, fontSize: '1.05rem', color: 'var(--text-main)', fontWeight: '700' }}>
+                    Stakeholder & Personel Terdaftar (Izin Akses Aktif) ({dynamicAuthorized.length})
+                  </h4>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
+                  {dynamicAuthorized.map((auth) => (
+                    <div
+                      key={auth.id}
+                      style={{
+                        background: 'var(--bg-card)',
+                        border: '1px solid rgba(12,166,120,0.3)',
+                        borderRadius: '16px',
+                        padding: '18px 20px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                        boxShadow: '0 4px 12px rgba(12,166,120,0.04)'
+                      }}
+                    >
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                          <span style={{ fontSize: '0.72rem', fontWeight: 'bold', color: '#0ca678', background: 'rgba(12,166,120,0.1)', padding: '3px 8px', borderRadius: '6px' }}>
+                            ✨ Akses Terdaftar
+                          </span>
+                          <span style={{ fontSize: '0.8rem' }}>{auth.country || '🇮🇩'}</span>
+                        </div>
+
+                        <h4 style={{ fontSize: '1.02rem', fontWeight: '800', color: 'var(--text-main)', margin: '0 0 4px 0' }}>
+                          {auth.name}
+                        </h4>
+                        <div style={{ fontSize: '0.82rem', color: 'var(--primary)', fontWeight: 'bold', marginBottom: '6px' }}>
+                          {auth.organization}
+                        </div>
+                        <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '8px' }}>
+                          {auth.role || 'Stakeholder / Anggota Tim'}
+                        </div>
+
+                        <div style={{ background: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: '8px', fontSize: '0.76rem', color: 'var(--text-muted)', border: '1px solid var(--border-color)' }}>
+                          🔑 <strong>ID Akses:</strong> {auth.identifier || auth.email || auth.username}
+                        </div>
+                      </div>
+
+                      {isAdmin && (
+                        <div style={{ marginTop: '14px', paddingTop: '10px', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'flex-end' }}>
+                          <button
+                            onClick={() => handleRevokeStakeholder(auth.id, auth.name)}
+                            style={{
+                              background: 'rgba(224, 49, 49, 0.1)',
+                              color: '#e03131',
+                              border: 'none',
+                              padding: '5px 10px',
+                              borderRadius: '6px',
+                              fontSize: '0.75rem',
+                              fontWeight: 'bold',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}
+                          >
+                            <Trash2 size={12} /> Cabut Akses
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -2165,6 +2340,104 @@ const UgandaProjectDashboard = () => {
                 style={{ width: '100%', padding: '12px', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '10px', fontWeight: 'bold', fontSize: '0.95rem', cursor: 'pointer', marginTop: '10px' }}
               >
                 {L.btnSubmit}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ───────────────────────────────────────────────────────────── */}
+      {/* MODAL: TAMBAH IZIN STAKEHOLDER                                */}
+      {/* ───────────────────────────────────────────────────────────── */}
+      {isStakeholderModalOpen && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000, padding: '20px' }}>
+          <div style={{ background: 'var(--bg-card)', borderRadius: '20px', width: '100%', maxWidth: '520px', padding: '28px', border: '1px solid var(--border-color)', boxShadow: '0 20px 40px rgba(0,0,0,0.3)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h3 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <UserPlus size={20} color="var(--primary)" /> Beri Izin Akses Stakeholder Baru
+              </h3>
+              <button onClick={() => setIsStakeholderModalOpen(false)} style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--text-muted)' }}><X size={20} /></button>
+            </div>
+
+            <form onSubmit={handleSaveStakeholder} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 'bold', marginBottom: '4px', color: 'var(--text-main)' }}>Nama Lengkap Stakeholder / Delegasi</label>
+                <input 
+                  type="text" 
+                  value={stakeholderForm.name} 
+                  onChange={(e) => setStakeholderForm({...stakeholderForm, name: e.target.value})}
+                  placeholder="Contoh: Eng. David Ochieng / Ir. Budi Santoso"
+                  style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-main)', fontSize: '0.9rem' }}
+                  required
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 'bold', marginBottom: '4px', color: 'var(--text-main)' }}>Email atau Username Akun BaMbooChain</label>
+                <input 
+                  type="text" 
+                  value={stakeholderForm.identifier} 
+                  onChange={(e) => setStakeholderForm({...stakeholderForm, identifier: e.target.value})}
+                  placeholder="email@katamasuryabumi.com atau username"
+                  style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-main)', fontSize: '0.9rem' }}
+                  required
+                />
+                <small style={{ fontSize: '0.74rem', color: 'var(--text-muted)', marginTop: '3px', display: 'block' }}>
+                  💡 Masukkan alamat email login atau username yang didaftarkan pihak stakeholder.
+                </small>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 'bold', marginBottom: '4px', color: 'var(--text-main)' }}>Instansi / Entitas</label>
+                  <select 
+                    value={stakeholderForm.organization} 
+                    onChange={(e) => setStakeholderForm({...stakeholderForm, organization: e.target.value})}
+                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-main)', fontSize: '0.85rem' }}
+                  >
+                    <option value="PT Katama Suryabumi">PT Katama Suryabumi</option>
+                    <option value="SADO Uganda">SADO Uganda</option>
+                    <option value="Kangker Construction Ltd">Kangker Construction Ltd</option>
+                    <option value="PERPUBI">PERPUBI</option>
+                    <option value="PT Panorama Agung Utama">PT Panorama Agung Utama</option>
+                    <option value="Turkodom Consulting">Turkodom Consulting</option>
+                    <option value="Kementerian / Pemerintah Uganda">Pemerintah Uganda</option>
+                    <option value="Islamic Development Bank (IsDB)">IsDB / Multilateral</option>
+                    <option value="Mitra Konsorsium Lainnya">Mitra Lainnya</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 'bold', marginBottom: '4px', color: 'var(--text-main)' }}>Negara Domisili</label>
+                  <select 
+                    value={stakeholderForm.country} 
+                    onChange={(e) => setStakeholderForm({...stakeholderForm, country: e.target.value})}
+                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-main)', fontSize: '0.85rem' }}
+                  >
+                    <option value="Indonesia 🇮🇩">Indonesia 🇮🇩</option>
+                    <option value="Uganda 🇺🇬">Uganda 🇺🇬</option>
+                    <option value="East Africa / Global 🌍">Global 🌍</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 'bold', marginBottom: '4px', color: 'var(--text-main)' }}>Jabatan / Mandat Konsorsium</label>
+                <input 
+                  type="text" 
+                  value={stakeholderForm.role} 
+                  onChange={(e) => setStakeholderForm({...stakeholderForm, role: e.target.value})}
+                  placeholder="Contoh: Senior Structural Engineer / Project Coordinator"
+                  style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-main)', fontSize: '0.85rem' }}
+                />
+              </div>
+
+              <button 
+                type="submit" 
+                disabled={isSavingStakeholder}
+                style={{ width: '100%', padding: '12px', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '10px', fontWeight: 'bold', fontSize: '0.95rem', cursor: 'pointer', marginTop: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+              >
+                <UserCheck size={16} /> {isSavingStakeholder ? 'Menyimpan & Mengotorisasi...' : 'Berikan Izin Akses'}
               </button>
             </form>
           </div>

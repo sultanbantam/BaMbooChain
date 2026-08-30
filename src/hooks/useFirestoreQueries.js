@@ -509,3 +509,16 @@ export function useUgandaProjectGallery() {
   });
 }
 
+export function useUgandaAuthorizedStakeholders() {
+  return useQuery({
+    queryKey: ['ugandaAuthorizedStakeholders'],
+    queryFn: async () => {
+      const authRef = collection(db, 'uganda_authorized_stakeholders');
+      const snapshot = await getDocs(authRef);
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    },
+    staleTime: 1000 * 60 * 3,
+  });
+}
+
+

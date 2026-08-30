@@ -9,7 +9,7 @@ import {
   TrendingUp, TrendingDown, Folder, DollarSign, Plus, FileText, Calendar, User, History, Wallet, Send, CheckCircle2, AlertCircle, XCircle, Award,
   Activity, HelpCircle, Shield
 } from 'lucide-react';
-import BackButton from '../components/BackButton';
+import { useUgandaAuthorizedStakeholders } from '../hooks/useFirestoreQueries';
 
 const ProjectsPage = () => {
   const { t, language } = useLanguage();
@@ -20,6 +20,10 @@ const ProjectsPage = () => {
   const [showLockModal, setShowLockModal] = useState(false);
   const [showConsortiumLockModal, setShowConsortiumLockModal] = useState(false);
 
+  const { data: dynamicAuthorized = [] } = useUgandaAuthorizedStakeholders();
+  const dynamicAllowedEmails = (dynamicAuthorized || []).map(s => s.email?.toLowerCase()).filter(Boolean);
+  const dynamicAllowedUsernames = (dynamicAuthorized || []).map(s => s.username?.toLowerCase() || s.identifier?.toLowerCase()).filter(Boolean);
+
   // Whitelist check for Uganda consortium stakeholders
   const allowedUsernames = [
     'admin_yayasan', 'admin', 'mukoddas', 'katama', 'sado', 
@@ -28,6 +32,8 @@ const ProjectsPage = () => {
   const isAuthorizedStakeholder = isAuthenticated && (
     allowedUsernames.includes(user?.username?.toLowerCase()) ||
     allowedUsernames.some(name => user?.email?.toLowerCase().includes(name)) ||
+    dynamicAllowedEmails.includes(user?.email?.toLowerCase()) ||
+    dynamicAllowedUsernames.includes(user?.username?.toLowerCase()) ||
     user?.consortiumRole === 'uganda_partner' ||
     user?.role === 'admin' ||
     user?.kycStatus === 'verified'
