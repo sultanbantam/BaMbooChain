@@ -56,7 +56,7 @@ const EventsPage = () => {
       location: ev.location,
       category: ev.category,
       description: ev.description,
-      image: isUganda ? getAssetUrl('event/uganda.png') : (isRevolusi ? getAssetUrl('event/ebtr.png') : (isSNAI ? getAssetUrl('event/snai.png') : (ev.image || getAssetUrl('event/placeholder.jpg')))),
+      image: isUganda ? getAssetUrl('event/banner.png') : (isRevolusi ? getAssetUrl('event/ebtr.png') : (isSNAI ? getAssetUrl('event/snai.png') : (ev.image || getAssetUrl('event/placeholder.jpg')))),
       color: '#fab005', // default color for community events
       organizer: ev.organizerName,
       speakers: isRevolusi ? [

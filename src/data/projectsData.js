@@ -224,7 +224,7 @@ export const PROJECTS = [
     fullDesc: 'Proyek konsorsium strategis trilateral antara PT Katama Suryabumi (Lead Indonesian Party), SADO Uganda (Enabling Agency), Kangker Construction International Ltd, dan PERPUBI yang terikat dalam Perjanjian Kerahasiaan (NDA) untuk pengembangan infrastruktur berkelanjutan di Uganda dan wilayah Afrika.',
     fullDesc_en: 'Trilateral strategic consortium project between PT Katama Suryabumi (Lead Indonesian Party), SADO Uganda (Enabling Agency), Kangker Construction International Ltd, and PERPUBI bound by a Non-Disclosure Agreement (NDA) for sustainable infrastructure development in Uganda and Africa.',
     fullDesc_ja: 'PT Katama Suryabumi、SADO Uganda、Kangker Construction International Ltd、PERPUBI間の秘密保持契約（NDA）に基づく、ウガンダおよびアフリカにおける持続可能なインフラ開発のための3者間戦略的コンソーシアム事業。',
-    image: '/event/uganda.png',
+    image: '/event/banner.png',
     location: 'Kampala, Uganda & Jakarta',
     location_en: 'Kampala, Uganda & Jakarta',
     location_ja: 'カンパラ（ウガンダ）＆ ジャカルタ',
