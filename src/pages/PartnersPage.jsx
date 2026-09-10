@@ -4,7 +4,7 @@ import { Users, Factory, Cpu, GraduationCap, Landmark, ArrowRight, ShieldCheck, 
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { createKnowledgeItem } from '../utils/knowledgeService';
-import { doc, getDoc } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, deleteDoc, doc, getDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { fetchTrackRecordOpenAI } from '../utils/aiTrackRecordService';
 
@@ -31,9 +31,45 @@ const PartnersPage = () => {
     setIsVisible(true);
   }, []);
 
+  // Real-time synchronization with Firebase Firestore 'bamboo_partners'
   useEffect(() => {
-    localStorage.setItem('bamboochain_user_partners', JSON.stringify(userPartners));
-  }, [userPartners]);
+    const partnersRef = collection(db, 'bamboo_partners');
+    const unsubscribe = onSnapshot(partnersRef, async (snapshot) => {
+      if (!snapshot.empty) {
+        const firestorePartners = snapshot.docs.map(docSnap => ({
+          id: docSnap.id,
+          ...docSnap.data(),
+          isUserSubmitted: true
+        }));
+        setUserPartners(firestorePartners);
+        localStorage.setItem('bamboochain_user_partners', JSON.stringify(firestorePartners));
+      } else {
+        // If Firestore is empty but localStorage has legacy submitted partners, auto-migrate to Firestore
+        const saved = localStorage.getItem('bamboochain_user_partners');
+        const localList = saved ? JSON.parse(saved) : [];
+        if (localList.length > 0) {
+          for (const item of localList) {
+            try {
+              const { id, ...cleanItem } = item;
+              await addDoc(partnersRef, {
+                ...cleanItem,
+                createdAt: serverTimestamp(),
+                isUserSubmitted: true
+              });
+            } catch (migErr) {
+              console.warn('Auto migration error:', migErr);
+            }
+          }
+        }
+      }
+    }, (error) => {
+      console.error('Error listening to bamboo_partners in Firestore:', error);
+      const saved = localStorage.getItem('bamboochain_user_partners');
+      if (saved) setUserPartners(JSON.parse(saved));
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const partnerCategories_id = [
     {
@@ -242,23 +278,30 @@ const PartnersPage = () => {
   }));
 
   const partnerCategories = [
-    ...baseCategories.map(cat => ({
-      ...cat,
-      partners: [
-        ...cat.partners,
-        ...userPartners.filter(p => p.category === cat.id).map(p => ({
-          ...p,
-          isUserSubmitted: true
-        }))
-      ]
-    })),
+    ...baseCategories.map(cat => {
+      const dynamicCatPartners = userPartners.filter(p => p.category === cat.id).map(p => ({
+        ...p,
+        isUserSubmitted: true
+      }));
+      // Filter out any static partners that have been overridden/re-added with the same name
+      const dynamicNames = new Set(dynamicCatPartners.map(p => p.name?.trim().toLowerCase()));
+      const filteredStatic = cat.partners.filter(p => !dynamicNames.has(p.name?.trim().toLowerCase()));
+
+      return {
+        ...cat,
+        partners: [
+          ...filteredStatic,
+          ...dynamicCatPartners
+        ]
+      };
+    }),
     ...(lainnyaPartners.length > 0 ? [{
       id: 'lainnya',
-      title: 'Lainnya',
+      title: language === 'en' ? 'Others' : 'Lainnya',
       icon: <Users size={32} />,
       color: '#495057',
       bgColor: 'rgba(73, 80, 87, 0.1)',
-      description: 'Mitra dari berbagai bidang dan bentuk lembaga lainnya.',
+      description: language === 'en' ? 'Partners from various other fields and institutions.' : 'Mitra dari berbagai bidang dan bentuk lembaga lainnya.',
       partners: lainnyaPartners
     }] : [])
   ];
@@ -290,12 +333,32 @@ const PartnersPage = () => {
 
   const handleEditProfile = (partner) => {
     setEditData(partner);
-    setFormData({ name: partner.name, category: partner.category || 'komunitas', categoryLainnya: partner.categoryLainnya || '', desc: partner.desc || '', file: null, fileName: partner.fileName || '', fileUrl: partner.fileUrl || '', logoFile: null, logoFileName: partner.logoFileName || '', logoUrl: partner.logoUrl || '', additionalDocs: partner.additionalDocs || [] });
+    setFormData({ 
+      name: partner.name, 
+      category: partner.category || 'komunitas', 
+      categoryLainnya: partner.categoryLainnya || '', 
+      desc: partner.desc || '', 
+      file: null, 
+      fileName: partner.fileName || '', 
+      fileUrl: partner.fileUrl || '', 
+      logoFile: null, 
+      logoFileName: partner.logoFileName || '', 
+      logoUrl: partner.logoUrl || '', 
+      additionalDocs: partner.additionalDocs || [] 
+    });
     setIsEditing(true);
   };
 
-  const handleDeleteProfile = (partnerId) => {
-    if (window.confirm('Apakah Anda yakin ingin menghapus mitra ini?')) {
+  const handleDeleteProfile = async (partnerId) => {
+    if (!window.confirm('Apakah Anda yakin ingin menghapus mitra ini?')) return;
+    try {
+      if (partnerId) {
+        await deleteDoc(doc(db, 'bamboo_partners', partnerId));
+      }
+      setUserPartners(prev => prev.filter(p => p.id !== partnerId));
+      alert('Mitra berhasil dihapus!');
+    } catch (err) {
+      console.error('Error deleting partner:', err);
       setUserPartners(prev => prev.filter(p => p.id !== partnerId));
     }
   };
@@ -319,13 +382,31 @@ const PartnersPage = () => {
         }
       }
 
-      if (editData?.isUserSubmitted) {
-        setUserPartners(prev => prev.map(p => 
-          p.id === editData.id ? { ...p, name: formData.name, category: formData.category, categoryLainnya: formData.categoryLainnya, desc: formData.desc, fileName: formData.fileName, fileUrl: formData.fileUrl, logoFileName: formData.logoFileName, logoUrl: finalLogoUrl, additionalDocs: uploadedDocs } : p
-        ));
+      const partnerPayload = {
+        name: formData.name,
+        category: formData.category,
+        categoryLainnya: formData.categoryLainnya || '',
+        desc: formData.desc,
+        fileName: formData.fileName || '',
+        fileUrl: formData.fileUrl || '',
+        logoFileName: formData.logoFileName || '',
+        logoUrl: finalLogoUrl || '',
+        additionalDocs: uploadedDocs,
+        updatedAt: serverTimestamp(),
+        isUserSubmitted: true
+      };
+
+      if (editData?.id && editData?.isUserSubmitted) {
+        await updateDoc(doc(db, 'bamboo_partners', editData.id), partnerPayload);
+      } else {
+        partnerPayload.userId = user?.id || 'guest';
+        partnerPayload.userName = user?.username || 'User';
+        partnerPayload.createdAt = serverTimestamp();
+        await addDoc(collection(db, 'bamboo_partners'), partnerPayload);
       }
+
       setIsEditing(false);
-      alert(t('partners_alert_saved') || 'Tersimpan!');
+      alert(t('partners_alert_saved') || 'Profil mitra berhasil disimpan dan disinkronkan ke semua pengguna!');
     } catch (err) {
       console.error(err);
       alert('Gagal menyimpan profil: ' + err.message);
@@ -434,41 +515,53 @@ const PartnersPage = () => {
 
       const finalCategory = formData.category === 'lainnya' ? formData.categoryLainnya : formData.category;
       
-      const docRef = await createKnowledgeItem({
-        form: {
-          title: formData.name,
-          type: 'Mitra',
-          summary: formData.desc,
-          extractedText: formData.desc,
-          tags: 'Mitra, ' + finalCategory,
-        },
-        file: formData.file,
-        user: user,
-      });
+      let fileUrl = '';
+      try {
+        const docRef = await createKnowledgeItem({
+          form: {
+            title: formData.name,
+            type: 'Mitra',
+            summary: formData.desc,
+            extractedText: formData.desc,
+            tags: 'Mitra, ' + finalCategory,
+          },
+          file: formData.file,
+          user: user,
+        });
 
-      // Fetch newly created doc to get fileUrl
-      const docSnap = await getDoc(doc(db, 'knowledge_items', docRef.id));
-      const fileUrl = docSnap.exists() ? docSnap.data().fileUrl : '';
+        // Fetch newly created doc to get fileUrl
+        const docSnap = await getDoc(doc(db, 'knowledge_items', docRef.id));
+        fileUrl = docSnap.exists() ? docSnap.data().fileUrl : '';
+      } catch (kErr) {
+        console.warn('Knowledge item integration error:', kErr);
+      }
+
+      // If fileUrl still empty and file exists, upload to cloudinary
+      if (!fileUrl && formData.file) {
+        fileUrl = await uploadToCloudinary(formData.file);
+      }
 
       const newPartner = {
-        id: docRef.id,
-        userId: user.id,
+        userId: user?.id || 'guest',
+        userName: user?.username || 'User',
         name: formData.name,
         category: formData.category,
-        categoryLainnya: formData.categoryLainnya,
+        categoryLainnya: formData.categoryLainnya || '',
         desc: formData.desc,
         fileName: formData.fileName,
         fileUrl: fileUrl,
         logoFileName: formData.logoFileName,
         logoUrl: finalLogoUrl,
         additionalDocs: uploadedDocs,
-        createdAt: new Date().toISOString(),
+        createdAt: serverTimestamp(),
         isUserSubmitted: true
       };
       
-      setUserPartners(prev => [...prev, newPartner]);
+      // Save directly to Firestore collection 'bamboo_partners' for global real-time synchronization
+      await addDoc(collection(db, 'bamboo_partners'), newPartner);
+
       setIsRegistering(false);
-      alert('Pendaftaran mitra berhasil disubmit dan data telah terintegrasi ke sistem Bambupedia!');
+      alert('Pendaftaran mitra berhasil disubmit dan dapat langsung dilihat oleh semua pengguna!');
     } catch (err) {
       console.error(err);
       alert('Gagal mendaftarkan mitra: ' + err.message);
@@ -476,6 +569,13 @@ const PartnersPage = () => {
       setIsUploading(false);
     }
   };
+
+  const isUserAdmin = isAuthenticated && (
+    user?.role === 'admin' || 
+    user?.username === 'admin_yayasan' || 
+    user?.username === 'admin' ||
+    user?.email?.toLowerCase().includes('admin')
+  );
 
   return (
     <div style={{ paddingTop: '150px', paddingBottom: '100px', minHeight: '100vh', background: '#f8f9fa' }}>
@@ -542,7 +642,7 @@ const PartnersPage = () => {
                         style={{ background: 'white', border: `1px solid ${category.color}`, color: category.color, padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 'bold' }}>
                         {t('partners_btn_view')}
                       </button>
-                      {partner.isUserSubmitted && isAuthenticated && partner.userId === user?.id ? (
+                      {partner.isUserSubmitted && isAuthenticated && (partner.userId === user?.id || isUserAdmin) ? (
                         <>
                           <button 
                             onClick={() => handleEditProfile(partner)}
@@ -556,7 +656,7 @@ const PartnersPage = () => {
                           </button>
                         </>
                       ) : (
-                        isAuthenticated && (user?.role === 'partner' || user?.email?.includes('admin')) && (
+                        isAuthenticated && (user?.role === 'partner' || isUserAdmin) && (
                           <button 
                             onClick={() => handleEditProfile(partner)}
                             style={{ background: category.color, border: 'none', color: 'white', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 'bold' }}>
