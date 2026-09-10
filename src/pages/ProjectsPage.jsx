@@ -10,6 +10,7 @@ import {
   Activity, HelpCircle, Shield
 } from 'lucide-react';
 import { useUgandaAuthorizedStakeholders } from '../hooks/useFirestoreQueries';
+import BackButton from '../components/BackButton';
 
 const ProjectsPage = () => {
   const { t, language } = useLanguage();
