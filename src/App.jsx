@@ -7,83 +7,106 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
 
-// Lazy-loaded pages
-const AboutPage = lazy(() => import('./pages/AboutPage'));
-const ProjectsPage = lazy(() => import('./pages/ProjectsPage'));
-const InsightPage = lazy(() => import('./pages/InsightPage'));
-const ImpactPage = lazy(() => import('./pages/ImpactPage'));
-const ContactPage = lazy(() => import('./pages/ContactPage'));
-const PartnersPage = lazy(() => import('./pages/PartnersPage'));
-const DisclaimerPage = lazy(() => import('./pages/DisclaimerPage'));
-const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicyPage'));
-const TermsOfServicePage = lazy(() => import('./pages/TermsOfServicePage'));
-const TransparencyPage = lazy(() => import('./pages/TransparencyPage'));
-const ProfilePage = lazy(() => import('./pages/ProfilePage'));
-const MembershipPage = lazy(() => import('./pages/MembershipPage'));
-const AcademyPage = lazy(() => import('./pages/AcademyPage'));
-const DataToolsPage = lazy(() => import('./pages/DataToolsPage'));
-const CommunityPage = lazy(() => import('./pages/CommunityPage'));
-const WanipiroPage = lazy(() => import('./pages/WanipiroPage'));
-const BambupediaPage = lazy(() => import('./pages/bambupedia/Index'));
-const BambupediaTracker = lazy(() => import('./pages/bambupedia/Tracker'));
-const BambupediaPlant = lazy(() => import('./pages/bambupedia/Plant'));
-const BambupediaPlantPast = lazy(() => import('./pages/bambupedia/PlantPast'));
-const BambupediaMaintain = lazy(() => import('./pages/bambupedia/Maintain'));
-const BambupediaHarvest = lazy(() => import('./pages/bambupedia/Harvest'));
-const BambupediaUtilize = lazy(() => import('./pages/bambupedia/Utilize'));
-const BambupediaCultivate = lazy(() => import('./pages/bambupedia/Cultivate'));
-const BambupediaTaxonomy = lazy(() => import('./pages/bambupedia/TaxonomyAnalysis'));
-const BambupediaHistory = lazy(() => import('./pages/bambupedia/History'));
-const BambupediaKnowledge = lazy(() => import('./pages/bambupedia/KnowledgePage'));
-const BambooBotPage = lazy(() => import('./pages/bambupedia/BambooBotPage'));
-const KnowledgeAdminPage = lazy(() => import('./pages/bambupedia/KnowledgeAdminPage'));
-const CareersPage = lazy(() => import('./pages/CareersPage'));
-const EventOrganizerPage = lazy(() => import('./pages/EventOrganizerPage'));
+// Helper for resilient lazy loading that handles chunk mismatches after deployments
+const lazyWithRetry = (componentImport) =>
+  lazy(async () => {
+    const pageHasAlreadyBeenForceRefreshed = JSON.parse(
+      window.sessionStorage.getItem('page-has-been-force-refreshed') || 'false'
+    );
+
+    try {
+      const component = await componentImport();
+      window.sessionStorage.setItem('page-has-been-force-refreshed', 'false');
+      return component;
+    } catch (error) {
+      console.warn("Chunk load mismatch detected, auto-recovering latest version...", error);
+      if (!pageHasAlreadyBeenForceRefreshed) {
+        window.sessionStorage.setItem('page-has-been-force-refreshed', 'true');
+        window.location.reload();
+        return { default: () => null };
+      }
+      throw error;
+    }
+  });
+
+// Lazy-loaded pages with resilient auto-retry
+const AboutPage = lazyWithRetry(() => import('./pages/AboutPage'));
+const ProjectsPage = lazyWithRetry(() => import('./pages/ProjectsPage'));
+const InsightPage = lazyWithRetry(() => import('./pages/InsightPage'));
+const ImpactPage = lazyWithRetry(() => import('./pages/ImpactPage'));
+const ContactPage = lazyWithRetry(() => import('./pages/ContactPage'));
+const PartnersPage = lazyWithRetry(() => import('./pages/PartnersPage'));
+const DisclaimerPage = lazyWithRetry(() => import('./pages/DisclaimerPage'));
+const PrivacyPolicyPage = lazyWithRetry(() => import('./pages/PrivacyPolicyPage'));
+const TermsOfServicePage = lazyWithRetry(() => import('./pages/TermsOfServicePage'));
+const TransparencyPage = lazyWithRetry(() => import('./pages/TransparencyPage'));
+const ProfilePage = lazyWithRetry(() => import('./pages/ProfilePage'));
+const MembershipPage = lazyWithRetry(() => import('./pages/MembershipPage'));
+const AcademyPage = lazyWithRetry(() => import('./pages/AcademyPage'));
+const DataToolsPage = lazyWithRetry(() => import('./pages/DataToolsPage'));
+const CommunityPage = lazyWithRetry(() => import('./pages/CommunityPage'));
+const WanipiroPage = lazyWithRetry(() => import('./pages/WanipiroPage'));
+const BambupediaPage = lazyWithRetry(() => import('./pages/bambupedia/Index'));
+const BambupediaTracker = lazyWithRetry(() => import('./pages/bambupedia/Tracker'));
+const BambupediaPlant = lazyWithRetry(() => import('./pages/bambupedia/Plant'));
+const BambupediaPlantPast = lazyWithRetry(() => import('./pages/bambupedia/PlantPast'));
+const BambupediaMaintain = lazyWithRetry(() => import('./pages/bambupedia/Maintain'));
+const BambupediaHarvest = lazyWithRetry(() => import('./pages/bambupedia/Harvest'));
+const BambupediaUtilize = lazyWithRetry(() => import('./pages/bambupedia/Utilize'));
+const BambupediaCultivate = lazyWithRetry(() => import('./pages/bambupedia/Cultivate'));
+const BambupediaTaxonomy = lazyWithRetry(() => import('./pages/bambupedia/TaxonomyAnalysis'));
+const BambupediaHistory = lazyWithRetry(() => import('./pages/bambupedia/History'));
+const BambupediaKnowledge = lazyWithRetry(() => import('./pages/bambupedia/KnowledgePage'));
+const BambooBotPage = lazyWithRetry(() => import('./pages/bambupedia/BambooBotPage'));
+const KnowledgeAdminPage = lazyWithRetry(() => import('./pages/bambupedia/KnowledgeAdminPage'));
+const CareersPage = lazyWithRetry(() => import('./pages/CareersPage'));
+const EventOrganizerPage = lazyWithRetry(() => import('./pages/EventOrganizerPage'));
 
 // BambooChain Modules
-const BcOverviewPage = lazy(() => import('./pages/bamboochain/OverviewPage'));
-const BcPlantationPage = lazy(() => import('./pages/bamboochain/PlantationPage'));
-const BcSupplyChainPage = lazy(() => import('./pages/bamboochain/SupplyChainPage'));
-const BcBuildPage = lazy(() => import('./pages/bamboochain/BuildPage'));
-const BcTokenWalletPage = lazy(() => import('./pages/bamboochain/TokenWalletPage'));
-const BcCarbonImpactPage = lazy(() => import('./pages/bamboochain/CarbonImpactPage'));
-const BcMarketplacePage = lazy(() => import('./pages/bamboochain/MarketplacePage'));
-const BcDaoCommunityPage = lazy(() => import('./pages/bamboochain/DaoCommunityPage'));
-const BcAcademyPage = lazy(() => import('./pages/bamboochain/AcademyPage'));
-const BcDataAnalyticsPage = lazy(() => import('./pages/bamboochain/DataAnalyticsPage'));
-const BcInvestEcosystemPage = lazy(() => import('./pages/bamboochain/InvestEcosystemPage'));
-const BcValidatorDashboardPage = lazy(() => import('./pages/bamboochain/ValidatorDashboardPage'));
-const BcCentralValidatorDashboard = lazy(() => import('./pages/bamboochain/CentralValidatorDashboard'));
-const ActivityLogPage = lazy(() => import('./pages/bamboochain/ActivityLogPage'));
-const WhitepaperPage = lazy(() => import('./pages/bamboochain/WhitepaperPage'));
-const PreOrderPage = lazy(() => import('./pages/bamboochain/PreOrderPage'));
-const KoDiBaPage = lazy(() => import('./pages/kodiba/KoDiBaPage'));
-const EventsPage = lazy(() => import('./pages/community/EventsPage'));
-const FAQPage = lazy(() => import('./pages/FAQPage'));
-const AdSpace = lazy(() => import('./components/AdSpace'));
-const CareCenterWidget = lazy(() => import('./components/CareCenterWidget'));
-const BambooMeetingPage = lazy(() => import('./pages/bamboochain/BambooMeetingPage'));
-const BcVolunteersPage = lazy(() => import('./pages/bamboochain/VolunteersPage'));
-const BcVolunteerDetailPage = lazy(() => import('./pages/bamboochain/VolunteerDetailPage'));
+const BcOverviewPage = lazyWithRetry(() => import('./pages/bamboochain/OverviewPage'));
+const BcPlantationPage = lazyWithRetry(() => import('./pages/bamboochain/PlantationPage'));
+const BcSupplyChainPage = lazyWithRetry(() => import('./pages/bamboochain/SupplyChainPage'));
+const BcBuildPage = lazyWithRetry(() => import('./pages/bamboochain/BuildPage'));
+const BcTokenWalletPage = lazyWithRetry(() => import('./pages/bamboochain/TokenWalletPage'));
+const BcCarbonImpactPage = lazyWithRetry(() => import('./pages/bamboochain/CarbonImpactPage'));
+const BcMarketplacePage = lazyWithRetry(() => import('./pages/bamboochain/MarketplacePage'));
+const BcDaoCommunityPage = lazyWithRetry(() => import('./pages/bamboochain/DaoCommunityPage'));
+const BcAcademyPage = lazyWithRetry(() => import('./pages/bamboochain/AcademyPage'));
+const BcDataAnalyticsPage = lazyWithRetry(() => import('./pages/bamboochain/DataAnalyticsPage'));
+const BcInvestEcosystemPage = lazyWithRetry(() => import('./pages/bamboochain/InvestEcosystemPage'));
+const BcValidatorDashboardPage = lazyWithRetry(() => import('./pages/bamboochain/ValidatorDashboardPage'));
+const BcCentralValidatorDashboard = lazyWithRetry(() => import('./pages/bamboochain/CentralValidatorDashboard'));
+const ActivityLogPage = lazyWithRetry(() => import('./pages/bamboochain/ActivityLogPage'));
+const WhitepaperPage = lazyWithRetry(() => import('./pages/bamboochain/WhitepaperPage'));
+const PreOrderPage = lazyWithRetry(() => import('./pages/bamboochain/PreOrderPage'));
+const KoDiBaPage = lazyWithRetry(() => import('./pages/kodiba/KoDiBaPage'));
+const EventsPage = lazyWithRetry(() => import('./pages/community/EventsPage'));
+const FAQPage = lazyWithRetry(() => import('./pages/FAQPage'));
+const AdSpace = lazyWithRetry(() => import('./components/AdSpace'));
+const CareCenterWidget = lazyWithRetry(() => import('./components/CareCenterWidget'));
+const BambooMeetingPage = lazyWithRetry(() => import('./pages/bamboochain/BambooMeetingPage'));
+const BcVolunteersPage = lazyWithRetry(() => import('./pages/bamboochain/VolunteersPage'));
+const BcVolunteerDetailPage = lazyWithRetry(() => import('./pages/bamboochain/VolunteerDetailPage'));
 
 // bambuNUSA Modules
-const FarmerListPage = lazy(() => import('./pages/bambunusa/FarmerListPage'));
-const JoinFarmerPage = lazy(() => import('./pages/bambunusa/JoinFarmerPage'));
-const JoinValidatorPage = lazy(() => import('./pages/bambunusa/JoinValidatorPage'));
-const BcLifecyclePage = lazy(() => import('./pages/bambunusa/LifecyclePage'));
-const AdminPortalPage = lazy(() => import('./pages/AdminPortalPage'));
-const TobatEkologiDashboard = lazy(() => import('./pages/bamboochain/TobatEkologiDashboard'));
+const FarmerListPage = lazyWithRetry(() => import('./pages/bambunusa/FarmerListPage'));
+const JoinFarmerPage = lazyWithRetry(() => import('./pages/bambunusa/JoinFarmerPage'));
+const JoinValidatorPage = lazyWithRetry(() => import('./pages/bambunusa/JoinValidatorPage'));
+const BcLifecyclePage = lazyWithRetry(() => import('./pages/bambunusa/LifecyclePage'));
+const AdminPortalPage = lazyWithRetry(() => import('./pages/AdminPortalPage'));
+const TobatEkologiDashboard = lazyWithRetry(() => import('./pages/bamboochain/TobatEkologiDashboard'));
 
 import ScrollToTop from './components/ScrollToTop';
 import GlobalToast from './components/GlobalToast';
 import SocialInteractions from './components/SocialInteractions';
 import PushNotificationModal from './components/PushNotificationModal';
 
-const PublicPortfolioPage = lazy(() => import('./pages/PublicPortfolioPage'));
-const AuthorizePage = lazy(() => import('./pages/AuthorizePage'));
-const SettingsPage = lazy(() => import('./pages/SettingsPage'));
-const LoginPage = lazy(() => import('./pages/LoginPage'));
-const UgandaProjectDashboard = lazy(() => import('./pages/consortium/UgandaProjectDashboard'));
+const PublicPortfolioPage = lazyWithRetry(() => import('./pages/PublicPortfolioPage'));
+const AuthorizePage = lazyWithRetry(() => import('./pages/AuthorizePage'));
+const SettingsPage = lazyWithRetry(() => import('./pages/SettingsPage'));
+const LoginPage = lazyWithRetry(() => import('./pages/LoginPage'));
+const UgandaProjectDashboard = lazyWithRetry(() => import('./pages/consortium/UgandaProjectDashboard'));
+
 const PageLoader = () => (
   <div style={{
     display: 'flex',
@@ -321,7 +344,7 @@ function App() {
         <Footer />
         <AuthModal />
         <CareCenterWidget />
-        <div id="version-debug" style={{ fontSize: '10px', opacity: 0.3, textAlign: 'center', padding: '10px' }}>Build v1.0.8-ThemeFix</div>
+        <div id="version-debug" style={{ fontSize: '10px', opacity: 0.3, textAlign: 'center', padding: '10px' }}>Build v1.0.9-InstantLoad</div>
         <GlobalToast />
         <PushNotificationModal />
       </div>
