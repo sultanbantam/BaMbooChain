@@ -4,8 +4,72 @@ import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { eventsData, featuredEventData } from '../utils/eventsData';
 import { uploadSpeakerMaterial, useSpeakerMaterials, useCommunityEvents, createCommunityEvent, updateCommunityEventStatus } from '../hooks/useFirestoreQueries';
-import { FileUp, CheckCircle, Upload, AlertCircle, Plus, Calendar, Clock, MapPin, Loader, Image as ImageIcon, X, Download, FileText } from 'lucide-react';
+import { FileUp, CheckCircle, Upload, AlertCircle, Plus, Calendar, Clock, MapPin, Loader, Image as ImageIcon, X, Download, FileText, Link as LinkIcon, Sparkles } from 'lucide-react';
 import BackButton from '../components/BackButton';
+
+// Helper: Auto-compress image in the browser (HTML5 Canvas)
+const compressImage = (file, maxWidth = 1200, maxHeight = 800, quality = 0.75) => {
+  return new Promise((resolve) => {
+    if (!file.type.startsWith('image/')) {
+      return resolve({ blob: file, dataUrl: null, originalSize: file.size, compressedSize: file.size });
+    }
+
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target.result;
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+        if (height > maxHeight) {
+          width = Math.round((width * maxHeight) / height);
+          height = maxHeight;
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+        canvas.toBlob(
+          (blob) => {
+            const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
+              type: 'image/jpeg',
+              lastModified: Date.now(),
+            });
+            resolve({
+              blob: compressedFile,
+              dataUrl: compressedDataUrl,
+              originalSize: file.size,
+              compressedSize: compressedFile.size
+            });
+          },
+          'image/jpeg',
+          quality
+        );
+      };
+      img.onerror = () => resolve({ blob: file, dataUrl: event.target.result, originalSize: file.size, compressedSize: file.size });
+    };
+    reader.onerror = () => resolve({ blob: file, dataUrl: null, originalSize: file.size, compressedSize: file.size });
+  });
+};
+
+const formatFileSize = (bytes) => {
+  if (!bytes) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+};
 
 const EventOrganizerPage = () => {
   const { user } = useAuth();
@@ -36,8 +100,11 @@ const EventOrganizerPage = () => {
   });
 
   const [bannerPreview, setBannerPreview] = useState(null);
+  const [bannerCompressionInfo, setBannerCompressionInfo] = useState(null);
   const [isUploadingBanner, setIsUploadingBanner] = useState(false);
   const [isUploadingMaterial, setIsUploadingMaterial] = useState(false);
+  const [materialUploadSuccess, setMaterialUploadSuccess] = useState(false);
+  const [customMaterialLink, setCustomMaterialLink] = useState('');
 
   // -- SPEAKER STATE --
   const [myEvents, setMyEvents] = useState([]);
@@ -71,21 +138,32 @@ const EventOrganizerPage = () => {
     }
   }, [user, isAdmin]);
 
-  // Upload image to Cloudinary or fallback to Base64
+  // Upload & auto-compress banner image
   const handleBannerFileChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 10 * 1024 * 1024) {
-      setErrorMsg("Ukuran banner maksimal 10MB");
-      return;
-    }
 
     setIsUploadingBanner(true);
+    setErrorMsg('');
+
     try {
+      // 1. Auto-compress client-side in the browser
+      const { blob: compressedBlob, dataUrl, originalSize, compressedSize } = await compressImage(file, 1200, 800, 0.75);
+      
+      setBannerCompressionInfo({
+        original: formatFileSize(originalSize),
+        compressed: formatFileSize(compressedSize),
+        ratio: Math.round(((originalSize - compressedSize) / originalSize) * 100)
+      });
+
+      // 2. Set instant local preview
+      setBannerPreview(dataUrl);
+
+      // 3. Upload compressed image to Cloudinary
       const cloudName = "dsieguutz";
       const uploadPreset = "bamboochain_upload";
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', compressedBlob);
       formData.append('upload_preset', uploadPreset);
       
       const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
@@ -95,40 +173,35 @@ const EventOrganizerPage = () => {
 
       if (res.ok) {
         const data = await res.json();
-        setBannerPreview(data.secure_url);
         setNewEvent(prev => ({ ...prev, image: data.secure_url }));
       } else {
-        // Fallback to local DataURL
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          setBannerPreview(ev.target.result);
-          setNewEvent(prev => ({ ...prev, image: ev.target.result }));
-        };
-        reader.readAsDataURL(file);
+        // Safe fallback: compressed dataUrl is only ~80-150KB
+        setNewEvent(prev => ({ ...prev, image: dataUrl }));
       }
     } catch (err) {
-      // Fallback to local DataURL
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        setBannerPreview(ev.target.result);
-        setNewEvent(prev => ({ ...prev, image: ev.target.result }));
-      };
-      reader.readAsDataURL(file);
+      console.warn("Cloudinary upload fallback:", err);
+      // Even in fallback, image is already compressed
+      const { dataUrl } = await compressImage(file, 1200, 800, 0.75);
+      setNewEvent(prev => ({ ...prev, image: dataUrl }));
     } finally {
       setIsUploadingBanner(false);
     }
   };
 
-  // Upload presentation material to Cloudinary or DataURL
+  // Upload presentation material
   const handleMaterialFileChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 25 * 1024 * 1024) {
-      setErrorMsg("Ukuran materi presentasi maksimal 25MB");
+
+    if (file.size > 30 * 1024 * 1024) {
+      setErrorMsg("Ukuran file materi maksimal 30MB.");
       return;
     }
 
     setIsUploadingMaterial(true);
+    setMaterialUploadSuccess(false);
+    setErrorMsg('');
+
     try {
       const cloudName = "dsieguutz";
       const uploadPreset = "bamboochain_upload";
@@ -136,10 +209,19 @@ const EventOrganizerPage = () => {
       formData.append('file', file);
       formData.append('upload_preset', uploadPreset);
       
-      const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, {
+      // Try Cloudinary auto upload endpoint
+      let res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, {
         method: 'POST',
         body: formData
       });
+
+      // Try raw endpoint if auto fails
+      if (!res.ok) {
+        res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/raw/upload`, {
+          method: 'POST',
+          body: formData
+        });
+      }
 
       if (res.ok) {
         const data = await res.json();
@@ -148,7 +230,32 @@ const EventOrganizerPage = () => {
           materialUrl: data.secure_url,
           materialName: file.name
         }));
+        setMaterialUploadSuccess(true);
       } else {
+        // If Cloudinary fails, check file size for safe storage
+        if (file.size <= 500 * 1024) {
+          // Under 500KB can safely be stored as DataURL
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            setNewEvent(prev => ({ 
+              ...prev, 
+              materialUrl: ev.target.result,
+              materialName: file.name
+            }));
+            setMaterialUploadSuccess(true);
+          };
+          reader.readAsDataURL(file);
+        } else {
+          // File is too big for direct Base64 Firestore document limit
+          setErrorMsg(`File "${file.name}" (${formatFileSize(file.size)}) terlalu besar untuk disimpan langsung di basis data tanpa Cloud Storage. Silakan masukkan tautan Google Drive / Dropbox di kolom link materi.`);
+          setNewEvent(prev => ({
+            ...prev,
+            materialName: file.name
+          }));
+        }
+      }
+    } catch (err) {
+      if (file.size <= 500 * 1024) {
         const reader = new FileReader();
         reader.onload = (ev) => {
           setNewEvent(prev => ({ 
@@ -156,19 +263,12 @@ const EventOrganizerPage = () => {
             materialUrl: ev.target.result,
             materialName: file.name
           }));
+          setMaterialUploadSuccess(true);
         };
         reader.readAsDataURL(file);
+      } else {
+        setErrorMsg(`Gagal mengunggah file ke cloud. Silakan tempelkan link Google Drive / Dokumen materi di kolom link di bawah.`);
       }
-    } catch (err) {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        setNewEvent(prev => ({ 
-          ...prev, 
-          materialUrl: ev.target.result,
-          materialName: file.name
-        }));
-      };
-      reader.readAsDataURL(file);
     } finally {
       setIsUploadingMaterial(false);
     }
@@ -188,17 +288,33 @@ const EventOrganizerPage = () => {
       ? `${newEvent.startTime} - ${newEvent.endTime} WIB`
       : (newEvent.time || '09:00 - 16:00 WIB');
 
+    // Use custom material link if provided
+    const finalMaterialUrl = customMaterialLink.trim() || newEvent.materialUrl;
+
+    // Safety check: ensure payload does not exceed Firestore limits (< 800KB)
+    const eventPayload = {
+      ...newEvent,
+      materialUrl: finalMaterialUrl,
+      date: formattedDate,
+      time: formattedTime,
+      organizerId: user.id,
+      organizerName: user.name || user.username
+    };
+
+    const payloadSize = JSON.stringify(eventPayload).length;
+    if (payloadSize > 800 * 1024) {
+      setIsSubmitting(false);
+      setErrorMsg(`Ukuran data acara (${formatFileSize(payloadSize)}) melebihi batas simpan database. Gunakan tautan Google Drive untuk materi besar.`);
+      return;
+    }
+
     try {
-      await createCommunityEvent({
-        ...newEvent,
-        date: formattedDate,
-        time: formattedTime,
-        organizerId: user.id,
-        organizerName: user.name || user.username
-      });
+      await createCommunityEvent(eventPayload);
       setSuccessMsg("Acara berhasil dibuat dan banner otomatis terpasang di Kalender Event!");
       setShowCreateForm(false);
       setBannerPreview(null);
+      setBannerCompressionInfo(null);
+      setCustomMaterialLink('');
       setNewEvent({
         title: '',
         startDate: '',
@@ -216,7 +332,8 @@ const EventOrganizerPage = () => {
       });
       refetchCommunityEvents();
     } catch (error) {
-      setErrorMsg(error.message);
+      console.error("Error creating event:", error);
+      setErrorMsg(error.message || "Gagal membuat acara. Silakan periksa koneksi atau ukuran berkas.");
     } finally {
       setIsSubmitting(false);
     }
@@ -236,7 +353,7 @@ const EventOrganizerPage = () => {
     e.preventDefault();
     const file = type === 'cv' ? cvFile : materialFile;
     if (!file) return setErrorMsg("Pilih file terlebih dahulu.");
-    if (file.size > 25 * 1024 * 1024) return setErrorMsg("Maksimal 25MB.");
+    if (file.size > 30 * 1024 * 1024) return setErrorMsg("Maksimal 30MB.");
 
     setIsUploading(true);
     setErrorMsg(''); setSuccessMsg('');
@@ -254,7 +371,7 @@ const EventOrganizerPage = () => {
       setTimeout(() => setUploadProgress(0), 2000);
     } catch (err) {
       clearInterval(progressInterval);
-      setErrorMsg(err.message || "Gagal mengunggah file.");
+      setErrorMsg(err.message || "Gagal mengunggah file ke cloud.");
     } finally {
       setIsUploading(false);
     }
@@ -300,8 +417,19 @@ const EventOrganizerPage = () => {
             <button style={styles.tabBtn(activeTab === 'speaker')} onClick={() => { setActiveTab('speaker'); setErrorMsg(''); setSuccessMsg(''); }}>Materi Narasumber</button>
           </div>
 
-          {errorMsg && <div style={{ backgroundColor: 'rgba(224, 49, 49, 0.1)', border: '1px solid #e03131', padding: '15px', borderRadius: '8px', marginBottom: '20px', color: '#ffc9c9' }}>{errorMsg}</div>}
-          {successMsg && <div style={{ backgroundColor: 'rgba(43, 138, 62, 0.1)', border: '1px solid #2b8a3e', padding: '15px', borderRadius: '8px', marginBottom: '20px', color: '#d3f9d8' }}>{successMsg}</div>}
+          {errorMsg && (
+            <div style={{ backgroundColor: 'rgba(224, 49, 49, 0.15)', border: '1px solid #e03131', padding: '15px', borderRadius: '8px', marginBottom: '20px', color: '#ffc9c9', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <AlertCircle size={20} color="#ff8787" style={{ flexShrink: 0 }} />
+              <div>{errorMsg}</div>
+            </div>
+          )}
+          
+          {successMsg && (
+            <div style={{ backgroundColor: 'rgba(43, 138, 62, 0.15)', border: '1px solid #2b8a3e', padding: '15px', borderRadius: '8px', marginBottom: '20px', color: '#d3f9d8', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <CheckCircle size={20} color="#51cf66" style={{ flexShrink: 0 }} />
+              <div>{successMsg}</div>
+            </div>
+          )}
 
           {activeTab === 'organizer' && (
             <div>
@@ -438,17 +566,25 @@ const EventOrganizerPage = () => {
                     </div>
                   </div>
 
-                  {/* 3. Upload Banner (Otomatis tampil di Kalender Event) */}
+                  {/* 3. Upload Banner (Otomatis Kompres & Tampil di Kalender Event) */}
                   <div style={{ marginBottom: '15px' }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '6px', color: '#adb5bd' }}>
-                      <ImageIcon size={14} color="#51cf66"/> Upload Banner / Poster Acara (Otomatis tampil di Kalender Event)
-                    </label>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 'bold', color: '#adb5bd' }}>
+                        <ImageIcon size={14} color="#51cf66"/> Upload Banner / Poster Acara
+                      </label>
+                      {bannerCompressionInfo && (
+                        <span style={{ fontSize: '0.75rem', color: '#51cf66', display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: 'rgba(81, 207, 102, 0.1)', padding: '2px 8px', borderRadius: '6px' }}>
+                          <Sparkles size={12} /> Auto-Kompres: {bannerCompressionInfo.original} → {bannerCompressionInfo.compressed} (-{bannerCompressionInfo.ratio}%)
+                        </span>
+                      )}
+                    </div>
+
                     {bannerPreview ? (
                       <div style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden', border: '1px solid #444', maxHeight: '200px' }}>
                         <img src={bannerPreview} alt="Banner Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         <button 
                           type="button" 
-                          onClick={() => { setBannerPreview(null); setNewEvent(p => ({ ...p, image: '' })); }}
+                          onClick={() => { setBannerPreview(null); setBannerCompressionInfo(null); setNewEvent(p => ({ ...p, image: '' })); }}
                           style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '50%', color: 'white', padding: '4px', cursor: 'pointer' }}
                         >
                           <X size={16} />
@@ -456,9 +592,18 @@ const EventOrganizerPage = () => {
                       </div>
                     ) : (
                       <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: '2px dashed #444', borderRadius: '8px', padding: '20px', backgroundColor: '#111', cursor: 'pointer', transition: 'border 0.2s' }}>
-                        <Upload size={24} color="#666" style={{ marginBottom: '6px' }} />
-                        <span style={{ fontSize: '0.85rem', color: '#adb5bd' }}>{isUploadingBanner ? 'Mengunggah banner...' : 'Klik untuk Upload Poster / Banner Acara'}</span>
-                        <span style={{ fontSize: '0.75rem', color: '#666', marginTop: '2px' }}>JPG, PNG, WEBP (Rekomendasi 1200x675 px)</span>
+                        {isUploadingBanner ? (
+                          <>
+                            <Loader className="animate-spin" size={24} color="#51cf66" style={{ marginBottom: '6px' }} />
+                            <span style={{ fontSize: '0.85rem', color: '#51cf66' }}>Mengompres & memproses banner...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Upload size={24} color="#666" style={{ marginBottom: '6px' }} />
+                            <span style={{ fontSize: '0.85rem', color: '#adb5bd' }}>Klik untuk Upload Poster / Banner Acara</span>
+                            <span style={{ fontSize: '0.75rem', color: '#666', marginTop: '2px' }}>JPG, PNG, WEBP (Otomatis dikompres & dioptimasi)</span>
+                          </>
+                        )}
                         <input type="file" accept="image/*" onChange={handleBannerFileChange} style={{ display: 'none' }} />
                       </label>
                     )}
@@ -467,21 +612,41 @@ const EventOrganizerPage = () => {
                   {/* 4. Upload Materi Presentasi Narasumber */}
                   <div style={{ marginBottom: '15px' }}>
                     <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '6px', color: '#adb5bd' }}>
-                      <FileText size={14} color="#51cf66"/> Upload Materi Presentasi Narasumber (Opsional)
+                      <FileText size={14} color="#51cf66"/> Materi Presentasi Narasumber (Opsional)
                     </label>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    
+                    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
                       <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '10px 16px', background: '#111', border: '1px solid #444', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', color: 'white' }}>
-                        <Upload size={14} /> {isUploadingMaterial ? 'Mengunggah...' : 'Pilih File (PDF / PPTX)'}
+                        <Upload size={14} /> {isUploadingMaterial ? 'Mengunggah ke Cloud...' : 'Pilih File (PDF / PPTX)'}
                         <input type="file" accept=".pdf,.ppt,.pptx,.docx,.zip" onChange={handleMaterialFileChange} style={{ display: 'none' }} />
                       </label>
-                      {newEvent.materialName ? (
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem', color: '#51cf66' }}>
-                          <CheckCircle size={14} /> {newEvent.materialName}
+
+                      {newEvent.materialName && (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem', color: materialUploadSuccess ? '#51cf66' : '#fab005' }}>
+                          <CheckCircle size={14} /> {newEvent.materialName} {materialUploadSuccess ? '(Tersimpan)' : ''}
                         </span>
-                      ) : (
-                        <span style={{ fontSize: '0.8rem', color: '#666' }}>Belum ada materi dipilih</span>
                       )}
                     </div>
+
+                    {/* Input Tambahan: Link Google Drive / Dropbox */}
+                    <div style={{ position: 'relative' }}>
+                      <input 
+                        type="url" 
+                        style={{ ...styles.input, marginBottom: '4px', paddingLeft: '35px' }} 
+                        placeholder="Atau tempel Tautan Google Drive / Dropbox / Canva materi..." 
+                        value={customMaterialLink} 
+                        onChange={e => {
+                          setCustomMaterialLink(e.target.value);
+                          if (e.target.value) {
+                            setNewEvent(prev => ({ ...prev, materialName: prev.materialName || 'Materi Presentasi Online' }));
+                          }
+                        }} 
+                      />
+                      <LinkIcon size={16} color="#666" style={{ position: 'absolute', left: '12px', top: '14px' }} />
+                    </div>
+                    <span style={{ fontSize: '0.72rem', color: '#888' }}>
+                      * Jika materi berupa PDF/PPTX berukuran besar, Anda juga bisa langsung memasukkan tautan Google Drive / Cloud publik.
+                    </span>
                   </div>
 
                   {/* Lokasi & Kategori */}
