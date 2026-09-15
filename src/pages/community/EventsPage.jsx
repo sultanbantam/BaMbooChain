@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { FaCalendarAlt, FaMapMarkerAlt, FaClock, FaUsers } from 'react-icons/fa';
+import { FaCalendarAlt, FaMapMarkerAlt, FaClock, FaUsers, FaDownload } from 'react-icons/fa';
 import { getAssetUrl } from '../../utils/assets';
 import { eventsData, featuredEventData } from '../../utils/eventsData';
 import { useApprovedCommunityEvents } from '../../hooks/useFirestoreQueries';
@@ -48,15 +48,37 @@ const EventsPage = () => {
     const isRevolusi = ev.title?.includes('Revolusi Sebatang Bambu');
     const isSNAI = ev.title?.includes('Optimalisasi Teknologi');
     
+    let eventMaterials = ev.materials || [];
+    if (ev.materialUrl) {
+      eventMaterials = [
+        ...eventMaterials,
+        { title: ev.materialName || 'Materi Presentasi Acara', fileUrl: ev.materialUrl }
+      ];
+    }
+
+    const eventDate = isUganda 
+      ? '1-5 September 2026' 
+      : (ev.startDate && ev.endDate && ev.startDate !== ev.endDate 
+          ? `${ev.startDate} s/d ${ev.endDate}` 
+          : (ev.date || ev.startDate || 'TBA'));
+
+    const eventTime = isUganda 
+      ? '09:00 Sampai Dengan Selesai' 
+      : (isRevolusi 
+          ? '09.00 - 17.00 WIB' 
+          : (ev.startTime && ev.endTime 
+              ? `${ev.startTime} - ${ev.endTime} WIB` 
+              : (ev.time || '09:00 - 16:00 WIB')));
+
     return {
       id: ev.id,
       title: isRevolusi ? 'Field Visit: Revolusi Sebatang Bambu di Indonesia Studi Lapangan Ekosistem Bambu Tangerang Raya bersama Tim Pusat Studi Arsitektur Nusantara FTSP Universitas Trisakti' : ev.title,
-      date: isUganda ? '1-5 September 2026' : ev.date,
-      time: isUganda ? '09:00 Sampai Dengan Selesai' : (isRevolusi ? '09.00 - 17.00 WIB' : (ev.time || '10:00 - 15:00 WIB')),
+      date: eventDate,
+      time: eventTime,
       location: ev.location,
       category: ev.category,
       description: ev.description,
-      image: isUganda ? getAssetUrl('event/banner.png') : (isRevolusi ? getAssetUrl('event/ebtr.png') : (isSNAI ? getAssetUrl('event/snai.png') : (ev.image || getAssetUrl('event/placeholder.jpg')))),
+      image: isUganda ? getAssetUrl('event/banner.png') : (isRevolusi ? getAssetUrl('event/ebtr.png') : (isSNAI ? getAssetUrl('event/snai.png') : (ev.image || ev.bannerUrl || getAssetUrl('event/placeholder.jpg')))),
       color: '#fab005', // default color for community events
       organizer: ev.organizerName,
       speakers: isRevolusi ? [
@@ -67,7 +89,7 @@ const EventsPage = () => {
         { title: 'Materi Acara', fileUrl: getAssetUrl('event/materi.pdf') },
         { title: 'Materi BLL', fileUrl: getAssetUrl('event/bll.pdf') },
         { title: 'Materi Tambahan 2', fileUrl: getAssetUrl('event/materi2.pdf') }
-      ] : ev.materials
+      ] : eventMaterials
     };
   })];
 
@@ -150,53 +172,50 @@ const EventsPage = () => {
       width: '100%'
     },
     badge: {
-      backgroundColor: '#51cf66',
-      color: 'black',
-      padding: '5px 15px',
-      borderRadius: '20px',
-      fontSize: '0.7rem',
-      fontWeight: '900',
-      textTransform: 'uppercase',
       display: 'inline-block',
-      marginBottom: '15px'
+      padding: '8px 16px',
+      borderRadius: '20px',
+      backgroundColor: 'rgba(255,255,255,0.1)',
+      color: 'white',
+      fontWeight: 'bold',
+      fontSize: '0.8rem',
+      marginBottom: '20px'
     },
     grid: {
       display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
       gap: '30px'
     },
     card: {
       backgroundColor: 'rgba(255,255,255,0.05)',
       borderRadius: '24px',
+      overflow: 'hidden',
       border: '1px solid rgba(255,255,255,0.1)',
-      transition: 'all 0.3s ease',
-      display: 'flex',
-      flexDirection: 'column'
-    },
-    cardImg: {
-      height: '200px',
-      width: '100%',
-      objectFit: 'cover',
-      objectPosition: 'top',
-      borderTopLeftRadius: '24px',
-      borderTopRightRadius: '24px'
-    },
-    cardBody: {
-      padding: '25px',
       display: 'flex',
       flexDirection: 'column',
-      flex: 1
+      transition: 'all 0.3s ease'
+    },
+    cardImg: {
+      width: '100%',
+      height: '200px',
+      objectFit: 'cover'
+    },
+    cardBody: {
+      padding: '24px',
+      display: 'flex',
+      flexDirection: 'column',
+      flexGrow: 1
     },
     cardTitle: {
-      fontSize: '1.4rem',
+      fontSize: '1.3rem',
       fontWeight: '800',
-      marginBottom: '20px',
-      lineHeight: '1.3'
+      marginBottom: '15px',
+      color: 'white'
     },
     infoRow: {
       display: 'flex',
       alignItems: 'center',
-      gap: '12px',
+      gap: '10px',
       color: '#adb5bd',
       marginBottom: '12px',
       fontSize: '0.95rem'
@@ -250,14 +269,46 @@ const EventsPage = () => {
                 {featuredEvent.title}
               </h2>
             )}
-            <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', marginBottom: '30px' }}>
+            <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', marginBottom: '20px' }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <FaCalendarAlt color="#51cf66" /> {featuredEvent.date}
+              </span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <FaClock color="#51cf66" /> {featuredEvent.time}
               </span>
               <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <FaMapMarkerAlt color="#51cf66" /> {featuredEvent.location}
               </span>
             </div>
+
+            {featuredEvent.materials && featuredEvent.materials.length > 0 && (
+              <div style={{ marginBottom: '20px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                {featuredEvent.materials.map((mat, idx) => (
+                  <a
+                    key={idx}
+                    href={mat.fileUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '8px 14px',
+                      borderRadius: '10px',
+                      backgroundColor: 'rgba(81, 207, 102, 0.15)',
+                      border: '1px solid rgba(81, 207, 102, 0.3)',
+                      color: '#51cf66',
+                      fontSize: '0.85rem',
+                      fontWeight: 'bold',
+                      textDecoration: 'none'
+                    }}
+                  >
+                    <FaDownload size={12} /> Unduh: {mat.title}
+                  </a>
+                ))}
+              </div>
+            )}
+
             <button 
               style={{ 
                 padding: '15px 30px', backgroundColor: 'rgba(255, 255, 255, 0.1)', color: 'white', 
@@ -299,11 +350,43 @@ const EventsPage = () => {
                   {event.category}
                 </div>
                 <h3 style={styles.cardTitle}>{event.title}</h3>
-                <div style={{ marginBottom: '25px' }}>
+                <div style={{ marginBottom: '20px' }}>
                   <div style={styles.infoRow}><FaCalendarAlt color={event.color} /> {event.date}</div>
                   <div style={styles.infoRow}><FaClock color={event.color} /> {event.time}</div>
                   <div style={styles.infoRow}><FaMapMarkerAlt color={event.color} /> {event.location}</div>
                 </div>
+
+                {event.materials && event.materials.length > 0 && (
+                  <div style={{ marginBottom: '15px' }}>
+                    {event.materials.map((mat, mIdx) => (
+                      <a 
+                        key={mIdx}
+                        href={mat.fileUrl} 
+                        target="_blank" 
+                        rel="noreferrer"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          padding: '6px 12px',
+                          borderRadius: '8px',
+                          backgroundColor: 'rgba(81, 207, 102, 0.1)',
+                          border: '1px solid rgba(81, 207, 102, 0.3)',
+                          color: '#51cf66',
+                          fontSize: '0.75rem',
+                          fontWeight: 'bold',
+                          textDecoration: 'none',
+                          marginBottom: '6px',
+                          width: '100%',
+                          justifyContent: 'center'
+                        }}
+                      >
+                        <FaDownload size={11} /> Unduh: {mat.title}
+                      </a>
+                    ))}
+                  </div>
+                )}
+
                 <button 
                   style={styles.btn}
                   onMouseEnter={(e) => { e.target.style.backgroundColor = event.color; e.target.style.color = 'white'; }}
