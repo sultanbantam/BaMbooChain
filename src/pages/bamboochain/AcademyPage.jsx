@@ -97,9 +97,9 @@ const AcademyPage = () => {
       alert("⚠️ Harap lengkapi semua data dan setujui Syarat & Ketentuan.");
       return;
     }
-    alert("✅ Pendaftaran berhasil! Data Anda telah dicatat, silakan tunggu instruksi selanjutnya melalui BaMbooChat.");
+    alert("✅ Pendaftaran berhasil! Anda akan diarahkan ke kelas.");
     setIsCourseModalOpen(false);
-    // Optional: reset form or keep it for next time
+    window.location.href = "https://www.bamboochat.click/login";
   };
 
   // Premium Materials States
@@ -1454,14 +1454,13 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
             <h2 style={{ fontSize: '1.8rem', color: 'var(--text-main)', margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
               <BookOpen size={24} color="var(--primary)" /> {t('academy_premium_title')}
             </h2>
-            {user?.kycStatus === 'verified' && (
-              <button 
-                onClick={() => setIsUploadMatModalOpen(true)}
-                style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '12px', fontWeight: 'bold', fontSize: '0.9rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 15px rgba(12,166,120,0.15)' }}
-              >
-                <UploadCloud size={16} /> Unggah Ebook/Riset
-              </button>
-            )}
+            {/* Tombol Unggah Ebook/Riset selalu ditampilkan sesuai permintaan */}
+            <button 
+              onClick={() => setIsUploadMatModalOpen(true)}
+              style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '12px', fontWeight: 'bold', fontSize: '0.9rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 15px rgba(12,166,120,0.15)' }}
+            >
+              <UploadCloud size={16} /> Unggah Ebook/Riset
+            </button>
           </div>
 
           <div className="custom-scrollbar" style={{ display: 'flex', flexDirection: 'row', overflowX: 'auto', gap: '40px', paddingBottom: '20px', scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' }}>
@@ -1481,19 +1480,19 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
                   background: 'var(--bg-card)', 
                   border: '1px solid var(--border-color)', 
                   borderRadius: '24px', 
-                  padding: '40px 30px', 
+                  padding: '24px', 
                   boxShadow: '0 10px 45px rgba(0,0,0,0.05)',
                   display: 'flex',
-                  flexDirection: 'row',
-                  flexWrap: 'wrap',
-                  gap: '40px',
-                  alignItems: 'flex-start',
-                  minWidth: '85%',
+                  flexDirection: 'column',
+                  gap: '24px',
+                  alignItems: 'stretch',
+                  minWidth: '360px',
+                  maxWidth: '450px',
                   flexShrink: 0,
                   scrollSnapAlign: 'start'
                 }}>
                   {/* Ebook Cover Mockup */}
-                  <div style={{ flexShrink: 0, position: 'relative', width: '320px', height: '210px', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 15px 35px rgba(0,0,0,0.15)', border: '1px solid var(--border-color)', background: '#ffffff' }}>
+                  <div style={{ flexShrink: 0, position: 'relative', width: '100%', height: '240px', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 15px 35px rgba(0,0,0,0.1)', border: '1px solid var(--border-color)', background: '#ffffff' }}>
                     <img src={ebook.cover && ebook.cover.startsWith('/assets/') ? '.' + ebook.cover : ebook.cover} alt={ebook.title} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                     <div style={{ position: 'absolute', top: '12px', right: '12px', background: '#fa5252', color: 'white', padding: '4px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 'bold' }}>
                       PREMIUM EBOOK
