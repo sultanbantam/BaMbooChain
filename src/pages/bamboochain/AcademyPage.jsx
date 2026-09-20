@@ -71,6 +71,37 @@ const AcademyPage = () => {
     return () => clearTimeout(timeoutId);
   }, [searchQuery, isGlobalMode]);
   
+  // Course Modal States
+  const [isCourseModalOpen, setIsCourseModalOpen] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [courseForm, setCourseForm] = useState({
+    namaLengkap: user ? (user.name || user.username || '') : '',
+    usernameChat: '',
+    agreeTnC: false
+  });
+
+  useEffect(() => {
+    if (user && !courseForm.namaLengkap) {
+      setCourseForm(prev => ({ ...prev, namaLengkap: user.name || user.username || '' }));
+    }
+  }, [user]);
+
+  const handleStartLearn = (course) => {
+    setSelectedCourse(course);
+    setIsCourseModalOpen(true);
+  };
+
+  const handleSubmitCourse = (e) => {
+    e.preventDefault();
+    if (!courseForm.namaLengkap || !courseForm.usernameChat || !courseForm.agreeTnC) {
+      alert("⚠️ Harap lengkapi semua data dan setujui Syarat & Ketentuan.");
+      return;
+    }
+    alert("✅ Pendaftaran berhasil! Anda akan diarahkan ke kelas.");
+    setIsCourseModalOpen(false);
+    // Optional: reset form or keep it for next time
+  };
+
   // Premium Materials States
   const [premiumMaterials, setPremiumMaterials] = useState([]);
   const [isUploadMatModalOpen, setIsUploadMatModalOpen] = useState(false);
@@ -108,7 +139,18 @@ const AcademyPage = () => {
   useEffect(() => {
     const q = query(collection(db, "premium_materials"), orderBy("timestamp", "desc"));
     const unsub = onSnapshot(q, async (snap) => {
-      const mats = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const rawMats = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      
+      // Filter duplicates by title
+      const uniqueMatsMap = new Map();
+      rawMats.forEach(mat => {
+        const key = (mat.title || "").toLowerCase().trim();
+        if (!uniqueMatsMap.has(key)) {
+          uniqueMatsMap.set(key, mat);
+        }
+      });
+      const mats = Array.from(uniqueMatsMap.values());
+      
       setPremiumMaterials(mats);
       
       // Auto-insert BaMbooChain.pdf if it doesn't exist in Firestore
@@ -333,6 +375,12 @@ const AcademyPage = () => {
     }
     if (!newMatForm.title || !newMatForm.desc || !newMatForm.pdf || !newMatForm.cover) {
       alert("⚠️ Harap lengkapi semua field, termasuk Cover dan PDF!");
+      return;
+    }
+
+    const isDuplicate = premiumMaterials.some(m => m.title.toLowerCase().trim() === newMatForm.title.toLowerCase().trim());
+    if (isDuplicate) {
+      alert("⚠️ Artikel dengan judul ini sudah ada di Perpustakaan Premium. Unggah ditolak.");
       return;
     }
 
@@ -1301,12 +1349,12 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '30px' }}>
+          <div className="custom-scrollbar" style={{ display: 'flex', overflowX: 'auto', gap: '30px', paddingBottom: '20px', scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' }}>
             {courses.filter(c => 
               c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
               c.category.toLowerCase().includes(searchQuery.toLowerCase())
             ).map((course) => (
-              <div key={course.id} style={{ background: 'var(--bg-card)', borderRadius: '20px', overflow: 'hidden', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', transition: 'transform 0.3s', cursor: 'pointer' }}
+              <div key={course.id} style={{ minWidth: '320px', flexShrink: 0, scrollSnapAlign: 'start', background: 'var(--bg-card)', borderRadius: '20px', overflow: 'hidden', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', transition: 'transform 0.3s', cursor: 'pointer' }}
                    onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-8px)'}
                    onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
                 
@@ -1337,7 +1385,7 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
                     <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>
                       {course.students.toLocaleString()} Murid Terdaftar
                     </div>
-                    <button style={{ background: '#e6fcf5', color: 'var(--primary)', border: 'none', padding: '8px 16px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold', cursor: 'pointer' }}>
+                    <button onClick={() => handleStartLearn(course)} style={{ background: '#e6fcf5', color: 'var(--primary)', border: 'none', padding: '8px 16px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold', cursor: 'pointer' }}>
                       Mulai Belajar
                     </button>
                   </div>
@@ -1416,7 +1464,7 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
             )}
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
+          <div className="custom-scrollbar" style={{ display: 'flex', flexDirection: 'row', overflowX: 'auto', gap: '40px', paddingBottom: '20px', scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' }}>
             {premiumMaterials.filter(m =>
               m.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
               m.desc?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -1439,7 +1487,10 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
                   flexDirection: 'row',
                   flexWrap: 'wrap',
                   gap: '40px',
-                  alignItems: 'flex-start'
+                  alignItems: 'flex-start',
+                  minWidth: '85%',
+                  flexShrink: 0,
+                  scrollSnapAlign: 'start'
                 }}>
                   {/* Ebook Cover Mockup */}
                   <div style={{ flexShrink: 0, position: 'relative', width: '320px', height: '210px', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 15px 35px rgba(0,0,0,0.15)', border: '1px solid var(--border-color)', background: '#ffffff' }}>
@@ -3352,6 +3403,76 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
         )}
 
           </>
+        )}
+
+        {/* COURSE ENROLLMENT MODAL */}
+        {isCourseModalOpen && selectedCourse && (
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+            <div style={{ background: 'var(--bg-card)', borderRadius: '24px', width: '100%', maxWidth: '500px', overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+              <div style={{ padding: '24px 30px', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-color)' }}>
+                <h3 style={{ fontSize: '1.25rem', color: 'var(--text-main)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <GraduationCap size={20} color="var(--primary)" /> Pendaftaran Kursus
+                </h3>
+                <button onClick={() => setIsCourseModalOpen(false)} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '4px' }}>
+                  <X size={24} />
+                </button>
+              </div>
+              <div style={{ padding: '30px' }}>
+                <div style={{ background: '#e6fcf5', borderRadius: '12px', padding: '16px', marginBottom: '24px', display: 'flex', gap: '16px', alignItems: 'center' }}>
+                  <img src={selectedCourse.img} alt={selectedCourse.title} style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '8px' }} />
+                  <div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 'bold', marginBottom: '4px' }}>{selectedCourse.category}</div>
+                    <div style={{ fontSize: '0.95rem', fontWeight: 'bold', color: 'var(--text-main)' }}>{selectedCourse.title}</div>
+                  </div>
+                </div>
+
+                <form onSubmit={handleSubmitCourse} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-main)', fontWeight: 'bold', marginBottom: '8px' }}>Nama Lengkap</label>
+                    <input 
+                      type="text" 
+                      value={courseForm.namaLengkap} 
+                      onChange={e => setCourseForm({...courseForm, namaLengkap: e.target.value})}
+                      placeholder="Masukkan nama lengkap Anda"
+                      required
+                      style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--bg-color)', color: 'var(--text-main)', outline: 'none' }} 
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-main)', fontWeight: 'bold', marginBottom: '8px' }}>Username BaMbooChat</label>
+                    <input 
+                      type="text" 
+                      value={courseForm.usernameChat} 
+                      onChange={e => setCourseForm({...courseForm, usernameChat: e.target.value})}
+                      placeholder="Username Anda di aplikasi BaMbooChat"
+                      required
+                      style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--bg-color)', color: 'var(--text-main)', outline: 'none' }} 
+                    />
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '6px' }}>*Digunakan untuk grup diskusi kelas.</div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', marginTop: '8px' }}>
+                    <input 
+                      type="checkbox" 
+                      id="agreeTnC"
+                      checked={courseForm.agreeTnC}
+                      onChange={e => setCourseForm({...courseForm, agreeTnC: e.target.checked})}
+                      style={{ marginTop: '4px', accentColor: 'var(--primary)' }}
+                    />
+                    <label htmlFor="agreeTnC" style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: '1.5', cursor: 'pointer' }}>
+                      Saya setuju dengan <a href="#" style={{ color: 'var(--primary)', textDecoration: 'none' }}>Syarat & Ketentuan</a> serta bersedia mengikuti seluruh peraturan di Akademi.
+                    </label>
+                  </div>
+
+                  <button 
+                    type="submit" 
+                    style={{ width: '100%', background: 'var(--primary)', color: 'white', border: 'none', padding: '14px', borderRadius: '12px', fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer', marginTop: '10px', boxShadow: '0 4px 15px rgba(12,166,120,0.2)' }}
+                  >
+                    Daftar Sekarang
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
         )}
 
         <ShareModal 
