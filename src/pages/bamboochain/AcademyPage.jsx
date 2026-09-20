@@ -97,7 +97,7 @@ const AcademyPage = () => {
       alert("⚠️ Harap lengkapi semua data dan setujui Syarat & Ketentuan.");
       return;
     }
-    alert("✅ Pendaftaran berhasil! Anda akan diarahkan ke kelas.");
+    alert("✅ Pendaftaran berhasil! Data Anda telah dicatat, silakan tunggu instruksi selanjutnya melalui BaMbooChat.");
     setIsCourseModalOpen(false);
     // Optional: reset form or keep it for next time
   };
@@ -1517,8 +1517,8 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
                       )}
                     </div>
                     
-                    <h2 style={{ fontSize: '1.8rem', fontWeight: '900', color: 'var(--text-main)', margin: '0 0 4px 0', lineHeight: 1.25 }}>{ebook.title}</h2>
-                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0 0 12px 0' }}>
+                    <h2 style={{ fontSize: '1.5rem', fontWeight: '900', color: 'var(--text-main)', margin: '0 0 4px 0', lineHeight: 1.25 }}>{ebook.title}</h2>
+                    <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: '0 0 12px 0' }}>
                       Dipublikasikan oleh:{' '}
                       {ebook.username ? (
                         <strong 
@@ -1532,9 +1532,9 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
                       )}{' '}
                       ({ebook.author})
                     </p>
-                    <p style={{ color: 'var(--text-muted)', lineHeight: 1.7, fontSize: '0.95rem', marginBottom: '24px', whiteSpace: 'pre-line' }}>
+                    <div className="custom-scrollbar" style={{ color: 'var(--text-muted)', lineHeight: 1.6, fontSize: '1rem', marginBottom: '24px', whiteSpace: 'pre-line', maxHeight: '140px', overflowY: 'auto', paddingRight: '12px' }}>
                       {ebook.desc}
-                    </p>
+                    </div>
 
                     <div style={{ background: 'var(--bg-color)', padding: '16px 20px', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '16px', marginBottom: '20px' }}>
                       <div>
@@ -3408,8 +3408,8 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
         {/* COURSE ENROLLMENT MODAL */}
         {isCourseModalOpen && selectedCourse && (
           <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-            <div style={{ background: 'var(--bg-card)', borderRadius: '24px', width: '100%', maxWidth: '500px', overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
-              <div style={{ padding: '24px 30px', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-color)' }}>
+            <div className="custom-scrollbar" style={{ background: 'var(--bg-card)', borderRadius: '24px', width: '100%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto', overflowX: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+              <div style={{ padding: '24px 30px', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-color)', position: 'sticky', top: 0, zIndex: 2 }}>
                 <h3 style={{ fontSize: '1.25rem', color: 'var(--text-main)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <GraduationCap size={20} color="var(--primary)" /> Pendaftaran Kursus
                 </h3>
@@ -3418,11 +3418,11 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
                 </button>
               </div>
               <div style={{ padding: '30px' }}>
-                <div style={{ background: '#e6fcf5', borderRadius: '12px', padding: '16px', marginBottom: '24px', display: 'flex', gap: '16px', alignItems: 'center' }}>
-                  <img src={selectedCourse.img} alt={selectedCourse.title} style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '8px' }} />
+                <div style={{ background: '#e6fcf5', borderRadius: '12px', padding: '16px', marginBottom: '24px', display: 'flex', gap: '16px', alignItems: 'center', border: '1px solid #c3fae8' }}>
+                  <img src={selectedCourse.img} alt={selectedCourse.title} style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '8px', flexShrink: 0 }} />
                   <div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 'bold', marginBottom: '4px' }}>{selectedCourse.category}</div>
-                    <div style={{ fontSize: '0.95rem', fontWeight: 'bold', color: 'var(--text-main)' }}>{selectedCourse.title}</div>
+                    <div style={{ fontSize: '0.85rem', color: '#0ca678', fontWeight: 'bold', marginBottom: '4px' }}>{selectedCourse.category}</div>
+                    <div style={{ fontSize: '1rem', fontWeight: 'bold', color: '#212529', lineHeight: 1.3 }}>{selectedCourse.title}</div>
                   </div>
                 </div>
 
