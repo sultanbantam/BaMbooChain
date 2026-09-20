@@ -99,7 +99,9 @@ const AcademyPage = () => {
     }
     alert("✅ Pendaftaran berhasil! Anda akan diarahkan ke kelas.");
     setIsCourseModalOpen(false);
-    window.location.href = "https://www.bamboochat.click/login";
+    setTimeout(() => {
+      window.open("https://www.bamboochat.click/login", "_blank");
+    }, 100);
   };
 
   // Premium Materials States
