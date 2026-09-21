@@ -3705,8 +3705,8 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
 
         {/* UPLOAD COURSE MODULE MODAL */}
         {isUploadCourseModalOpen && (
-          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-            <div style={{ background: 'var(--bg-card)', borderRadius: '24px', width: '100%', maxWidth: '600px', maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.3)', border: '1px solid var(--border-color)', overflow: 'hidden' }}>
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', zIndex: 1000, display: 'block', overflowY: 'auto', padding: '5vh 20px' }}>
+            <div style={{ background: 'var(--bg-card)', borderRadius: '24px', width: '100%', maxWidth: '600px', margin: '0 auto', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.3)', border: '1px solid var(--border-color)', overflow: 'hidden', height: 'fit-content', minHeight: 'min-content' }}>
               
               <div style={{ padding: '24px 30px', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-color)', flexShrink: 0 }}>
                 <h3 style={{ fontSize: '1.25rem', color: 'var(--text-main)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -3717,7 +3717,7 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
                 </button>
               </div>
 
-              <div className="custom-scrollbar" style={{ overflowY: 'auto', padding: '30px', flex: 1, minHeight: 0 }}>
+              <div style={{ padding: '30px' }}>
                 <form id="uploadCourseForm" onSubmit={handleUploadCourseSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-main)', fontWeight: 'bold', marginBottom: '8px' }}>Judul Modul <span style={{ color: '#fa5252' }}>*</span></label>
@@ -3825,8 +3825,8 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
 
         {/* EDIT COURSE MODULE MODAL */}
         {isEditCourseModalOpen && (
-          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-            <div style={{ background: 'var(--bg-card)', borderRadius: '24px', width: '100%', maxWidth: '600px', maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.3)', border: '1px solid var(--border-color)', overflow: 'hidden' }}>
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', zIndex: 1000, display: 'block', overflowY: 'auto', padding: '5vh 20px' }}>
+            <div style={{ background: 'var(--bg-card)', borderRadius: '24px', width: '100%', maxWidth: '600px', margin: '0 auto', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.3)', border: '1px solid var(--border-color)', overflow: 'hidden', height: 'fit-content', minHeight: 'min-content' }}>
               
               <div style={{ padding: '24px 30px', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-color)', flexShrink: 0 }}>
                 <h3 style={{ fontSize: '1.25rem', color: 'var(--text-main)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -3837,7 +3837,7 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
                 </button>
               </div>
 
-              <div className="custom-scrollbar" style={{ overflowY: 'auto', padding: '30px', flex: 1, minHeight: 0 }}>
+              <div style={{ padding: '30px' }}>
                 <form id="editCourseForm" onSubmit={handleEditCourseSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-main)', fontWeight: 'bold', marginBottom: '8px' }}>Judul Modul <span style={{ color: '#fa5252' }}>*</span></label>
