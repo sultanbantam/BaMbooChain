@@ -599,7 +599,6 @@ const AcademyPage = () => {
       console.error("❌ Error uploading course:", err);
       alert("❌ Gagal mengunggah modul: " + err.message);
     } finally {
-    } finally {
       setIsUploading(false);
     }
   };
