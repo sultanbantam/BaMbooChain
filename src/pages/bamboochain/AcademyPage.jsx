@@ -91,18 +91,50 @@ const AcademyPage = () => {
     setIsCourseModalOpen(true);
   };
 
-  const handleSubmitCourse = (e) => {
+  const handleSubmitCourse = async (e) => {
     e.preventDefault();
     if (!courseForm.namaLengkap || !courseForm.usernameChat || !courseForm.agreeTnC) {
       alert("⚠️ Harap lengkapi semua data dan setujui Syarat & Ketentuan.");
       return;
     }
-    alert("✅ Pendaftaran berhasil! Anda akan diarahkan ke kelas.");
-    setIsCourseModalOpen(false);
-    setTimeout(() => {
-      window.open("https://www.bamboochat.click/login", "_blank");
-    }, 100);
+    
+    // Jika ini adalah modul dinamis (punya id firestore dan pdf)
+    if (selectedCourse?.id && selectedCourse?.pdf) {
+      if (!user) {
+        alert("⚠️ Anda harus login untuk mendaftar kelas ini.");
+        return;
+      }
+      try {
+        const courseRef = doc(db, "academy_courses", selectedCourse.id);
+        await updateDoc(courseRef, {
+          enrolledUsers: arrayUnion(user.id),
+          students: increment(1)
+        });
+        alert("✅ Pendaftaran berhasil! Anda kini memiliki akses ke modul ini.");
+        setIsCourseModalOpen(false);
+      } catch (err) {
+        console.error("Gagal mendaftar:", err);
+        alert("❌ Terjadi kesalahan saat mendaftar.");
+      }
+    } else {
+      // Modul statis / bawaan (redirect ke bamboochat)
+      alert("✅ Pendaftaran berhasil! Anda akan diarahkan ke kelas.");
+      setIsCourseModalOpen(false);
+      setTimeout(() => {
+        window.open("https://www.bamboochat.click/login", "_blank");
+      }, 100);
+    }
   };
+
+  // Dynamic Courses (Uploaded Modules)
+  const [dynamicCourses, setDynamicCourses] = useState([]);
+  const [isUploadCourseModalOpen, setIsUploadCourseModalOpen] = useState(false);
+  const [newDynamicCourseForm, setNewDynamicCourseForm] = useState({
+    title: '',
+    tutor: '',
+    cover: '',
+    pdf: ''
+  });
 
   // Premium Materials States
   const [premiumMaterials, setPremiumMaterials] = useState([]);
@@ -136,6 +168,16 @@ const AcademyPage = () => {
   const [giftMatId, setGiftMatId] = useState(null);
   const [giftAmounts, setGiftAmounts] = useState({});
   const [giftingMatIds, setGiftingMatIds] = useState({});
+
+  // Sync Dynamic Courses from Firestore
+  useEffect(() => {
+    const qCourses = query(collection(db, "academy_courses"), orderBy("timestamp", "desc"));
+    const unsubCourses = onSnapshot(qCourses, (snap) => {
+      const docs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setDynamicCourses(docs);
+    }, (err) => console.error("Error syncing academy courses:", err));
+    return () => unsubCourses();
+  }, []);
 
   // Sync Premium Materials from Firestore
   useEffect(() => {
@@ -476,6 +518,76 @@ const AcademyPage = () => {
     } catch (err) {
       console.error("❌ Error uploading material:", err);
       alert("❌ Gagal mengunggah materi: " + err.message);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleUploadCourseSubmit = async (e) => {
+    e.preventDefault();
+    if (!user || user.kycStatus !== 'verified') {
+      alert("⚠️ Hanya kontributor terverifikasi KYC yang dapat mengunggah modul!");
+      return;
+    }
+    if (!newDynamicCourseForm.title || !newDynamicCourseForm.tutor || !newDynamicCourseForm.cover || !newDynamicCourseForm.pdf) {
+      alert("⚠️ Harap lengkapi semua field, termasuk Image Cover dan PDF Modul!");
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const timestamp = new Date().getTime();
+      let coverUrl = newDynamicCourseForm.cover;
+      let pdfUrl = newDynamicCourseForm.pdf;
+
+      const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+      const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+      
+      if (!cloudName || !uploadPreset) throw new Error("Cloudinary configuration is missing.");
+
+      const uploadToCloudinary = async (dataUrl) => {
+        const formData = new FormData();
+        formData.append('file', dataUrl);
+        formData.append('upload_preset', uploadPreset);
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error?.message || "Gagal mengunggah ke Cloudinary");
+        return data.secure_url;
+      };
+
+      if (newDynamicCourseForm.cover.startsWith('data:image')) {
+         coverUrl = await uploadToCloudinary(newDynamicCourseForm.cover);
+      }
+      if (newDynamicCourseForm.pdf.startsWith('data:application/pdf')) {
+         pdfUrl = await uploadToCloudinary(newDynamicCourseForm.pdf);
+      }
+
+      const newCourse = {
+        title: newDynamicCourseForm.title,
+        category: "Modul Komunitas",
+        duration: "Bervariasi",
+        modules: 1,
+        students: 0,
+        img: coverUrl,
+        pdf: pdfUrl,
+        tutor: newDynamicCourseForm.tutor,
+        uploaderId: user.id,
+        uploaderName: user.name || user.username || "Anonim",
+        timestamp: timestamp,
+        enrolledUsers: []
+      };
+
+      await addDoc(collection(db, "academy_courses"), newCourse);
+      
+      alert("✅ Berhasil mengunggah modul kursus!");
+      setNewDynamicCourseForm({ title: '', tutor: '', cover: '', pdf: '' });
+      setIsUploadCourseModalOpen(false);
+    } catch (err) {
+      console.error("❌ Error uploading course:", err);
+      alert("❌ Gagal mengunggah modul: " + err.message);
     } finally {
       setIsUploading(false);
     }
@@ -1349,13 +1461,23 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
               </h2>
               <p style={{ color: 'var(--text-muted)', margin: 0 }}>{t('academy_catalog_desc')}</p>
             </div>
+            {user?.kycStatus === 'verified' && (
+              <button 
+                onClick={() => setIsUploadCourseModalOpen(true)}
+                style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '12px', fontWeight: 'bold', fontSize: '0.9rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 15px rgba(12,166,120,0.15)' }}
+              >
+                <UploadCloud size={16} /> Unggah Modul
+              </button>
+            )}
           </div>
 
           <div className="custom-scrollbar" style={{ display: 'flex', overflowX: 'auto', gap: '30px', paddingBottom: '20px', scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' }}>
-            {courses.filter(c => 
+            {[...dynamicCourses, ...courses].filter(c => 
               c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
               c.category.toLowerCase().includes(searchQuery.toLowerCase())
-            ).map((course) => (
+            ).map((course) => {
+              const isEnrolled = user && course.enrolledUsers?.includes(user.id);
+              return (
               <div key={course.id} style={{ minWidth: '320px', flexShrink: 0, scrollSnapAlign: 'start', background: 'var(--bg-card)', borderRadius: '20px', overflow: 'hidden', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', transition: 'transform 0.3s', cursor: 'pointer' }}
                    onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-8px)'}
                    onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
@@ -1385,15 +1507,21 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
 
                   <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>
-                      {course.students.toLocaleString()} Murid Terdaftar
+                      {(course.students || 0).toLocaleString()} Murid Terdaftar
                     </div>
-                    <button onClick={() => handleStartLearn(course)} style={{ background: '#e6fcf5', color: 'var(--primary)', border: 'none', padding: '8px 16px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold', cursor: 'pointer' }}>
-                      Mulai Belajar
-                    </button>
+                    {isEnrolled && course.pdf ? (
+                      <a href={course.pdf} target="_blank" rel="noreferrer" style={{ background: 'var(--primary)', color: 'white', textDecoration: 'none', padding: '8px 16px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold', display: 'inline-block' }}>
+                        Akses Modul
+                      </a>
+                    ) : (
+                      <button onClick={() => handleStartLearn(course)} style={{ background: '#e6fcf5', color: 'var(--primary)', border: 'none', padding: '8px 16px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold', cursor: 'pointer' }}>
+                        Mulai Belajar
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
-            ))}
+            )})}
           </div>
         </div>
 
@@ -3471,6 +3599,116 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
                     Daftar Sekarang
                   </button>
                 </form>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* UPLOAD COURSE MODULE MODAL */}
+        {isUploadCourseModalOpen && (
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+            <div style={{ background: 'var(--bg-card)', borderRadius: '24px', width: '100%', maxWidth: '600px', maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.3)', border: '1px solid var(--border-color)', overflow: 'hidden' }}>
+              
+              <div style={{ padding: '24px 30px', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-color)' }}>
+                <h3 style={{ fontSize: '1.25rem', color: 'var(--text-main)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <UploadCloud size={20} color="var(--primary)" /> Unggah Modul Kurikulum
+                </h3>
+                <button onClick={() => setIsUploadCourseModalOpen(false)} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '4px' }}>
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="custom-scrollbar" style={{ overflowY: 'auto', padding: '30px' }}>
+                <form id="uploadCourseForm" onSubmit={handleUploadCourseSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-main)', fontWeight: 'bold', marginBottom: '8px' }}>Judul Modul <span style={{ color: '#fa5252' }}>*</span></label>
+                    <input 
+                      type="text" 
+                      value={newDynamicCourseForm.title}
+                      onChange={e => setNewDynamicCourseForm({...newDynamicCourseForm, title: e.target.value})}
+                      placeholder="Masukkan judul modul"
+                      required
+                      style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--bg-color)', color: 'var(--text-main)' }} 
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-main)', fontWeight: 'bold', marginBottom: '8px' }}>Nama Tutor / Pengajar <span style={{ color: '#fa5252' }}>*</span></label>
+                    <input 
+                      type="text" 
+                      value={newDynamicCourseForm.tutor}
+                      onChange={e => setNewDynamicCourseForm({...newDynamicCourseForm, tutor: e.target.value})}
+                      placeholder="Nama tutor"
+                      required
+                      style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--bg-color)', color: 'var(--text-main)' }} 
+                    />
+                  </div>
+                  
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-main)', fontWeight: 'bold', marginBottom: '8px' }}>Cover Modul (Gambar) <span style={{ color: '#fa5252' }}>*</span></label>
+                    <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                      <input 
+                        type="file" 
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onload = (ev) => setNewDynamicCourseForm({...newDynamicCourseForm, cover: ev.target.result});
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                        style={{ display: 'none' }}
+                        id="course-cover-upload"
+                      />
+                      <label htmlFor="course-cover-upload" style={{ background: 'var(--bg-color)', color: 'var(--primary)', border: '1px dashed var(--primary)', padding: '12px 20px', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold' }}>
+                        <UploadCloud size={18} /> Pilih Gambar
+                      </label>
+                      {newDynamicCourseForm.cover && <span style={{ color: '#12b886', fontSize: '0.9rem', fontWeight: 'bold' }}>✓ Gambar dipilih</span>}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-main)', fontWeight: 'bold', marginBottom: '8px' }}>File Modul (PDF) <span style={{ color: '#fa5252' }}>*</span></label>
+                    <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                      <input 
+                        type="file" 
+                        accept="application/pdf"
+                        onChange={(e) => {
+                          const file = e.target.files[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onload = (ev) => setNewDynamicCourseForm({...newDynamicCourseForm, pdf: ev.target.result});
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                        style={{ display: 'none' }}
+                        id="course-pdf-upload"
+                      />
+                      <label htmlFor="course-pdf-upload" style={{ background: 'var(--bg-color)', color: 'var(--primary)', border: '1px dashed var(--primary)', padding: '12px 20px', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold' }}>
+                        <FileText size={18} /> Pilih File PDF
+                      </label>
+                      {newDynamicCourseForm.pdf && <span style={{ color: '#12b886', fontSize: '0.9rem', fontWeight: 'bold' }}>✓ PDF dipilih</span>}
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+              <div style={{ padding: '20px 30px', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'flex-end', gap: '12px', background: 'var(--bg-color)' }}>
+                <button 
+                  onClick={() => setIsUploadCourseModalOpen(false)}
+                  style={{ background: 'transparent', color: 'var(--text-main)', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}
+                  disabled={isUploading}
+                >
+                  Batal
+                </button>
+                <button 
+                  type="submit"
+                  form="uploadCourseForm"
+                  disabled={isUploading}
+                  style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 'bold', cursor: isUploading ? 'not-allowed' : 'pointer', opacity: isUploading ? 0.7 : 1, display: 'flex', alignItems: 'center', gap: '8px' }}
+                >
+                  {isUploading ? 'Mengunggah...' : 'Unggah Modul'}
+                </button>
               </div>
             </div>
           </div>
