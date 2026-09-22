@@ -3705,9 +3705,10 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
 
         {/* UPLOAD COURSE MODULE MODAL */}
         {isUploadCourseModalOpen && (
-          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', zIndex: 1000, display: 'block', overflowY: 'auto', padding: '5vh 20px' }}>
-            <div style={{ background: 'var(--bg-card)', borderRadius: '24px', width: '100%', maxWidth: '600px', margin: '0 auto', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.3)', border: '1px solid var(--border-color)', overflow: 'hidden', height: 'fit-content', minHeight: 'min-content' }}>
-              
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)', zIndex: 99999, overflowY: 'auto' }}>
+            <div style={{ minHeight: '100%', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', padding: '40px 20px' }}>
+              <div style={{ background: 'var(--bg-card)', borderRadius: '24px', width: '100%', maxWidth: '600px', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', border: '1px solid var(--border-color)', position: 'relative' }}>
+
               <div style={{ padding: '24px 30px', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-color)', flexShrink: 0 }}>
                 <h3 style={{ fontSize: '1.25rem', color: 'var(--text-main)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <UploadCloud size={20} color="var(--primary)" /> Unggah Modul Kurikulum
@@ -3819,15 +3820,17 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
                   {isUploading ? 'Mengunggah...' : 'Unggah Modul'}
                 </button>
               </div>
+              </div>
             </div>
           </div>
         )}
 
         {/* EDIT COURSE MODULE MODAL */}
         {isEditCourseModalOpen && (
-          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', zIndex: 1000, display: 'block', overflowY: 'auto', padding: '5vh 20px' }}>
-            <div style={{ background: 'var(--bg-card)', borderRadius: '24px', width: '100%', maxWidth: '600px', margin: '0 auto', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.3)', border: '1px solid var(--border-color)', overflow: 'hidden', height: 'fit-content', minHeight: 'min-content' }}>
-              
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)', zIndex: 99999, overflowY: 'auto' }}>
+            <div style={{ minHeight: '100%', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', padding: '40px 20px' }}>
+              <div style={{ background: 'var(--bg-card)', borderRadius: '24px', width: '100%', maxWidth: '600px', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', border: '1px solid var(--border-color)', position: 'relative' }}>
+
               <div style={{ padding: '24px 30px', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-color)', flexShrink: 0 }}>
                 <h3 style={{ fontSize: '1.25rem', color: 'var(--text-main)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <Edit3 size={20} color="var(--primary)" /> Edit Modul Kurikulum
@@ -3938,6 +3941,7 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
                 >
                   {isUploading ? 'Menyimpan...' : 'Simpan Perubahan'}
                 </button>
+              </div>
               </div>
             </div>
           </div>
