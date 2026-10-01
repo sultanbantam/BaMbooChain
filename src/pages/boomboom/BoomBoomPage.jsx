@@ -36,15 +36,15 @@ const BoomBoomPage = () => {
   };
 
   return (
-    <div style={{ background: 'var(--bg-color, #f8fafc)', minHeight: '100vh', paddingBottom: '60px' }}>
+    <div style={{ background: 'var(--bg-color, #f8fafc)', color: 'var(--text-main, #0f172a)', minHeight: '100vh', paddingBottom: '60px' }}>
       <BoomBoomNavHeader />
 
-      <div style={{ maxWidth: '1200px', margin: '24px auto', padding: '0 20px' }}>
+      <div style={{ maxWidth: '1200px', margin: '24px auto', padding: '0 16px' }}>
         
         {/* HERO BANNER & BOOKING CARD GRID */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
           gap: '24px',
           marginBottom: '32px'
         }}>
@@ -52,8 +52,8 @@ const BoomBoomPage = () => {
           {/* Left Column: Mobile-First Hero Card */}
           <div style={{
             background: 'linear-gradient(135deg, #064e3b 0%, #047857 60%, #059669 100%)',
-            color: 'white',
-            padding: '32px',
+            color: '#ffffff',
+            padding: '28px',
             borderRadius: '28px',
             boxShadow: '0 15px 35px rgba(6, 78, 59, 0.2)',
             display: 'flex',
@@ -69,7 +69,7 @@ const BoomBoomPage = () => {
               opacity: 0.08,
               pointerEvents: 'none'
             }}>
-              <Car size={320} />
+              <Car size={320} color="#ffffff" />
             </div>
 
             <div>
@@ -77,7 +77,7 @@ const BoomBoomPage = () => {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '8px',
-                background: 'rgba(255, 255, 255, 0.15)',
+                background: 'rgba(255, 255, 255, 0.18)',
                 backdropFilter: 'blur(8px)',
                 padding: '6px 14px',
                 borderRadius: '20px',
@@ -90,17 +90,18 @@ const BoomBoomPage = () => {
               </div>
 
               <h1 style={{
-                fontSize: '2.5rem',
+                fontSize: '2.4rem',
                 fontWeight: '900',
                 margin: '0 0 12px',
                 lineHeight: '1.15',
-                letterSpacing: '-0.5px'
+                letterSpacing: '-0.5px',
+                color: '#ffffff'
               }}>
                 BOOMBOOM
               </h1>
               
               <div style={{
-                fontSize: '1.25rem',
+                fontSize: '1.2rem',
                 fontWeight: '700',
                 color: '#a7f3d0',
                 marginBottom: '8px'
@@ -129,8 +130,8 @@ const BoomBoomPage = () => {
               <Link
                 to="/boomboom/safety"
                 style={{
-                  background: 'rgba(255, 255, 255, 0.15)',
-                  color: 'white',
+                  background: 'rgba(255, 255, 255, 0.18)',
+                  color: '#ffffff',
                   textDecoration: 'none',
                   padding: '10px 18px',
                   borderRadius: '30px',
@@ -150,15 +151,15 @@ const BoomBoomPage = () => {
           <div style={{
             background: 'var(--bg-card, #ffffff)',
             borderRadius: '28px',
-            padding: '28px',
+            padding: '26px',
             boxShadow: '0 10px 30px rgba(0,0,0,0.06)',
-            border: '1px solid var(--border-color, #e2e8f0)'
+            border: '1px solid var(--border-color, #cbd5e1)'
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '8px' }}>
               <h2 style={{ fontSize: '1.25rem', fontWeight: '800', margin: 0, color: 'var(--text-main, #0f172a)' }}>
                 Pesan Perjalanan
               </h2>
-              <span style={{ fontSize: '0.75rem', background: '#ecfdf5', color: '#047857', padding: '4px 10px', borderRadius: '12px', fontWeight: '700' }}>
+              <span style={{ fontSize: '0.75rem', background: 'rgba(16, 185, 129, 0.15)', color: 'var(--primary, #047857)', padding: '4px 10px', borderRadius: '12px', fontWeight: '700' }}>
                 Area Aktif Subang / Cibarani
               </span>
             </div>
@@ -166,15 +167,15 @@ const BoomBoomPage = () => {
             <form onSubmit={handleQuickBook} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {/* Pickup Address Field */}
               <div>
-                <label style={{ fontSize: '0.8rem', fontWeight: '700', color: '#64748b', display: 'block', marginBottom: '6px' }}>
+                <label style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted, #64748b)', display: 'block', marginBottom: '6px' }}>
                   LOKASI JEMPUT
                 </label>
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: '10px',
-                  background: '#f8fafc',
-                  border: '1.5px solid #cbd5e1',
+                  background: 'var(--bg-secondary, #f8fafc)',
+                  border: '1.5px solid var(--border-color, #cbd5e1)',
                   borderRadius: '16px',
                   padding: '12px 14px'
                 }}>
@@ -190,8 +191,8 @@ const BoomBoomPage = () => {
                       background: 'transparent',
                       width: '100%',
                       fontSize: '0.95rem',
-                      fontWeight: '600',
-                      color: '#1e293b'
+                      fontWeight: '700',
+                      color: 'var(--text-main, #0f172a)'
                     }}
                   />
                 </div>
@@ -199,15 +200,15 @@ const BoomBoomPage = () => {
 
               {/* Destination Address Field */}
               <div>
-                <label style={{ fontSize: '0.8rem', fontWeight: '700', color: '#64748b', display: 'block', marginBottom: '6px' }}>
+                <label style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted, #64748b)', display: 'block', marginBottom: '6px' }}>
                   LOKASI TUJUAN
                 </label>
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: '10px',
-                  background: '#f8fafc',
-                  border: '1.5px solid #cbd5e1',
+                  background: 'var(--bg-secondary, #f8fafc)',
+                  border: '1.5px solid var(--border-color, #cbd5e1)',
                   borderRadius: '16px',
                   padding: '12px 14px'
                 }}>
@@ -223,8 +224,8 @@ const BoomBoomPage = () => {
                       background: 'transparent',
                       width: '100%',
                       fontSize: '0.95rem',
-                      fontWeight: '600',
-                      color: '#1e293b'
+                      fontWeight: '700',
+                      color: 'var(--text-main, #0f172a)'
                     }}
                   />
                 </div>
@@ -232,7 +233,7 @@ const BoomBoomPage = () => {
 
               {/* Service Selection Tabs */}
               <div>
-                <label style={{ fontSize: '0.8rem', fontWeight: '700', color: '#64748b', display: 'block', marginBottom: '8px' }}>
+                <label style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted, #64748b)', display: 'block', marginBottom: '8px' }}>
                   PILIH LAYANAN
                 </label>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
@@ -245,18 +246,18 @@ const BoomBoomPage = () => {
                       gap: '10px',
                       padding: '12px',
                       borderRadius: '16px',
-                      border: activeBooking.serviceType === 'BoomRide' ? '2px solid #10b981' : '1px solid #e2e8f0',
-                      background: activeBooking.serviceType === 'BoomRide' ? '#f0fdf4' : '#ffffff',
-                      color: activeBooking.serviceType === 'BoomRide' ? '#065f46' : '#475569',
+                      border: activeBooking.serviceType === 'BoomRide' ? '2px solid #10b981' : '1px solid var(--border-color, #cbd5e1)',
+                      background: activeBooking.serviceType === 'BoomRide' ? 'rgba(16, 185, 129, 0.15)' : 'var(--bg-secondary, #f8fafc)',
+                      color: 'var(--text-main, #0f172a)',
                       fontWeight: '700',
                       cursor: 'pointer',
                       fontSize: '0.9rem'
                     }}
                   >
-                    <Bike size={22} color={activeBooking.serviceType === 'BoomRide' ? '#10b981' : '#64748b'} />
+                    <Bike size={22} color={activeBooking.serviceType === 'BoomRide' ? '#10b981' : 'var(--text-muted, #64748b)'} />
                     <div style={{ textAlign: 'left' }}>
-                      <div>BoomRide</div>
-                      <div style={{ fontSize: '0.7rem', fontWeight: 'normal', color: '#64748b' }}>Motor Desa</div>
+                      <div style={{ fontWeight: '800', color: 'var(--text-main, #0f172a)' }}>BoomRide</div>
+                      <div style={{ fontSize: '0.72rem', fontWeight: '600', color: 'var(--text-muted, #64748b)' }}>Motor Desa</div>
                     </div>
                   </button>
 
@@ -269,18 +270,18 @@ const BoomBoomPage = () => {
                       gap: '10px',
                       padding: '12px',
                       borderRadius: '16px',
-                      border: activeBooking.serviceType === 'BoomCar' ? '2px solid #10b981' : '1px solid #e2e8f0',
-                      background: activeBooking.serviceType === 'BoomCar' ? '#f0fdf4' : '#ffffff',
-                      color: activeBooking.serviceType === 'BoomCar' ? '#065f46' : '#475569',
+                      border: activeBooking.serviceType === 'BoomCar' ? '2px solid #10b981' : '1px solid var(--border-color, #cbd5e1)',
+                      background: activeBooking.serviceType === 'BoomCar' ? 'rgba(16, 185, 129, 0.15)' : 'var(--bg-secondary, #f8fafc)',
+                      color: 'var(--text-main, #0f172a)',
                       fontWeight: '700',
                       cursor: 'pointer',
                       fontSize: '0.9rem'
                     }}
                   >
-                    <Car size={22} color={activeBooking.serviceType === 'BoomCar' ? '#10b981' : '#64748b'} />
+                    <Car size={22} color={activeBooking.serviceType === 'BoomCar' ? '#10b981' : 'var(--text-muted, #64748b)'} />
                     <div style={{ textAlign: 'left' }}>
-                      <div>BoomCar</div>
-                      <div style={{ fontSize: '0.7rem', fontWeight: 'normal', color: '#64748b' }}>Mobil Nyaman</div>
+                      <div style={{ fontWeight: '800', color: 'var(--text-main, #0f172a)' }}>BoomCar</div>
+                      <div style={{ fontSize: '0.72rem', fontWeight: '600', color: 'var(--text-muted, #64748b)' }}>Mobil Nyaman</div>
                     </div>
                   </button>
                 </div>
@@ -292,14 +293,14 @@ const BoomBoomPage = () => {
                   type="submit"
                   style={{
                     background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                    color: 'white',
+                    color: '#ffffff',
                     border: 'none',
                     padding: '14px',
                     borderRadius: '16px',
                     fontWeight: '800',
                     fontSize: '1rem',
                     cursor: 'pointer',
-                    boxShadow: '0 6px 16px rgba(16, 185, 129, 0.3)',
+                    boxShadow: '0 6px 16px rgba(16, 185, 129, 0.35)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -316,9 +317,9 @@ const BoomBoomPage = () => {
                     navigate('/boomboom/book');
                   }}
                   style={{
-                    background: '#f8fafc',
-                    color: '#0f172a',
-                    border: '1.5px solid #cbd5e1',
+                    background: 'var(--bg-secondary, #f8fafc)',
+                    color: 'var(--text-main, #0f172a)',
+                    border: '1.5px solid var(--border-color, #cbd5e1)',
                     padding: '14px',
                     borderRadius: '16px',
                     fontWeight: '700',
@@ -343,7 +344,7 @@ const BoomBoomPage = () => {
           borderRadius: '28px',
           padding: '24px',
           boxShadow: '0 10px 30px rgba(0,0,0,0.04)',
-          border: '1px solid var(--border-color, #e2e8f0)',
+          border: '1px solid var(--border-color, #cbd5e1)',
           marginBottom: '32px'
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
@@ -351,15 +352,15 @@ const BoomBoomPage = () => {
               <h3 style={{ fontSize: '1.2rem', fontWeight: '800', margin: '0 0 4px', color: 'var(--text-main, #0f172a)' }}>
                 Peta Geospasial Sekitar
               </h3>
-              <p style={{ fontSize: '0.85rem', color: '#64748b', margin: 0 }}>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted, #64748b)', margin: 0 }}>
                 Visualisasi pengemudi lokal terverifikasi dan zona operasional mitra.
               </p>
             </div>
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <span style={{ fontSize: '0.85rem', fontWeight: '700', color: '#047857', background: '#ecfdf5', padding: '6px 12px', borderRadius: '12px' }}>
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--primary, #047857)', background: 'rgba(16, 185, 129, 0.15)', padding: '6px 12px', borderRadius: '12px' }}>
                 Est. Fares: ~{activeBooking.fareCalc.formatted.grossFare}
               </span>
-              <span style={{ fontSize: '0.85rem', fontWeight: '700', color: '#b45309', background: '#fffbeb', padding: '6px 12px', borderRadius: '12px' }}>
+              <span style={{ fontSize: '0.85rem', fontWeight: '700', color: '#b45309', background: 'rgba(245, 159, 0, 0.15)', padding: '6px 12px', borderRadius: '12px' }}>
                 Est. Waktu: ~{activeBooking.fareCalc.durationMin} Menit
               </span>
             </div>
@@ -368,25 +369,25 @@ const BoomBoomPage = () => {
           <MapViewComponent height="360px" showNearbyDrivers={true} />
         </div>
 
-        {/* CORE SERVICES CAROUSEL & FUTURE MODULES ARCHITECTURE */}
+        {/* CORE SERVICES CAROUSEL */}
         <div style={{ marginBottom: '40px' }}>
           <div style={{ textAlign: 'center', marginBottom: '24px' }}>
             <h2 style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main, #0f172a)', margin: '0 0 8px' }}>
               Layanan Mobilitas Komunitas
             </h2>
-            <p style={{ fontSize: '0.95rem', color: '#64748b', maxWidth: '600px', margin: '0 auto' }}>
+            <p style={{ fontSize: '0.95rem', color: 'var(--text-muted, #64748b)', maxWidth: '600px', margin: '0 auto' }}>
               Empat layanan utama MVP siap pakai dan modul masa depan yang terintegrasi secara arsitektural.
             </p>
           </div>
 
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
             gap: '20px'
           }}>
             {/* MVP 1: BoomRide */}
             <div style={{
-              background: '#ffffff',
+              background: 'var(--bg-card, #ffffff)',
               borderRadius: '24px',
               padding: '24px',
               boxShadow: '0 6px 20px rgba(0,0,0,0.04)',
@@ -409,8 +410,8 @@ const BoomBoomPage = () => {
                 }}>
                   <Bike size={26} />
                 </div>
-                <h3 style={{ fontSize: '1.2rem', fontWeight: '800', margin: '0 0 6px', color: '#0f172a' }}>BoomRide</h3>
-                <p style={{ fontSize: '0.85rem', color: '#64748b', lineHeight: '1.5' }}>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: '800', margin: '0 0 6px', color: 'var(--text-main, #0f172a)' }}>BoomRide</h3>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted, #64748b)', lineHeight: '1.5' }}>
                   Layanan ojek motor cepat untuk wilayah perdesaan dan antardesa.
                 </p>
               </div>
@@ -418,12 +419,12 @@ const BoomBoomPage = () => {
                 onClick={() => { setServiceType('BoomRide'); navigate('/boomboom/book'); }}
                 style={{
                   marginTop: '16px',
-                  background: '#ecfdf5',
-                  color: '#047857',
+                  background: 'rgba(16, 185, 129, 0.15)',
+                  color: 'var(--primary, #047857)',
                   border: 'none',
                   padding: '10px 14px',
                   borderRadius: '12px',
-                  fontWeight: '700',
+                  fontWeight: '800',
                   fontSize: '0.85rem',
                   cursor: 'pointer',
                   display: 'flex',
@@ -437,7 +438,7 @@ const BoomBoomPage = () => {
 
             {/* MVP 2: BoomCar */}
             <div style={{
-              background: '#ffffff',
+              background: 'var(--bg-card, #ffffff)',
               borderRadius: '24px',
               padding: '24px',
               boxShadow: '0 6px 20px rgba(0,0,0,0.04)',
@@ -460,8 +461,8 @@ const BoomBoomPage = () => {
                 }}>
                   <Car size={26} />
                 </div>
-                <h3 style={{ fontSize: '1.2rem', fontWeight: '800', margin: '0 0 6px', color: '#0f172a' }}>BoomCar</h3>
-                <p style={{ fontSize: '0.85rem', color: '#64748b', lineHeight: '1.5' }}>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: '800', margin: '0 0 6px', color: 'var(--text-main, #0f172a)' }}>BoomCar</h3>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted, #64748b)', lineHeight: '1.5' }}>
                   Transportasi mobil untuk rombongan keluarga atau barang komoditas.
                 </p>
               </div>
@@ -469,12 +470,12 @@ const BoomBoomPage = () => {
                 onClick={() => { setServiceType('BoomCar'); navigate('/boomboom/book'); }}
                 style={{
                   marginTop: '16px',
-                  background: '#ecfdf5',
-                  color: '#047857',
+                  background: 'rgba(16, 185, 129, 0.15)',
+                  color: 'var(--primary, #047857)',
                   border: 'none',
                   padding: '10px 14px',
                   borderRadius: '12px',
-                  fontWeight: '700',
+                  fontWeight: '800',
                   fontSize: '0.85rem',
                   cursor: 'pointer',
                   display: 'flex',
@@ -488,7 +489,7 @@ const BoomBoomPage = () => {
 
             {/* MVP 3: BoomSchedule */}
             <div style={{
-              background: '#ffffff',
+              background: 'var(--bg-card, #ffffff)',
               borderRadius: '24px',
               padding: '24px',
               boxShadow: '0 6px 20px rgba(0,0,0,0.04)',
@@ -511,8 +512,8 @@ const BoomBoomPage = () => {
                 }}>
                   <Clock size={26} />
                 </div>
-                <h3 style={{ fontSize: '1.2rem', fontWeight: '800', margin: '0 0 6px', color: '#0f172a' }}>BoomSchedule</h3>
-                <p style={{ fontSize: '0.85rem', color: '#64748b', lineHeight: '1.5' }}>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: '800', margin: '0 0 6px', color: 'var(--text-main, #0f172a)' }}>BoomSchedule</h3>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted, #64748b)', lineHeight: '1.5' }}>
                   Pesan perjalanan terjadwal untuk pasar, stasiun, atau kegiatan rutin.
                 </p>
               </div>
@@ -520,12 +521,12 @@ const BoomBoomPage = () => {
                 onClick={() => { setServiceType('BoomSchedule'); navigate('/boomboom/book'); }}
                 style={{
                   marginTop: '16px',
-                  background: '#fffbeb',
+                  background: 'rgba(245, 159, 0, 0.15)',
                   color: '#b45309',
                   border: 'none',
                   padding: '10px 14px',
                   borderRadius: '12px',
-                  fontWeight: '700',
+                  fontWeight: '800',
                   fontSize: '0.85rem',
                   cursor: 'pointer',
                   display: 'flex',
@@ -539,7 +540,7 @@ const BoomBoomPage = () => {
 
             {/* MVP 4: BoomTogether */}
             <div style={{
-              background: '#ffffff',
+              background: 'var(--bg-card, #ffffff)',
               borderRadius: '24px',
               padding: '24px',
               boxShadow: '0 6px 20px rgba(0,0,0,0.04)',
@@ -562,8 +563,8 @@ const BoomBoomPage = () => {
                 }}>
                   <Users size={26} />
                 </div>
-                <h3 style={{ fontSize: '1.2rem', fontWeight: '800', margin: '0 0 6px', color: '#0f172a' }}>BoomTogether</h3>
-                <p style={{ fontSize: '0.85rem', color: '#64748b', lineHeight: '1.5' }}>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: '800', margin: '0 0 6px', color: 'var(--text-main, #0f172a)' }}>BoomTogether</h3>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted, #64748b)', lineHeight: '1.5' }}>
                   Tumpangan bersama komunitas hemat ongkos & kurangi emisi karbon.
                 </p>
               </div>
@@ -571,12 +572,12 @@ const BoomBoomPage = () => {
                 onClick={() => { setServiceType('BoomTogether'); navigate('/boomboom/book'); }}
                 style={{
                   marginTop: '16px',
-                  background: '#ecfeff',
+                  background: 'rgba(6, 182, 212, 0.15)',
                   color: '#0891b2',
                   border: 'none',
                   padding: '10px 14px',
                   borderRadius: '12px',
-                  fontWeight: '700',
+                  fontWeight: '800',
                   fontSize: '0.85rem',
                   cursor: 'pointer',
                   display: 'flex',
@@ -592,25 +593,25 @@ const BoomBoomPage = () => {
           {/* Future Modules Preview */}
           <div style={{
             marginTop: '28px',
-            background: '#f8fafc',
+            background: 'var(--bg-card, #f8fafc)',
             borderRadius: '24px',
             padding: '20px 24px',
-            border: '1px stroke #e2e8f0'
+            border: '1px solid var(--border-color, #e2e8f0)'
           }}>
-            <div style={{ fontSize: '0.8rem', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>
+            <div style={{ fontSize: '0.8rem', fontWeight: '800', color: 'var(--text-muted, #64748b)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>
               MODUL MASA DEPAN TERKUNCI (FEATURE FLAG ARCHITECTURE)
             </div>
             <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', opacity: 0.65, fontSize: '0.85rem', fontWeight: '700' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', opacity: 0.8, fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-main)' }}>
                 <Package size={16} /> BoomSend (Pengiriman)
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', opacity: 0.65, fontSize: '0.85rem', fontWeight: '700' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', opacity: 0.8, fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-main)' }}>
                 <Compass size={16} /> BoomTour (Wisata Bambu)
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', opacity: 0.65, fontSize: '0.85rem', fontWeight: '700' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', opacity: 0.8, fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-main)' }}>
                 <Home size={16} /> BoomVillage (Ekonomi Desa)
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', opacity: 0.65, fontSize: '0.85rem', fontWeight: '700' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', opacity: 0.8, fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-main)' }}>
                 <HeartPulse size={16} /> BoomCare (Layanan Kesehatan)
               </div>
             </div>

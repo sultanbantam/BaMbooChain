@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Award, Leaf, CheckCircle2, ShieldAlert, Sparkles, ArrowUpRight, Zap } from 'lucide-react';
+import { Leaf, CheckCircle2, Sparkles } from 'lucide-react';
 import BoomBoomNavHeader from '../../components/boomboom/BoomBoomNavHeader';
 import { useBoomBoomStore } from '../../services/boomboom/boomboomStore';
 
@@ -20,15 +20,15 @@ const BoomRewardsPage = () => {
   const totalBmcPending = rewards.filter(r => r.status === 'CLAIMABLE').reduce((acc, r) => acc + r.bmc_amount, 0);
 
   return (
-    <div style={{ background: 'var(--bg-color, #f8fafc)', minHeight: '100vh', paddingBottom: '60px' }}>
+    <div style={{ background: 'var(--bg-color, #f8fafc)', color: 'var(--text-main, #0f172a)', minHeight: '100vh', paddingBottom: '60px' }}>
       <BoomBoomNavHeader />
 
-      <div style={{ maxWidth: '1000px', margin: '24px auto', padding: '0 20px' }}>
+      <div style={{ maxWidth: '1000px', margin: '24px auto', padding: '0 16px' }}>
         
         {/* REWARD HERO BANNER */}
         <div style={{
           background: 'linear-gradient(135deg, #78350f 0%, #b45309 60%, #d97706 100%)',
-          color: 'white',
+          color: '#ffffff',
           borderRadius: '28px',
           padding: '28px',
           marginBottom: '24px',
@@ -43,7 +43,7 @@ const BoomRewardsPage = () => {
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.2)', padding: '4px 12px', borderRadius: '14px', fontSize: '0.8rem', fontWeight: '800', color: '#fef08a', marginBottom: '8px' }}>
               <Sparkles size={16} /> LEDGER REWARD MOBILITAS BMC
             </div>
-            <h1 style={{ fontSize: '2rem', fontWeight: '900', margin: '0 0 6px' }}>
+            <h1 style={{ fontSize: '2rem', fontWeight: '900', margin: '0 0 6px', color: '#ffffff' }}>
               BMC Token Reward Hub
             </h1>
             <p style={{ fontSize: '0.9rem', color: '#fef3c7', margin: 0, maxWidth: '540px' }}>
@@ -51,7 +51,7 @@ const BoomRewardsPage = () => {
             </p>
           </div>
 
-          <div style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '20px', borderRadius: '20px', textAlign: 'right', border: '1px solid rgba(255,255,255,0.3)' }}>
+          <div style={{ background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(8px)', padding: '20px', borderRadius: '20px', textAlign: 'right', border: '1px solid rgba(255,255,255,0.3)' }}>
             <div style={{ fontSize: '0.8rem', fontWeight: '800', color: '#fef08a' }}>TOTAL TERKUMPUL</div>
             <div style={{ fontSize: '2rem', fontWeight: '900', color: '#ffffff' }}>
               {totalBmcEarned} BMC
@@ -69,7 +69,7 @@ const BoomRewardsPage = () => {
           padding: '24px',
           marginBottom: '24px',
           boxShadow: '0 8px 25px rgba(0,0,0,0.04)',
-          border: '1px solid var(--border-color, #e2e8f0)',
+          border: '1px solid var(--border-color, #cbd5e1)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -93,16 +93,16 @@ const BoomRewardsPage = () => {
               <div style={{ fontSize: '0.8rem', fontWeight: '800', color: '#047857', textTransform: 'uppercase' }}>
                 GREEN TRIP SCORE & "ESTIMASI DAMPAK MOBILITAS"
               </div>
-              <div style={{ fontSize: '1.1rem', fontWeight: '800', color: '#0f172a' }}>
+              <div style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--text-main, #0f172a)' }}>
                 Penjaga Bumi Nusantara (Green Score: 180 Poin)
               </div>
-              <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted, #64748b)' }}>
                 Estimasi emisi terhindar: ~2.8 kg CO2 (Mobilitas Ramah Lingkungan)
               </div>
             </div>
           </div>
 
-          <span style={{ fontSize: '0.75rem', background: '#fef3c7', color: '#92400e', padding: '6px 12px', borderRadius: '12px', fontWeight: '700' }}>
+          <span style={{ fontSize: '0.75rem', background: '#fef3c7', color: '#92400e', padding: '6px 12px', borderRadius: '12px', fontWeight: '800' }}>
             Bukan Kredit Karbon Terverifikasi (Estimasi Mobilitas)
           </span>
         </div>
@@ -113,16 +113,16 @@ const BoomRewardsPage = () => {
           borderRadius: '24px',
           padding: '24px',
           boxShadow: '0 8px 25px rgba(0,0,0,0.04)',
-          border: '1px solid var(--border-color, #e2e8f0)'
+          border: '1px solid var(--border-color, #cbd5e1)'
         }}>
-          <h3 style={{ fontSize: '1.2rem', fontWeight: '800', margin: '0 0 16px', color: '#0f172a' }}>
+          <h3 style={{ fontSize: '1.2rem', fontWeight: '800', margin: '0 0 16px', color: 'var(--text-main, #0f172a)' }}>
             Buku Besar Catatan Reward (Reward Ledger)
           </h3>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {rewards.map(r => (
               <div key={r.reward_id} style={{
-                background: '#f8fafc',
+                background: 'var(--bg-secondary, #f8fafc)',
                 borderRadius: '18px',
                 padding: '16px 20px',
                 display: 'flex',
@@ -130,13 +130,13 @@ const BoomRewardsPage = () => {
                 alignItems: 'center',
                 flexWrap: 'wrap',
                 gap: '12px',
-                border: '1px solid #cbd5e1'
+                border: '1px solid var(--border-color, #cbd5e1)'
               }}>
                 <div>
-                  <div style={{ fontSize: '0.8rem', fontWeight: '800', color: '#b45309' }}>
+                  <div style={{ fontSize: '0.85rem', fontWeight: '800', color: '#b45309' }}>
                     {r.reward_label}
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px' }}>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted, #64748b)', marginTop: '2px' }}>
                     ID: {r.reward_id} | Dibuat: {new Date(r.created_at).toLocaleString('id-ID')}
                   </div>
                 </div>
@@ -152,7 +152,7 @@ const BoomRewardsPage = () => {
                       disabled={claimingId === r.reward_id}
                       style={{
                         background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                        color: 'white',
+                        color: '#ffffff',
                         border: 'none',
                         padding: '8px 18px',
                         borderRadius: '12px',
@@ -165,8 +165,8 @@ const BoomRewardsPage = () => {
                     </button>
                   ) : (
                     <span style={{
-                      background: '#d1fae5',
-                      color: '#047857',
+                      background: 'rgba(16, 185, 129, 0.18)',
+                      color: 'var(--primary, #047857)',
                       padding: '6px 14px',
                       borderRadius: '12px',
                       fontSize: '0.8rem',

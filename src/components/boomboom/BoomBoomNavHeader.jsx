@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Navigation, Car, Shield, Award, HelpCircle, UserCheck, Building2, History, Settings, Flame } from 'lucide-react';
 import { useBoomBoomStore } from '../../services/boomboom/boomboomStore';
@@ -6,6 +6,17 @@ import { useBoomBoomStore } from '../../services/boomboom/boomboomStore';
 const BoomBoomNavHeader = () => {
   const location = useLocation();
   const { featureFlags } = useBoomBoomStore();
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const isMobile = windowWidth <= 1100;
+  // Desktop navbar is ~140px tall (ad-space + top bar + bottom bar), mobile is 70px tall
+  const topMargin = isMobile ? '75px' : '140px';
 
   const navItems = [
     { path: '/boomboom', label: 'Beranda', icon: <Navigation size={16} /> },
@@ -22,13 +33,14 @@ const BoomBoomNavHeader = () => {
   return (
     <div style={{
       background: 'linear-gradient(135deg, #064e3b 0%, #047857 50%, #059669 100%)',
-      color: 'white',
-      padding: '16px 20px 12px',
+      color: '#ffffff',
+      padding: isMobile ? '12px 14px' : '18px 24px 14px',
       borderRadius: '0 0 24px 24px',
       boxShadow: '0 10px 25px rgba(6, 78, 59, 0.25)',
-      marginTop: '115px',
+      marginTop: topMargin,
       position: 'relative',
-      zIndex: 100
+      zIndex: 90,
+      transition: 'margin-top 0.2s ease'
     }}>
       <div style={{
         maxWidth: '1200px',
@@ -42,24 +54,24 @@ const BoomBoomNavHeader = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{
               background: '#f59f00',
-              color: '#000',
+              color: '#000000',
               fontWeight: '900',
-              fontSize: '1.2rem',
+              fontSize: isMobile ? '1rem' : '1.2rem',
               padding: '6px 14px',
               borderRadius: '14px',
-              letterSpacing: '1px',
+              letterSpacing: '0.5px',
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
               boxShadow: '0 4px 12px rgba(245, 159, 0, 0.4)'
             }}>
-              <Flame size={20} color="#000" /> BOOMBOOM
+              <Flame size={isMobile ? 18 : 20} color="#000000" /> BOOMBOOM
             </div>
             <div>
-              <div style={{ fontSize: '0.9rem', fontWeight: '700', color: '#a7f3d0' }}>
+              <div style={{ fontSize: isMobile ? '0.8rem' : '0.9rem', fontWeight: '700', color: '#a7f3d0' }}>
                 Green Community Mobility
               </div>
-              <div style={{ fontSize: '0.75rem', opacity: 0.9 }}>
+              <div style={{ fontSize: isMobile ? '0.7rem' : '0.75rem', opacity: 0.9, color: '#ecfdf5' }}>
                 “Dari Desa, Menghubungkan Nusantara.”
               </div>
             </div>
@@ -89,14 +101,14 @@ const BoomBoomNavHeader = () => {
           </div>
         </div>
 
-        {/* Dynamic Nav Items */}
+        {/* Dynamic Nav Items Carousel */}
         <div style={{
           display: 'flex',
           gap: '8px',
           overflowX: 'auto',
           paddingBottom: '4px',
-          scrollbarWidth: 'none',
-          msOverflowStyle: 'none'
+          WebkitOverflowScrolling: 'touch',
+          scrollbarWidth: 'none'
         }}>
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
@@ -111,17 +123,17 @@ const BoomBoomNavHeader = () => {
                   padding: '8px 14px',
                   borderRadius: '12px',
                   fontSize: '0.85rem',
-                  fontWeight: isActive ? '700' : '500',
+                  fontWeight: isActive ? '800' : '600',
                   textDecoration: 'none',
                   whiteSpace: 'nowrap',
                   transition: 'all 0.2s ease',
                   background: isActive
-                    ? 'rgba(255, 255, 255, 0.25)'
+                    ? 'rgba(255, 255, 255, 0.28)'
                     : item.highlight
-                    ? 'rgba(245, 159, 0, 0.2)'
-                    : 'rgba(255, 255, 255, 0.08)',
+                    ? 'rgba(245, 159, 0, 0.25)'
+                    : 'rgba(255, 255, 255, 0.1)',
                   color: isActive ? '#ffffff' : item.highlight ? '#fef08a' : '#d1fae5',
-                  border: isActive ? '1px solid rgba(255, 255, 255, 0.4)' : '1px solid transparent'
+                  border: isActive ? '1px solid rgba(255, 255, 255, 0.5)' : '1px solid transparent'
                 }}
               >
                 {item.icon}
@@ -129,7 +141,7 @@ const BoomBoomNavHeader = () => {
                 {item.badge && (
                   <span style={{
                     background: '#f59f00',
-                    color: '#000',
+                    color: '#000000',
                     fontSize: '0.65rem',
                     fontWeight: '800',
                     padding: '1px 5px',
