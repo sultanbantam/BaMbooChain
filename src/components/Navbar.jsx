@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Globe, Bell, ChevronDown, Menu, X, Shield, Layout, TreeDeciduous, Truck, Factory, Wallet, Leaf, ShoppingCart, Users, GraduationCap, BarChart3, TrendingUp, User, Sun, Moon } from 'lucide-react';
+import { Globe, Bell, ChevronDown, Menu, X, Shield, Layout, TreeDeciduous, Truck, Factory, Wallet, Leaf, ShoppingCart, Users, GraduationCap, BarChart3, TrendingUp, User, Sun, Moon, Car } from 'lucide-react';
 import { getAssetUrl } from '../utils/assets';
 import { Link } from 'react-router-dom';
 import AdSpace from './AdSpace';
@@ -61,6 +61,7 @@ const Navbar = () => {
 
   const bambooNusaFeatures = [
     { label: t('feature_overview'), path: '/bamboochain', icon: <Layout size={16} /> },
+    { label: '🚀 BoomBoom Mobility', path: '/boomboom', icon: <Car size={16} /> },
     { label: 'Mitra & Petani', path: '/bambunusa/farmers', icon: <Users size={16} /> },
     { label: t('feature_plantation'), path: '/bamboochain/plantation', icon: <TreeDeciduous size={16} /> },
     { label: t('feature_supply_chain'), path: '/bamboochain/supply-chain', icon: <Truck size={16} /> },
@@ -213,6 +214,7 @@ const Navbar = () => {
 
           {/* Row 2: Top Menu Bar */}
           <div style={{ background: 'var(--bg-card)', height: '45px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '25px', padding: '0 32px', borderBottom: '1px solid var(--border-color)' }}>
+            <Link to="/boomboom" style={{ fontSize: '0.85rem', color: '#f59f00', textDecoration: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>🚀 BoomBoom</Link>
             <Link to="/bambupedia" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('nav_bambupedia')}</Link>
             <Link to="/bamboochain/academy" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('feature_academy')}</Link>
             <Link to="/wanipiro" style={{ fontSize: '0.85rem', color: 'var(--primary)', textDecoration: 'none', fontWeight: 'bold' }}>WaniPiro?</Link>

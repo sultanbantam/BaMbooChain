@@ -107,6 +107,19 @@ const SettingsPage = lazyWithRetry(() => import('./pages/SettingsPage'));
 const LoginPage = lazyWithRetry(() => import('./pages/LoginPage'));
 const UgandaProjectDashboard = lazyWithRetry(() => import('./pages/consortium/UgandaProjectDashboard'));
 
+// BoomBoom Green Mobility Modules
+const BoomBoomPage = lazyWithRetry(() => import('./pages/boomboom/BoomBoomPage'));
+const BoomBookPage = lazyWithRetry(() => import('./pages/boomboom/BoomBookPage'));
+const BoomDriverRegisterPage = lazyWithRetry(() => import('./pages/boomboom/BoomDriverRegisterPage'));
+const BoomDriverDashboardPage = lazyWithRetry(() => import('./pages/boomboom/BoomDriverDashboardPage'));
+const BoomOperatorRegisterPage = lazyWithRetry(() => import('./pages/boomboom/BoomOperatorRegisterPage'));
+const BoomOperatorDashboardPage = lazyWithRetry(() => import('./pages/boomboom/BoomOperatorDashboardPage'));
+const BoomTripsPage = lazyWithRetry(() => import('./pages/boomboom/BoomTripsPage'));
+const BoomRewardsPage = lazyWithRetry(() => import('./pages/boomboom/BoomRewardsPage'));
+const BoomSafetyPage = lazyWithRetry(() => import('./pages/boomboom/BoomSafetyPage'));
+const BoomHelpPage = lazyWithRetry(() => import('./pages/boomboom/BoomHelpPage'));
+const BoomAdminDashboardPage = lazyWithRetry(() => import('./pages/boomboom/BoomAdminDashboardPage'));
+
 const PageLoader = () => (
   <div style={{
     display: 'flex',
@@ -191,6 +204,14 @@ const SEO_MAP = {
   '/bamboochain': {
     title: 'Dasbor Ekosistem BaMbooChain',
     description: 'Pantau kepemilikan aset, penanaman digital, dan kontribusi data on-chain Anda dalam satu dasbor terpadu.'
+  },
+  '/boomboom': {
+    title: 'BOOMBOOM — Green Community Mobility BaMbooChain',
+    description: 'Dari Desa, Menghubungkan Nusantara. Transportasi komunitas yang mudah, aman, dan terhubung dengan ekosistem hijau BaMbooChain.'
+  },
+  '/boomboom/book': {
+    title: 'Pesan Perjalanan BOOMBOOM — Green Mobility',
+    description: 'Pesan BoomRide, BoomCar, BoomSchedule, atau BoomTogether dengan estimasi tarif transparan dan reward token BMC.'
   }
 };
 
@@ -336,6 +357,19 @@ function App() {
             <Route path="/tobat-ekologi" element={<TobatEkologiDashboard />} />
             <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
             <Route path="/consortium/uganda" element={<ProtectedRoute><UgandaProjectDashboard /></ProtectedRoute>} />
+            
+            {/* BoomBoom Mobility Routes */}
+            <Route path="/boomboom" element={<BoomBoomPage />} />
+            <Route path="/boomboom/book" element={<BoomBookPage />} />
+            <Route path="/boomboom/driver" element={<BoomDriverRegisterPage />} />
+            <Route path="/boomboom/driver/dashboard" element={<ProtectedRoute><BoomDriverDashboardPage /></ProtectedRoute>} />
+            <Route path="/boomboom/operator" element={<BoomOperatorRegisterPage />} />
+            <Route path="/boomboom/operator/dashboard" element={<ProtectedRoute><BoomOperatorDashboardPage /></ProtectedRoute>} />
+            <Route path="/boomboom/trips" element={<ProtectedRoute><BoomTripsPage /></ProtectedRoute>} />
+            <Route path="/boomboom/rewards" element={<ProtectedRoute><BoomRewardsPage /></ProtectedRoute>} />
+            <Route path="/boomboom/safety" element={<BoomSafetyPage />} />
+            <Route path="/boomboom/help" element={<BoomHelpPage />} />
+            <Route path="/boomboom/admin" element={<ProtectedRoute><BoomAdminDashboardPage /></ProtectedRoute>} />
             
             <Route path="/faq" element={<FAQPage />} />
           </Routes>
