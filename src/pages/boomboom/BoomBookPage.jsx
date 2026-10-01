@@ -24,7 +24,18 @@ import SosButton from '../../components/boomboom/SosButton';
 import { useBoomBoomStore } from '../../services/boomboom/boomboomStore';
 import { calculateGreenScore } from '../../services/boomboom/rewardEngine';
 
+const useIsMobile = () => {
+  const [w, setW] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
+  useEffect(() => {
+    const h = () => setW(window.innerWidth);
+    window.addEventListener('resize', h);
+    return () => window.removeEventListener('resize', h);
+  }, []);
+  return w <= 768;
+};
+
 const BoomBookPage = () => {
+  const isMobile = useIsMobile();
   const navigate = useNavigate();
   const {
     activeBooking,
@@ -86,10 +97,10 @@ const BoomBookPage = () => {
   };
 
   return (
-    <div style={{ background: 'var(--bg-color, #f8fafc)', color: 'var(--text-main, #0f172a)', minHeight: '100vh', paddingBottom: '60px' }}>
+    <div style={{ background: 'var(--bg-color, #f8fafc)', color: 'var(--text-main, #0f172a)', minHeight: '100vh', paddingBottom: '64px' }}>
       <BoomBoomNavHeader />
 
-      <div style={{ maxWidth: '1100px', margin: '24px auto', padding: '0 16px' }}>
+      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: isMobile ? '14px 12px' : '24px 16px' }}>
         
         {/* TOP STATUS BAR IF TRIP IN PROGRESS */}
         {activeBooking.step !== 'IDLE' && activeBooking.step !== 'COMPLETED' && (
@@ -152,8 +163,8 @@ const BoomBookPage = () => {
 
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-          gap: '24px'
+          gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(300px, 1fr))',
+          gap: isMobile ? '16px' : '24px'
         }}>
 
           {/* LEFT COLUMN: MAP & DRIVER CARD */}
@@ -166,7 +177,7 @@ const BoomBookPage = () => {
               border: '1px solid var(--border-color, #cbd5e1)',
               marginBottom: '20px'
             }}>
-              <MapViewComponent height="380px" showNearbyDrivers={true} />
+              <MapViewComponent height={isMobile ? '240px' : '380px'} showNearbyDrivers={true} />
             </div>
 
             {/* DRIVER INFO CARD */}
