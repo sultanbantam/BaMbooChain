@@ -3,12 +3,13 @@ import { X, Mail, Phone, Lock, User, ArrowRight, CheckCircle, Monitor, ShieldChe
 import { useAuth } from '../context/AuthContext';
 
 const AuthModal = () => {
-  const { isAuthModalOpen, closeModal, authModalInitialTab, login, signup, loginWithGoogle } = useAuth();
+  const { isAuthModalOpen, closeModal, authModalInitialTab, login, signup, loginWithGoogle, loginWithFacebook } = useAuth();
   
   const [activeTab, setActiveTab] = useState('login'); // 'login', 'signup', 'forgot'
   const [method, setMethod] = useState('email'); // 'email', 'phone', 'username'
   const [step, setStep] = useState(1); // 1 = input, 2 = OTP/Captcha
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isFacebookLoading, setIsFacebookLoading] = useState(false);
 
   // Form State
   const [username, setUsername] = useState('');
@@ -200,9 +201,21 @@ const AuthModal = () => {
         closeModal();
         setTimeout(() => alert("✅ Berhasil Masuk dengan Google!"), 100);
       }
-    } else {
-      alert(`Simulasi login ${provider} belum tersedia. Gunakan Google atau Email.`);
+      return;
     }
+
+    if (provider === 'Facebook') {
+      setIsFacebookLoading(true);
+      const success = await loginWithFacebook();
+      setIsFacebookLoading(false);
+      if (success) {
+        closeModal();
+        setTimeout(() => alert("✅ Berhasil Masuk dengan Facebook!"), 100);
+      }
+      return;
+    }
+
+    alert(`Login ${provider} belum tersedia. Gunakan Facebook, Google, atau Email.`);
   };
 
   // Switch tabs -> reset states
@@ -433,11 +446,23 @@ const AuthModal = () => {
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                <button type="button" onClick={() => handleOAuth('Google')} style={{ padding: '12px', background: 'white', border: '1px solid #dee2e6', borderRadius: '12px', fontSize: '0.9rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" style={{ width: '18px' }} />  Google
+                <button
+                  type="button"
+                  onClick={() => handleOAuth('Google')}
+                  disabled={isGoogleLoading || isFacebookLoading}
+                  style={{ padding: '12px', background: 'white', border: '1px solid #dee2e6', borderRadius: '12px', fontSize: '0.9rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', opacity: isGoogleLoading || isFacebookLoading ? 0.7 : 1 }}
+                >
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" style={{ width: '18px' }} />
+                  {isGoogleLoading ? 'Memuat...' : 'Google'}
                 </button>
-                <button type="button" onClick={() => handleOAuth('Apple')} style={{ padding: '12px', background: 'white', border: '1px solid #dee2e6', borderRadius: '12px', fontSize: '0.9rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-                   <Monitor size={18} /> Apple
+                <button
+                  type="button"
+                  onClick={() => handleOAuth('Facebook')}
+                  disabled={isGoogleLoading || isFacebookLoading}
+                  style={{ padding: '12px', background: '#1877F2', color: 'white', border: '1px solid #1877F2', borderRadius: '12px', fontSize: '0.9rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', opacity: isGoogleLoading || isFacebookLoading ? 0.7 : 1 }}
+                >
+                  <span aria-hidden="true" style={{ fontSize: '18px', fontWeight: '900', lineHeight: 1 }}>f</span>
+                  {isFacebookLoading ? 'Memuat...' : 'Facebook'}
                 </button>
               </div>
             </>
