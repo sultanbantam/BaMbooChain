@@ -38,6 +38,7 @@ const ContactPage = lazyWithRetry(() => import('./pages/ContactPage'));
 const PartnersPage = lazyWithRetry(() => import('./pages/PartnersPage'));
 const DisclaimerPage = lazyWithRetry(() => import('./pages/DisclaimerPage'));
 const PrivacyPolicyPage = lazyWithRetry(() => import('./pages/PrivacyPolicyPage'));
+const DataDeletionPage = lazyWithRetry(() => import('./pages/DataDeletionPage'));
 const TermsOfServicePage = lazyWithRetry(() => import('./pages/TermsOfServicePage'));
 const TransparencyPage = lazyWithRetry(() => import('./pages/TransparencyPage'));
 const ProfilePage = lazyWithRetry(() => import('./pages/ProfilePage'));
@@ -190,8 +191,12 @@ const SEO_MAP = {
     description: 'Temukan jawaban atas pertanyaan umum seputar penanaman bambu digital, kegunaan token BMC, dan tata kelola DAO.'
   },
   '/privacy': {
-    title: 'Kebijakan Privasi (Privacy Policy) - BaMbooChain',
-    description: 'Kebijakan privasi aplikasi BaMbooChain mengenai perlindungan data pengguna, autentikasi Pi SDK, dan kerahasiaan geospasial.'
+    title: 'Kebijakan Privasi (Privacy Policy) - BambooChain',
+    description: 'Kebijakan privasi BambooChain yang dikelola Yayasan Sabumi Nusantara Jaya, termasuk Facebook Login, Firebase Authentication, dan hak pengguna.'
+  },
+  '/data-deletion': {
+    title: 'Penghapusan Data Pengguna - BambooChain',
+    description: 'Petunjuk resmi untuk meminta penghapusan data akun BambooChain, termasuk akun yang terhubung melalui Facebook Login.'
   },
   '/terms': {
     title: 'Ketentuan Layanan (Terms of Service) - BaMbooChain',
@@ -292,6 +297,7 @@ function App() {
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/disclaimer" element={<DisclaimerPage />} />
             <Route path="/privacy" element={<PrivacyPolicyPage />} />
+            <Route path="/data-deletion" element={<DataDeletionPage />} />
             <Route path="/terms" element={<TermsOfServicePage />} />
             <Route path="/transparency" element={<TransparencyPage />} />
             <Route path="/bamboochain/marketplace" element={<BcMarketplacePage />} />
