@@ -9,6 +9,7 @@ import {
   signInWithRedirect,
   getRedirectResult,
   GoogleAuthProvider,
+  FacebookAuthProvider,
   setPersistence,
   browserLocalPersistence
 } from "firebase/auth";
@@ -57,7 +58,7 @@ const buildFirebaseUserProfile = (fbUser) => {
 
   return {
     id: fbUser.uid,
-    name: fbUser.displayName || username || 'Google User',
+    name: fbUser.displayName || username || 'BambooChain Member',
     username,
     email: fbUser.email || '',
     phone: fbUser.phoneNumber || '',
@@ -196,7 +197,7 @@ export const AuthProvider = ({ children }) => {
       try {
         const result = await getRedirectResult(auth);
         if (result?.user) {
-          console.log("Google Redirect Auth Success:", result.user.uid);
+          console.log("OAuth Redirect Auth Success:", result.user.uid);
           const userData = await ensureFirebaseUserProfile(result.user);
           setUser(userData);
           setIsAuthenticated(true);
@@ -687,6 +688,57 @@ export const AuthProvider = ({ children }) => {
       }
 
       alert("Google Auth Error: " + err.message);
+      return false;
+    }
+  };
+
+  const loginWithFacebook = async () => {
+    const facebookProvider = new FacebookAuthProvider();
+    facebookProvider.addScope('email');
+    facebookProvider.addScope('public_profile');
+
+    const userAgent = navigator.userAgent || '';
+    const isSafariLike = /Safari/i.test(userAgent) && !/Chrome|CriOS|Chromium|Edg|OPR|Firefox|FxiOS/i.test(userAgent);
+    const isIOS = /iPhone|iPad|iPod/i.test(userAgent);
+    const shouldUseRedirectFirst = isIOS || isSafariLike;
+
+    try {
+      await setPersistence(auth, browserLocalPersistence);
+
+      if (shouldUseRedirectFirst) {
+        await signInWithRedirect(auth, facebookProvider);
+        return false;
+      }
+
+      const result = await signInWithPopup(auth, facebookProvider);
+      const userData = await ensureFirebaseUserProfile(result.user);
+      setUser(userData);
+      setIsAuthenticated(true);
+      localStorage.setItem('yayasan_user', JSON.stringify(userData));
+      closeModal();
+      return true;
+    } catch (err) {
+      const canRetryWithRedirect = [
+        'auth/popup-blocked',
+        'auth/cancelled-popup-request',
+        'auth/operation-not-supported-in-this-environment'
+      ].includes(err.code);
+
+      if (canRetryWithRedirect) {
+        try {
+          await signInWithRedirect(auth, facebookProvider);
+          return false;
+        } catch (redirectErr) {
+          err = redirectErr;
+        }
+      }
+
+      if (err.code === 'auth/account-exists-with-different-credential') {
+        alert('Email Facebook ini sudah terdaftar dengan metode login lain. Masuk terlebih dahulu menggunakan metode yang sebelumnya dipakai (Google atau Email/Password), lalu hubungkan Facebook dari akun yang sama.');
+        return false;
+      }
+
+      alert("Facebook Auth Error: " + err.message);
       return false;
     }
   };
@@ -1411,6 +1463,7 @@ export const AuthProvider = ({ children }) => {
       login, 
       signup, 
       loginWithGoogle,
+      loginWithFacebook,
       logout,
       openLoginModal,
       openSignupModal,
