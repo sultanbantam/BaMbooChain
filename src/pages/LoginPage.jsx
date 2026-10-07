@@ -4,6 +4,43 @@ import { useAuth } from '../context/AuthContext';
 import { auth } from '../firebase/config';
 import { useAuthStore } from '../store/useAuthStore';
 
+/**
+ * Menunggu auth.currentUser tersedia dari Firebase SDK.
+ * Ini diperlukan karena Firebase Auth bersifat async — saat halaman pertama kali dimuat,
+ * `auth.currentUser` bisa masih null meski user sudah login (sesi tersimpan di localStorage).
+ * @param {number} timeoutMs - Batas waktu tunggu dalam milidetik (default: 8000ms)
+ */
+const waitForFirebaseCurrentUser = (timeoutMs = 8000) => {
+  return new Promise((resolve, reject) => {
+    if (auth.currentUser) {
+      resolve(auth.currentUser);
+      return;
+    }
+
+    let settled = false;
+    const timer = setTimeout(() => {
+      if (!settled) {
+        settled = true;
+        unsubscribe();
+        reject(new Error('Sesi Firebase tidak tersedia. Silakan logout lalu login kembali.'));
+      }
+    }, timeoutMs);
+
+    const unsubscribe = auth.onAuthStateChanged((firebaseUser) => {
+      if (!settled) {
+        settled = true;
+        clearTimeout(timer);
+        unsubscribe();
+        if (firebaseUser) {
+          resolve(firebaseUser);
+        } else {
+          reject(new Error('Sesi Firebase kosong. Silakan login ulang ke BambooChain.'));
+        }
+      }
+    });
+  });
+};
+
 const LoginPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -29,11 +66,12 @@ const LoginPage = () => {
         hasAttemptedRef.current = true;
         setStatusText('Memverifikasi sesi SSO...');
         try {
-          if (!auth.currentUser) {
-            throw new Error("Sesi Firebase kosong, silakan muat ulang halaman.");
-          }
+          // Tunggu Firebase currentUser siap (mengatasi race condition antara
+          // localStorage cache dan inisialisasi async Firebase SDK)
+          setStatusText('Menghubungkan ke sesi Firebase...');
+          const firebaseCurrentUser = await waitForFirebaseCurrentUser(8000);
 
-          const idToken = await auth.currentUser.getIdToken(true);
+          const idToken = await firebaseCurrentUser.getIdToken(true);
           const response = await fetch('/api/sso/mint-token', {
             method: 'POST',
             headers: {
