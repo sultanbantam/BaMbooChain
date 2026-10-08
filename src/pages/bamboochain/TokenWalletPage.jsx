@@ -1484,7 +1484,13 @@ const ValidatorBMC = () => {
   };
 
   const staked = user?.stakedBalance || 0;
-  const isAdmin = user?.username === 'admin_yayasan';
+  const isAdmin = 
+    user?.username === 'admin_yayasan' || 
+    user?.username === 'sultanbantam' || 
+    user?.role === 'admin_yayasan' || 
+    user?.role === 'admin' || 
+    user?.isAdmin === true || 
+    user?.email === 'sultanbantam@gmail.com';
   
   let tierName = "Non-Validator";
   let tierLevel = 0;

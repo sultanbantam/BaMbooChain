@@ -10,7 +10,8 @@ export function usePartnerApplications(userId, username) {
     queryFn: async () => {
       if (!userId) return [];
       const partnerAppsRef = collection(db, 'partner_applications');
-      const q = username === 'admin_yayasan'
+      const isAdmin = username === 'admin_yayasan' || username === 'sultanbantam';
+      const q = isAdmin
         ? partnerAppsRef
         : query(partnerAppsRef, where('userId', '==', userId));
 
@@ -43,7 +44,8 @@ export function useLocationProposals(userId, username) {
     queryFn: async () => {
       if (!userId) return [];
       const locationPropsRef = collection(db, 'location_proposals');
-      const q = username === 'admin_yayasan'
+      const isAdmin = username === 'admin_yayasan' || username === 'sultanbantam';
+      const q = isAdmin
         ? locationPropsRef
         : query(locationPropsRef, where('userId', '==', userId));
 
@@ -105,7 +107,7 @@ export function usePlantationDonations(userId, username) {
       
       // If a userId is provided and it's not the admin, filter by userId.
       // If no userId is provided (e.g., public impact page), fetch all (or aggregate in future).
-      if (userId && username !== 'admin_yayasan') {
+      if (userId && username !== 'admin_yayasan' && username !== 'sultanbantam') {
         q = query(plantationsRef, where('userId', '==', userId));
       }
 

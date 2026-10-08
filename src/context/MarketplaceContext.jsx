@@ -64,7 +64,15 @@ export const MarketplaceProvider = ({ children }) => {
       return;
     }
 
-    const q = user.username === 'admin_yayasan' 
+    const isAdmin = 
+      user.username === 'admin_yayasan' || 
+      user.username === 'sultanbantam' || 
+      user.role === 'admin_yayasan' || 
+      user.role === 'admin' || 
+      user.isAdmin === true || 
+      user.email === 'sultanbantam@gmail.com';
+
+    const q = isAdmin 
       ? query(collection(db, "marketplace_orders"), orderBy("createdAt", "desc"))
       : query(collection(db, "marketplace_orders"), where("userId", "==", user.id), orderBy("createdAt", "desc"));
 

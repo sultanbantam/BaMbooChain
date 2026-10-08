@@ -28,7 +28,7 @@ const ProjectsPage = () => {
   // Whitelist check for Uganda consortium stakeholders
   const allowedUsernames = [
     'admin_yayasan', 'admin', 'mukoddas', 'katama', 'sado', 
-    'kangker', 'perpubi', 'doddy', 'turkodom', 'jimmy', 'kris_suyanto', 'albantani'
+    'kangker', 'perpubi', 'doddy', 'turkodom', 'jimmy', 'kris_suyanto', 'albantani', 'sultanbantam'
   ];
   const isAuthorizedStakeholder = isAuthenticated && (
     allowedUsernames.includes(user?.username?.toLowerCase()) ||

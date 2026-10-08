@@ -572,8 +572,12 @@ const PartnersPage = () => {
 
   const isUserAdmin = isAuthenticated && (
     user?.role === 'admin' || 
+    user?.role === 'admin_yayasan' || 
+    user?.isAdmin === true || 
     user?.username === 'admin_yayasan' || 
+    user?.username === 'sultanbantam' || 
     user?.username === 'admin' ||
+    user?.email === 'sultanbantam@gmail.com' ||
     user?.email?.toLowerCase().includes('admin')
   );
 

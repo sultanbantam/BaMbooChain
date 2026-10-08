@@ -372,6 +372,9 @@ const Navbar = () => {
                   {showProfileMenu && (
                     <div style={{ position: 'absolute', top: '40px', right: '0', width: '200px', background: 'var(--bg-card)', boxShadow: '0 10px 40px rgba(0,0,0,0.1)', borderRadius: '16px', overflow: 'hidden', zIndex: 10006, border: '1px solid var(--border-color)' }}>
                       <Link to="/profile" style={{ display: 'block', padding: '12px 16px', color: 'var(--text-main)', textDecoration: 'none', borderBottom: '1px solid var(--border-color)' }}>👤 {t('nav_profile')}</Link>
+                      {(user?.role === 'admin_yayasan' || user?.role === 'admin' || user?.isAdmin || user?.username === 'admin_yayasan' || user?.username === 'sultanbantam' || user?.email === 'sultanbantam@gmail.com') && (
+                        <Link to="/admin-portal" style={{ display: 'block', padding: '12px 16px', color: '#e03131', fontWeight: 'bold', textDecoration: 'none', borderBottom: '1px solid var(--border-color)', background: 'rgba(224, 49, 49, 0.05)' }}>🛡️ Admin Portal</Link>
+                      )}
                       <Link to="/consortium/uganda" style={{ display: 'block', padding: '12px 16px', color: 'var(--primary)', fontWeight: 'bold', textDecoration: 'none', borderBottom: '1px solid var(--border-color)', background: 'rgba(12, 166, 120, 0.05)' }}>🇺🇬 Konsorsium Uganda</Link>
                       <Link to={`/portfolio/${user?.username || user?.id}`} style={{ display: 'block', padding: '12px 16px', color: 'var(--text-main)', textDecoration: 'none', borderBottom: '1px solid var(--border-color)' }}>🌿 {t('nav_passport')}</Link>
                       <Link to="/event-organizer" style={{ display: 'block', padding: '12px 16px', color: 'var(--text-main)', textDecoration: 'none', borderBottom: '1px solid var(--border-color)' }}>📅 Event Organizer</Link>

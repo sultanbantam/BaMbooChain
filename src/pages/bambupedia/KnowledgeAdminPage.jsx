@@ -16,8 +16,15 @@ const KnowledgeAdminPage = () => {
 
   useEffect(() => {
     if (!isAuthenticated) return;
-    if (user?.username !== 'admin_yayasan') navigate('/profile');
-  }, [isAuthenticated, navigate, user?.username]);
+    const isAllowedAdmin = 
+      user?.username === 'admin_yayasan' || 
+      user?.username === 'sultanbantam' || 
+      user?.role === 'admin_yayasan' || 
+      user?.role === 'admin' || 
+      user?.isAdmin === true || 
+      user?.email === 'sultanbantam@gmail.com';
+    if (!isAllowedAdmin) navigate('/profile');
+  }, [isAuthenticated, navigate, user]);
 
   useEffect(() => {
     // If auto-validated, we want to fetch 'published' or 'approved' items that have auto_verified = true

@@ -706,7 +706,7 @@ const UgandaProjectDashboard = () => {
   // Role Access Control (Whitelist)
   const allowedUsernames = [
     'admin_yayasan', 'admin', 'mukoddas', 'katama', 'sado', 
-    'kangker', 'perpubi', 'doddy', 'turkodom', 'jimmy', 'kris_suyanto', 'albantani'
+    'kangker', 'perpubi', 'doddy', 'turkodom', 'jimmy', 'kris_suyanto', 'albantani', 'sultanbantam'
   ];
   
   const { data: dynamicAuthorized = [], refetch: refetchAuthorized } = useUgandaAuthorizedStakeholders();
@@ -729,7 +729,11 @@ const UgandaProjectDashboard = () => {
     user?.username === 'admin' || 
     user?.username === 'mukoddas' || 
     user?.username === 'albantani' ||
-    user?.role === 'admin'
+    user?.username === 'sultanbantam' ||
+    user?.role === 'admin' ||
+    user?.role === 'admin_yayasan' ||
+    user?.isAdmin === true ||
+    user?.email === 'sultanbantam@gmail.com'
   );
 
   const [activeTab, setActiveTab] = useState('roadmap');

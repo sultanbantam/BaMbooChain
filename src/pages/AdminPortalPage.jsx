@@ -87,10 +87,18 @@ const AdminPortalPage = () => {
   };
   
   useEffect(() => {
+    const isAllowedAdmin = 
+      user?.username === 'admin_yayasan' || 
+      user?.username === 'sultanbantam' || 
+      user?.role === 'admin_yayasan' || 
+      user?.role === 'admin' || 
+      user?.isAdmin === true || 
+      user?.email === 'sultanbantam@gmail.com';
+
     // Strict redirect: must be authenticated AND admin
     if (!isAuthenticated) {
       navigate('/login');
-    } else if (user?.username !== 'admin_yayasan') {
+    } else if (!isAllowedAdmin) {
       navigate('/profile');
     }
   }, [isAuthenticated, user, navigate]);

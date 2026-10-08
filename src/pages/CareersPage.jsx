@@ -573,7 +573,7 @@ const CareersPage = () => {
                       style={{ background: 'var(--bg-secondary)', color: 'var(--text-main)', border: '1px solid var(--border-color)', width: '45px', height: '45px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} title="Refer a Friend">
                       <Users size={20} />
                     </button>
-                    {(user?.id === job.submittedBy || user?.username === 'admin_yayasan') && (
+                    {(user?.id === job.submittedBy || user?.username === 'admin_yayasan' || user?.username === 'sultanbantam' || user?.role === 'admin_yayasan' || user?.isAdmin || user?.email === 'sultanbantam@gmail.com') && (
                       <>
                         <button onClick={() => handleEditJob(job)} style={{ background: 'transparent', color: '#1c7ed6', border: '1px solid #1c7ed6', width: '45px', height: '45px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} title="Edit">
                           <Wrench size={18} />
@@ -649,7 +649,7 @@ const CareersPage = () => {
                     <button onClick={() => handleDemandClick(demand)} style={{ background: demand.color, color: 'white', border: 'none', padding: '12px 24px', borderRadius: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
                       {demand.details || demand.projectLink || demand.documentPdf || demand.description ? 'Detail Proyek' : 'Apply Proyek'}
                     </button>
-                    {(user?.id === demand.submittedBy || user?.username === 'admin_yayasan') && (
+                    {(user?.id === demand.submittedBy || user?.username === 'admin_yayasan' || user?.username === 'sultanbantam' || user?.role === 'admin_yayasan' || user?.isAdmin || user?.email === 'sultanbantam@gmail.com') && (
                       <>
                         <button onClick={() => handleEditDemand(demand)} style={{ background: 'transparent', color: '#1c7ed6', border: '1px solid #1c7ed6', padding: '12px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} title="Edit">
                           <Wrench size={18} />
