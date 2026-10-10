@@ -116,7 +116,17 @@ export default function BangunInPage() {
             { id: 'configurator', label: '2. Konfigurator & KPR', icon: SlidersHorizontal, desc: 'Desain & Simulasi BTN' },
             { id: 'monitoring', label: '3. Monitoring Geotag', icon: HardHat, desc: 'Progres & Inspeksi' },
             { id: 'living', label: '4. Living Community', icon: HeartHandshake, desc: 'Shuttle, Sampah, Warga' },
-            { id: 'roles', label: '5. Dashboard Multi-Role', icon: Users, desc: '5 Peran Pengguna' }
+            { 
+              id: 'roles', 
+              label: (
+                <>
+                  5. Dashboard <br />
+                  <span style={{ whiteSpace: 'nowrap' }}>Multi-Role</span>
+                </>
+              ), 
+              icon: Users, 
+              desc: '5 Peran Pengguna' 
+            }
           ].map(tab => {
             const isActive = activeTab === tab.id;
             const Icon = tab.icon;
@@ -148,12 +158,13 @@ export default function BangunInPage() {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: isActive ? '#fff' : '#005BAA'
+                  color: isActive ? '#fff' : '#005BAA',
+                  flexShrink: 0
                 }}>
                   <Icon size={20} />
                 </div>
                 <div>
-                  <span style={{ display: 'block', fontSize: '0.9rem', fontWeight: 'bold' }}>{tab.label}</span>
+                  <span style={{ display: 'block', fontSize: '0.9rem', fontWeight: 'bold', lineHeight: '1.25', marginBottom: '2px' }}>{tab.label}</span>
                   <span style={{ fontSize: '0.75rem', opacity: isActive ? 0.85 : 0.6 }}>{tab.desc}</span>
                 </div>
               </button>
