@@ -62,6 +62,7 @@ const BambooBotPage = lazyWithRetry(() => import('./pages/bambupedia/BambooBotPa
 const KnowledgeAdminPage = lazyWithRetry(() => import('./pages/bambupedia/KnowledgeAdminPage'));
 const CareersPage = lazyWithRetry(() => import('./pages/CareersPage'));
 const EventOrganizerPage = lazyWithRetry(() => import('./pages/EventOrganizerPage'));
+const BangunInPage = lazyWithRetry(() => import('./pages/bangunin/BangunInPage'));
 
 // BambooChain Modules
 const BcOverviewPage = lazyWithRetry(() => import('./pages/bamboochain/OverviewPage'));
@@ -306,8 +307,10 @@ function App() {
             <Route path="/portfolio/:username" element={<PublicPortfolioPage />} />
             <Route path="/bamboochain/meeting" element={<BambooMeetingPage />} />
             <Route path="/authorize" element={<AuthorizePage />} />
-            <Route path="/login" element={<LoginPage />} />
             <Route path="/events" element={<EventsPage />} />
+            <Route path="/bangunin" element={<BangunInPage />} />
+            <Route path="/bangun-in" element={<BangunInPage />} />
+            <Route path="/bamboochain/bangunin" element={<BangunInPage />} />
             
             {/* Protected Routes */}
             <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />

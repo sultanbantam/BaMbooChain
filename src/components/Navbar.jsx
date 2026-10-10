@@ -78,6 +78,7 @@ const Navbar = () => {
 
   const mobileMenuItems = [
     { label: t('nav_home'), path: '/' },
+    { label: '🏢 BangunIn (Rumah MBR)', path: '/bangunin' },
     { label: t('nav_projects'), path: '/projects' },
     { label: 'Tobat Ekologi', path: '/tobat-ekologi' },
     { label: t('nav_insights'), path: '/insight' },
@@ -215,6 +216,7 @@ const Navbar = () => {
           {/* Row 2: Top Menu Bar */}
           <div style={{ background: 'var(--bg-card)', height: '45px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '25px', padding: '0 32px', borderBottom: '1px solid var(--border-color)' }}>
             <Link to="/boomboom" style={{ fontSize: '0.85rem', color: '#f59f00', textDecoration: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>🚀 BoomBoom</Link>
+            <Link to="/bangunin" style={{ fontSize: '0.85rem', color: '#005BAA', textDecoration: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>🏢 BangunIn MBR</Link>
             <Link to="/bambupedia" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('nav_bambupedia')}</Link>
             <Link to="/bamboochain/academy" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('feature_academy')}</Link>
             <Link to="/wanipiro" style={{ fontSize: '0.85rem', color: 'var(--primary)', textDecoration: 'none', fontWeight: 'bold' }}>WaniPiro?</Link>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Target, TrendingUp, Handshake, Leaf, MapPin, CheckCircle, ArrowRight, Tag, Star, X, Sparkles, ShoppingBag, Globe, Users, 
-  Database, Briefcase, UploadCloud, HeartHandshake, BookOpen, Search, MessageSquare, Coins, GraduationCap, Video 
+  Database, Briefcase, UploadCloud, HeartHandshake, BookOpen, Search, MessageSquare, Coins, GraduationCap, Video, Building2
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getAssetUrl } from '../utils/assets';
@@ -388,6 +388,56 @@ const HomePage = () => {
             <Link to="/bamboochain/marketplace" className="btn btn-outline" style={{ padding: '14px 28px', fontSize: '1.1rem', borderRadius: '30px' }}>
               {t('home_featured_btn')}
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 6.8 - BANGUNIN SPOTLIGHT */}
+      <section style={{ padding: '60px 0', background: 'linear-gradient(135deg, rgba(0,91,170,0.06) 0%, rgba(12,166,120,0.06) 100%)', borderTop: '1px solid var(--border-color)', borderBottom: '1px solid var(--border-color)' }}>
+        <div className="container">
+          <div style={{ background: 'var(--bg-card)', borderRadius: '24px', padding: '40px', border: '1px solid rgba(0,91,170,0.2)', boxShadow: '0 20px 40px rgba(0,0,0,0.06)', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '36px', alignItems: 'center' }}>
+            <div>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(0,91,170,0.1)', color: '#005BAA', padding: '6px 14px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '16px' }}>
+                <Building2 size={16} /> Program Inovasi Perumahan Rakyat
+              </div>
+              <h2 style={{ fontSize: '2.3rem', lineHeight: '1.25', marginBottom: '16px', color: 'var(--text-main)', fontWeight: '800' }}>
+                BangunIn: Ekosistem Rumah MBR & KPR BTN
+              </h2>
+              <p style={{ color: 'var(--text-muted)', fontSize: '1rem', lineHeight: '1.6', marginBottom: '24px' }}>
+                Platform terpadu perumahan terjangkau berbasis material bambu lestari & teknologi modular. Dilengkapi konfigurator rumah 3D, simulasi KPR BTN FLPP & Tapera, monitoring konstruksi geotag on-chain, serta ekosistem living community.
+              </p>
+              <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
+                <Link to="/bangunin" className="btn btn-primary" style={{ padding: '12px 24px', display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'linear-gradient(135deg, #005BAA, #0ca678)', border: 'none', borderRadius: '12px', fontWeight: 'bold' }}>
+                  Jelajahi BangunIn <ArrowRight size={18} />
+                </Link>
+                <Link to="/bangunin" state={{ tab: 'configurator' }} className="btn btn-outline" style={{ padding: '12px 20px', borderRadius: '12px' }}>
+                  Simulasi KPR BTN
+                </Link>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
+              <div style={{ background: 'var(--bg-secondary)', padding: '20px', borderRadius: '16px', border: '1px solid var(--border-color)' }}>
+                <div style={{ fontSize: '1.8rem', fontWeight: 'bold', color: '#005BAA', marginBottom: '4px' }}>4 Pilar</div>
+                <div style={{ fontWeight: 'bold', fontSize: '0.95rem', color: 'var(--text-main)', marginBottom: '4px' }}>Integrasi Komprehensif</div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Database MBR, Konfigurator, Geotag, & Komunitas</div>
+              </div>
+              <div style={{ background: 'var(--bg-secondary)', padding: '20px', borderRadius: '16px', border: '1px solid var(--border-color)' }}>
+                <div style={{ fontSize: '1.8rem', fontWeight: 'bold', color: '#0ca678', marginBottom: '4px' }}>5% FLPP</div>
+                <div style={{ fontWeight: 'bold', fontSize: '0.95rem', color: 'var(--text-main)', marginBottom: '4px' }}>Bunga Tetap KPR BTN</div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Tenor hingga 20 tahun & DP mulai 1%</div>
+              </div>
+              <div style={{ background: 'var(--bg-secondary)', padding: '20px', borderRadius: '16px', border: '1px solid var(--border-color)' }}>
+                <div style={{ fontSize: '1.8rem', fontWeight: 'bold', color: '#f59f00', marginBottom: '4px' }}>Geotag ±2m</div>
+                <div style={{ fontWeight: 'bold', fontSize: '0.95rem', color: 'var(--text-main)', marginBottom: '4px' }}>Verifikasi Konstruksi</div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Disbursement termin berbasis bukti lapangan</div>
+              </div>
+              <div style={{ background: 'var(--bg-secondary)', padding: '20px', borderRadius: '16px', border: '1px solid var(--border-color)' }}>
+                <div style={{ fontSize: '1.8rem', fontWeight: 'bold', color: '#7048e8', marginBottom: '4px' }}>5 Multi-Role</div>
+                <div style={{ fontWeight: 'bold', fontSize: '0.95rem', color: 'var(--text-main)', marginBottom: '4px' }}>Dashboard Terdedikasi</div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Konsumen, Pengembang, Bank, & Pengelola</div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
