@@ -23,6 +23,8 @@ export const MBR_PROJECTS = [
       'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=800&q=80',
       'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80'
     ],
+    brochurePdfUrl: 'https://bamboochain.id/docs/brosur_griya_lestari_banten.pdf',
+    legalDocPdfUrl: 'https://bamboochain.id/docs/pbg_griya_lestari_banten.pdf',
     subsidyType: 'KPR BTN FLPP Sejahtera',
     unitTypes: ['BlockBamboo Tipe 36', 'RISHAM Tipe 30', 'Hybrid Eco 36/60'],
     description: 'Kawasan perumahan MBR ramah lingkungan berbasis struktur bambu terawetkan dan beton modular ramah gempa RISHAM. Dilengkapi fasilitas Bank Sampah, Shuttle Komunitas, dan Ruang Terbuka Hijau (RTH).',
@@ -33,6 +35,41 @@ export const MBR_PROJECTS = [
       phone: '0817-413-9994',
       email: 'proyek@sabumi.id',
       pic: 'Ir. Mukoddas Syuhada'
+    }
+  },
+  {
+    id: 'proj-cilegon-05',
+    name: 'Griya Asri Cilegon Harmoni',
+    developer: 'PT. Asri Graha Pratama',
+    developerId: 'dev-agp',
+    city: 'Cilegon',
+    province: 'Banten',
+    address: 'Jl. Lingkar Selatan KM 8, Cibeber, Cilegon, Banten',
+    coordinates: [-6.0300, 106.0400],
+    status: 'COMPLETED',
+    permitStatus: 'APPROVED',
+    permitNumber: 'SLF-367201-2025-00341',
+    totalUnits: 180,
+    availableUnits: 18,
+    priceMin: 168000000,
+    priceMax: 195000000,
+    coverImage: 'https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=800&q=80'
+    ],
+    brochurePdfUrl: 'https://bamboochain.id/docs/brosur_griya_asri_cilegon.pdf',
+    legalDocPdfUrl: 'https://bamboochain.id/docs/slf_griya_asri_cilegon.pdf',
+    subsidyType: 'KPR BTN FLPP Pekerja Industri Krakatau',
+    unitTypes: ['RISHAM Tipe 36/60', 'BlockBamboo MBR 30/60'],
+    description: 'Hunian MBR siap huni dengan akses 5 menit ke kawasan industri Cilegon dan pintu tol Cilegon Timur. Struktur ramah gempa berpaten resmi.',
+    features: ['Siap Huni', '5 Menit Tol Cilegon Timur', 'Struktur Ramah Gempa', 'One Gate System', 'Masjid Komplek'],
+    progressPercentage: 100,
+    btnPartnerStatus: 'Mitra Bank BTN KC Cilegon',
+    developerContact: {
+      phone: '0812-3456-7890',
+      email: 'sales@griyaasricilegon.co.id',
+      pic: 'Hendra Gunawan'
     }
   },
   {
@@ -57,6 +94,8 @@ export const MBR_PROJECTS = [
       'https://images.unsplash.com/photo-1600565193348-f74bd3c7ccdf?auto=format&fit=crop&w=800&q=80',
       'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80'
     ],
+    brochurePdfUrl: 'https://bamboochain.id/docs/brosur_pesona_bambu_nusantara.pdf',
+    legalDocPdfUrl: 'https://bamboochain.id/docs/pbg_pesona_bambu.pdf',
     subsidyType: 'KPR BTN FLPP & Tapera',
     unitTypes: ['BlockBamboo Modern 36/72', 'Hybrid Tropis 45/84'],
     description: 'Hunian asri masa depan dengan fasad bambu laminasi rekayasa (engineered bamboo). Akses 10 menit ke Stasiun KRL Parung Panjang dengan shuttle terintegrasi.',
@@ -67,6 +106,74 @@ export const MBR_PROJECTS = [
       phone: '0812-8899-7711',
       email: 'sales@bamboorepublik.com',
       pic: 'Fajar Nugraha'
+    }
+  },
+  {
+    id: 'proj-bogor-06',
+    name: 'Pesona Kahuripan 9 Klapanunggal',
+    developer: 'PT. Hikmah Alam Sentosa',
+    developerId: 'dev-has',
+    city: 'Bogor',
+    province: 'Jawa Barat',
+    address: 'Jl. Raya Klapanunggal - Cileungsi, Bogor Timur',
+    coordinates: [-6.4800, 106.9400],
+    status: 'CONSTRUCTION',
+    permitStatus: 'APPROVED',
+    permitNumber: 'PBG-320112-2025-00714',
+    totalUnits: 500,
+    availableUnits: 142,
+    priceMin: 185000000,
+    priceMax: 210000000,
+    coverImage: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=800&q=80'
+    ],
+    brochurePdfUrl: 'https://bamboochain.id/docs/brosur_pesona_kahuripan_9.pdf',
+    legalDocPdfUrl: 'https://bamboochain.id/docs/pbg_pesona_kahuripan.pdf',
+    subsidyType: 'KPR BTN FLPP & BP Tapera',
+    unitTypes: ['RISHAM Tipe 36/60', 'BlockBamboo Eco 30/60'],
+    description: 'Proyek perumahan subsidi MBR skala kota mandiri dengan fasilitas sarana olahraga, area komersil, dan konektivitas angkutan umum ke Jakarta.',
+    features: ['Double Dinding', 'Rangka Atap Baja Ringan', 'Jalan Cor Beton', 'Dekat RS & Sekolah', 'Air Sumur Bor Jernih'],
+    progressPercentage: 55,
+    btnPartnerStatus: 'Mitra Utama Bank BTN KC Cibubur',
+    developerContact: {
+      phone: '0811-9988-776',
+      email: 'info@pesonakahuripan.co.id',
+      pic: 'Bambang Sudarmono'
+    }
+  },
+  {
+    id: 'proj-karawang-07',
+    name: 'Puri Griya Asri Cikampek',
+    developer: 'PT. Griya Asri Mandiri',
+    developerId: 'dev-gam',
+    city: 'Karawang',
+    province: 'Jawa Barat',
+    address: 'Jl. Raya Dawuan, Cikampek, Karawang',
+    coordinates: [-6.4000, 107.4500],
+    status: 'COMPLETED',
+    permitStatus: 'APPROVED',
+    permitNumber: 'SLF-321503-2025-00088',
+    totalUnits: 250,
+    availableUnits: 28,
+    priceMin: 175000000,
+    priceMax: 205000000,
+    coverImage: 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=1200&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=800&q=80'
+    ],
+    brochurePdfUrl: 'https://bamboochain.id/docs/brosur_puri_griya_asri_cikampek.pdf',
+    legalDocPdfUrl: 'https://bamboochain.id/docs/slf_griya_asri_karawang.pdf',
+    subsidyType: 'KPR BTN FLPP Tenaga Kerja Industri',
+    unitTypes: ['BlockBamboo Type 36', 'RISHAM Type 36/66'],
+    description: 'Perumahan asri untuk pekerja kawasan industri Karawang & Cikampek dengan konsep eco-green dan pengelolaan limbah organik warga.',
+    features: ['Dekat Pintu Tol Dawuan', 'Stasiun KRL Cikampek', 'Jalan Lebar 7 Meter', 'Ramah Gempa'],
+    progressPercentage: 100,
+    btnPartnerStatus: 'Mitra Bank BTN KC Karawang',
+    developerContact: {
+      phone: '0813-8877-6655',
+      email: 'pemasaran@griyaasricikampek.com',
+      pic: 'Yulianto Tri'
     }
   },
   {
@@ -90,6 +197,8 @@ export const MBR_PROJECTS = [
       'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=800&q=80',
       'https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=800&q=80'
     ],
+    brochurePdfUrl: 'https://bamboochain.id/docs/brosur_risham_harmoni_cikarang.pdf',
+    legalDocPdfUrl: 'https://bamboochain.id/docs/slf_risham_cikarang.pdf',
     subsidyType: 'KPR BTN FLPP Pekerja Sektor Industri',
     unitTypes: ['RISHAM Paten Type 36/60', 'RISHAM Compact 28/60'],
     description: 'Pemenang Paten Sederhana No. IDS000007465 untuk struktur panel pracetak RISHAM (Rumah Instan Hemat Aman). Siap huni, kokoh, ramah gempa, dan hemat energi.',
@@ -123,6 +232,8 @@ export const MBR_PROJECTS = [
       'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80',
       'https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=800&q=80'
     ],
+    brochurePdfUrl: 'https://bamboochain.id/docs/brosur_kawasan_bambu_lebak.pdf',
+    legalDocPdfUrl: 'https://bamboochain.id/docs/masterplan_kawasan_lebak.pdf',
     subsidyType: 'KPR BTN FLPP & Mikro Perumahan',
     unitTypes: ['BlockBamboo MBR 36', 'Hybrid Agro-Housing 36/90'],
     description: 'Masterplan kawasan perumahan MBR terpadu seluas 15 hektar dengan konsep Agro-Forestry Bambu, sentra kerajinan, dan pembibitan bambu rakyat.',
@@ -133,6 +244,176 @@ export const MBR_PROJECTS = [
       phone: '0817-413-9994',
       email: 'kontak@bamboochain.id',
       pic: 'Sekretariat Konsorsium'
+    }
+  },
+  {
+    id: 'proj-semarang-08',
+    name: 'Graha Cipta Asri Ungaran',
+    developer: 'PT. Cipta Graha Mandiri Jateng',
+    developerId: 'dev-cgmj',
+    city: 'Semarang',
+    province: 'Jawa Tengah',
+    address: 'Jl. Raya Bandungan - Ungaran, Kab. Semarang',
+    coordinates: [-7.1300, 110.4000],
+    status: 'CONSTRUCTION',
+    permitStatus: 'APPROVED',
+    permitNumber: 'PBG-332205-2025-00451',
+    totalUnits: 160,
+    availableUnits: 45,
+    priceMin: 166000000,
+    priceMax: 198000000,
+    coverImage: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80'
+    ],
+    brochurePdfUrl: 'https://bamboochain.id/docs/brosur_graha_cipta_asri_ungaran.pdf',
+    legalDocPdfUrl: 'https://bamboochain.id/docs/pbg_graha_cipta_asri.pdf',
+    subsidyType: 'KPR BTN FLPP & Tapera Jawa Tengah',
+    unitTypes: ['BlockBamboo Tipe 36/60', 'Hybrid Eco 36/70'],
+    description: 'Perumahan berhawa sejuk di kaki Gunung Ungaran dengan konstruksi ramah gempa dan panel bambu laminasi penyejuk suhu alami.',
+    features: ['Udara Sejuk Pegunungan', 'Air Mata Air Alami', 'Struktur Ramah Gempa', 'Dekat Exit Tol Ungaran'],
+    progressPercentage: 60,
+    btnPartnerStatus: 'Mitra Bank BTN KC Semarang',
+    developerContact: {
+      phone: '0812-7766-5544',
+      email: 'marketing@grahaciptaasri.com',
+      pic: 'Agus Pramono'
+    }
+  },
+  {
+    id: 'proj-sidoarjo-10',
+    name: 'Griya Indah Permata Juanda',
+    developer: 'PT. Permata Megah Nusantara',
+    developerId: 'dev-pmn',
+    city: 'Sidoarjo',
+    province: 'Jawa Timur',
+    address: 'Jl. Raya Sedati - Juanda, Sidoarjo, Jawa Timur',
+    coordinates: [-7.3800, 112.7800],
+    status: 'COMPLETED',
+    permitStatus: 'APPROVED',
+    permitNumber: 'SLF-351508-2025-00199',
+    totalUnits: 220,
+    availableUnits: 15,
+    priceMin: 175000000,
+    priceMax: 205000000,
+    coverImage: 'https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=800&q=80'
+    ],
+    brochurePdfUrl: 'https://bamboochain.id/docs/brosur_griya_indah_permata_juanda.pdf',
+    legalDocPdfUrl: 'https://bamboochain.id/docs/slf_griya_indah_juanda.pdf',
+    subsidyType: 'KPR BTN FLPP Pekerja Sektor Logistik & Transportasi',
+    unitTypes: ['RISHAM Modular 36/60', 'BlockBamboo Modern 36/70'],
+    description: 'Lokasi strategis 15 menit ke Bandara Internasional Juanda dan Surabaya Timur. Rumah subsidi ramah gempa dengan spesifikasi komersial.',
+    features: ['Bebas Banjir', 'Paving Block 6 Meter', 'One Gate System', 'CCTV 24 Jam', 'Playground'],
+    progressPercentage: 100,
+    btnPartnerStatus: 'Mitra Bank BTN KC Sidoarjo',
+    developerContact: {
+      phone: '0811-3322-1100',
+      email: 'info@griyapermatajuanda.com',
+      pic: 'Rudi Hartono'
+    }
+  },
+  {
+    id: 'proj-palembang-11',
+    name: 'Griya Bukit Asri Gandus Mandiri',
+    developer: 'PT. Sriwijaya Graha Sejahtera',
+    developerId: 'dev-sgs',
+    city: 'Palembang',
+    province: 'Sumatera Selatan',
+    address: 'Jl. Sofian Kenawas, Gandus, Palembang',
+    coordinates: [-3.0200, 104.7200],
+    status: 'CONSTRUCTION',
+    permitStatus: 'APPROVED',
+    permitNumber: 'PBG-167104-2025-00210',
+    totalUnits: 350,
+    availableUnits: 95,
+    priceMin: 168000000,
+    priceMax: 195000000,
+    coverImage: 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=1200&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=800&q=80'
+    ],
+    brochurePdfUrl: 'https://bamboochain.id/docs/brosur_griya_bukit_asri_palembang.pdf',
+    legalDocPdfUrl: 'https://bamboochain.id/docs/pbg_griya_bukit_asri.pdf',
+    subsidyType: 'KPR BTN FLPP & Subsidi Selisih Bunga',
+    unitTypes: ['BlockBamboo MBR 36', 'RISHAM Tipe 36/72'],
+    description: 'Perumahan MBR mandiri dengan penghijauan bambu petung di tepian sungai Gandus untuk penahan erosi dan peneduh alami kawasan.',
+    features: ['Dataran Tinggi Bebas Banjir', 'Air Bersih PDAM Tirta Musi', 'Listrik PLN 1300VA', 'Akses Angkot Feeder LRT'],
+    progressPercentage: 70,
+    btnPartnerStatus: 'Mitra Bank BTN KC Palembang',
+    developerContact: {
+      phone: '0812-7890-1234',
+      email: 'gandus@sriwijayagraha.co.id',
+      pic: 'M. Firdaus'
+    }
+  },
+  {
+    id: 'proj-makassar-13',
+    name: 'Grand Mutiara Asri Maros',
+    developer: 'PT. Celebes Properti Nusantara',
+    developerId: 'dev-cpn',
+    city: 'Maros',
+    province: 'Sulawesi Selatan',
+    address: 'Jl. Poros Maros - Pangkep KM 25, Mandai, Maros',
+    coordinates: [-5.0100, 119.5700],
+    status: 'CONSTRUCTION',
+    permitStatus: 'APPROVED',
+    permitNumber: 'PBG-730902-2025-00188',
+    totalUnits: 280,
+    availableUnits: 72,
+    priceMin: 175000000,
+    priceMax: 205000000,
+    coverImage: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80'
+    ],
+    brochurePdfUrl: 'https://bamboochain.id/docs/brosur_grand_mutiara_asri_maros.pdf',
+    legalDocPdfUrl: 'https://bamboochain.id/docs/pbg_mutiara_maros.pdf',
+    subsidyType: 'KPR BTN FLPP & Tapera Sulsel',
+    unitTypes: ['BlockBamboo Tropis 36/72', 'RISHAM Modular 36/72'],
+    description: 'Akses 12 menit ke Bandara Internasional Sultan Hasanuddin Makassar dan stasiun Kereta Api Trans Sulawesi.',
+    features: ['Dekat Stasiun KA Trans Sulawesi', 'Insulasi Atap Bambu Dingin', 'Pondasi Anti Gempa', 'Fasilitas Lapangan Futsal'],
+    progressPercentage: 50,
+    btnPartnerStatus: 'Mitra Bank BTN KC Makassar',
+    developerContact: {
+      phone: '0852-9988-7711',
+      email: 'sales@celebesproperti.com',
+      pic: 'Andi Mappatunru'
+    }
+  },
+  {
+    id: 'proj-balikpapan-14',
+    name: 'Taman Asri Kencana Balikpapan',
+    developer: 'PT. Borneo Mahakam Lestari',
+    developerId: 'dev-bml',
+    city: 'Balikpapan',
+    province: 'Kalimantan Timur',
+    address: 'Jl. Mulawarman, Manggar, Balikpapan Timur',
+    coordinates: [-1.2200, 116.9200],
+    status: 'PLANNED',
+    permitStatus: 'APPROVED',
+    permitNumber: 'PBG-647103-2026-00052',
+    totalUnits: 300,
+    availableUnits: 210,
+    priceMin: 182000000,
+    priceMax: 220000000,
+    coverImage: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80'
+    ],
+    brochurePdfUrl: 'https://bamboochain.id/docs/brosur_taman_asri_balikpapan.pdf',
+    legalDocPdfUrl: 'https://bamboochain.id/docs/pbg_taman_asri_balikpapan.pdf',
+    subsidyType: 'KPR BTN FLPP Penyangga Ibu Kota Nusantara (IKN)',
+    unitTypes: ['BlockBamboo Eco 36/84', 'Hybrid Borneo 36/90'],
+    description: 'Hunian ramah lingkungan penyangga IKN Nusantara dengan panel bambu lokal Kalimantan dan efisiensi energi solar cell.',
+    features: ['Koridor Penyangga IKN', 'Panel Surya Terintegrasi', 'Struktur Ramah Gempa', 'Taman Botani Bambu'],
+    progressPercentage: 20,
+    btnPartnerStatus: 'Mitra Bank BTN KC Balikpapan',
+    developerContact: {
+      phone: '0812-5544-3322',
+      email: 'kontak@borneomahakam.co.id',
+      pic: 'Bayu Prasetyo'
     }
   }
 ];
