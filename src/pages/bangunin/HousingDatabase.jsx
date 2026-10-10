@@ -53,7 +53,7 @@ export default function HousingDatabase({ onSelectForConfigurator }) {
               <Building2 color="#005BAA" size={28} /> Database Perumahan MBR Terverifikasi
             </h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>
-              Katalog resmi perumahan MBR berbasis konstruksi hijau bambu dan beton modular tahan gempa dengan verifikasi legalitas PBG/SLF.
+              Katalog resmi perumahan MBR berbasis konstruksi hijau bambu dan beton modular ramah gempa dengan verifikasi legalitas PBG/SLF.
             </p>
           </div>
 

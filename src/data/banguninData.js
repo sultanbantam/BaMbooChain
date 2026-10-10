@@ -25,8 +25,8 @@ export const MBR_PROJECTS = [
     ],
     subsidyType: 'KPR BTN FLPP Sejahtera',
     unitTypes: ['BlockBamboo Tipe 36', 'RISHAM Tipe 30', 'Hybrid Eco 36/60'],
-    description: 'Kawasan perumahan MBR ramah lingkungan berbasis struktur bambu terawetkan dan beton modular tahan gempa RISHAM. Dilengkapi fasilitas Bank Sampah, Shuttle Komunitas, dan Ruang Terbuka Hijau (RTH).',
-    features: ['Bebas Banjir', 'Struktur Tahan Gempa', 'Taman Tematik & RTH', 'Shuttle Warga', 'Smart Waste Hub', 'Listrik PLN 1300 VA', 'Air Bersih PDAM'],
+    description: 'Kawasan perumahan MBR ramah lingkungan berbasis struktur bambu terawetkan dan beton modular ramah gempa RISHAM. Dilengkapi fasilitas Bank Sampah, Shuttle Komunitas, dan Ruang Terbuka Hijau (RTH).',
+    features: ['Bebas Banjir', 'Struktur Ramah Gempa', 'Taman Tematik & RTH', 'Shuttle Warga', 'Smart Waste Hub', 'Listrik PLN 1300 VA', 'Air Bersih PDAM'],
     progressPercentage: 68,
     btnPartnerStatus: 'Mitra Utama Bank BTN KC Serang',
     developerContact: {
@@ -92,8 +92,8 @@ export const MBR_PROJECTS = [
     ],
     subsidyType: 'KPR BTN FLPP Pekerja Sektor Industri',
     unitTypes: ['RISHAM Paten Type 36/60', 'RISHAM Compact 28/60'],
-    description: 'Pemenang Paten Sederhana No. IDS000007465 untuk struktur panel pracetak RISHAM (Rumah Instan Hemat Aman). Siap huni, kokoh, tahan gempa, dan hemat energi.',
-    features: ['Siap Huni (Ready Stock)', 'Paten Anti Gempa RISHAM', 'Dekat Kawasan Industri EJIP/GIIC', 'Keamanan 24 Jam One-Gate'],
+    description: 'Pemenang Paten Sederhana No. IDS000007465 untuk struktur panel pracetak RISHAM (Rumah Instan Hemat Aman). Siap huni, kokoh, ramah gempa, dan hemat energi.',
+    features: ['Siap Huni (Ready Stock)', 'Paten Ramah Gempa RISHAM', 'Dekat Kawasan Industri EJIP/GIIC', 'Keamanan 24 Jam One-Gate'],
     progressPercentage: 100,
     btnPartnerStatus: 'Mitra Bank BTN KC Cikarang',
     developerContact: {
@@ -152,7 +152,7 @@ export const HOUSING_MODELS = [
     constructionTimeWeeks: 6,
     carbonOffsetTons: 12.4,
     thermalIndex: 'Suhu 4°C Lebih Sejuk',
-    earthquakeResist: 'Skala MMI VIII (Tahan Gempa Tinggi)',
+    earthquakeResist: 'Skala MMI VIII (Ramah Gempa Tinggi)',
     specs: {
       foundation: 'Pondasi Umpak Batu Kali & Tie Beam Ringan',
       structure: 'Kolom & Balok Engineered Bamboo (Bambu Laminasi Rekayasa)',
@@ -177,7 +177,7 @@ export const HOUSING_MODELS = [
     constructionTimeWeeks: 4,
     carbonOffsetTons: 6.8,
     thermalIndex: 'Insulasi Termal Dinding Panel Berpori',
-    earthquakeResist: 'Sistem Sambungan Baut-Mur-Plat Khusus Tahan Gempa',
+    earthquakeResist: 'Sistem Sambungan Baut-Mur-Plat Khusus Ramah Gempa',
     specs: {
       foundation: 'Pondasi Titik Precast & Sloof Terintegrasi',
       structure: 'Panel Kolom & Balok Beton Pracetak Interlocking',

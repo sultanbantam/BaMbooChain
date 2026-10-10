@@ -62,7 +62,7 @@ export default function BangunInPage() {
             </h1>
 
             <p style={{ fontSize: '1.1rem', color: 'var(--text-muted)', lineHeight: '1.6', margin: '0 0 28px' }}>
-              Platform terpadu untuk Masyarakat Berpenghasilan Rendah (MBR) Indonesia: mulai dari penelusuran perumahan terverifikasi, konfigurasi desain bambu tahan gempa & KPR BTN FLPP, monitoring konstruksi berbasis geotag, hingga layanan kehidupan pasca-huni.
+              Platform terpadu untuk Masyarakat Berpenghasilan Rendah (MBR) Indonesia: mulai dari penelusuran perumahan terverifikasi, konfigurasi desain bambu ramah gempa & KPR BTN FLPP, monitoring konstruksi berbasis geotag, hingga layanan kehidupan pasca-huni.
             </p>
 
             {/* Metric Highlights */}
