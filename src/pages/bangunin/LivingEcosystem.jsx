@@ -2,11 +2,14 @@ import React, { useState } from 'react';
 import { 
   HeartHandshake, Bus, Recycle, ShoppingBag, Award, Calendar, 
   MapPin, Clock, Star, Phone, CheckCircle2, Plus, Sparkles, 
-  Coins, Zap, Trees, ArrowRight, User, AlertCircle, X, Shield
+  Coins, Zap, Trees, ArrowRight, User, AlertCircle, X, Shield,
+  CreditCard, Sprout, Activity, Truck, HeartPulse, Send
 } from 'lucide-react';
 import { 
   SHUTTLE_SERVICES, WASTE_SCHEDULES, USED_GOODS_LISTINGS, 
-  REWARDS_CATALOG, COMMUNITY_EVENTS, MOCK_LEADERBOARD 
+  REWARDS_CATALOG, COMMUNITY_EVENTS, MOCK_LEADERBOARD,
+  KOPDES_PRODUCTS, KOPDES_PARTNERS, MOCK_ETOLL_CARD, MOCK_ETOLL_TRANSACTIONS,
+  URBAN_FARMING_PLOTS, POSYANDU_SCHEDULES, TOKEN_SUBSIDIES
 } from '../../data/banguninData';
 
 const formatRupiah = (val) => {
@@ -14,8 +17,29 @@ const formatRupiah = (val) => {
 };
 
 export default function LivingEcosystem() {
-  const [activeTab, setActiveTab] = useState('shuttle'); // 'shuttle' | 'waste' | 'goods' | 'gamification' | 'events'
+  const [activeTab, setActiveTab] = useState('shuttle'); // 'shuttle' | 'kopdes' | 'waste' | 'farming' | 'posyandu' | 'goods' | 'gamification' | 'events'
   
+  // E-Toll BTN State (v2.0)
+  const [etollCard, setEtollCard] = useState(MOCK_ETOLL_CARD);
+  const [etollTransactions, setEtollTransactions] = useState(MOCK_ETOLL_TRANSACTIONS);
+  const [showEtollHistory, setShowEtollHistory] = useState(false);
+  const [showTopUpModal, setShowTopUpModal] = useState(false);
+  const [topUpAmount, setTopUpAmount] = useState(50000);
+
+  // Kopdes Merah Putih State (v2.0)
+  const [kopdesCart, setKopdesCart] = useState({});
+  const [kopdesDeliveryType, setKopdesDeliveryType] = useState('SHUTTLE'); // 'SHUTTLE' | 'PICKUP'
+  const [showKopdesCheckoutModal, setShowKopdesCheckoutModal] = useState(false);
+
+  // Urban Farming State (v2.0)
+  const [farmingPlots, setFarmingPlots] = useState(URBAN_FARMING_PLOTS);
+
+  // Posyandu State (v2.0)
+  const [posyanduList, setPosyanduList] = useState(POSYANDU_SCHEDULES);
+  const [showPosyanduRegisterModal, setShowPosyanduRegisterModal] = useState(false);
+  const [selectedPosyandu, setSelectedPosyandu] = useState(null);
+  const [regFamilyMember, setRegFamilyMember] = useState('');
+
   // Shuttle Booking State
   const [selectedShuttle, setSelectedShuttle] = useState(null);
   const [shuttleBookingSuccess, setShuttleBookingSuccess] = useState(false);
@@ -152,11 +176,14 @@ export default function LivingEcosystem() {
         border: '1px solid var(--border-color)'
       }}>
         {[
-          { id: 'shuttle', label: '🚐 Shuttle Antar Jemput', icon: Bus },
+          { id: 'shuttle', label: '🚐 Shuttle & E-Toll BTN', icon: Bus },
+          { id: 'kopdes', label: '🛒 Kopdes Merah Putih', icon: ShoppingBag },
           { id: 'waste', label: '♻️ Bank Sampah Digital', icon: Recycle },
-          { id: 'goods', label: '📦 Barang Bekas & Donasi', icon: ShoppingBag },
-          { id: 'gamification', label: '🏆 Poin & Leaderboard', icon: Award },
-          { id: 'events', label: '📅 Event & Gotong Royong', icon: Calendar }
+          { id: 'farming', label: '🌱 Urban Farming', icon: Sprout },
+          { id: 'posyandu', label: '🩺 Posyandu MBR', icon: HeartPulse },
+          { id: 'goods', label: '📦 Barang Bekas', icon: ShoppingBag },
+          { id: 'gamification', label: '🏆 Poin & Token Subsidi', icon: Award },
+          { id: 'events', label: '📅 Event Komunitas', icon: Calendar }
         ].map(tab => {
           const isActive = activeTab === tab.id;
           return (
@@ -183,9 +210,98 @@ export default function LivingEcosystem() {
         })}
       </div>
 
-      {/* TAB CONTENT: 1. SHUTTLE */}
+      {/* TAB CONTENT: 1. SHUTTLE & E-TOLL BTN */}
       {activeTab === 'shuttle' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          
+          {/* E-TOLL BTN CARD & SIMBIOSIS MUTUALISME WIDGET */}
+          <div style={{
+            background: 'linear-gradient(135deg, #005BAA, #003366)',
+            padding: '24px',
+            borderRadius: '22px',
+            color: '#fff',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px',
+            boxShadow: '0 10px 30px rgba(0,91,170,0.2)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '14px' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                  <CreditCard size={20} color="#ffec99" />
+                  <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#ffec99', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    {etollCard.cardType}
+                  </span>
+                </div>
+                <h3 style={{ fontSize: '1.4rem', fontWeight: '900', margin: '0 0 2px' }}>
+                  Bank BTN E-Toll Card Warga
+                </h3>
+                <span style={{ fontFamily: 'monospace', fontSize: '0.9rem', opacity: 0.9 }}>
+                  No: {etollCard.cardNumber} • {etollCard.cardHolder}
+                </span>
+              </div>
+
+              <div style={{ textAlign: 'right' }}>
+                <span style={{ display: 'block', fontSize: '0.75rem', opacity: 0.85 }}>Saldo E-Toll Aktif</span>
+                <span style={{ fontSize: '1.6rem', fontWeight: '900', color: '#ffec99' }}>
+                  {formatRupiah(etollCard.balance)}
+                </span>
+              </div>
+            </div>
+
+            {/* Simbiosis Mutualisme Banner */}
+            <div style={{
+              background: 'rgba(255,255,255,0.12)',
+              padding: '12px 16px',
+              borderRadius: '12px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '12px',
+              fontSize: '0.8rem'
+            }}>
+              <div style={{ maxWidth: '650px', lineHeight: '1.4' }}>
+                <strong>⚡ Simbiosis Mutualisme BTN ↔ Warga:</strong> Setiap tap pembayaran shuttle/logistik menghasilkan komisi Rp {etollCard.btnCommissionRate}/transaksi sebagai <em>income harian Bank BTN</em>, sementara warga menikmati tarif terjangkau & transportasi aman terintegrasi.
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  onClick={() => setShowTopUpModal(true)}
+                  style={{
+                    padding: '8px 14px',
+                    borderRadius: '10px',
+                    border: 'none',
+                    background: '#ffec99',
+                    color: '#005BAA',
+                    fontWeight: 'bold',
+                    fontSize: '0.75rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  + Top Up Saldo
+                </button>
+                <button
+                  onClick={() => setShowEtollHistory(true)}
+                  style={{
+                    padding: '8px 14px',
+                    borderRadius: '10px',
+                    border: '1px solid rgba(255,255,255,0.3)',
+                    background: 'transparent',
+                    color: '#fff',
+                    fontWeight: 'bold',
+                    fontSize: '0.75rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Riwayat Tap ({etollTransactions.length})
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Shuttle Services Grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
           {SHUTTLE_SERVICES.map(service => (
             <div 
               key={service.id}
@@ -247,9 +363,330 @@ export default function LivingEcosystem() {
             </div>
           ))}
         </div>
+      </div>
       )}
 
-      {/* TAB CONTENT: 2. BANK SAMPAH DIGITAL */}
+      {/* TAB CONTENT: 2. KOPDES MERAH PUTIH (SEMBAKO & LOGISTIK) */}
+      {activeTab === 'kopdes' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          {/* Kopdes Partnership Banner */}
+          <div style={{
+            background: 'linear-gradient(135deg, #c92a2a, #e03131)',
+            padding: '24px',
+            borderRadius: '20px',
+            color: '#fff',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '16px',
+            boxShadow: '0 8px 30px rgba(201,42,42,0.2)'
+          }}>
+            <div>
+              <span style={{ fontSize: '0.8rem', background: 'rgba(255,255,255,0.2)', padding: '4px 12px', borderRadius: '20px', fontWeight: 'bold' }}>
+                🇮🇩 Program Kemitraan Pemerintah & Koperasi Desa
+              </span>
+              <h3 style={{ fontSize: '1.4rem', fontWeight: '900', margin: '8px 0 4px' }}>
+                {KOPDES_PARTNERS[0].name}
+              </h3>
+              <p style={{ margin: 0, fontSize: '0.85rem', opacity: 0.9 }}>
+                Penyediaan sembako murah bersubsidi HET resmi (Beras SPHP Bulog, Minyakita) dengan fasilitas pengantaran armada shuttle logistik MBR.
+              </p>
+            </div>
+
+            <div style={{ background: 'rgba(0,0,0,0.2)', padding: '14px 20px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.2)' }}>
+              <span style={{ display: 'block', fontSize: '0.75rem', opacity: 0.85 }}>Keranjang Belanja:</span>
+              <span style={{ fontSize: '1.2rem', fontWeight: '900' }}>
+                {Object.values(kopdesCart).reduce((a, b) => a + b, 0)} Item
+              </span>
+              {Object.keys(kopdesCart).length > 0 && (
+                <button
+                  onClick={() => setShowKopdesCheckoutModal(true)}
+                  style={{
+                    display: 'block',
+                    marginTop: '8px',
+                    padding: '6px 14px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    background: '#fff',
+                    color: '#c92a2a',
+                    fontWeight: 'bold',
+                    fontSize: '0.75rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Checkout Pesanan →
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Products Grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+            {KOPDES_PRODUCTS.map(product => {
+              const qty = kopdesCart[product.id] || 0;
+              return (
+                <div
+                  key={product.id}
+                  style={{
+                    background: 'var(--bg-card)',
+                    borderRadius: '18px',
+                    border: '1px solid var(--border-color)',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    boxShadow: '0 4px 16px rgba(0,0,0,0.03)'
+                  }}
+                >
+                  <div style={{ height: '160px', overflow: 'hidden' }}>
+                    <img src={product.image} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </div>
+
+                  <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+                    <span style={{ fontSize: '0.75rem', color: '#c92a2a', fontWeight: 'bold' }}>{product.category} • {product.unit}</span>
+                    <h4 style={{ fontSize: '1.05rem', fontWeight: 'bold', color: 'var(--text-main)', margin: '4px 0 6px' }}>{product.name}</h4>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '0 0 12px', flex: 1 }}>{product.subsidyNote}</p>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '10px', borderTop: '1px solid var(--border-color)' }}>
+                      <span style={{ fontSize: '1.15rem', fontWeight: '900', color: '#005BAA' }}>{formatRupiah(product.price)}</span>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        {qty > 0 ? (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--bg-color)', padding: '4px 8px', borderRadius: '8px' }}>
+                            <button
+                              onClick={() => setKopdesCart(prev => ({ ...prev, [product.id]: Math.max(0, qty - 1) }))}
+                              style={{ width: '24px', height: '24px', borderRadius: '4px', border: 'none', background: '#ccc', cursor: 'pointer', fontWeight: 'bold' }}
+                            >
+                              -
+                            </button>
+                            <span style={{ fontWeight: 'bold', fontSize: '0.85rem' }}>{qty}</span>
+                            <button
+                              onClick={() => setKopdesCart(prev => ({ ...prev, [product.id]: qty + 1 }))}
+                              style={{ width: '24px', height: '24px', borderRadius: '4px', border: 'none', background: '#c92a2a', color: '#fff', cursor: 'pointer', fontWeight: 'bold' }}
+                            >
+                              +
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setKopdesCart(prev => ({ ...prev, [product.id]: 1 }))}
+                            style={{
+                              padding: '8px 14px',
+                              borderRadius: '8px',
+                              border: 'none',
+                              background: '#c92a2a',
+                              color: '#fff',
+                              fontSize: '0.8rem',
+                              fontWeight: 'bold',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            + Keranjang
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* TAB CONTENT: 3. URBAN FARMING (KOMPOS, MAGGOT, POLYBAG) */}
+      {activeTab === 'farming' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div style={{
+            background: 'linear-gradient(135deg, #2b8a3e, #0ca678)',
+            padding: '24px',
+            borderRadius: '20px',
+            color: '#fff',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '14px'
+          }}>
+            <div>
+              <span style={{ fontSize: '0.8rem', background: 'rgba(255,255,255,0.2)', padding: '4px 12px', borderRadius: '20px', fontWeight: 'bold' }}>
+                🌱 Sirkular Ekonomi Hijau Warga MBR
+              </span>
+              <h3 style={{ fontSize: '1.4rem', fontWeight: '900', margin: '8px 0 4px' }}>
+                Sentra Urban Farming Komunitas Hijau
+              </h3>
+              <p style={{ margin: 0, fontSize: '0.85rem', opacity: 0.9 }}>
+                Pengolahan sisa sampah dapur menjadi pakan larva Maggot BSF, kompos bambu kascing, dan sayuran segar polybag.
+              </p>
+            </div>
+
+            <div style={{ background: 'rgba(0,0,0,0.2)', padding: '12px 18px', borderRadius: '14px', fontSize: '0.85rem' }}>
+              <div>Total Poin Berkebun Anda: <strong style={{ color: '#ffec99' }}>+480 Pts</strong></div>
+              <div style={{ fontSize: '0.75rem', opacity: 0.85 }}>Hasil Panen Disalurkan ke Pasar Kopdes Merah Putih</div>
+            </div>
+          </div>
+
+          {/* Plots Grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+            {farmingPlots.map(plot => (
+              <div
+                key={plot.id}
+                style={{
+                  background: 'var(--bg-card)',
+                  padding: '22px',
+                  borderRadius: '20px',
+                  border: '1px solid var(--border-color)',
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.03)'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: '#2b8a3e' }}>{plot.plotNumber}</span>
+                  <span style={{ fontSize: '0.75rem', background: 'rgba(43,138,62,0.1)', color: '#2b8a3e', padding: '3px 8px', borderRadius: '8px', fontWeight: 'bold' }}>
+                    {plot.sizeSqm} m²
+                  </span>
+                </div>
+
+                <h4 style={{ fontSize: '1.15rem', fontWeight: 'bold', color: 'var(--text-main)', margin: '0 0 6px' }}>{plot.cropType}</h4>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '14px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <div>🌾 <strong>Pengelola:</strong> {plot.farmerFamily}</div>
+                  <div>🧪 <strong>Nutrisi:</strong> {plot.fertilizerType}</div>
+                  <div>⏳ <strong>Estimasi Panen:</strong> {plot.estimatedHarvestDate}</div>
+                </div>
+
+                {/* Progress */}
+                <div style={{ marginBottom: '14px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '4px' }}>
+                    <span style={{ color: 'var(--text-muted)' }}>Status Tumbuh:</span>
+                    <strong style={{ color: '#2b8a3e' }}>{plot.status}</strong>
+                  </div>
+                  <div style={{ width: '100%', height: '8px', background: 'var(--border-color)', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{ width: `${plot.progress}%`, height: '100%', background: '#2b8a3e', borderRadius: '4px' }} />
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => {
+                    setUserPoints(p => p + plot.pointsReward);
+                    alert(`🌿 Aktivitas Kebun "${plot.cropType}" berhasil dicatat! Anda mendapatkan +${plot.pointsReward} Poin Komunitas.`);
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    borderRadius: '10px',
+                    border: 'none',
+                    background: '#2b8a3e',
+                    color: '#fff',
+                    fontWeight: 'bold',
+                    fontSize: '0.85rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <Sprout size={16} /> Rawat Plot (+{plot.pointsReward} Poin)
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* TAB CONTENT: 4. POSYANDU KOMUNITAS MBR */}
+      {activeTab === 'posyandu' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div style={{
+            background: 'linear-gradient(135deg, #1098ad, #0c8599)',
+            padding: '24px',
+            borderRadius: '20px',
+            color: '#fff',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '14px'
+          }}>
+            <div>
+              <span style={{ fontSize: '0.8rem', background: 'rgba(255,255,255,0.2)', padding: '4px 12px', borderRadius: '20px', fontWeight: 'bold' }}>
+                🩺 Layanan Kesehatan Terpadu Warga MBR
+              </span>
+              <h3 style={{ fontSize: '1.4rem', fontWeight: '900', margin: '8px 0 4px' }}>
+                Posyandu Balita & Posyandu Lansia
+              </h3>
+              <p style={{ margin: 0, fontSize: '0.85rem', opacity: 0.9 }}>
+                Pencegahan stunting balita, imunisasi dasar lengkap, serta pemantauan tensi & gula darah lansia rutin bulanan.
+              </p>
+            </div>
+          </div>
+
+          {/* Posyandu Schedules List */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+            {posyanduList.map(pos => (
+              <div
+                key={pos.id}
+                style={{
+                  background: 'var(--bg-card)',
+                  padding: '24px',
+                  borderRadius: '20px',
+                  border: '1px solid var(--border-color)',
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.03)',
+                  display: 'flex',
+                  flexDirection: 'column'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                  <span style={{ fontSize: '0.8rem', color: '#1098ad', fontWeight: 'bold' }}>{pos.date}</span>
+                  <span style={{ fontSize: '0.75rem', background: 'rgba(16,152,173,0.1)', color: '#1098ad', padding: '3px 8px', borderRadius: '8px', fontWeight: 'bold' }}>
+                    {pos.time}
+                  </span>
+                </div>
+
+                <h4 style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--text-main)', margin: '0 0 6px' }}>{pos.title}</h4>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '12px' }}>
+                  📍 Lokasi: <strong>{pos.location}</strong> | Sasaran: {pos.targetParticipants}
+                </div>
+
+                <div style={{ background: 'var(--bg-color)', padding: '12px', borderRadius: '12px', fontSize: '0.75rem', marginBottom: '16px', flex: 1 }}>
+                  <strong>Layanan Medis:</strong>
+                  <ul style={{ margin: '4px 0 0', paddingLeft: '18px' }}>
+                    {pos.services.map((srv, idx) => (
+                      <li key={idx} style={{ marginBottom: '2px' }}>{srv}</li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '12px', borderTop: '1px solid var(--border-color)' }}>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                    Terdaftar: <strong>{pos.registeredCount}/{pos.maxSlots}</strong>
+                  </span>
+
+                  <button
+                    onClick={() => {
+                      setSelectedPosyandu(pos);
+                      setShowPosyanduRegisterModal(true);
+                    }}
+                    style={{
+                      padding: '8px 16px',
+                      borderRadius: '8px',
+                      border: 'none',
+                      background: pos.isRegisteredMine ? '#0ca678' : '#1098ad',
+                      color: '#fff',
+                      fontSize: '0.8rem',
+                      fontWeight: 'bold',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {pos.isRegisteredMine ? 'Sudah Terdaftar ✅' : 'Daftar Hadir'}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* TAB CONTENT: 5. BANK SAMPAH DIGITAL */}
       {activeTab === 'waste' && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '24px' }}>
           
@@ -436,38 +873,96 @@ export default function LivingEcosystem() {
       {activeTab === 'gamification' && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '24px' }}>
           
-          {/* Rewards Catalog */}
-          <div>
-            <h3 style={{ fontSize: '1.2rem', fontWeight: '800', color: 'var(--text-main)', marginBottom: '16px' }}>
-              🎁 Katalog Penukaran Poin Warga
-            </h3>
+          {/* Rewards & Token Subsidies Catalog */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            {/* Token Subsidi Khusus MBR (Pangan, Transport, Utilitas) */}
+            <div style={{ background: 'linear-gradient(135deg, rgba(0,91,170,0.08), rgba(12,166,120,0.08))', padding: '20px', borderRadius: '18px', border: '1px solid var(--border-color)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                <Coins size={20} color="#005BAA" />
+                <h4 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--text-main)', margin: 0 }}>
+                  🎟️ Token Subsidi Khusus Warga MBR (v2.0)
+                </h4>
+              </div>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0 0 14px' }}>
+                Tukarkan poin komunitas Anda menjadi voucher token subsidi nyata untuk kebutuhan pokok keluarga:
+              </p>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {REWARDS_CATALOG.map(rw => (
-                <div key={rw.id} style={{ background: 'var(--bg-card)', padding: '16px', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 'bold' }}>{rw.category}</span>
-                    <h4 style={{ fontSize: '0.95rem', fontWeight: 'bold', color: 'var(--text-main)', margin: '2px 0 4px' }}>{rw.title}</h4>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#005BAA' }}>Biaya: {rw.pointsCost} Poin</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {TOKEN_SUBSIDIES.map(sub => (
+                  <div key={sub.id} style={{ background: 'var(--bg-card)', padding: '14px', borderRadius: '14px', border: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px' }}>
+                    <div>
+                      <span style={{ fontSize: '0.75rem', background: '#e7f5ff', color: '#005BAA', padding: '2px 8px', borderRadius: '8px', fontWeight: 'bold' }}>
+                        Mitra: {sub.partner}
+                      </span>
+                      <h5 style={{ fontSize: '0.95rem', fontWeight: 'bold', color: 'var(--text-main)', margin: '4px 0 2px' }}>{sub.name}</h5>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{sub.benefit}</span>
+                    </div>
+
+                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                      <span style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', color: '#005BAA', marginBottom: '4px' }}>{sub.pointsCost} Pts</span>
+                      <button
+                        onClick={() => {
+                          if (userPoints < sub.pointsCost) return alert('⚠️ Poin tidak mencukupi.');
+                          setUserPoints(p => p - sub.pointsCost);
+                          if (sub.type === 'TRANSPORT') {
+                            setEtollCard(prev => ({ ...prev, balance: prev.balance + 30000 }));
+                            alert(`🎉 Sukses! ${sub.name} berhasil ditukarkan. Saldo E-Toll BTN Anda otomatis bertambah +Rp 30.000!`);
+                          } else {
+                            alert(`🎉 Sukses! ${sub.name} berhasil diterbitkan. Voucher dapat digunakan langsung saat checkout di Kopdes Merah Putih.`);
+                          }
+                        }}
+                        style={{
+                          padding: '6px 14px',
+                          borderRadius: '8px',
+                          border: 'none',
+                          background: userPoints >= sub.pointsCost ? '#005BAA' : '#ccc',
+                          color: '#fff',
+                          fontSize: '0.75rem',
+                          fontWeight: 'bold',
+                          cursor: userPoints >= sub.pointsCost ? 'pointer' : 'not-allowed'
+                        }}
+                      >
+                        Klaim Token
+                      </button>
+                    </div>
                   </div>
+                ))}
+              </div>
+            </div>
 
-                  <button
-                    onClick={() => handleRedeemReward(rw)}
-                    style={{
-                      padding: '8px 16px',
-                      borderRadius: '10px',
-                      border: 'none',
-                      background: userPoints >= rw.pointsCost ? '#0ca678' : '#ccc',
-                      color: '#fff',
-                      fontSize: '0.85rem',
-                      fontWeight: 'bold',
-                      cursor: userPoints >= rw.pointsCost ? 'pointer' : 'not-allowed'
-                    }}
-                  >
-                    Tukar
-                  </button>
-                </div>
-              ))}
+            {/* Standard Rewards Catalog */}
+            <div>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: '800', color: 'var(--text-main)', marginBottom: '16px' }}>
+                🎁 Hadiah & Merchandise Lainnya
+              </h3>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {REWARDS_CATALOG.map(rw => (
+                  <div key={rw.id} style={{ background: 'var(--bg-card)', padding: '16px', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 'bold' }}>{rw.category}</span>
+                      <h4 style={{ fontSize: '0.95rem', fontWeight: 'bold', color: 'var(--text-main)', margin: '2px 0 4px' }}>{rw.title}</h4>
+                      <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#005BAA' }}>Biaya: {rw.pointsCost} Poin</span>
+                    </div>
+
+                    <button
+                      onClick={() => handleRedeemReward(rw)}
+                      style={{
+                        padding: '8px 16px',
+                        borderRadius: '10px',
+                        border: 'none',
+                        background: userPoints >= rw.pointsCost ? '#0ca678' : '#ccc',
+                        color: '#fff',
+                        fontSize: '0.85rem',
+                        fontWeight: 'bold',
+                        cursor: userPoints >= rw.pointsCost ? 'pointer' : 'not-allowed'
+                      }}
+                    >
+                      Tukar
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -744,6 +1239,308 @@ export default function LivingEcosystem() {
                   Tayangkan Iklan
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: RIWAYAT TAP E-TOLL BTN (SIMBIOSIS BTN-WARGA) */}
+      {showEtollHistory && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.6)',
+          backdropFilter: 'blur(6px)',
+          zIndex: 100020,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }}>
+          <div style={{
+            background: 'var(--bg-card)',
+            borderRadius: '24px',
+            border: '1px solid var(--border-color)',
+            width: '100%',
+            maxWidth: '560px',
+            padding: '28px',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <div>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: '900', color: 'var(--text-main)', margin: '0 0 2px' }}>
+                  Riwayat Transaksi E-Toll BTN Warga
+                </h3>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                  Simbiosis Mutualisme: Komisi Rp 150/tap otomatis masuk ke pendapatan harian BTN
+                </span>
+              </div>
+              <button onClick={() => setShowEtollHistory(false)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '350px', overflowY: 'auto', marginBottom: '18px' }}>
+              {etollTransactions.map(tx => (
+                <div key={tx.id} style={{ background: 'var(--bg-color)', padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <span style={{ fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--text-main)' }}>{tx.service}</span>
+                    <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)' }}>{tx.date} • Armada: {tx.vehiclePlate}</span>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <span style={{ fontWeight: 'bold', fontSize: '0.9rem', color: '#c92a2a' }}>-{formatRupiah(tx.amount)}</span>
+                    <span style={{ display: 'block', fontSize: '0.7rem', color: '#0ca678' }}>Komisi BTN: +Rp {tx.btnFee}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={() => setShowEtollHistory(false)}
+              style={{ width: '100%', padding: '12px', borderRadius: '12px', border: 'none', background: '#005BAA', color: '#fff', fontWeight: 'bold', cursor: 'pointer' }}
+            >
+              Tutup
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: TOP UP SALDO E-TOLL BTN */}
+      {showTopUpModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.6)',
+          backdropFilter: 'blur(6px)',
+          zIndex: 100020,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }}>
+          <div style={{
+            background: 'var(--bg-card)',
+            borderRadius: '24px',
+            border: '1px solid var(--border-color)',
+            width: '100%',
+            maxWidth: '460px',
+            padding: '26px',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
+          }}>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: '900', color: 'var(--text-main)', margin: '0 0 4px' }}>
+              Top Up Saldo E-Toll BTN Tap-Smart
+            </h3>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0 0 16px' }}>
+              Pilih nominal top up via Bank BTN Virtual Account:
+            </p>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '18px' }}>
+              {[20000, 50000, 100000, 200000].map(amt => (
+                <button
+                  key={amt}
+                  onClick={() => setTopUpAmount(amt)}
+                  style={{
+                    padding: '12px',
+                    borderRadius: '12px',
+                    border: topUpAmount === amt ? '2px solid #005BAA' : '1px solid var(--border-color)',
+                    background: topUpAmount === amt ? 'rgba(0,91,170,0.1)' : 'var(--bg-color)',
+                    color: topUpAmount === amt ? '#005BAA' : 'var(--text-main)',
+                    fontWeight: 'bold',
+                    fontSize: '0.9rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {formatRupiah(amt)}
+                </button>
+              ))}
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                onClick={() => setShowTopUpModal(false)}
+                style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--bg-color)', color: 'var(--text-main)', fontWeight: 'bold', cursor: 'pointer' }}
+              >
+                Batal
+              </button>
+              <button
+                onClick={() => {
+                  setEtollCard(prev => ({ ...prev, balance: prev.balance + topUpAmount }));
+                  setShowTopUpModal(false);
+                  alert(`✅ Top Up Berhasil! Saldo E-Toll BTN bertambah ${formatRupiah(topUpAmount)}.`);
+                }}
+                style={{ flex: 2, padding: '12px', borderRadius: '12px', border: 'none', background: '#005BAA', color: '#fff', fontWeight: 'bold', cursor: 'pointer' }}
+              >
+                Konfirmasi Top Up
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: CHECKOUT KOPDES MERAH PUTIH */}
+      {showKopdesCheckoutModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.6)',
+          backdropFilter: 'blur(6px)',
+          zIndex: 100020,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }}>
+          <div style={{
+            background: 'var(--bg-card)',
+            borderRadius: '24px',
+            border: '1px solid var(--border-color)',
+            width: '100%',
+            maxWidth: '520px',
+            padding: '28px',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
+          }}>
+            <h3 style={{ fontSize: '1.3rem', fontWeight: '900', color: 'var(--text-main)', margin: '0 0 6px' }}>
+              Konfirmasi Pesanan Sembako Kopdes
+            </h3>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0 0 16px' }}>
+              Kemitraan resmi Koperasi Desa Merah Putih Taktakan & BangunIn MBR
+            </p>
+
+            {/* Delivery Option */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '8px' }}>Metode Pengantaran:</label>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                <button
+                  onClick={() => setKopdesDeliveryType('SHUTTLE')}
+                  style={{
+                    padding: '10px',
+                    borderRadius: '10px',
+                    border: kopdesDeliveryType === 'SHUTTLE' ? '2px solid #c92a2a' : '1px solid var(--border-color)',
+                    background: kopdesDeliveryType === 'SHUTTLE' ? 'rgba(201,42,42,0.1)' : 'var(--bg-color)',
+                    color: 'var(--text-main)',
+                    fontSize: '0.8rem',
+                    fontWeight: 'bold',
+                    cursor: 'pointer'
+                  }}
+                >
+                  🚐 Diantar Shuttle MBR (+Rp 5.000 E-Toll)
+                </button>
+                <button
+                  onClick={() => setKopdesDeliveryType('PICKUP')}
+                  style={{
+                    padding: '10px',
+                    borderRadius: '10px',
+                    border: kopdesDeliveryType === 'PICKUP' ? '2px solid #c92a2a' : '1px solid var(--border-color)',
+                    background: kopdesDeliveryType === 'PICKUP' ? 'rgba(201,42,42,0.1)' : 'var(--bg-color)',
+                    color: 'var(--text-main)',
+                    fontSize: '0.8rem',
+                    fontWeight: 'bold',
+                    cursor: 'pointer'
+                  }}
+                >
+                  🏪 Ambil di Gerai Koperasi
+                </button>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                onClick={() => setShowKopdesCheckoutModal(false)}
+                style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--bg-color)', color: 'var(--text-main)', fontWeight: 'bold', cursor: 'pointer' }}
+              >
+                Batal
+              </button>
+              <button
+                onClick={() => {
+                  setShowKopdesCheckoutModal(false);
+                  setKopdesCart({});
+                  alert(`✅ Pesanan Sembako Berhasil Diproses! ${kopdesDeliveryType === 'SHUTTLE' ? 'Armada Mobil Box Logistik Warga (A 9988 KD) akan mengantar ke alamat blok rumah Anda.' : 'Silakan ambil di gerai Koperasi Desa Taktakan.'}`);
+                }}
+                style={{ flex: 2, padding: '12px', borderRadius: '12px', border: 'none', background: '#c92a2a', color: '#fff', fontWeight: 'bold', cursor: 'pointer' }}
+              >
+                Bayar & Pesan Sembako
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: DAFTAR POSYANDU */}
+      {showPosyanduRegisterModal && selectedPosyandu && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.6)',
+          backdropFilter: 'blur(6px)',
+          zIndex: 100020,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }}>
+          <div style={{
+            background: 'var(--bg-card)',
+            borderRadius: '24px',
+            border: '1px solid var(--border-color)',
+            width: '100%',
+            maxWidth: '480px',
+            padding: '26px',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
+          }}>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: '900', color: 'var(--text-main)', margin: '0 0 6px' }}>
+              Pendaftaran {selectedPosyandu.title}
+            </h3>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0 0 16px' }}>
+              🗓️ {selectedPosyandu.date} ({selectedPosyandu.time}) di {selectedPosyandu.location}
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '18px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '4px' }}>Nama Peserta (Balita / Lansia):</label>
+                <input
+                  type="text"
+                  value={regFamilyMember}
+                  onChange={e => setRegFamilyMember(e.target.value)}
+                  placeholder="Nama anggota keluarga..."
+                  style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-color)', color: 'var(--text-main)' }}
+                />
+              </div>
+
+              <div style={{ background: 'var(--bg-color)', padding: '12px', borderRadius: '10px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                📲 Notifikasi pengingat H-1 akan dikirimkan otomatis via WhatsApp ke nomor kepala keluarga terdaftar.
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                onClick={() => setShowPosyanduRegisterModal(false)}
+                style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--bg-color)', color: 'var(--text-main)', fontWeight: 'bold', cursor: 'pointer' }}
+              >
+                Batal
+              </button>
+              <button
+                onClick={() => {
+                  setPosyanduList(prev => prev.map(p => p.id === selectedPosyandu.id ? { ...p, isRegisteredMine: true, registeredCount: p.registeredCount + 1 } : p));
+                  setShowPosyanduRegisterModal(false);
+                  setRegFamilyMember('');
+                  alert(`✅ Pendaftaran Berhasil! Kehadiran di ${selectedPosyandu.title} telah dicatat.`);
+                }}
+                style={{ flex: 2, padding: '12px', borderRadius: '12px', border: 'none', background: '#1098ad', color: '#fff', fontWeight: 'bold', cursor: 'pointer' }}
+              >
+                Daftarkan Hadir
+              </button>
             </div>
           </div>
         </div>

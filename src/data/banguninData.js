@@ -493,6 +493,81 @@ export const HOUSING_MODELS = [
       sanitary: 'Sanitair Lengkap dengan Sistem Penampungan Air Hujan'
     },
     render3D: 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=800&q=80'
+  },
+  {
+    id: 'model-postmodern',
+    name: 'Postmodern Eco-Living MBR',
+    tagline: 'Gaya Kontemporer Kubikal dengan Overhang Kanopi Bambu Kurva',
+    badge: 'Desain Futuristik Hijau',
+    basePrice: 192000000,
+    minArea: 36,
+    landArea: 72,
+    floorsDefault: 1,
+    bedroomsDefault: 2,
+    bathroomsDefault: 1,
+    constructionTimeWeeks: 5,
+    carbonOffsetTons: 14.8,
+    thermalIndex: 'Double-Skin Façade (Insulasi Panas Maksimal)',
+    earthquakeResist: 'Struktur Frame Modular Elastis Tahan Gempa',
+    specs: {
+      foundation: 'Pondasi Telapak Beton Bertulang & Balok Pengikat',
+      structure: 'Baja Ringan Zincalume Komposit & Kolom Bambu Rekayasa',
+      walls: 'Panel EPS Ringan Berplester & Sekat Akustik Bambu',
+      roof: 'Atap Flat Miring Tersembunyi dengan Insulasi Foil Reflektif',
+      floor: 'Homogeneous Tile 60x60 Matte Finish',
+      sanitary: 'Monoblok Dual Flush + Shower Spray Tekanan Rendah'
+    },
+    render3D: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80'
+  },
+  {
+    id: 'model-minimalis',
+    name: 'Minimalis Hijau MBR',
+    tagline: 'Kompak, Efisien Ruang, Hemat Energi dengan Louver Bambu Vertikal',
+    badge: 'Paling Terjangkau & Efisien',
+    basePrice: 165000000,
+    minArea: 30,
+    landArea: 60,
+    floorsDefault: 1,
+    bedroomsDefault: 2,
+    bathroomsDefault: 1,
+    constructionTimeWeeks: 4,
+    carbonOffsetTons: 10.5,
+    thermalIndex: 'Peneduh Alami Louver Bambu (Hemat Listrik 30%)',
+    earthquakeResist: 'Konstruksi Interlocking Ramah Gempa SNI',
+    specs: {
+      foundation: 'Pondasi Batu Belah & Sloof Beton Praktis',
+      structure: 'Rangka Beton Bertulang Praktis K-225',
+      walls: 'Bata Ringan Hebel & Kisi-kisi Bambu Vertikal',
+      roof: 'Rangka Baja Ringan + Genteng Multiroof Eco',
+      floor: 'Keramik 50x50 Polished Cream',
+      sanitary: 'Kloset Jongkok/Duduk SNI + Bak Mandi Fiber Minimalis'
+    },
+    render3D: 'https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=800&q=80'
+  },
+  {
+    id: 'model-tropis',
+    name: 'Tropis Nusantara MBR',
+    tagline: 'Atap Pelana Tinggi Penepis Hujan & Panas dengan Selasar Teras Bambu',
+    badge: 'Kearifan Lokal Nusantara',
+    basePrice: 172000000,
+    minArea: 36,
+    landArea: 60,
+    floorsDefault: 1,
+    bedroomsDefault: 2,
+    bathroomsDefault: 1,
+    constructionTimeWeeks: 5,
+    carbonOffsetTons: 13.6,
+    thermalIndex: 'Plafon Tinggi 3.6m + Ventilasi Silang Udara Bebas',
+    earthquakeResist: 'Sistem Konstruksi Rumah Kayu-Bambu Tahan Gempa Tradisional',
+    specs: {
+      foundation: 'Pondasi Umpak Beton Setempat & Balok Sloof Antirayap',
+      structure: 'Bambu Petung Terawetkan & Panel Interlock',
+      walls: 'Kombinasi Plesteran Dinding & Anyaman Bambu Kedap Air',
+      roof: 'Rangka Kuda-kuda Bambu + Genteng Tanah Liat Eco-Glaze',
+      floor: 'Lantai Keramik Motif Terakota Hangat 40x40',
+      sanitary: 'Kloset Duduk Eco + Bak Penampungan Air Bersih Otomatis'
+    },
+    render3D: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80'
   }
 ];
 
@@ -816,3 +891,331 @@ export const MOCK_LEADERBOARD = [
   { rank: 4, name: 'Keluarga Bpk. Mukoddas Syuhada', block: 'Blok A-12', points: 2640, level: 'Eco Pioneer 🎋', streakDays: 15 },
   { rank: 5, name: 'Keluarga Kang Ujang', block: 'Blok D-05', points: 2190, level: 'Eco Pioneer 🎋', streakDays: 12 }
 ];
+
+// ────────── V2.0 ADDITIONS: KOPDES MERAH PUTIH ──────────
+export const KOPDES_PRODUCTS = [
+  {
+    id: 'kp-1',
+    name: 'Beras SPHP Bulog (5 Kg)',
+    category: 'Pangan Pokok',
+    price: 62500,
+    stock: 120,
+    unit: 'Sak 5kg',
+    subsidyNote: 'Program Stabilisasi Pasokan Pangan Pemerintah',
+    image: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=500&q=80'
+  },
+  {
+    id: 'kp-2',
+    name: 'Minyakita Kemasan Pouch (1 Liter)',
+    category: 'Pangan Pokok',
+    price: 15500,
+    stock: 85,
+    unit: 'Pouch 1L',
+    subsidyNote: 'Minyak Goreng Rakyat HET Terjamin',
+    image: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&w=500&q=80'
+  },
+  {
+    id: 'kp-3',
+    name: 'Telur Ayam Ras Segar (1 Kg)',
+    category: 'Lauk Pauk',
+    price: 28000,
+    stock: 45,
+    unit: 'Kg',
+    subsidyNote: 'Peternakan Rakyat Binaan Koperasi',
+    image: 'https://images.unsplash.com/photo-1516448620398-c5f44bf9f441?auto=format&fit=crop&w=500&q=80'
+  },
+  {
+    id: 'kp-4',
+    name: 'Gula Pasir Kristal Maniskita (1 Kg)',
+    category: 'Pangan Pokok',
+    price: 17500,
+    stock: 60,
+    unit: 'Kg',
+    subsidyNote: 'Produksi BUMN Pangan',
+    image: 'https://images.unsplash.com/photo-1622484212850-cab596d66e74?auto=format&fit=crop&w=500&q=80'
+  },
+  {
+    id: 'kp-5',
+    name: 'Paket Sayuran Segar Kebun Warga MBR',
+    category: 'Sayuran Organik',
+    price: 15000,
+    stock: 30,
+    unit: 'Paket Campur (Bayam, Kangkung, Cabai)',
+    subsidyNote: 'Panen Urban Farming Komunitas Hijau',
+    image: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=500&q=80'
+  },
+  {
+    id: 'kp-6',
+    name: 'Bumbu Dapur Lengkap Halus Komplit',
+    category: 'Bumbu Masak',
+    price: 12000,
+    stock: 50,
+    unit: 'Toples 250gr',
+    subsidyNote: 'UMKM Ibu-Ibu Perumahan MBR',
+    image: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=500&q=80'
+  }
+];
+
+export const KOPDES_PARTNERS = [
+  {
+    id: 'kd-taktakan',
+    name: 'Koperasi Desa Merah Putih Taktakan Mandiri',
+    address: 'Jl. Raya Taktakan KM 4.5, Serang, Banten',
+    pic: 'Bpk. Ahmad Suwandi (Ketua Koperasi)',
+    phone: '0813-8822-1945',
+    village: 'Desa Taktakan',
+    coverage: 'Kawasan Griya Lestari & Sekitarnya',
+    status: 'AKTIF (Mitra Distribusi Logistik Sembako)'
+  }
+];
+
+// ────────── V2.0 ADDITIONS: E-TOLL BTN SIMBIOSIS MUTUALISME ──────────
+export const MOCK_ETOLL_CARD = {
+  cardNumber: '6013-0988-1244-8891',
+  cardHolder: 'Mukoddas Syuhada',
+  balance: 145000,
+  btnCommissionRate: 150, // Rp 150 komisi masuk ke Bank BTN per tap
+  bankName: 'Bank BTN',
+  cardType: 'E-Toll BTN Tap-Smart MBR'
+};
+
+export const MOCK_ETOLL_TRANSACTIONS = [
+  {
+    id: 'et-101',
+    date: '12 Okt 2026, 06:20 WIB',
+    service: 'Shuttle Anak Sekolah Griya Lestari',
+    amount: 5000,
+    btnFee: 150,
+    status: 'SUCCESS',
+    vehiclePlate: 'A 7890 BG'
+  },
+  {
+    id: 'et-102',
+    date: '11 Okt 2026, 07:15 WIB',
+    service: 'Shuttle Stasiun KRL & Terminal',
+    amount: 7500,
+    btnFee: 150,
+    status: 'SUCCESS',
+    vehiclePlate: 'A 1234 XY'
+  },
+  {
+    id: 'et-103',
+    date: '10 Okt 2026, 14:00 WIB',
+    service: 'Pengantaran Sembako Kopdes Merah Putih',
+    amount: 5000,
+    btnFee: 150,
+    status: 'SUCCESS',
+    vehiclePlate: 'A 9988 KD'
+  },
+  {
+    id: 'et-104',
+    date: '09 Okt 2026, 18:30 WIB',
+    service: 'Shuttle Pulang Kerja KRL Stasiun Serang',
+    amount: 7500,
+    btnFee: 150,
+    status: 'SUCCESS',
+    vehiclePlate: 'A 1234 XY'
+  }
+];
+
+// ────────── V2.0 ADDITIONS: URBAN FARMING ──────────
+export const URBAN_FARMING_PLOTS = [
+  {
+    id: 'plot-a1',
+    plotNumber: 'Plot A-01 (Blok Hijau Edukasi)',
+    cropType: 'Bayam & Kangkung Organik',
+    sizeSqm: 18,
+    status: 'Masa Perawatan (Panen H-5)',
+    farmerFamily: 'Keluarga Bpk. Mukoddas Syuhada',
+    plantedDate: '24 September 2026',
+    estimatedHarvestDate: '17 Oktober 2026',
+    fertilizerType: 'Kompos Bambu Kascing (Cacing Tanah)',
+    pointsReward: 75,
+    progress: 75
+  },
+  {
+    id: 'plot-b2',
+    plotNumber: 'Plot B-02 (Biokonversi Maggot BSF)',
+    cropType: 'Sentra Larva Maggot BSF (Pengolah Sisa Dapur)',
+    sizeSqm: 24,
+    status: 'Produksi Aktif (Siklus Harian)',
+    farmerFamily: 'Kelompok Pemuda RW 04',
+    plantedDate: '01 Oktober 2026',
+    estimatedHarvestDate: 'Panen Harian (Pakan Ayam/Ikan)',
+    fertilizerType: 'Limbah Organik Bank Sampah (45 kg/hari)',
+    pointsReward: 120,
+    progress: 90
+  },
+  {
+    id: 'plot-c3',
+    plotNumber: 'Plot C-03 (Polybag Cabai & Tomat)',
+    cropType: 'Cabai Rawit Merah & Tomat Sayur',
+    sizeSqm: 15,
+    status: 'Berbunga & Berbuah Muda',
+    farmerFamily: 'Keluarga Ibu Ratna (Blok B-08)',
+    plantedDate: '10 September 2026',
+    estimatedHarvestDate: '25 Oktober 2026',
+    fertilizerType: 'Pupuk Organik Cair (POC) Bambu',
+    pointsReward: 85,
+    progress: 60
+  }
+];
+
+// ────────── V2.0 ADDITIONS: POSYANDU KOMUNITAS MBR ──────────
+export const POSYANDU_SCHEDULES = [
+  {
+    id: 'posy-1',
+    title: 'Posyandu Balita Melati Griya Lestari',
+    date: 'Kamis, 15 Oktober 2026',
+    time: '08:30 - 11:30 WIB',
+    location: 'Balai Warga Griya Lestari Blok A',
+    services: [
+      'Pemeriksaan Tumbuh Kembang & Stunting Balita',
+      'Imunisasi Dasar Lengkap (Polio & Campak)',
+      'Distribusi Vitamin A & Makanan Tambahan (PMT) Telur & Bubur Kacang Hijau'
+    ],
+    targetParticipants: 'Balita Usia 0 - 5 Tahun',
+    registeredCount: 42,
+    maxSlots: 60,
+    isRegisteredMine: true,
+    reminderSent: true
+  },
+  {
+    id: 'posy-2',
+    title: 'Posyandu Lansia Sehat Bugar MBR',
+    date: 'Kamis, 22 Oktober 2026',
+    time: '09:00 - 12:00 WIB',
+    location: 'Gazebo RTH Bambu Blok C',
+    services: [
+      'Pemeriksaan Tekanan Darah (Tensi) & Gula Darah',
+      'Skrining Asam Urat & Kolesterol',
+      'Senam Lansia Ringan & Konsultasi Pola Makan'
+    ],
+    targetParticipants: 'Warga Usia 55 Tahun ke Atas',
+    registeredCount: 35,
+    maxSlots: 50,
+    isRegisteredMine: false,
+    reminderSent: false
+  }
+];
+
+// ────────── V2.0 ADDITIONS: TOKEN SUBSIDI ──────────
+export const TOKEN_SUBSIDIES = [
+  {
+    id: 'sub-pangan',
+    name: 'Token Subsidi Pangan Rp 50.000',
+    type: 'PANGAN',
+    pointsCost: 400,
+    partner: 'Kopdes Merah Putih',
+    benefit: 'Potongan langsung Rp 50.000 saat belanja beras / minyak di Kopdes',
+    validDays: 30,
+    icon: 'ShoppingBag'
+  },
+  {
+    id: 'sub-transport',
+    name: 'Token Subsidi Transportasi Rp 30.000',
+    type: 'TRANSPORT',
+    pointsCost: 250,
+    partner: 'E-Toll BTN Shuttle',
+    benefit: 'Top up saldo E-Toll BTN otomatis untuk naik shuttle sekolah & kerja',
+    validDays: 30,
+    icon: 'Bus'
+  },
+  {
+    id: 'sub-utilities',
+    name: 'Token Subsidi Utilitas Rp 50.000',
+    type: 'UTILITIES',
+    pointsCost: 450,
+    partner: 'PLN & PDAM',
+    benefit: 'Keringanan pembayaran token listrik PLN atau air bersih',
+    validDays: 30,
+    icon: 'Zap'
+  }
+];
+
+// ────────── V2.0 ADDITIONS: KONTROL BMW & JAMINAN PEMBANGUNAN ──────────
+export const MOCK_BMW_TRACKING = {
+  biaya: {
+    rabTarget: 188000000,
+    actualSpending: 127840000,
+    absorptionPercent: 68,
+    variancePercent: 0.4,
+    status: 'ON_TRACK', // 'ON_TRACK' | 'WARNING' | 'CRITICAL'
+    notes: 'Serapan termin 1 & termin 2 sesuai kurva S RAB. Tidak ada pembengkakan biaya.',
+    stages: [
+      { name: 'Termin 1 (Pondasi 20%)', amount: 37600000, status: 'DISBURSED', date: '12 Ags 2026' },
+      { name: 'Termin 2 (Struktur Dinding 50%)', amount: 56400000, status: 'DISBURSED', date: '05 Sep 2026' },
+      { name: 'Termin 3 (Rangka Atap 70%)', amount: 37600000, status: 'IN_REVIEW', date: '15 Okt 2026' },
+      { name: 'Termin 4 (Finishing & BAST 100%)', amount: 56400000, status: 'PENDING', date: '15 Nov 2026' }
+    ]
+  },
+  mutu: {
+    qualityScore: 98.8,
+    status: 'EXCELLENT',
+    checklists: [
+      { item: 'Uji Kuat Tekan Beton RISHAM (K-250 SNI)', passed: true, score: 'Lulus Uji Laboratorium PU' },
+      { item: 'Preservasi Boron Bambu Laminasi (Anti Rayap & Jamur)', passed: true, score: 'Sertifikasi Keawetan Kelas I' },
+      { item: 'Kelurusan Dinding Panel EPS & Sambungan Plat Baja', passed: true, score: 'Deviasi < 1 mm' },
+      { item: 'Kemiringan Atap & Kerapian Genteng Metal Berpasir', passed: true, score: 'Bebas Kebocoran Tampias' },
+      { item: 'Instalasi Pipa Air PDAM & Kelistrikan Grounding', passed: true, score: 'Tekanan Pipa 2 Bar, Grounding < 1 Ohm' }
+    ]
+  },
+  waktu: {
+    targetCompletionDate: '15 November 2026',
+    plannedDaysRemaining: 34,
+    scheduleVarianceDays: 3, // +3 days ahead of schedule
+    status: 'AHEAD_OF_SCHEDULE',
+    notes: 'Pelaksanaan 3 hari lebih cepat dari jadwal SPK berkat modul pracetak RISHAM yang presisi.'
+  }
+};
+
+export const MOCK_WARRANTY_CLAIMS = [
+  {
+    id: 'war-001',
+    unitId: 'UNT-GLB-A12',
+    title: 'Rembes Halus Talang Sudut Kanopi Depan',
+    category: 'Atap & Saluran Air',
+    description: 'Saat hujan lebat semalam ada tetesan halus di ujung sambungan talang teras depan.',
+    submittedDate: '10 Oktober 2026',
+    slaDeadline: '12 Oktober 2026 (SLA 2x24 Jam)',
+    status: 'IN_PROGRESS', // 'SUBMITTED' | 'IN_PROGRESS' | 'RESOLVED'
+    developerResponse: 'Tim teknisi PT. Katama sudah dijadwalkan datang hari ini pukul 14:00 WIB untuk seal ulang silikon sealant tahan air.',
+    resolvedAt: null
+  },
+  {
+    id: 'war-002',
+    unitId: 'UNT-GLB-A12',
+    title: 'Penyetelan Engsel Pintu Kamar Utama',
+    category: 'Kusen & Pintu',
+    description: 'Pintu kamar sedikit berdecit ketika ditutup rapat.',
+    submittedDate: '28 September 2026',
+    slaDeadline: '30 September 2026',
+    status: 'RESOLVED',
+    developerResponse: 'Engsel telah disetel ulang dan dilumasi pelumas khusus tahan karat oleh teknisi lapangan.',
+    resolvedAt: '29 September 2026'
+  }
+];
+
+// ────────── V2.0 ADDITIONS: DATABASE PEMERINTAH (PROGRAM 3 JUTA RUMAH) ──────────
+export const GOVERNMENT_REPORTS_DATA = {
+  nationalProgram: 'Program Strategis Nasional 3 Juta Rumah Rakyat',
+  ministry: 'Kementerian Perumahan dan Kawasan Permukiman (PKP) & PUPR RI',
+  lastUpdated: '12 Oktober 2026',
+  stats: {
+    totalQuotaNational: 3000000,
+    provincialQuotaBanten: 125000,
+    realizedUnitsBanten: 84200,
+    realizationPercent: 67.36,
+    activeMbrDevelopers: 148,
+    greenEcoUnitsPercent: 42.8,
+    carbonReductionTons: 1840.5,
+    flppSubsidiesDisbursedRp: 'Rp 14,2 Triliun'
+  },
+  permitSummary: [
+    { province: 'Banten', pbgApproved: 412, pbgPending: 38, slfIssued: 295, amdalVerified: 412 },
+    { province: 'Jawa Barat', pbgApproved: 890, pbgPending: 64, slfIssued: 670, amdalVerified: 890 },
+    { province: 'Jawa Tengah', pbgApproved: 320, pbgPending: 25, slfIssued: 280, amdalVerified: 320 },
+    { province: 'Jawa Timur', pbgApproved: 480, pbgPending: 31, slfIssued: 410, amdalVerified: 480 }
+  ]
+};
+

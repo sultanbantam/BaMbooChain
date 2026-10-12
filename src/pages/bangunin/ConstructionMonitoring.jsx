@@ -2,9 +2,14 @@ import React, { useState } from 'react';
 import { 
   HardHat, MapPin, CheckCircle2, Clock, Camera, ShieldCheck, 
   ExternalLink, Download, FileText, Upload, AlertCircle, Eye, 
-  ChevronRight, Sparkles, Check, Hash, RefreshCw
+  ChevronRight, Sparkles, Check, Hash, RefreshCw, BarChart3, 
+  Wrench, TrendingUp, AlertTriangle, Shield, Plus, X
 } from 'lucide-react';
-import { MOCK_UNIT_MONITORING } from '../../data/banguninData';
+import { MOCK_UNIT_MONITORING, MOCK_BMW_TRACKING, MOCK_WARRANTY_CLAIMS } from '../../data/banguninData';
+
+const formatRupiah = (val) => {
+  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
+};
 
 export default function ConstructionMonitoring({ currentUserRole = 'CONSUMER' }) {
   const [unitData, setUnitData] = useState(MOCK_UNIT_MONITORING);
@@ -12,6 +17,16 @@ export default function ConstructionMonitoring({ currentUserRole = 'CONSUMER' })
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showVerifyModal, setShowVerifyModal] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
+
+  // V2.0 Tab State: 'MILESTONES' | 'BMW' | 'WARRANTY'
+  const [monitoringTab, setMonitoringTab] = useState('MILESTONES');
+
+  // V2.0 Warranty Claims State
+  const [warrantyClaims, setWarrantyClaims] = useState(MOCK_WARRANTY_CLAIMS);
+  const [showAddWarrantyModal, setShowAddWarrantyModal] = useState(false);
+  const [newClaimTitle, setNewClaimTitle] = useState('');
+  const [newClaimCategory, setNewClaimCategory] = useState('Atap & Saluran Air');
+  const [newClaimDesc, setNewClaimDesc] = useState('');
 
   // New Update Form State (For Developer)
   const [newUpdateNotes, setNewUpdateNotes] = useState('');
@@ -172,8 +187,80 @@ export default function ConstructionMonitoring({ currentUserRole = 'CONSUMER' })
         </div>
       </div>
 
-      {/* 2 Column: Milestones List & Active Milestone Detail */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px' }}>
+      {/* ────────── MONITORING SUB-TABS (v2.0) ────────── */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+        gap: '10px',
+        background: 'var(--bg-card)',
+        padding: '6px',
+        borderRadius: '16px',
+        border: '1px solid var(--border-color)'
+      }}>
+        <button
+          onClick={() => setMonitoringTab('MILESTONES')}
+          style={{
+            padding: '12px 16px',
+            borderRadius: '12px',
+            border: 'none',
+            background: monitoringTab === 'MILESTONES' ? '#005BAA' : 'transparent',
+            color: monitoringTab === 'MILESTONES' ? '#fff' : 'var(--text-main)',
+            fontWeight: 'bold',
+            fontSize: '0.85rem',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px'
+          }}
+        >
+          <Clock size={18} /> 1. Timeline & Geotag Progres
+        </button>
+
+        <button
+          onClick={() => setMonitoringTab('BMW')}
+          style={{
+            padding: '12px 16px',
+            borderRadius: '12px',
+            border: 'none',
+            background: monitoringTab === 'BMW' ? '#005BAA' : 'transparent',
+            color: monitoringTab === 'BMW' ? '#fff' : 'var(--text-main)',
+            fontWeight: 'bold',
+            fontSize: '0.85rem',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px'
+          }}
+        >
+          <BarChart3 size={18} /> 2. Kontrol BMW (Biaya, Mutu, Waktu)
+        </button>
+
+        <button
+          onClick={() => setMonitoringTab('WARRANTY')}
+          style={{
+            padding: '12px 16px',
+            borderRadius: '12px',
+            border: 'none',
+            background: monitoringTab === 'WARRANTY' ? '#005BAA' : 'transparent',
+            color: monitoringTab === 'WARRANTY' ? '#fff' : 'var(--text-main)',
+            fontWeight: 'bold',
+            fontSize: '0.85rem',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px'
+          }}
+        >
+          <ShieldAlert size={18} /> 3. Jaminan Pembangunan
+        </button>
+      </div>
+
+      {/* VIEW 1: MILESTONES TIMELINE & DETAIL */}
+      {monitoringTab === 'MILESTONES' && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px' }}>
         
         {/* Milestones Timeline */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -312,6 +399,297 @@ export default function ConstructionMonitoring({ currentUserRole = 'CONSUMER' })
         )}
 
       </div>
+      )}
+
+      {/* VIEW 2: KONTROL BMW (BIAYA, MUTU, WAKTU) */}
+      {monitoringTab === 'BMW' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {/* Top 3 Metric Cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px' }}>
+            {/* 1. BIAYA */}
+            <div style={{ background: 'var(--bg-card)', padding: '22px', borderRadius: '20px', border: '1px solid var(--border-color)', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: '#005BAA', textTransform: 'uppercase' }}>💰 1. Kontrol Biaya (RAB)</span>
+                <span style={{ background: 'rgba(12,166,120,0.1)', color: '#0ca678', fontSize: '0.75rem', fontWeight: 'bold', padding: '3px 8px', borderRadius: '8px' }}>
+                  On Track (+{MOCK_BMW_TRACKING.biaya.variancePercent}%)
+                </span>
+              </div>
+              <h4 style={{ fontSize: '1.4rem', fontWeight: '900', color: 'var(--text-main)', margin: '0 0 4px' }}>
+                {formatRupiah(MOCK_BMW_TRACKING.biaya.actualSpending)}
+              </h4>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0 0 12px' }}>
+                Pagu RAB: <strong>{formatRupiah(MOCK_BMW_TRACKING.biaya.rabTarget)}</strong> ({MOCK_BMW_TRACKING.biaya.absorptionPercent}% Serapan)
+              </p>
+              <div style={{ width: '100%', height: '8px', background: 'var(--border-color)', borderRadius: '4px', overflow: 'hidden' }}>
+                <div style={{ width: `${MOCK_BMW_TRACKING.biaya.absorptionPercent}%`, height: '100%', background: '#005BAA', borderRadius: '4px' }} />
+              </div>
+            </div>
+
+            {/* 2. MUTU */}
+            <div style={{ background: 'var(--bg-card)', padding: '22px', borderRadius: '20px', border: '1px solid var(--border-color)', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: '#0ca678', textTransform: 'uppercase' }}>📐 2. Kontrol Mutu (SNI)</span>
+                <span style={{ background: 'rgba(12,166,120,0.1)', color: '#0ca678', fontSize: '0.75rem', fontWeight: 'bold', padding: '3px 8px', borderRadius: '8px' }}>
+                  Kualitas Sangat Baik
+                </span>
+              </div>
+              <h4 style={{ fontSize: '1.4rem', fontWeight: '900', color: '#0ca678', margin: '0 0 4px' }}>
+                {MOCK_BMW_TRACKING.mutu.qualityScore}% Lulus
+              </h4>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0 0 12px' }}>
+                5/5 Pengujian Standar PUPR & Laboratorium Selesai Sempurna
+              </p>
+              <div style={{ width: '100%', height: '8px', background: 'var(--border-color)', borderRadius: '4px', overflow: 'hidden' }}>
+                <div style={{ width: `${MOCK_BMW_TRACKING.mutu.qualityScore}%`, height: '100%', background: '#0ca678', borderRadius: '4px' }} />
+              </div>
+            </div>
+
+            {/* 3. WAKTU */}
+            <div style={{ background: 'var(--bg-card)', padding: '22px', borderRadius: '20px', border: '1px solid var(--border-color)', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: '#f59f00', textTransform: 'uppercase' }}>⏱️ 3. Kontrol Waktu (Kurva S)</span>
+                <span style={{ background: 'rgba(245,159,0,0.1)', color: '#f59f00', fontSize: '0.75rem', fontWeight: 'bold', padding: '3px 8px', borderRadius: '8px' }}>
+                  +{MOCK_BMW_TRACKING.waktu.scheduleVarianceDays} Hari Lebih Cepat
+                </span>
+              </div>
+              <h4 style={{ fontSize: '1.4rem', fontWeight: '900', color: 'var(--text-main)', margin: '0 0 4px' }}>
+                Sisa 34 Hari Kerja
+              </h4>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0 0 12px' }}>
+                Target Serah Terima Kunci (BAST): <strong>{MOCK_BMW_TRACKING.waktu.targetCompletionDate}</strong>
+              </p>
+              <div style={{ width: '100%', height: '8px', background: 'var(--border-color)', borderRadius: '4px', overflow: 'hidden' }}>
+                <div style={{ width: '75%', height: '100%', background: '#f59f00', borderRadius: '4px' }} />
+              </div>
+            </div>
+          </div>
+
+          {/* Detailed BMW Checklists */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+            {/* Tahapan Termin Biaya */}
+            <div style={{ background: 'var(--bg-card)', padding: '20px', borderRadius: '18px', border: '1px solid var(--border-color)' }}>
+              <h4 style={{ fontSize: '1rem', fontWeight: 'bold', color: 'var(--text-main)', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                💵 Rincian Termin Pencairan KPR Bank BTN
+              </h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {MOCK_BMW_TRACKING.biaya.stages.map((stage, idx) => (
+                  <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', borderRadius: '10px', background: 'var(--bg-color)' }}>
+                    <div>
+                      <span style={{ fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--text-main)' }}>{stage.name}</span>
+                      <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)' }}>{stage.date}</span>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <span style={{ fontWeight: 'bold', fontSize: '0.85rem', color: '#005BAA' }}>{formatRupiah(stage.amount)}</span>
+                      <span style={{
+                        display: 'block',
+                        fontSize: '0.7rem',
+                        fontWeight: 'bold',
+                        color: stage.status === 'DISBURSED' ? '#0ca678' : (stage.status === 'IN_REVIEW' ? '#f59f00' : 'var(--text-muted)')
+                      }}>
+                        {stage.status === 'DISBURSED' ? 'Cair ke Rekening Escrow' : (stage.status === 'IN_REVIEW' ? 'Verifikasi Bank BTN' : 'Menunggu Target')}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Checklist Pengujian Mutu SNI */}
+            <div style={{ background: 'var(--bg-card)', padding: '20px', borderRadius: '18px', border: '1px solid var(--border-color)' }}>
+              <h4 style={{ fontSize: '1rem', fontWeight: 'bold', color: 'var(--text-main)', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                📋 Checklist Standar Kualitas & Mutu PU
+              </h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {MOCK_BMW_TRACKING.mutu.checklists.map((chk, idx) => (
+                  <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '10px 14px', borderRadius: '10px', background: 'var(--bg-color)' }}>
+                    <CheckCircle2 color="#0ca678" size={18} style={{ flexShrink: 0, marginTop: '2px' }} />
+                    <div style={{ flex: 1 }}>
+                      <span style={{ fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--text-main)' }}>{chk.item}</span>
+                      <span style={{ display: 'block', fontSize: '0.75rem', color: '#0ca678', fontWeight: 'bold' }}>{chk.score}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* VIEW 3: JAMINAN PEMBANGUNAN (WARRANTY CLAIMS) */}
+      {monitoringTab === 'WARRANTY' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div style={{ background: 'var(--bg-card)', padding: '24px', borderRadius: '20px', border: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px' }}>
+            <div>
+              <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#0ca678', textTransform: 'uppercase' }}>🛡️ Jaminan Pembangunan BangunIn</span>
+              <h3 style={{ fontSize: '1.3rem', fontWeight: '900', color: 'var(--text-main)', margin: '2px 0 4px' }}>
+                Masa Pemeliharaan & Klaim Garansi Kerusakan
+              </h3>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0 }}>
+                Garansi struktur 10 tahun dan garansi pemeliharaan 100 hari kerja pasca-serah terima kunci (BAST) dengan SLA respon 2x24 jam.
+              </p>
+            </div>
+
+            <button
+              onClick={() => setShowAddWarrantyModal(true)}
+              style={{
+                padding: '12px 20px',
+                borderRadius: '14px',
+                border: 'none',
+                background: 'linear-gradient(135deg, #005BAA, #0ca678)',
+                color: '#fff',
+                fontWeight: 'bold',
+                fontSize: '0.85rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+            >
+              <Plus size={18} /> Ajukan Laporan Kerusakan
+            </button>
+          </div>
+
+          {/* Warranty Claims List */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            {warrantyClaims.map(claim => (
+              <div key={claim.id} style={{ background: 'var(--bg-card)', padding: '20px', borderRadius: '18px', border: '1px solid var(--border-color)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '10px', marginBottom: '8px' }}>
+                  <div>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-muted)' }}>{claim.category} • Diajukan: {claim.submittedDate}</span>
+                    <h4 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--text-main)', margin: '2px 0' }}>{claim.title}</h4>
+                  </div>
+                  <span style={{
+                    padding: '4px 12px',
+                    borderRadius: '12px',
+                    fontSize: '0.75rem',
+                    fontWeight: 'bold',
+                    background: claim.status === 'RESOLVED' ? 'rgba(12,166,120,0.1)' : 'rgba(245,159,0,0.1)',
+                    color: claim.status === 'RESOLVED' ? '#0ca678' : '#f59f00'
+                  }}>
+                    {claim.status === 'RESOLVED' ? 'Selesai Diperbaiki ✅' : 'Dalam Penanganan (SLA 2x24 Jam) ⏳'}
+                  </span>
+                </div>
+
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: '0 0 12px', lineHeight: '1.5' }}>
+                  "{claim.description}"
+                </p>
+
+                <div style={{ background: 'var(--bg-color)', padding: '12px 16px', borderRadius: '12px', fontSize: '0.8rem', borderLeft: '4px solid #005BAA' }}>
+                  <strong>Respon Developer:</strong> {claim.developerResponse}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ADD WARRANTY CLAIM MODAL */}
+      {showAddWarrantyModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.6)',
+          backdropFilter: 'blur(6px)',
+          zIndex: 100020,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }}>
+          <div style={{
+            background: 'var(--bg-card)',
+            borderRadius: '24px',
+            border: '1px solid var(--border-color)',
+            width: '100%',
+            maxWidth: '540px',
+            padding: '28px',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
+          }}>
+            <h3 style={{ fontSize: '1.3rem', fontWeight: '900', color: 'var(--text-main)', margin: '0 0 6px' }}>
+              Form Laporan Kerusakan Masa Pemeliharaan
+            </h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', margin: '0 0 16px' }}>
+              Tim teknisi developer akan menindaklanjuti dalam batas waktu SLA maksimal 2x24 jam kerja.
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '20px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '4px' }}>Kategori Kerusakan:</label>
+                <select
+                  value={newClaimCategory}
+                  onChange={e => setNewClaimCategory(e.target.value)}
+                  style={{ width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid var(--border-color)', background: 'var(--bg-color)', color: 'var(--text-main)' }}
+                >
+                  <option value="Atap & Saluran Air">Atap, Genteng & Saluran Air</option>
+                  <option value="Dinding & Plester">Dinding Retak Rambut & Plester</option>
+                  <option value="Kusen & Pintu">Kusen, Engsel & Kunci Pintu</option>
+                  <option value="Sanitasi & Pipa">Kran, Pipa Air & Sanitasi</option>
+                  <option value="Kelistrikan">Saklar & Instalasi Listrik</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '4px' }}>Judul Singkat Kerusakan:</label>
+                <input
+                  type="text"
+                  value={newClaimTitle}
+                  onChange={e => setNewClaimTitle(e.target.value)}
+                  placeholder="Misal: Rembes air hujan di pojok plafon ruang tamu"
+                  style={{ width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid var(--border-color)', background: 'var(--bg-color)', color: 'var(--text-main)' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '4px' }}>Penjelasan Detail:</label>
+                <textarea
+                  rows={3}
+                  value={newClaimDesc}
+                  onChange={e => setNewClaimDesc(e.target.value)}
+                  placeholder="Jelaskan kondisi kerusakan dan waktu terjadinya..."
+                  style={{ width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid var(--border-color)', background: 'var(--bg-color)', color: 'var(--text-main)' }}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                onClick={() => setShowAddWarrantyModal(false)}
+                style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--bg-color)', color: 'var(--text-main)', fontWeight: 'bold', cursor: 'pointer' }}
+              >
+                Batal
+              </button>
+              <button
+                onClick={() => {
+                  if (!newClaimTitle) return alert('Mohon isi judul kerusakan!');
+                  const newTicket = {
+                    id: `war-${Date.now().toString().slice(-4)}`,
+                    unitId: unitData.unitId,
+                    title: newClaimTitle,
+                    category: newClaimCategory,
+                    description: newClaimDesc || 'Laporan baru diajukan oleh pemilik rumah.',
+                    submittedDate: 'Hari Ini',
+                    slaDeadline: '2x24 Jam Kerja',
+                    status: 'IN_PROGRESS',
+                    developerResponse: 'Laporan telah diteruskan ke Supervisor Pemeliharaan PT. Katama.',
+                    resolvedAt: null
+                  };
+                  setWarrantyClaims([newTicket, ...warrantyClaims]);
+                  setShowAddWarrantyModal(false);
+                  setNewClaimTitle('');
+                  setNewClaimDesc('');
+                  alert('✅ Laporan Garansi Berhasil Diajukan! Teknisi developer dijadwalkan hadir dalam 2x24 jam.');
+                }}
+                style={{ flex: 2, padding: '12px', borderRadius: '12px', border: 'none', background: '#0ca678', color: '#fff', fontWeight: 'bold', cursor: 'pointer' }}
+              >
+                Kirim Laporan Kerusakan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* DEVELOPER UPLOAD MODAL */}
       {showUploadModal && (

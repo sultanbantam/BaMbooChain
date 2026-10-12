@@ -6,13 +6,24 @@ import {
   PlusCircle, Download, Printer, UploadCloud, Check, FileCheck,
   AlertCircle, Compass, HardHat, Calendar, Landmark, Info
 } from 'lucide-react';
-import { MBR_PROJECTS } from '../../data/banguninData';
+import { MBR_PROJECTS, GOVERNMENT_REPORTS_DATA } from '../../data/banguninData';
 
 const formatRupiah = (val) => {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
 };
 
 export default function HousingDatabase({ onSelectForConfigurator }) {
+  // Sub-DB state: 'CONSUMER' | 'DEVELOPER' | 'GOVERNMENT'
+  const [activeSubDb, setActiveSubDb] = useState('CONSUMER');
+  const [bookmarkedIds, setBookmarkedIds] = useState(['proj-banten-01']);
+
+  const toggleBookmark = (id, e) => {
+    e.stopPropagation();
+    setBookmarkedIds(prev => 
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
+
   // Merge default data with user-uploaded projects stored in localStorage
   const [projects, setProjects] = useState(() => {
     try {
@@ -273,6 +284,191 @@ export default function HousingDatabase({ onSelectForConfigurator }) {
             </button>
           </div>
         </div>
+
+        {/* ────────── 3 SUB-DATABASE SWITCHER (v2.0) ────────── */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          gap: '10px',
+          marginBottom: '20px',
+          padding: '6px',
+          background: 'var(--bg-color)',
+          borderRadius: '16px',
+          border: '1px solid var(--border-color)'
+        }}>
+          <button
+            onClick={() => setActiveSubDb('CONSUMER')}
+            style={{
+              padding: '12px 16px',
+              borderRadius: '12px',
+              border: 'none',
+              background: activeSubDb === 'CONSUMER' ? '#005BAA' : 'transparent',
+              color: activeSubDb === 'CONSUMER' ? '#fff' : 'var(--text-main)',
+              fontWeight: 'bold',
+              fontSize: '0.85rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              transition: 'all 0.2s'
+            }}
+          >
+            <Home size={18} /> Sub-DB 1: Konsumen / Warga MBR
+          </button>
+
+          <button
+            onClick={() => setActiveSubDb('DEVELOPER')}
+            style={{
+              padding: '12px 16px',
+              borderRadius: '12px',
+              border: 'none',
+              background: activeSubDb === 'DEVELOPER' ? '#005BAA' : 'transparent',
+              color: activeSubDb === 'DEVELOPER' ? '#fff' : 'var(--text-main)',
+              fontWeight: 'bold',
+              fontSize: '0.85rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              transition: 'all 0.2s'
+            }}
+          >
+            <Building2 size={18} /> Sub-DB 2: Developer Properti
+          </button>
+
+          <button
+            onClick={() => setActiveSubDb('GOVERNMENT')}
+            style={{
+              padding: '12px 16px',
+              borderRadius: '12px',
+              border: 'none',
+              background: activeSubDb === 'GOVERNMENT' ? '#005BAA' : 'transparent',
+              color: activeSubDb === 'GOVERNMENT' ? '#fff' : 'var(--text-main)',
+              fontWeight: 'bold',
+              fontSize: '0.85rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              transition: 'all 0.2s'
+            }}
+          >
+            <Landmark size={18} /> Sub-DB 3: Pemerintah & Regulator
+          </button>
+        </div>
+
+        {/* SUB-DB 3: PEMERINTAH & REGULATOR VIEW */}
+        {activeSubDb === 'GOVERNMENT' && (
+          <div style={{
+            background: 'var(--bg-card)',
+            padding: '24px',
+            borderRadius: '18px',
+            border: '1px solid var(--border-color)',
+            marginBottom: '20px'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px', marginBottom: '18px' }}>
+              <div>
+                <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#0ca678', textTransform: 'uppercase' }}>
+                  🏛️ Portal Pengawasan Kementerian PKP & PUPR
+                </span>
+                <h3 style={{ fontSize: '1.3rem', fontWeight: '900', color: 'var(--text-main)', margin: '2px 0 4px' }}>
+                  {GOVERNMENT_REPORTS_DATA.nationalProgram}
+                </h3>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0 }}>
+                  Monitoring perizinan PBG/SLF, kuota MBR terdistribusi, serapan subsidi FLPP, dan reduksi karbon hijau nasional.
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button
+                  onClick={() => alert('📥 Laporan Resmi Kementerian Perumahan dan Kawasan Permukiman (PKP) berhasil diekspor (PDF & CSV)!')}
+                  style={{
+                    padding: '10px 16px',
+                    borderRadius: '12px',
+                    border: 'none',
+                    background: '#0ca678',
+                    color: '#fff',
+                    fontWeight: 'bold',
+                    fontSize: '0.85rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <Download size={16} /> Ekspor Laporan Pemerintah (PDF & CSV)
+                </button>
+              </div>
+            </div>
+
+            {/* Government KPI Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '20px' }}>
+              <div style={{ background: 'var(--bg-color)', padding: '16px', borderRadius: '14px', border: '1px solid var(--border-color)' }}>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>Target Kuota Nasional</span>
+                <h4 style={{ fontSize: '1.4rem', fontWeight: '900', color: '#005BAA', margin: '4px 0' }}>3.000.000 Unit</h4>
+                <span style={{ fontSize: '0.75rem', color: '#0ca678' }}>Program 3 Juta Rumah MBR</span>
+              </div>
+
+              <div style={{ background: 'var(--bg-color)', padding: '16px', borderRadius: '14px', border: '1px solid var(--border-color)' }}>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>Realisasi Provinsi Banten</span>
+                <h4 style={{ fontSize: '1.4rem', fontWeight: '900', color: '#0ca678', margin: '4px 0' }}>84.200 Unit</h4>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>67.36% dari 125.000 Kuota</span>
+              </div>
+
+              <div style={{ background: 'var(--bg-color)', padding: '16px', borderRadius: '14px', border: '1px solid var(--border-color)' }}>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>Dana FLPP Terserap BTN</span>
+                <h4 style={{ fontSize: '1.4rem', fontWeight: '900', color: '#f59f00', margin: '4px 0' }}>Rp 14,2 Triliun</h4>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Bunga 5% Fixed Subsidi APBN</span>
+              </div>
+
+              <div style={{ background: 'var(--bg-color)', padding: '16px', borderRadius: '14px', border: '1px solid var(--border-color)' }}>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>Emisi Karbon Terhindar</span>
+                <h4 style={{ fontSize: '1.4rem', fontWeight: '900', color: '#2b8a3e', margin: '4px 0' }}>1.840,5 Ton</h4>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Audit Bambu & Modular SNI</span>
+              </div>
+            </div>
+
+            {/* Provincial Permit Summary Table */}
+            <div style={{ overflowX: 'auto', marginBottom: '14px' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+                <thead>
+                  <tr style={{ background: 'var(--bg-color)', textAlign: 'left', borderBottom: '2px solid var(--border-color)' }}>
+                    <th style={{ padding: '10px 14px' }}>Wilayah Provinsi</th>
+                    <th style={{ padding: '10px 14px' }}>PBG Terbit</th>
+                    <th style={{ padding: '10px 14px' }}>PBG Proses</th>
+                    <th style={{ padding: '10px 14px' }}>SLF Siap Huni</th>
+                    <th style={{ padding: '10px 14px' }}>AMDAL / UKL-UPL</th>
+                    <th style={{ padding: '10px 14px' }}>Kepatuhan</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {GOVERNMENT_REPORTS_DATA.permitSummary.map(row => (
+                    <tr key={row.province} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                      <td style={{ padding: '10px 14px', fontWeight: 'bold' }}>{row.province}</td>
+                      <td style={{ padding: '10px 14px', color: '#0ca678', fontWeight: 'bold' }}>{row.pbgApproved} Unit PBG</td>
+                      <td style={{ padding: '10px 14px', color: '#f59f00' }}>{row.pbgPending} Berkas</td>
+                      <td style={{ padding: '10px 14px', color: '#005BAA', fontWeight: 'bold' }}>{row.slfIssued} Terbit SLF</td>
+                      <td style={{ padding: '10px 14px', color: '#2b8a3e' }}>{row.amdalVerified} Lolos AMDAL</td>
+                      <td style={{ padding: '10px 14px' }}>
+                        <span style={{ background: 'rgba(12,166,120,0.1)', color: '#0ca678', padding: '3px 8px', borderRadius: '10px', fontSize: '0.75rem', fontWeight: 'bold' }}>
+                          100% Taat Hukum
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', color: 'var(--text-muted)', background: 'var(--bg-color)', padding: '10px 14px', borderRadius: '10px' }}>
+              <ShieldCheck size={16} color="#0ca678" />
+              <span>Status Integrasi: <strong>SiKumbang & SIRENG PUPR Webhook Aktif (Real-Time Sinkronisasi)</strong></span>
+            </div>
+          </div>
+        )}
 
         {/* Search & Filter Inputs */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', marginBottom: '14px' }}>

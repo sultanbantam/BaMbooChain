@@ -53,7 +53,7 @@ export default function BangunInPage() {
               fontSize: '0.85rem',
               marginBottom: '16px'
             }}>
-              <Landmark size={16} /> BTN Housingpreneur Ecosystem • 4-Pillar MBR Housing
+              <Landmark size={16} /> BTN Housingpreneur Ecosystem • 5-Pilar MBR Housing Ecosystem (v2.0)
             </div>
 
             <h1 style={{ fontSize: '2.8rem', fontWeight: '900', color: 'var(--text-main)', lineHeight: '1.2', margin: '0 0 16px', letterSpacing: '-0.5px' }}>
@@ -62,7 +62,7 @@ export default function BangunInPage() {
             </h1>
 
             <p style={{ fontSize: '1.1rem', color: 'var(--text-muted)', lineHeight: '1.6', margin: '0 0 28px' }}>
-              Platform terpadu untuk Masyarakat Berpenghasilan Rendah (MBR) Indonesia: mulai dari penelusuran perumahan terverifikasi, konfigurasi desain bambu ramah gempa & KPR BTN FLPP, monitoring konstruksi berbasis geotag, hingga layanan kehidupan pasca-huni.
+              Platform terpadu untuk Masyarakat Berpenghasilan Rendah (MBR) Indonesia: mulai dari penelusuran 3 Sub-DB perumahan terverifikasi, konfigurasi 6 desain bambu ramah gempa & KPR BTN FLPP, monitoring konstruksi berbasis geotag & kontrol BMW (Biaya, Mutu, Waktu), hingga ekosistem pasca-huni (E-Toll BTN & Kopdes Merah Putih).
             </p>
 
             {/* Metric Highlights */}
@@ -112,10 +112,10 @@ export default function BangunInPage() {
           marginBottom: '32px'
         }}>
           {[
-            { id: 'database', label: '1. Database Perumahan', icon: Building2, desc: 'Katalog & Verifikasi' },
-            { id: 'configurator', label: '2. Konfigurator & KPR', icon: SlidersHorizontal, desc: 'Desain & Simulasi BTN' },
-            { id: 'monitoring', label: '3. Monitoring Geotag', icon: HardHat, desc: 'Progres & Inspeksi' },
-            { id: 'living', label: '4. Living Community', icon: HeartHandshake, desc: 'Shuttle, Sampah, Warga' },
+            { id: 'database', label: '1. Database Perumahan', icon: Building2, desc: '3 Sub-DB & Pemerintah' },
+            { id: 'configurator', label: '2. Konfigurator & KPR', icon: SlidersHorizontal, desc: '6 Desain, BI & Appraisal' },
+            { id: 'monitoring', label: '3. Monitoring & BMW', icon: HardHat, desc: 'Biaya, Mutu, Waktu, Garansi' },
+            { id: 'living', label: '4. Living Community', icon: HeartHandshake, desc: 'E-Toll BTN, Kopdes, Warga' },
             { 
               id: 'roles', 
               label: (

@@ -40,6 +40,31 @@ export default function HouseConfigurator({ initialProject, onGoToMonitoring }) 
   const [buyerIncome, setBuyerIncome] = useState(5500000);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // BI Checking & Appraisal State (v2.0)
+  const [biCheckingState, setBiCheckingState] = useState({
+    isChecked: true,
+    score: 98,
+    status: 'LANCAR',
+    code: 'KOL-1',
+    notes: 'Status Bersih. Tidak ada catatan tunggakan pinjaman. Layak menerima KPR FLPP Bank BTN.'
+  });
+  const [isCheckingBI, setIsCheckingBI] = useState(false);
+
+  const handleCheckBI = () => {
+    setIsCheckingBI(true);
+    setTimeout(() => {
+      setIsCheckingBI(false);
+      setBiCheckingState({
+        isChecked: true,
+        score: 98,
+        status: 'LANCAR',
+        code: 'KOL-1',
+        notes: 'Status Bersih. Terverifikasi resmi sistem SLIK OJK. Layak menerima subsidi bunga 5% KPR BTN FLPP.'
+      });
+      alert('✅ BI Checking (SLIK OJK) Terverifikasi: Skor 98/100, Kolektibilitas KOL-1 (Lancar). Pengajuan KPR FLPP Bank BTN Disetujui!');
+    }, 700);
+  };
+
   const selectedModel = useMemo(() => {
     return HOUSING_MODELS.find(m => m.id === selectedModelId) || HOUSING_MODELS[0];
   }, [selectedModelId]);
@@ -412,6 +437,101 @@ export default function HouseConfigurator({ initialProject, onGoToMonitoring }) 
               <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '12px', borderTop: '1px dashed var(--border-color)' }}>
                 <span style={{ fontWeight: 'bold', color: 'var(--text-main)', fontSize: '1rem' }}>Total Harga Rumah</span>
                 <span style={{ fontWeight: '900', color: '#005BAA', fontSize: '1.3rem' }}>{formatRupiah(totalPrice)}</span>
+              </div>
+            </div>
+
+            {/* V2.0 APPRAISAL VALIDATION & BI CHECKING WIDGET */}
+            <div style={{
+              background: 'var(--bg-color)',
+              padding: '18px',
+              borderRadius: '16px',
+              border: '1px solid var(--border-color)',
+              marginBottom: '20px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '14px'
+            }}>
+              {/* Appraisal Box */}
+              <div style={{
+                background: 'rgba(0,91,170,0.06)',
+                padding: '14px',
+                borderRadius: '12px',
+                border: '1px solid rgba(0,91,170,0.2)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <ShieldCheck color="#005BAA" size={18} />
+                    <span style={{ fontWeight: 'bold', fontSize: '0.85rem', color: '#005BAA' }}>
+                      Validasi Appraisal Bank BTN
+                    </span>
+                  </div>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#0ca678', background: 'rgba(12,166,120,0.12)', padding: '2px 8px', borderRadius: '10px' }}>
+                    Risiko: Rendah (LTV 100%)
+                  </span>
+                </div>
+                <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-main)', lineHeight: '1.4' }}>
+                  "Desain divalidasi tim appraisal Bank BTN. Taksiran nilai agunan <strong>{formatRupiah(Math.round(totalPrice * 1.08))}</strong> memenuhi kelayakan agunan penuh KPR FLPP."
+                </p>
+              </div>
+
+              {/* BI Checking Box */}
+              <div style={{
+                background: 'rgba(12,166,120,0.06)',
+                padding: '14px',
+                borderRadius: '12px',
+                border: '1px solid rgba(12,166,120,0.2)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <CheckCircle2 color="#0ca678" size={18} />
+                    <span style={{ fontWeight: 'bold', fontSize: '0.85rem', color: '#0ca678' }}>
+                      Verifikasi BI Checking (SLIK OJK)
+                    </span>
+                  </div>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#005BAA', background: 'rgba(0,91,170,0.1)', padding: '2px 8px', borderRadius: '10px' }}>
+                    {biCheckingState.code} • {biCheckingState.status}
+                  </span>
+                </div>
+
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '8px' }}>
+                  <input
+                    type="text"
+                    value={buyerNik}
+                    onChange={e => setBuyerNik(e.target.value)}
+                    placeholder="Nomor Induk Kependudukan (NIK)"
+                    style={{
+                      flex: 1,
+                      padding: '8px 12px',
+                      borderRadius: '8px',
+                      border: '1px solid var(--border-color)',
+                      background: 'var(--bg-card)',
+                      color: 'var(--text-main)',
+                      fontSize: '0.8rem',
+                      fontFamily: 'monospace'
+                    }}
+                  />
+                  <button
+                    onClick={handleCheckBI}
+                    disabled={isCheckingBI}
+                    style={{
+                      padding: '8px 14px',
+                      borderRadius: '8px',
+                      border: 'none',
+                      background: '#0ca678',
+                      color: '#fff',
+                      fontWeight: 'bold',
+                      fontSize: '0.75rem',
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    {isCheckingBI ? 'Mengecek...' : 'Cek SLIK OJK'}
+                  </button>
+                </div>
+
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                  Skor: <strong>{biCheckingState.score}/100</strong> — {biCheckingState.notes}
+                </div>
               </div>
             </div>
 
