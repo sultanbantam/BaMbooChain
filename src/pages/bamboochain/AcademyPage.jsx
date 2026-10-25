@@ -40,6 +40,95 @@ const compressImage = (base64Str, maxWidth = 800, maxHeight = 800, quality = 0.6
   });
 };
 
+const DEFAULT_ARTICLES = [
+  {
+    id: 1,
+    title: "Fisiologi Aliran Air dan Struktur Pembuluh Kapiler Bambu Petung",
+    author: "Prof. Dr. Ir. Hariadi Kusuma",
+    role: "Pakar Silvikultur & Peneliti Utama Sabumi",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=hariadi",
+    excerpt: "Studi mendalam mengenai efisiensi transportasi air mikroskopis pada serat bambu Dendrocalamus asper dan implikasinya terhadap kekuatan lentur alami.",
+    content: `Bambu Petung (Dendrocalamus asper) merupakan salah satu jenis bambu terbesar di dunia yang memiliki kekuatan struktural luar biasa. Secara biologis, keunggulan ini didukung oleh struktur anatomi berkas pengangkut kapiler (vascular bundles) yang sangat rapat di bagian kulit luar (cortex) dan merenggang di bagian dalam.
+
+Aliran air (getah) kapiler pada bambu hidup bergerak sangat dinamis melalui pembuluh kayu (xylem). Ketika bambu ditebang, kelembapan kapiler ini meninggalkan rongga mikro yang sangat banyak. Jika proses pengeringan dilakukan dengan benar, rongga kapiler kosong ini bertindak sebagai peredam tekanan elastis alami yang sangat kuat.
+
+Dari sudut pandang mekanika material, rasio kekuatan tarik terhadap berat jenis (tensile strength-to-weight ratio) dari jaringan kapiler luar bambu petung bahkan mengungguli baja struktural biasa. Pengetahuan mengenai anatomi pembuluh ini sangat krusial dalam menentukan arah pemotongan serat untuk menjaga elastisitas alami bambu saat menerima beban struktural bentang lebar.`,
+    readTime: "5 Menit Baca",
+    date: "12 Mei 2026",
+    timestamp: 1778544000000,
+    approved: true
+  },
+  {
+    id: 2,
+    title: "Kearifan Lokal Pengawetan Bambu Alami via Perendaman Air Mengalir",
+    author: "Abah Ujang Winata",
+    role: "Master Pengrajin Tradisional Kasepuhan Cibarani",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=ujang",
+    excerpt: "Metode tradisional warisan leluhur Sunda dalam menetralkan kadar glukosa dan pati bambu demi mencegah serangan bubuk kayu secara permanen.",
+    content: `Sejak berabad-abad lalu, leluhur kami di Kasepuhan Cibarani telah menggunakan hukum alam untuk mengawetkan bambu tanpa bahan kimia beracun. Metode ini disebut 'Kemiri' or perendaman air lumpur mengalir.
+
+Bambu segar yang baru ditebang memiliki kadar pati dan gula alami yang sangat disukai oleh kumbang bubuk (Dinoderus minutus). Jika pati ini dibiarkan, bambu akan hancur menjadi bubuk dalam waktu kurang dari dua tahun. 
+
+Dengan merendam bambu di air lumpur pesawahan atau sungai berarus lambat selama 3 hingga 6 bulan, terjadi proses fermentasi anaerobik alami. Mikroorganisme air memakan habis kadar pati dan glukosa di dalam pori-pori bambu dan mengubahnya menjadi asam organik. Setelah masa perendaman selesai, serat bambu menjadi hambar, keras, dan tidak akan pernah lagi disentuh oleh serangga perusak selamanya.`,
+    readTime: "4 Menit Baca",
+    date: "08 Mei 2026",
+    timestamp: 1778284800000,
+    approved: true
+  },
+  {
+    id: 3,
+    title: "Laju Penyerapan Karbon Spesifik Rumpun Gigantochloa apus (Bambu Tali)",
+    author: "Dr. Elizabeth Wong",
+    role: "Pakar Ekologi Karbon Global & Konsultan ESG",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=elizabeth",
+    excerpt: "Kuantifikasi matematis biomassa bambu tali dalam menyerap karbon dioksida atmosfer dan kontribusinya terhadap pasar karbon internasional.",
+    content: `Bambu Tali (Gigantochloa apus) bukan sekadar tanaman biasa, ia adalah mesin penyerap karbon alami tercepat di daratan. Melalui penelitian empiris tim ekologi kami di area konservasi Jawa Barat, satu hektar tanaman bambu tali mampu mengunci hingga 35-40 ton karbon dioksida (CO2) per tahun.
+
+Kecepatan penyerapan ini didorong oleh pertumbuhan sistem rimpang (rhizome) simpodial yang eksponensial. Ketika rebung baru muncul, tanaman menyerap karbon atmosfer dengan laju luar biasa untuk membangun dinding selulosa dalam 120 hari pertama masa hidupnya.
+
+Di pasar karbon sukarela (Voluntary Carbon Market), penanaman terkelola bambu tali menghasilkan sertifikasi kredit karbon bernilai tinggi. Investasi pada penanaman rumpun bambu ini tidak hanya merestorasi lingkungan kritis lokal, tetapi juga menghasilkan dampak finansial nyata bagi masyarakat adat mitra melalui monetisasi emisi hijau secara on-chain.`,
+    readTime: "6 Menit Baca",
+    date: "02 Mei 2026",
+    timestamp: 1777766400000,
+    approved: true
+  },
+  {
+    id: 4,
+    title: "Integrasi Sambungan Baut Ganda pada Konstruksi Kuda-Kuda Bambu",
+    author: "Rian Hidayat, S.Ars.",
+    role: "Arsitek Hijau & Pelopor Blockbamboo",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=rian",
+    excerpt: "Rekayasa mekanika sambungan modern untuk mengatasi kelemahan retak pecah ujung serat bambu pada konstruksi bangunan.",
+    content: `Tantangan terbesar menggunakan bambu bulat dalam arsitektur modern adalah titik sambungan. Bambu memiliki kekuatan sejajar serat yang sangat tinggi, namun kekuatan tegak lurus seratnya sangat lemah, sehingga rentan pecah jika dibor dan dipasang baut secara langsung.
+
+Solusi rekayasa modern yang kami kembangkan adalah metode 'Sambungan Mortar Pengisi'. Pada bagian ujung bambu yang akan disatukan dengan baut baja, rongga bambu diisi dengan adukan semen non-susut (non-shrink grout) berkualitas tinggi atau resin epoksi yang dicampur serat bambu halus.
+
+Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat konstruksi menerima beban geser, baut baja akan menekan dinding semen pengisi, bukan dinding serat bambu secara langsung. Teknik ini meningkatkan kekuatan geser sambungan hingga 400% dan memungkinkan arsitek mendesain kuda-kuda bentang lebar modern hingga 25 meter secara aman dan estetis.`,
+    readTime: "5 Menit Baca",
+    date: "28 April 2026",
+    timestamp: 1777420800000,
+    approved: true
+  }
+];
+
+const getArticleTime = (art) => {
+  if (!art) return 0;
+  if (art.timestamp) {
+    if (typeof art.timestamp.toMillis === 'function') return art.timestamp.toMillis();
+    if (typeof art.timestamp === 'number') return art.timestamp;
+    if (art.timestamp.seconds) return art.timestamp.seconds * 1000;
+  }
+  if (typeof art.id === 'string' && art.id.startsWith('art_')) {
+    const num = parseInt(art.id.replace('art_', ''), 10);
+    if (!isNaN(num)) return num;
+  }
+  if (art.date) {
+    const parsed = Date.parse(art.date);
+    if (!isNaN(parsed)) return parsed;
+  }
+  return 0;
+};
+
 const AcademyPage = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
@@ -49,6 +138,14 @@ const AcademyPage = () => {
   const [isGlobalMode, setIsGlobalMode] = useState(false);
   const [globalResults, setGlobalResults] = useState([]);
   const [isSearchingGlobal, setIsSearchingGlobal] = useState(false);
+
+  // Memoize all articles sorted with newest first
+  const allArticles = React.useMemo(() => {
+    return [
+      ...DEFAULT_ARTICLES,
+      ...(articles || []).filter(art => art.approved !== 'rejected')
+    ].sort((a, b) => getArticleTime(b) - getArticleTime(a));
+  }, [articles]);
 
   useEffect(() => {
     if (!isGlobalMode) return;
@@ -852,6 +949,28 @@ const AcademyPage = () => {
   };
 
   const [selectedArticle, setSelectedArticle] = useState(null);
+
+  // Auto-open article modal from URL query param (?article=...)
+  useEffect(() => {
+    const getArticleParam = () => {
+      const searchParams = new URLSearchParams(window.location.search);
+      if (searchParams.get('article')) return searchParams.get('article');
+      if (window.location.hash && window.location.hash.includes('?')) {
+        const hashQuery = window.location.hash.split('?')[1];
+        const hashParams = new URLSearchParams(hashQuery);
+        return hashParams.get('article');
+      }
+      return null;
+    };
+
+    const targetArticleId = getArticleParam();
+    if (targetArticleId && allArticles.length > 0) {
+      const found = allArticles.find(a => String(a.id) === String(targetArticleId));
+      if (found) {
+        setSelectedArticle(found);
+      }
+    }
+  }, [allArticles]);
   const [shareModalData, setShareModalData] = useState({ isOpen: false, url: '', title: '' });
   const [isEditingArticle, setIsEditingArticle] = useState(false);
   const [editArticleForm, setEditArticleForm] = useState({
@@ -1058,7 +1177,7 @@ const AcademyPage = () => {
 
   const handleShare = async (articleId, title, e) => {
     if (e) e.stopPropagation();
-    const shareUrl = `${window.location.origin}/#/bamboochain/academy?article=${articleId}`;
+    const shareUrl = `${window.location.origin}/article/${articleId}`;
     setShareModalData({
       isOpen: true,
       url: shareUrl,
@@ -1156,74 +1275,6 @@ const AcademyPage = () => {
       alert("⚠️ Harap masukkan jumlah BMC yang valid.");
       return;
     }
-
-    const allArticles = [
-      {
-        id: 1,
-        title: "Fisiologi Aliran Air dan Struktur Pembuluh Kapiler Bambu Petung",
-        author: "Prof. Dr. Ir. Hariadi Kusuma",
-        role: "Pakar Silvikultur & Peneliti Utama Sabumi",
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=hariadi",
-        excerpt: "Studi mendalam mengenai efisiensi transportasi air mikroskopis pada serat bambu Dendrocalamus asper dan implikasinya terhadap kekuatan lentur alami.",
-        content: `Bambu Petung (Dendrocalamus asper) merupakan salah satu jenis bambu terbesar di dunia yang memiliki kekuatan struktural luar biasa. Secara biologis, keunggulan ini didukung oleh struktur anatomi berkas pengangkut kapiler (vascular bundles) yang sangat rapat di bagian kulit luar (cortex) dan merenggang di bagian dalam.
-
-Aliran air (getah) kapiler pada bambu hidup bergerak sangat dinamis melalui pembuluh kayu (xylem). Ketika bambu ditebang, kelembapan kapiler ini meninggalkan rongga mikro yang sangat banyak. Jika proses pengeringan dilakukan dengan benar, rongga kapiler kosong ini bertindak sebagai peredam tekanan elastis alami yang sangat kuat.
-
-Dari sudut pandang mekanika material, rasio kekuatan tarik terhadap berat jenis (tensile strength-to-weight ratio) dari jaringan kapiler luar bambu petung bahkan mengungguli baja struktural biasa. Pengetahuan mengenai anatomi pembuluh ini sangat krusial dalam menentukan arah pemotongan serat untuk menjaga elastisitas alami bambu saat menerima beban struktural bentang lebar.`,
-        readTime: "5 Menit Baca",
-        date: "12 Mei 2026",
-        approved: true
-      },
-      {
-        id: 2,
-        title: "Kearifan Lokal Pengawetan Bambu Alami via Perendaman Air Mengalir",
-        author: "Abah Ujang Winata",
-        role: "Master Pengrajin Tradisional Kasepuhan Cibarani",
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=ujang",
-        excerpt: "Metode tradisional warisan leluhur Sunda dalam menetralkan kadar glukosa dan pati bambu demi mencegah serangan bubuk kayu secara permanen.",
-        content: `Sejak berabad-abad lalu, leluhur kami di Kasepuhan Cibarani telah menggunakan hukum alam untuk mengawetkan bambu tanpa bahan kimia beracun. Metode ini disebut 'Kemiri' or perendaman air lumpur mengalir.
-
-Bambu segar yang baru ditebang memiliki kadar pati dan gula alami yang sangat disukai oleh kumbang bubuk (Dinoderus minutus). Jika pati ini dibiarkan, bambu akan hancur menjadi bubuk dalam waktu kurang dari dua tahun. 
-
-Dengan merendam bambu di air lumpur pesawahan atau sungai berarus lambat selama 3 hingga 6 bulan, terjadi proses fermentasi anaerobik alami. Mikroorganisme air memakan habis kadar pati dan glukosa di dalam pori-pori bambu dan mengubahnya menjadi asam organik. Setelah masa perendaman selesai, serat bambu menjadi hambar, keras, dan tidak akan pernah lagi disentuh oleh serangga perusak selamanya.`,
-        readTime: "4 Menit Baca",
-        date: "08 Mei 2026",
-        approved: true
-      },
-      {
-        id: 3,
-        title: "Laju Penyerapan Karbon Spesifik Rumpun Gigantochloa apus (Bambu Tali)",
-        author: "Dr. Elizabeth Wong",
-        role: "Pakar Ekologi Karbon Global & Konsultan ESG",
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=elizabeth",
-        excerpt: "Kuantifikasi matematis biomassa bambu tali dalam menyerap karbon dioksida atmosfer dan kontribusinya terhadap pasar karbon internasional.",
-        content: `Bambu Tali (Gigantochloa apus) bukan sekadar tanaman biasa, ia adalah mesin penyerap karbon alami tercepat di daratan. Melalui penelitian empiris tim ekologi kami di area konservasi Jawa Barat, satu hektar tanaman bambu tali mampu mengunci hingga 35-40 ton karbon dioksida (CO2) per tahun.
-
-Kecepatan penyerapan ini didorong oleh pertumbuhan sistem rimpang (rhizome) simpodial yang eksponensial. Ketika rebung baru muncul, tanaman menyerap karbon atmosfer dengan laju luar biasa untuk membangun dinding selulosa dalam 120 hari pertama masa hidupnya.
-
-Di pasar karbon sukarela (Voluntary Carbon Market), penanaman terkelola bambu tali menghasilkan sertifikasi kredit karbon bernilai tinggi. Investasi pada penanaman rumpun bambu ini tidak hanya merestorasi lingkungan kritis lokal, tetapi juga menghasilkan dampak finansial nyata bagi masyarakat adat mitra melalui monetisasi emisi hijau secara on-chain.`,
-        readTime: "6 Menit Baca",
-        date: "02 Mei 2026",
-        approved: true
-      },
-      {
-        id: 4,
-        title: "Integrasi Sambungan Baut Ganda pada Konstruksi Kuda-Kuda Bambu",
-        author: "Rian Hidayat, S.Ars.",
-        role: "Arsitek Hijau & Pelopor Blockbamboo",
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=rian",
-        excerpt: "Rekayasa mekanika sambungan modern untuk mengatasi kelemahan retak pecah ujung serat bambu pada konstruksi bangunan.",
-        content: `Tantangan terbesar menggunakan bambu bulat dalam arsitektur modern adalah titik sambungan. Bambu memiliki kekuatan sejajar serat yang sangat tinggi, namun kekuatan tegak lurus seratnya sangat lemah, sehingga rentan pecah jika dibor dan dipasang baut secara langsung.
-
-Solusi rekayasa modern yang kami kembangkan adalah metode 'Sambungan Mortar Pengisi'. Pada bagian ujung bambu yang akan disatukan dengan baut baja, rongga bambu diisi dengan adukan semen non-susut (non-shrink grout) berkualitas tinggi atau resin epoksi yang dicampur serat bambu halus.
-
-Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat konstruksi menerima beban geser, baut baja akan menekan dinding semen pengisi, bukan dinding serat bambu secara langsung. Teknik ini meningkatkan kekuatan geser sambungan hingga 400% dan memungkinkan arsitek mendesain kuda-kuda bentang lebar modern hingga 25 meter secara aman dan estetis.`,
-        readTime: "5 Menit Baca",
-        date: "28 April 2026",
-        approved: true
-      },
-      ...(articles || []).filter(art => art.approved !== 'rejected')
-    ];
 
     const targetArticle = allArticles.find(art => String(art.id) === String(isGiftModalOpen));
     if (!targetArticle) {
@@ -1993,73 +2044,7 @@ Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat k
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '30px' }}>
-            {[
-              {
-                id: 1,
-                title: "Fisiologi Aliran Air dan Struktur Pembuluh Kapiler Bambu Petung",
-                author: "Prof. Dr. Ir. Hariadi Kusuma",
-                role: "Pakar Silvikultur & Peneliti Utama Sabumi",
-                avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=hariadi",
-                excerpt: "Studi mendalam mengenai efisiensi transportasi air mikroskopis pada serat bambu Dendrocalamus asper dan implikasinya terhadap kekuatan lentur alami.",
-                content: `Bambu Petung (Dendrocalamus asper) merupakan salah satu jenis bambu terbesar di dunia yang memiliki kekuatan struktural luar biasa. Secara biologis, keunggulan ini didukung oleh struktur anatomi berkas pengangkut kapiler (vascular bundles) yang sangat rapat di bagian kulit luar (cortex) dan merenggang di bagian dalam.
-
-Aliran air (getah) kapiler pada bambu hidup bergerak sangat dinamis melalui pembuluh kayu (xylem). Ketika bambu ditebang, kelembapan kapiler ini meninggalkan rongga mikro yang sangat banyak. Jika proses pengeringan dilakukan dengan benar, rongga kapiler kosong ini bertindak sebagai peredam tekanan elastis alami yang sangat kuat.
-
-Dari sudut pandang mekanika material, rasio kekuatan tarik terhadap berat jenis (tensile strength-to-weight ratio) dari jaringan kapiler luar bambu petung bahkan mengungguli baja struktural biasa. Pengetahuan mengenai anatomi pembuluh ini sangat krusial dalam menentukan arah pemotongan serat untuk menjaga elastisitas alami bambu saat menerima beban struktural bentang lebar.`,
-                readTime: "5 Menit Baca",
-                date: "12 Mei 2026",
-                approved: true
-              },
-              {
-                id: 2,
-                title: "Kearifan Lokal Pengawetan Bambu Alami via Perendaman Air Mengalir",
-                author: "Abah Ujang Winata",
-                role: "Master Pengrajin Tradisional Kasepuhan Cibarani",
-                avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=ujang",
-                excerpt: "Metode tradisional warisan leluhur Sunda dalam menetralkan kadar glukosa dan pati bambu demi mencegah serangan bubuk kayu secara permanen.",
-                content: `Sejak berabad-abad lalu, leluhur kami di Kasepuhan Cibarani telah menggunakan hukum alam untuk mengawetkan bambu tanpa bahan kimia beracun. Metode ini disebut 'Kemiri' or perendaman air lumpur mengalir.
-
-Bambu segar yang baru ditebang memiliki kadar pati dan gula alami yang sangat disukai oleh kumbang bubuk (Dinoderus minutus). Jika pati ini dibiarkan, bambu akan hancur menjadi bubuk dalam waktu kurang dari dua tahun. 
-
-Dengan merendam bambu di air lumpur pesawahan atau sungai berarus lambat selama 3 hingga 6 bulan, terjadi proses fermentasi anaerobik alami. Mikroorganisme air memakan habis kadar pati dan glukosa di dalam pori-pori bambu dan mengubahnya menjadi asam organik. Setelah masa perendaman selesai, serat bambu menjadi hambar, keras, dan tidak akan pernah lagi disentuh oleh serangga perusak selamanya.`,
-                readTime: "4 Menit Baca",
-                date: "08 Mei 2026",
-                approved: true
-              },
-              {
-                id: 3,
-                title: "Laju Penyerapan Karbon Spesifik Rumpun Gigantochloa apus (Bambu Tali)",
-                author: "Dr. Elizabeth Wong",
-                role: "Pakar Ekologi Karbon Global & Konsultan ESG",
-                avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=elizabeth",
-                excerpt: "Kuantifikasi matematis biomassa bambu tali dalam menyerap karbon dioksida atmosfer dan kontribusinya terhadap pasar karbon internasional.",
-                content: `Bambu Tali (Gigantochloa apus) bukan sekadar tanaman biasa, ia adalah mesin penyerap karbon alami tercepat di daratan. Melalui penelitian empiris tim ekologi kami di area konservasi Jawa Barat, satu hektar tanaman bambu tali mampu mengunci hingga 35-40 ton karbon dioksida (CO2) per tahun.
-
-Kecepatan penyerapan ini didorong oleh pertumbuhan sistem rimpang (rhizome) simpodial yang eksponensial. Ketika rebung baru muncul, tanaman menyerap karbon atmosfer dengan laju luar biasa untuk membangun dinding selulosa dalam 120 hari pertama masa hidupnya.
-
-Di pasar karbon sukarela (Voluntary Carbon Market), penanaman terkelola bambu tali menghasilkan sertifikasi kredit karbon bernilai tinggi. Investasi pada penanaman rumpun bambu ini tidak hanya merestorasi lingkungan kritis lokal, tetapi juga menghasilkan dampak finansial nyata bagi masyarakat adat mitra melalui monetisasi emisi hijau secara on-chain.`,
-                readTime: "6 Menit Baca",
-                date: "02 Mei 2026",
-                approved: true
-              },
-              {
-                id: 4,
-                title: "Integrasi Sambungan Baut Ganda pada Konstruksi Kuda-Kuda Bambu",
-                author: "Rian Hidayat, S.Ars.",
-                role: "Arsitek Hijau & Pelopor Blockbamboo",
-                avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=rian",
-                excerpt: "Rekayasa mekanika sambungan modern untuk mengatasi kelemahan retak pecah ujung serat bambu pada konstruksi bangunan.",
-                content: `Tantangan terbesar menggunakan bambu bulat dalam arsitektur modern adalah titik sambungan. Bambu memiliki kekuatan sejajar serat yang sangat tinggi, namun kekuatan tegak lurus seratnya sangat lemah, sehingga rentan pecah jika dibor dan dipasang baut secara langsung.
-
-Solusi rekayasa modern yang kami kembangkan adalah metode 'Sambungan Mortar Pengisi'. Pada bagian ujung bambu yang akan disatukan dengan baut baja, rongga bambu diisi dengan adukan semen non-susut (non-shrink grout) berkualitas tinggi atau resin epoksi yang dicampur serat bambu halus.
-
-Setelah mortar mengeras, lubang baut baru dibor menembus adukan tersebut. Saat konstruksi menerima beban geser, baut baja akan menekan dinding semen pengisi, bukan dinding serat bambu secara langsung. Teknik ini meningkatkan kekuatan geser sambungan hingga 400% dan memungkinkan arsitek mendesain kuda-kuda bentang lebar modern hingga 25 meter secara aman dan estetis.`,
-                readTime: "5 Menit Baca",
-                date: "28 April 2026",
-                approved: true
-              },
-              ...(articles || []).filter(art => art.approved !== 'rejected')
-            ].filter(art => 
+            {allArticles.filter(art => 
               art.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
               art.excerpt?.toLowerCase().includes(searchQuery.toLowerCase()) ||
               art.author?.toLowerCase().includes(searchQuery.toLowerCase()) ||

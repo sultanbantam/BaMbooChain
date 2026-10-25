@@ -5,6 +5,10 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
+      "source": "/article/:id",
+      "destination": "/api/share-article?id=:id"
+    },
+    {
       "source": "/:path((?!api/|assets/|gambar/|logos/|favicon.svg|.*\\..*).*)",
       "destination": "/index.html"
     }
