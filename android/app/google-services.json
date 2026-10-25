@@ -7,12 +7,28 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:969704302314:android:78083a2d6718c8aa23d993",
+        "mobilesdk_app_id": "1:969704302314:android:282a590ce7643b3323d993",
         "android_client_info": {
           "package_name": "id.bamboochain.app"
         }
       },
       "oauth_client": [
+        {
+          "client_id": "969704302314-5c7pr3e7obdi3hidrodf5k76ek62nkgj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "id.bamboochain.app",
+            "certificate_hash": "69808583864f90a1002f46a8ff5eb0152464533a"
+          }
+        },
+        {
+          "client_id": "969704302314-7es2hbkn9ceud7jr44htfhusr4uno3sh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "id.bamboochain.app",
+            "certificate_hash": "8e27a7fb996d4ee8e8aa38d4ea476c4d2fa00299"
+          }
+        },
         {
           "client_id": "969704302314-9escksae1r8r6fdbd8gpm317ej7n1s1u.apps.googleusercontent.com",
           "client_type": 3
@@ -20,7 +36,7 @@
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBIQMO46OwZ-TzdK0QJx2Az3DMowIVYYcQ"
+          "current_key": "AIzaSyB3k5wXq0og3gB6Oyt2GHdRFVXc_1-m0SE"
         }
       ],
       "services": {
