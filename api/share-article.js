@@ -76,13 +76,39 @@ function escapeHtml(text = '') {
 }
 
 export default async function handler(req, res) {
-  const { id } = req.query;
+  const { id, type } = req.query;
   const host = req.headers['x-forwarded-host'] || req.headers.host || 'www.bamboochain.id';
   const proto = req.headers['x-forwarded-proto'] || 'https';
   const baseUrl = `${proto}://${host}`;
 
   const article = id ? await getArticleFromDb(String(id)) : null;
 
+  // IMAGE SERVING MODE: if type === 'image', serve the binary image or redirect
+  if (type === 'image') {
+    const rawImg = article?.image || article?.images?.[0];
+    if (!rawImg) {
+      return res.redirect(302, `${baseUrl}/logos/bmc.png`);
+    }
+
+    if (rawImg.startsWith('http://') || rawImg.startsWith('https://')) {
+      return res.redirect(302, rawImg);
+    }
+
+    if (rawImg.startsWith('data:image/')) {
+      const matches = rawImg.match(/^data:(image\/[a-zA-Z0-9+.-]+);base64,(.+)$/s);
+      if (matches) {
+        const mimeType = matches[1];
+        const buffer = Buffer.from(matches[2], 'base64');
+        res.setHeader('Content-Type', mimeType);
+        res.setHeader('Cache-Control', 'public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400');
+        return res.status(200).send(buffer);
+      }
+    }
+
+    return res.redirect(302, `${baseUrl}/logos/bmc.png`);
+  }
+
+  // HTML OPEN GRAPH MODE:
   const articleTitle = article?.title || 'BaMbooChain Academy - Kolom & Esai Ilmiah';
   const pageTitle = `${articleTitle} | BaMbooChain`;
   const description = article?.excerpt || 'Eksplorasi mendalam tentang sains, budidaya, arsitektur, dan ekologi bambu langsung dari para pegiat bambu Nusantara di BaMbooChain.';
@@ -94,8 +120,8 @@ export default async function handler(req, res) {
       if (rawImg.startsWith('http://') || rawImg.startsWith('https://')) {
         imageUrl = rawImg;
       } else {
-        // Base64 or local image -> dynamic image endpoint so WhatsApp & Facebook can fetch it
-        imageUrl = `${baseUrl}/api/article-image?id=${encodeURIComponent(id)}`;
+        // Base64 or local image -> dynamic image route
+        imageUrl = `${baseUrl}/api/share-article?id=${encodeURIComponent(id)}&type=image`;
       }
     }
   }

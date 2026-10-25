@@ -3,11 +3,16 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { paymentId } = req.body;
+  const action = req.query.action || (req.url.includes('complete') ? 'complete' : 'approve');
+  const { paymentId, txid } = req.body || {};
   const apiKey = process.env.PI_API_KEY;
 
   if (!paymentId) {
     return res.status(400).json({ error: 'Missing paymentId' });
+  }
+
+  if (action === 'complete' && !txid) {
+    return res.status(400).json({ error: 'Missing txid' });
   }
 
   if (!apiKey) {
@@ -15,13 +20,20 @@ export default async function handler(req, res) {
   }
 
   try {
-    const response = await fetch(`https://api.minepi.com/v2/payments/${paymentId}/approve`, {
+    const url = `https://api.minepi.com/v2/payments/${paymentId}/${action}`;
+    const options = {
       method: 'POST',
       headers: {
         'Authorization': `Key ${apiKey}`,
         'Content-Type': 'application/json'
       }
-    });
+    };
+
+    if (action === 'complete') {
+      options.body = JSON.stringify({ txid });
+    }
+
+    const response = await fetch(url, options);
 
     if (!response.ok) {
       const errText = await response.text();

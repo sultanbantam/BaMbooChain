@@ -5,6 +5,14 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
+      "source": "/api/approve",
+      "destination": "/api/pi/approve"
+    },
+    {
+      "source": "/api/complete",
+      "destination": "/api/pi/complete"
+    },
+    {
       "source": "/article/:id",
       "destination": "/api/share-article?id=:id"
     },
