@@ -4,4 +4,5 @@
     <string name="title_activity_main">BaMbooChain</string>
     <string name="package_name">id.bamboochain.app</string>
     <string name="custom_url_scheme">id.bamboochain.app</string>
+    <string name="default_web_client_id">969704302314-9escksae1r8r6fdbd8gpm317ej7n1s1u.apps.googleusercontent.com</string>
 </resources>

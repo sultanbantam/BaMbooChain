@@ -8,11 +8,14 @@ import {
   signInWithPopup,
   signInWithRedirect,
   getRedirectResult,
+  signInWithCredential,
   GoogleAuthProvider,
   FacebookAuthProvider,
   setPersistence,
   browserLocalPersistence
 } from "firebase/auth";
+import { Capacitor } from '@capacitor/core';
+import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 import { 
   doc, 
   setDoc, 
@@ -646,6 +649,40 @@ export const AuthProvider = ({ children }) => {
   };
 
   const loginWithGoogle = async () => {
+    // 1. NATIVE ANDROID/IOS CAPACITOR FLOW (Native Google Play Services + Firebase Credential Bridge)
+    if (Capacitor.isNativePlatform()) {
+      try {
+        console.log("📱 Native Google Sign-In initiating via Capacitor...");
+        const result = await FirebaseAuthentication.signInWithGoogle();
+
+        const idToken = result.credential?.idToken;
+        if (!idToken) {
+          throw new Error("Gagal menerima Google ID Token dari perangkat.");
+        }
+
+        console.log("🔑 ID Token received, signing into Firebase JS Web SDK...");
+        const credential = GoogleAuthProvider.credential(idToken);
+        const userCredential = await signInWithCredential(auth, credential);
+
+        const userData = await ensureFirebaseUserProfile(userCredential.user);
+        setUser(userData);
+        setIsAuthenticated(true);
+        localStorage.setItem('yayasan_user', JSON.stringify(userData));
+        closeModal();
+        return true;
+      } catch (nativeErr) {
+        console.error("Native Google Sign-In error:", nativeErr);
+        const errMsg = nativeErr?.message || '';
+        if (errMsg.toLowerCase().includes('cancel') || nativeErr?.code === '16' || nativeErr?.code === '12501') {
+          console.log("User cancelled Google Sign-In");
+          return false;
+        }
+        alert("Google Sign-In Error: " + (errMsg || "Terjadi kesalahan saat masuk dengan Google."));
+        return false;
+      }
+    }
+
+    // 2. STANDARD WEB BROWSER FLOW
     const googleProvider = new GoogleAuthProvider();
     googleProvider.addScope('email');
     googleProvider.addScope('profile');
@@ -744,6 +781,13 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
+    if (Capacitor.isNativePlatform()) {
+      try {
+        await FirebaseAuthentication.signOut();
+      } catch (e) {
+        console.warn("Native signOut warning:", e);
+      }
+    }
     await signOut(auth);
     setUser(null);
     setIsAuthenticated(false);

@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "969704302314",
+    "project_id": "bamboochain-official",
+    "storage_bucket": "bamboochain-official.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:969704302314:android:78083a2d6718c8aa23d993",
+        "android_client_info": {
+          "package_name": "id.bamboochain.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "969704302314-9escksae1r8r6fdbd8gpm317ej7n1s1u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBIQMO46OwZ-TzdK0QJx2Az3DMowIVYYcQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "969704302314-9escksae1r8r6fdbd8gpm317ej7n1s1u.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
