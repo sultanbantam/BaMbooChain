@@ -77,14 +77,15 @@ function escapeHtml(text = '') {
 
 export default async function handler(req, res) {
   const { id, type } = req.query;
+  const isImageRequest = type === 'image' || req.query['amp;type'] === 'image' || (req.url && req.url.includes('/image'));
   const host = req.headers['x-forwarded-host'] || req.headers.host || 'www.bamboochain.id';
   const proto = req.headers['x-forwarded-proto'] || 'https';
   const baseUrl = `${proto}://${host}`;
 
   const article = id ? await getArticleFromDb(String(id)) : null;
 
-  // IMAGE SERVING MODE: if type === 'image', serve the binary image or redirect
-  if (type === 'image') {
+  // IMAGE SERVING MODE: if image requested, serve the binary image or redirect
+  if (isImageRequest) {
     const rawImg = article?.image || article?.images?.[0];
     if (!rawImg) {
       return res.redirect(302, `${baseUrl}/logos/bmc.png`);
@@ -120,8 +121,8 @@ export default async function handler(req, res) {
       if (rawImg.startsWith('http://') || rawImg.startsWith('https://')) {
         imageUrl = rawImg;
       } else {
-        // Base64 or local image -> dynamic image route
-        imageUrl = `${baseUrl}/api/share-article?id=${encodeURIComponent(id)}&type=image`;
+        // Clean image URL without query params to prevent parser issues in WhatsApp
+        imageUrl = `${baseUrl}/article/${encodeURIComponent(id)}/image`;
       }
     }
   }
@@ -130,7 +131,7 @@ export default async function handler(req, res) {
   const canonicalUrl = `${baseUrl}/article/${id || ''}`;
 
   const html = `<!doctype html>
-<html lang="id">
+<html lang="id" prefix="og: http://ogp.me/ns#">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -143,8 +144,8 @@ export default async function handler(req, res) {
   <meta property="og:url" content="${escapeHtml(canonicalUrl)}">
   <meta property="og:title" content="${escapeHtml(articleTitle)}">
   <meta property="og:description" content="${escapeHtml(description)}">
-  <meta property="og:image" content="${escapeHtml(imageUrl)}">
-  <meta property="og:image:secure_url" content="${escapeHtml(imageUrl)}">
+  <meta property="og:image" content="${imageUrl}">
+  <meta property="og:image:secure_url" content="${imageUrl}">
   <meta property="og:image:type" content="image/jpeg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -153,10 +154,9 @@ export default async function handler(req, res) {
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${escapeHtml(articleTitle)}">
   <meta name="twitter:description" content="${escapeHtml(description)}">
-  <meta name="twitter:image" content="${escapeHtml(imageUrl)}">
+  <meta name="twitter:image" content="${imageUrl}">
 
-  <!-- Instant Browser Redirect -->
-  <meta http-equiv="refresh" content="0;url=${escapeHtml(targetAppUrl)}">
+  <!-- Instant Browser Redirect for Real Users (Not Executed by WhatsApp Bot) -->
   <script>
     window.location.replace(${JSON.stringify(targetAppUrl)});
   </script>

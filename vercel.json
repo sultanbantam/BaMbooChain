@@ -13,6 +13,10 @@
       "destination": "/api/pi/complete"
     },
     {
+      "source": "/article/:id/image",
+      "destination": "/api/share-article?id=:id&type=image"
+    },
+    {
       "source": "/article/:id",
       "destination": "/api/share-article?id=:id"
     },
