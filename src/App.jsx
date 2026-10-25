@@ -1,5 +1,9 @@
 import React, { useEffect, Suspense, lazy } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { Capacitor } from '@capacitor/core';
+import { App as CapApp } from '@capacitor/app';
+import { SplashScreen } from '@capacitor/splash-screen';
+import { StatusBar, Style } from '@capacitor/status-bar';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import AuthModal from './components/AuthModal';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -281,6 +285,34 @@ function App() {
       }
     }
   }, [isAuthenticated, navigate]);
+
+  // 3. Native Android hardware Back Button & Capacitor initialization
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+
+    StatusBar.setStyle({ style: Style.Dark }).catch(() => {});
+    SplashScreen.hide().catch(() => {});
+
+    let lastBackPress = 0;
+    const backListenerPromise = CapApp.addListener('backButton', () => {
+      const hash = window.location.hash;
+      const isRoot = !hash || hash === '#/' || hash === '#';
+      if (!isRoot) {
+        window.history.back();
+      } else {
+        const now = Date.now();
+        if (now - lastBackPress < 2000) {
+          CapApp.exitApp();
+        } else {
+          lastBackPress = now;
+        }
+      }
+    });
+
+    return () => {
+      backListenerPromise.then((sub) => sub.remove()).catch(() => {});
+    };
+  }, []);
 
   return (
     <div className="App">

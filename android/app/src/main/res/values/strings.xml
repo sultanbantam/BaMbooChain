@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">BaMbooChain</string>
+    <string name="title_activity_main">BaMbooChain</string>
+    <string name="package_name">id.bamboochain.app</string>
+    <string name="custom_url_scheme">id.bamboochain.app</string>
+</resources>

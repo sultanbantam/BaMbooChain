@@ -3,6 +3,7 @@ import { ExternalLink, Info, DollarSign, MessageCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getAssetUrl } from '../utils/assets';
 import { useLanguage } from '../context/LanguageContext';
+import { Capacitor } from '@capacitor/core';
 
 /**
  * AdSpace Component
@@ -15,17 +16,18 @@ import { useLanguage } from '../context/LanguageContext';
  */
 const AdSpace = ({ type = 'horizontal', size = 'normal', adSlot, directAd, height }) => {
   const { t } = useLanguage();
+  const isNative = Capacitor.isNativePlatform();
   
   useEffect(() => {
-    // Re-initialize AdSense if we are in AdSense mode
-    if (adSlot && window.adsbygoogle) {
+    // Re-initialize AdSense only on web, never on native Android app
+    if (adSlot && window.adsbygoogle && !isNative) {
       try {
         (window.adsbygoogle = window.adsbygoogle || []).push({});
       } catch (e) {
         console.error("AdSense Error:", e);
       }
     }
-  }, [adSlot]);
+  }, [adSlot, isNative]);
 
   const waLink = "https://wa.me/628174139994?text=Halo%20Admin%20BaMbooChain,%20saya%20tertarik%20untuk%20menyewa%20ruang%20iklan%20di%20aplikasi.";
 
@@ -84,8 +86,8 @@ const AdSpace = ({ type = 'horizontal', size = 'normal', adSlot, directAd, heigh
     );
   }
 
-  // RENDER: ADSENSE
-  if (adSlot) {
+  // RENDER: ADSENSE (Web only, suppressed on native Android app)
+  if (adSlot && !isNative) {
     return (
       <div style={{ width: '100%', margin: '20px 0', textAlign: 'center' }}>
         <ins className="adsbygoogle"
