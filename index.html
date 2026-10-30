@@ -15,9 +15,11 @@
     <meta property="og:type" content="website" />
     
     <script type="text/javascript">
-      // GitHub Pages / SPA Route Handler
+      // Direct pathname redirect to HashRouter (e.g. /data-deletion -> /#/data-deletion)
       (function(l) {
-        if (l.search[1] === '/' ) {
+        if (l.pathname && l.pathname !== '/' && !l.pathname.startsWith('/api') && (!l.hash || l.hash === '#/')) {
+          l.replace('/#' + l.pathname + l.search);
+        } else if (l.search[1] === '/' ) {
           var decoded = l.search.slice(1).split('&').map(function(s) { 
             return s.replace(/~and~/g, '&')
           }).join('?');
@@ -30,18 +32,18 @@
     <script defer src="https://sdk.minepi.com/pi-sdk.js"></script>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=pub-3668510649750568"
      crossorigin="anonymous"></script>
-    <script type="module" crossorigin src="./assets/index-Da9yatUN.js"></script>
+    <script type="module" crossorigin src="./assets/index-CIPUrI1j.js"></script>
     <link rel="modulepreload" crossorigin href="./assets/rolldown-runtime-COnpUsM8.js">
     <link rel="modulepreload" crossorigin href="./assets/vendor-core-DBA3qtIJ.js">
-    <link rel="modulepreload" crossorigin href="./assets/vendor-others-MedRni4N.js">
-    <link rel="modulepreload" crossorigin href="./assets/vendor-firebase-DtfRPmhM.js">
-    <link rel="modulepreload" crossorigin href="./assets/LanguageContext-BjW82EkB.js">
-    <link rel="modulepreload" crossorigin href="./assets/assets-Cr0Upg-M.js">
-    <link rel="modulepreload" crossorigin href="./assets/AdSpace-Dn6KtyAv.js">
-    <link rel="modulepreload" crossorigin href="./assets/ShareModal-CwMc7IYH.js">
-    <link rel="modulepreload" crossorigin href="./assets/config-Ctl8OUs3.js">
-    <link rel="modulepreload" crossorigin href="./assets/AuthContext-C_9Zw0V_.js">
-    <link rel="modulepreload" crossorigin href="./assets/Web3Context-DaC7euPC.js">
+    <link rel="modulepreload" crossorigin href="./assets/vendor-firebase-B-LEhj18.js">
+    <link rel="modulepreload" crossorigin href="./assets/vendor-others-BQAheKMM.js">
+    <link rel="modulepreload" crossorigin href="./assets/LanguageContext-BPqIlLol.js">
+    <link rel="modulepreload" crossorigin href="./assets/assets-28333TzX.js">
+    <link rel="modulepreload" crossorigin href="./assets/AdSpace-BmVpCzAD.js">
+    <link rel="modulepreload" crossorigin href="./assets/ShareModal-w7UxExfb.js">
+    <link rel="modulepreload" crossorigin href="./assets/config-CS3WW3oc.js">
+    <link rel="modulepreload" crossorigin href="./assets/AuthContext-D65ZpNVd.js">
+    <link rel="modulepreload" crossorigin href="./assets/Web3Context-z6Mql8Jt.js">
     <link rel="stylesheet" crossorigin href="./assets/index-RkPk7nNa.css">
   </head>
   <body>
