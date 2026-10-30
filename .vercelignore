@@ -1,2 +1,10 @@
 *.zip
 *.tar.gz
+android
+play-store-assets
+.gradle
+*.keystore
+*.jks
+*.aab
+*.apk
+node_modules
