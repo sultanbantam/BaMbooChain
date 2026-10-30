@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Globe, Bell, ChevronDown, Menu, X, Shield, Layout, TreeDeciduous, Truck, Factory, Wallet, Leaf, ShoppingCart, Users, GraduationCap, BarChart3, TrendingUp, User, Sun, Moon, Car } from 'lucide-react';
+import { 
+  Globe, Bell, ChevronDown, ChevronUp, ChevronRight, Menu, X, Shield, Layout, 
+  TreeDeciduous, Truck, Factory, Wallet, Leaf, ShoppingCart, Users, GraduationCap, 
+  BarChart3, TrendingUp, User, Sun, Moon, Car, Compass, Layers, CheckCircle2, 
+  Home, HelpCircle, Phone, Award, Building2
+} from 'lucide-react';
 import { getAssetUrl } from '../utils/assets';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import AdSpace from './AdSpace';
 import { useLanguage } from '../context/LanguageContext';
 import { useWeb3 } from '../context/Web3Context';
@@ -16,11 +21,20 @@ const Navbar = () => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotifMenu, setShowNotifMenu] = useState(false);
   const [showLangMenu, setShowLangMenu] = useState(false);
+  const [openClusters, setOpenClusters] = useState({ 0: false, 1: false, 2: false, 3: false, 4: false });
 
+  const location = useLocation();
   const { language, changeLanguage, t } = useLanguage();
   const { walletAddress, connectWallet, isWalletModalOpen, closeWalletModal } = useWeb3();
   const { user, isAuthenticated, openLoginModal, logout, markAsRead, markAllAsRead, clearNotifications } = useAuth();
   const { isDark, toggleTheme } = useTheme();
+
+  const toggleCluster = (idx) => {
+    setOpenClusters(prev => ({
+      ...prev,
+      [idx]: !prev[idx]
+    }));
+  };
 
   const handleXignalxSSO = async (e) => {
     e.preventDefault();
@@ -76,29 +90,118 @@ const Navbar = () => {
     { label: t('feature_kodiba'), path: '/bamboochain/kodiba', icon: <Wallet size={16} /> },
   ];
 
-  const mobileMenuItems = [
-    { label: t('nav_home'), path: '/' },
-    { label: '🏢 BangunIn (Rumah MBR)', path: '/bangunin' },
-    { label: t('nav_projects'), path: '/projects' },
-    { label: 'Tobat Ekologi', path: '/tobat-ekologi' },
-    { label: t('nav_insights'), path: '/insight' },
-    { label: t('nav_impact'), path: '/impact' },
-    { label: t('nav_partners'), path: '/partners' },
-    { label: t('nav_about'), path: '/about' },
-    { label: t('nav_contact'), path: '/contact' },
-    { label: t('nav_bambupedia'), path: '/bambupedia' },
-    { label: t('feature_academy'), path: '/bamboochain/academy' },
-    { label: 'WaniPiro?', path: '/wanipiro' },
-    { label: t('nav_datatools'), path: '/data-tools' },
-    { label: t('nav_marketplace'), path: '/bamboochain/marketplace' },
-    { label: t('nav_community'), path: '/community' },
-    { label: t('nav_events'), path: '/events' },
-    { label: t('vol_nav_volunteer'), path: '/bamboochain/volunteer' },
-    ...bambooNusaFeatures,
-    { label: t('nav_careers'), path: '/careers' },
-    { label: t('nav_membership'), path: '/membership' },
-    { label: t('nav_faq'), path: '/faq' },
-    { label: t('nav_transparency'), path: '/transparency' },
+  // 5 CLUSTERS UNTUK TAMPILAN MOBILE (Mencegah scroll panjang dan merapikan navigasi)
+  const featureClusters = [
+    {
+      id: 'cluster_neraca',
+      title: language === 'en' ? '1. Environmental Balance' : language === 'ja' ? '1. 環境バランスシート' : '1. Neraca Lingkungan',
+      subtitle: language === 'en' ? 'ESG, Data Analytics & Carbon Impact' : language === 'ja' ? 'ESG、データ分析、炭素影響' : 'ESG, Analitik Data & Dampak Karbon',
+      icon: <Leaf size={20} color="#10b981" />,
+      color: '#10b981',
+      bgLight: isDark ? 'rgba(16, 185, 129, 0.15)' : 'rgba(16, 185, 129, 0.08)',
+      badge: language === 'en' ? '5 Features' : language === 'ja' ? '5機能' : '5 Fitur',
+      items: [
+        { label: t('feature_carbon_impact'), path: '/bamboochain/carbon-impact', icon: <Leaf size={18} />, desc: language === 'en' ? 'Carbon sequestration & MRV calculations' : 'Kalkulasi serapan karbon & sertifikasi MRV' },
+        { label: t('feature_data_analytics'), path: '/bamboochain/data-analytics', icon: <BarChart3 size={18} />, desc: language === 'en' ? 'Realtime sensor & plantation metrics' : 'Metrik realtime sensor & analitik data' },
+        { label: t('nav_impact'), path: '/impact', icon: <TrendingUp size={18} />, desc: language === 'en' ? 'Social & environmental impact report' : 'Laporan dampak sosial & ekologi' },
+        { label: t('nav_insights'), path: '/insight', icon: <Layout size={18} />, desc: language === 'en' ? 'Sustainability research & publications' : 'Wawasan, riset & tren keberlanjutan' },
+        { label: t('nav_datatools'), path: '/data-tools', icon: <Compass size={18} />, desc: language === 'en' ? 'Integrated environmental calculators' : 'Kalkulator & instrumen data terpadu' },
+      ]
+    },
+    {
+      id: 'cluster_tobat',
+      title: language === 'en' ? '2. Ecological Restoration' : language === 'ja' ? '2. 生態系の回復' : '2. Tobat Ekologi',
+      subtitle: language === 'en' ? 'Nature Restoration, Ethics & Action' : language === 'ja' ? '自然再生、倫理とコミュニティ' : 'Restorasi Alam, Moralitas & Komunitas',
+      icon: <TreeDeciduous size={20} color="#059669" />,
+      color: '#059669',
+      bgLight: isDark ? 'rgba(5, 150, 105, 0.15)' : 'rgba(5, 150, 105, 0.08)',
+      badge: language === 'en' ? '5 Features' : language === 'ja' ? '5機能' : '5 Fitur',
+      items: [
+        { label: 'Tobat Ekologi Dashboard', path: '/tobat-ekologi', icon: <TreeDeciduous size={18} />, desc: language === 'en' ? 'MRV platform for ecological repentance' : 'Platform MRV pemulihan bumi & tobat alam' },
+        { label: t('nav_projects'), path: '/projects', icon: <Layout size={18} />, desc: language === 'en' ? 'Reforestation & critical land projects' : 'Proyek reboisasi & konservasi lahan kritis' },
+        { label: t('vol_nav_volunteer'), path: '/bamboochain/volunteer', icon: <Users size={18} />, desc: language === 'en' ? 'Bamboo youth volunteer movement' : 'Gerakan relawan bambu nusantara' },
+        { label: t('nav_events'), path: '/events', icon: <Layers size={18} />, desc: language === 'en' ? 'Planting calendar & workshops' : 'Kalender penanaman pohon & workshop' },
+        { label: t('nav_community'), path: '/community', icon: <Users size={18} />, desc: language === 'en' ? 'Green DAO & community discussion' : 'Ruang interaksi & DAO komunitas hijau' },
+      ]
+    },
+    {
+      id: 'cluster_tanam',
+      title: language === 'en' ? '3. Digital Bamboo Planting' : language === 'ja' ? '3. デジタル竹植樹' : '3. Tanam Bambu Digital',
+      subtitle: language === 'en' ? 'Bamboo Tokenization, Wallet & Valuation' : language === 'ja' ? '竹のトークン化、Web3ウォレット、評価' : 'Tokenisasi Bambu, Dompet Web3 & Valuasi',
+      icon: <Wallet size={20} color="#3b82f6" />,
+      color: '#3b82f6',
+      bgLight: isDark ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.08)',
+      badge: language === 'en' ? '6 Features' : language === 'ja' ? '6機能' : '6 Fitur',
+      items: [
+        { label: t('feature_plantation'), path: '/bamboochain/plantation', icon: <TreeDeciduous size={18} />, desc: language === 'en' ? 'Digital bamboo adoption & growth tracking' : 'Adopsi bibit digital & pantau pertumbuhan' },
+        { label: t('feature_token_wallet'), path: '/bamboochain/token-wallet', icon: <Wallet size={18} />, desc: language === 'en' ? 'BMC Token balance, staking & rewards' : 'Dompet Web3, saldo BMC & reward token' },
+        { label: 'WaniPiro? (Valuasi Bambu)', path: '/wanipiro', icon: <TrendingUp size={18} />, desc: language === 'en' ? 'Algorithmic bamboo valuation calculator' : 'Kalkulator komputasi nilai ekonomi bambu' },
+        { label: t('nav_transparency'), path: '/transparency', icon: <Shield size={18} />, desc: language === 'en' ? 'On-chain ledger & smart contract audits' : 'Eksplorasi ledger on-chain & smart contract' },
+        { label: t('nav_bambupedia'), path: '/bambupedia', icon: <TreeDeciduous size={18} />, desc: language === 'en' ? 'Botanical bamboo encyclopedia & AI' : 'Ensiklopedia botani & taksonomi bambu' },
+        { label: t('feature_overview'), path: '/bamboochain', icon: <Layout size={18} />, desc: language === 'en' ? 'BaMbooChain architecture overview' : 'Ikhtisar arsitektur sistem BaMbooChain' },
+      ]
+    },
+    {
+      id: 'cluster_petani',
+      title: language === 'en' ? '4. Millennial Farmers' : language === 'ja' ? '4. ミレニアル農家' : '4. Petani Milenial',
+      subtitle: language === 'en' ? 'Farmer Empowerment, Education & Co-op' : language === 'ja' ? '農家育成、教育、協同組合' : 'Pemberdayaan Petani, Edukasi & Koperasi',
+      icon: <Users size={20} color="#84cc16" />,
+      color: '#84cc16',
+      bgLight: isDark ? 'rgba(132, 204, 22, 0.15)' : 'rgba(132, 204, 22, 0.08)',
+      badge: language === 'en' ? '5 Features' : language === 'ja' ? '5機能' : '5 Fitur',
+      items: [
+        { label: 'Mitra & Petani Binaan', path: '/bambunusa/farmers', icon: <Users size={18} />, desc: language === 'en' ? 'Archipelago farmer group network' : 'Database kelompok petani bambu se-nusantara' },
+        { label: 'Daftar Jadi Petani', path: '/bambunusa/join-farmer', icon: <TreeDeciduous size={18} />, desc: language === 'en' ? 'Registration for partner farmers' : 'Pendaftaran kemitraan petani baru' },
+        { label: t('feature_kodiba'), path: '/bamboochain/kodiba', icon: <Wallet size={18} />, desc: language === 'en' ? 'Digital bamboo profit-sharing cooperative' : 'Koperasi Digital Bambu bagi hasil petani' },
+        { label: t('feature_academy'), path: '/bamboochain/academy', icon: <GraduationCap size={18} />, desc: language === 'en' ? 'Silviculture, nursery & agro training' : 'Akademi silvikultur, bibit & budidaya' },
+        { label: 'Daftar Jadi Validator', path: '/bambunusa/join-validator', icon: <Shield size={18} />, desc: language === 'en' ? 'Join tree verification & audit crew' : 'Gabung tim verifikator pohon & audit' },
+      ]
+    },
+    {
+      id: 'cluster_pengusaha',
+      title: language === 'en' ? '5. Millennial Entrepreneurs' : language === 'ja' ? '5. ミレニアル起業家' : '5. Pengusaha Milenial',
+      subtitle: language === 'en' ? 'Green Housing, Mobility, Market & Business' : language === 'ja' ? 'グリーン建築、モビリティ、市場、ビジネス' : 'Konstruksi Hijau, Mobilitas, Pasar & Bisnis',
+      icon: <Factory size={20} color="#f59e0b" />,
+      color: '#f59e0b',
+      bgLight: isDark ? 'rgba(245, 158, 11, 0.15)' : 'rgba(245, 158, 11, 0.08)',
+      badge: language === 'en' ? '6 Features' : language === 'ja' ? '6機能' : '6 Fitur',
+      items: [
+        { label: '🏢 BangunIn (Rumah MBR)', path: '/bangunin', icon: <Building2 size={18} />, desc: language === 'en' ? 'Eco-housing for low-income communities' : 'Inovasi rumah rakyat berbasis komposit bambu' },
+        { label: '🚀 BoomBoom Mobility', path: '/boomboom', icon: <Car size={18} />, desc: language === 'en' ? 'EV green mobility fleet & booking' : 'Layanan transportasi listrik & armada hijau' },
+        { label: t('feature_marketplace'), path: '/bamboochain/marketplace', icon: <ShoppingCart size={18} />, desc: language === 'en' ? 'High-value bamboo derivative marketplace' : 'Bursa produk olahan & kerajinan bernilai tinggi' },
+        { label: t('feature_supply_chain'), path: '/bamboochain/supply-chain', icon: <Truck size={18} />, desc: language === 'en' ? 'Verified bamboo logistics & custody' : 'Rantai pasok logistik bambu terverifikasi' },
+        { label: t('feature_build'), path: '/bamboochain/build', icon: <Factory size={18} />, desc: language === 'en' ? 'Laminated bamboo engineering & design' : 'Rekayasa konstruksi bambu laminasi' },
+        { label: t('feature_invest'), path: '/bamboochain/invest', icon: <TrendingUp size={18} />, desc: language === 'en' ? 'Impact investment in green enterprises' : 'Investasi berdampak pada ekosistem industri' },
+      ]
+    }
+  ];
+
+  // Auto-expand cluster if current route is within it
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      featureClusters.forEach((cluster, idx) => {
+        if (cluster.items.some(it => it.path === location.pathname)) {
+          setOpenClusters(prev => ({ ...prev, [idx]: true }));
+        }
+      });
+    }
+  }, [isMobileMenuOpen, location.pathname]);
+
+  const quickAccessItems = [
+    { label: t('nav_home'), path: '/', icon: <Home size={15} /> },
+    { label: '🏢 BangunIn MBR', path: '/bangunin', icon: <Building2 size={15} /> },
+    { label: '🌱 Tobat Ekologi', path: '/tobat-ekologi', icon: <TreeDeciduous size={15} /> },
+    { label: '🚀 BoomBoom', path: '/boomboom', icon: <Car size={15} /> },
+    { label: '💰 WaniPiro?', path: '/wanipiro', icon: <TrendingUp size={15} /> },
+  ];
+
+  const foundationLinks = [
+    { label: t('nav_about'), path: '/about', icon: <Award size={16} /> },
+    { label: t('nav_partners'), path: '/partners', icon: <Users size={16} /> },
+    { label: t('nav_contact'), path: '/contact', icon: <Phone size={16} /> },
+    { label: t('nav_careers'), path: '/careers', icon: <TrendingUp size={16} /> },
+    { label: t('nav_membership'), path: '/membership', icon: <Shield size={16} /> },
+    { label: t('nav_faq'), path: '/faq', icon: <HelpCircle size={16} /> },
   ];
 
   const wallets = [
@@ -191,16 +294,225 @@ const Navbar = () => {
                    {t('nav_logout')}
                  </button>
                )}
-               {mobileMenuItems.map((item, idx) => (
-                  item.onClick ? (
-                    <a key={idx} href={item.path} onClick={(e) => { item.onClick(e); setIsMobileMenuOpen(false); }} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '15px 0', borderBottom: '1px solid #eee', color: '#333', textDecoration: 'none', fontWeight: '600' }}>
-                      {item.icon && <img src={item.icon} alt={item.label} style={{ height: '20px', width: 'auto', borderRadius: '4px' }} />}
-                      {item.label}
-                    </a>
-                  ) : (
-                    <Link key={idx} to={item.path} onClick={() => setIsMobileMenuOpen(false)} style={{ display: 'block', padding: '15px 0', borderBottom: '1px solid #eee', color: '#333', textDecoration: 'none', fontWeight: '600' }}>{item.label}</Link>
-                  )
-                ))}
+               {/* 2. Quick Access Pills (Pintasan Populer) */}
+                <div style={{ marginBottom: '18px' }}>
+                  <div style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: '8px', paddingLeft: '4px' }}>
+                    {language === 'en' ? 'Quick Access' : language === 'ja' ? 'クイックアクセス' : 'Akses Cepat'}
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '6px', scrollbarWidth: 'none' }}>
+                    {quickAccessItems.map((item, qIdx) => {
+                      const isActive = location.pathname === item.path;
+                      return (
+                        <Link
+                          key={qIdx}
+                          to={item.path}
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            padding: '8px 14px',
+                            borderRadius: '20px',
+                            background: isActive ? 'var(--primary)' : 'var(--bg-card)',
+                            color: isActive ? '#fff' : 'var(--text-main)',
+                            border: `1px solid ${isActive ? 'var(--primary)' : 'var(--border-color)'}`,
+                            fontSize: '0.82rem',
+                            fontWeight: '600',
+                            textDecoration: 'none',
+                            whiteSpace: 'nowrap',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+                          }}
+                        >
+                          {item.icon}
+                          {item.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 3. The 5 BambooChain Feature Clusters (Accordion System) */}
+                <div style={{ marginBottom: '24px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px', paddingLeft: '4px', paddingRight: '4px' }}>
+                    <div style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>
+                      {language === 'en' ? 'BambooChain Ecosystem (5 Clusters)' : language === 'ja' ? '竹チェーンエコシステム (5つの主要クラスター)' : 'Kluster Fitur BaMbooChain (5 Kluster)'}
+                    </div>
+                    <span style={{ fontSize: '0.7rem', color: 'var(--primary)', fontWeight: 'bold' }}>
+                      27 Fitur Terintegrasi
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    {featureClusters.map((cluster, cIdx) => {
+                      const isExpanded = !!openClusters[cIdx];
+                      const hasActiveChild = cluster.items.some(it => it.path === location.pathname);
+
+                      return (
+                        <div key={cluster.id} style={{ borderRadius: '14px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                          {/* Accordion Trigger Header */}
+                          <div
+                            onClick={() => toggleCluster(cIdx)}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              padding: '13px 15px',
+                              background: isExpanded ? cluster.bgLight : 'var(--bg-card)',
+                              border: `1.5px solid ${isExpanded || hasActiveChild ? cluster.color : 'var(--border-color)'}`,
+                              borderBottom: isExpanded ? `1px dashed ${cluster.color}` : `1.5px solid ${hasActiveChild ? cluster.color : 'var(--border-color)'}`,
+                              borderRadius: isExpanded ? '14px 14px 0 0' : '14px',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease'
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                              <div style={{
+                                width: '38px',
+                                height: '38px',
+                                borderRadius: '10px',
+                                background: cluster.bgLight,
+                                border: `1px solid ${cluster.color}40`,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                flexShrink: 0
+                              }}>
+                                {cluster.icon}
+                              </div>
+                              <div>
+                                <div style={{ fontSize: '0.94rem', fontWeight: '700', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                  {cluster.title}
+                                  {hasActiveChild && (
+                                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: cluster.color }} />
+                                  )}
+                                </div>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                                  {cluster.subtitle}
+                                </div>
+                              </div>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span style={{ fontSize: '0.7rem', padding: '3px 8px', borderRadius: '12px', background: cluster.bgLight, color: cluster.color, fontWeight: 'bold' }}>
+                                {cluster.badge}
+                              </span>
+                              <div style={{ color: 'var(--text-muted)' }}>
+                                {isExpanded ? <ChevronUp size={18} color={cluster.color} /> : <ChevronDown size={18} />}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Accordion Content List */}
+                          {isExpanded && (
+                            <div style={{
+                              background: 'var(--bg-card)',
+                              border: `1.5px solid ${cluster.color}`,
+                              borderTop: 'none',
+                              borderRadius: '0 0 14px 14px',
+                              padding: '8px 10px 10px',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '4px'
+                            }}>
+                              {cluster.items.map((item, itemIdx) => {
+                                const isActive = location.pathname === item.path;
+                                return (
+                                  <Link
+                                    key={itemIdx}
+                                    to={item.path}
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    style={{
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'space-between',
+                                      padding: '10px 12px',
+                                      borderRadius: '10px',
+                                      background: isActive ? cluster.bgLight : 'transparent',
+                                      border: isActive ? `1px solid ${cluster.color}` : '1px solid transparent',
+                                      textDecoration: 'none',
+                                      color: 'var(--text-main)',
+                                      transition: 'background 0.15s ease'
+                                    }}
+                                  >
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 }}>
+                                      <div style={{
+                                        width: '32px',
+                                        height: '32px',
+                                        borderRadius: '8px',
+                                        background: cluster.bgLight,
+                                        color: cluster.color,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        flexShrink: 0
+                                      }}>
+                                        {item.icon}
+                                      </div>
+                                      <div style={{ minWidth: 0, flex: 1 }}>
+                                        <div style={{ fontSize: '0.88rem', fontWeight: '600', color: isActive ? cluster.color : 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                          {item.label}
+                                          {isActive && (
+                                            <span style={{ fontSize: '0.65rem', background: cluster.color, color: '#fff', padding: '1px 6px', borderRadius: '6px', fontWeight: 'bold' }}>
+                                              Aktif
+                                            </span>
+                                          )}
+                                        </div>
+                                        <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', marginTop: '1px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                          {item.desc}
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <ChevronRight size={16} color="var(--text-muted)" style={{ opacity: 0.6, flexShrink: 0 }} />
+                                  </Link>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 4. Yayasan Sabumi Nusantara Jaya & Layanan Informasi */}
+                <div style={{ marginBottom: '20px' }}>
+                  <div style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: '10px', paddingLeft: '4px' }}>
+                    {language === 'en' ? 'Foundation & Resources' : language === 'ja' ? '財団と情報サービス' : 'Yayasan & Layanan Informasi'}
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                    {foundationLinks.map((fItem, fIdx) => {
+                      const isActive = location.pathname === fItem.path;
+                      return (
+                        <Link
+                          key={fIdx}
+                          to={fItem.path}
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            padding: '10px 12px',
+                            borderRadius: '10px',
+                            background: isActive ? 'rgba(16, 185, 129, 0.1)' : 'var(--bg-card)',
+                            border: `1px solid ${isActive ? 'var(--primary)' : 'var(--border-color)'}`,
+                            color: isActive ? 'var(--primary)' : 'var(--text-main)',
+                            textDecoration: 'none',
+                            fontSize: '0.84rem',
+                            fontWeight: '600'
+                          }}
+                        >
+                          <div style={{ color: isActive ? 'var(--primary)' : 'var(--text-muted)' }}>
+                            {fItem.icon}
+                          </div>
+                          <span>{fItem.label}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div style={{ textAlign: 'center', fontSize: '0.72rem', color: 'var(--text-muted)', padding: '10px 0 20px' }}>
+                  © 2026 Yayasan Sabumi Nusantara Jaya • BaMbooChain v2.0
+                </div>
             </div>
           )}
         </div>
