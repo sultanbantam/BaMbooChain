@@ -11,6 +11,7 @@ import { storage } from '../../firebase/config';
 import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 import { Link, useLocation } from 'react-router-dom';
 import BackButton from '../../components/BackButton';
+import { getAssetUrl } from '../../utils/assets';
 import { useValidations, usePlantationDonations, useLocationProposals } from '../../hooks/useFirestoreQueries';
 import { useLanguage } from '../../context/LanguageContext';
 import { updateDoc, doc, arrayUnion } from 'firebase/firestore';
@@ -2253,6 +2254,20 @@ const TokenUtilityTab = () => {
             </p>
             <a href="https://wanipiro.vercel.app/" target="_blank" rel="noopener noreferrer" style={{ background: '#38D9A9', color: '#111', textDecoration: 'none', padding: '14px', borderRadius: '16px', fontWeight: 'bold', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(56, 217, 169, 0.3)' }} onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}>
               {language === 'id' ? 'Buka Wanipiro?' : 'Open Wanipiro?'} <ChevronRight size={18} />
+            </a>
+          </div>
+        </div>
+
+        {/* ngopi.top Card */}
+        <div style={{ background: 'white', borderRadius: '24px', overflow: 'hidden', border: '1px solid #f1f3f5', boxShadow: '0 8px 24px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ height: '160px', background: `url("${getAssetUrl('8.png')}") center/cover no-repeat`, position: 'relative' }}></div>
+          <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+            <h4 style={{ fontSize: '1.25rem', fontWeight: '900', margin: '0 0 12px 0', color: 'var(--text-main)' }}>ngopi.top</h4>
+            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '24px', flex: 1 }}>
+              {language === 'id' ? 'Platform interaksi komunitas ngopi, ekosistem Web3, dan kolaborasi terdesentralisasi.' : 'Ngopi community platform, Web3 ecosystem, and decentralized collaboration.'}
+            </p>
+            <a href="https://ngopi.top" target="_blank" rel="noopener noreferrer" style={{ background: '#6f4e37', color: 'white', textDecoration: 'none', padding: '14px', borderRadius: '16px', fontWeight: 'bold', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(111, 78, 55, 0.3)' }} onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}>
+              {language === 'id' ? 'Buka ngopi.top' : 'Open ngopi.top'} <ChevronRight size={18} />
             </a>
           </div>
         </div>

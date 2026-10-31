@@ -333,15 +333,6 @@ const Navbar = () => {
 
                 {/* 3. The 5 BambooChain Feature Clusters (Accordion System) */}
                 <div style={{ marginBottom: '24px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px', paddingLeft: '4px', paddingRight: '4px' }}>
-                    <div style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>
-                      {language === 'en' ? 'BambooChain Ecosystem (5 Clusters)' : language === 'ja' ? '竹チェーンエコシステム (5つの主要クラスター)' : 'Kluster Fitur BaMbooChain (5 Kluster)'}
-                    </div>
-                    <span style={{ fontSize: '0.7rem', color: 'var(--primary)', fontWeight: 'bold' }}>
-                      27 Fitur Terintegrasi
-                    </span>
-                  </div>
-
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     {featureClusters.map((cluster, cIdx) => {
                       const isExpanded = !!openClusters[cIdx];

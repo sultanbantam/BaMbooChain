@@ -613,14 +613,14 @@ const HomePage = () => {
                 <>
                   {/* Two Main Big Buttons */}
                   <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
-                    <Link to="/wanipiro" onClick={closeWelcome} style={{
+                    <a href="https://ngopi.top" target="_blank" rel="noopener noreferrer" onClick={closeWelcome} style={{
                       flex: 1, textDecoration: 'none', background: 'white', border: '1px solid #333', 
                       display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#111', 
                       fontWeight: '900', fontSize: '1.25rem', padding: '40px 20px', letterSpacing: '1px',
                       transition: 'all 0.2s ease', cursor: 'pointer'
                     }} onMouseEnter={e => { e.currentTarget.style.background = '#f8f9fa'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'; }} onMouseLeave={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.boxShadow = 'none'; }}>
-                      WANIPIRO?
-                    </Link>
+                      NGOPI YUk!
+                    </a>
                     <Link to="/bamboochain/token-wallet" onClick={closeWelcome} style={{
                       flex: 1, textDecoration: 'none', background: 'white', border: '1px solid #333', 
                       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#111', 
@@ -652,7 +652,8 @@ const HomePage = () => {
                     { id: 12, icon: <Users />, color: '#0ca678', bg: '#ebfbee', label: t('guide_opt12'), path: '/bamboochain/kodiba' },
                     { id: 13, icon: <Sparkles />, color: '#228be6', bg: '#e7f5ff', label: t('guide_opt13'), path: '/events' },
                     { id: 15, icon: <Video />, color: '#0ca678', bg: '#ebfbee', label: t('guide_opt15'), path: '/bamboochain/meeting' },
-                    { id: 16, icon: <Leaf />, color: '#0ca678', bg: '#ebfbee', label: t('welcome_btn_1'), path: '/bamboochain/plantation' }
+                    { id: 16, icon: <Leaf />, color: '#0ca678', bg: '#ebfbee', label: t('welcome_btn_1'), path: '/bamboochain/plantation' },
+                    { id: 17, icon: <TrendingUp />, color: '#12b886', bg: '#e6fcf5', label: 'WANIPIRO?', path: '/wanipiro' }
                   ].map(opt => (
                     <Link key={opt.id} to={opt.path} onClick={(e) => {
                       if (opt.id === 12) {
