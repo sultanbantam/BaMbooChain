@@ -383,6 +383,7 @@ function App() {
             <Route path="/central-validator" element={<ProtectedRoute><BcCentralValidatorDashboard /></ProtectedRoute>} />
             <Route path="/bamboochain/activities" element={<ProtectedRoute><ActivityLogPage /></ProtectedRoute>} />
             <Route path="/bamboochain/whitepaper" element={<ProtectedRoute><WhitepaperPage /></ProtectedRoute>} />
+            <Route path="/kodiba" element={<ProtectedRoute><KoDiBaPage /></ProtectedRoute>} />
             <Route path="/bamboochain/kodiba" element={<ProtectedRoute><KoDiBaPage /></ProtectedRoute>} />
             <Route path="/bamboochain/volunteer" element={<ProtectedRoute><BcVolunteersPage /></ProtectedRoute>} />
             <Route path="/bamboochain/volunteer/:hostId" element={<ProtectedRoute><BcVolunteerDetailPage /></ProtectedRoute>} />

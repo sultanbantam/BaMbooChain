@@ -11,6 +11,14 @@ const KoDiBaPage = () => {
   const [hasClaimed, setHasClaimed] = useState(false);
   const [isClaiming, setIsClaiming] = useState(false);
   const [claimCount, setClaimCount] = useState(753); // Mock initial count
+  const [returnEventId, setReturnEventId] = useState(null);
+
+  useEffect(() => {
+    try {
+      const retId = sessionStorage.getItem('return_to_event');
+      if (retId) setReturnEventId(retId);
+    } catch (e) {}
+  }, []);
 
   // Modal State for Joining Tier
   const [showJoinModal, setShowJoinModal] = useState(false);
@@ -61,6 +69,12 @@ const KoDiBaPage = () => {
         addReward(10, "Airdrop Pengguna Baru (KoDiBa)", "Earn");
       }
       
+      if (user) {
+        try {
+          const yayasanUser = JSON.parse(localStorage.getItem('yayasan_user') || '{}');
+          localStorage.setItem('yayasan_user', JSON.stringify({ ...yayasanUser, hasClaimedKodiba: true, kodibaTier: yayasanUser.kodibaTier || 'Anggota KoDiBa' }));
+        } catch(e) {}
+      }
       setHasClaimed(true);
       setClaimCount(prev => prev + 1);
       if(addNotification) addNotification("Berhasil! 10 BMC Gratis telah ditambahkan ke wallet Anda.", "success");
@@ -264,6 +278,46 @@ const KoDiBaPage = () => {
 
   return (
     <div style={styles.container}>
+      {returnEventId && (
+        <div style={{
+          maxWidth: '1200px',
+          margin: '0 auto 30px auto',
+          backgroundColor: 'rgba(81, 207, 102, 0.15)',
+          border: '1px solid #51cf66',
+          borderRadius: '16px',
+          padding: '16px 24px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '12px'
+        }}>
+          <div>
+            <div style={{ color: '#51cf66', fontWeight: 'bold', fontSize: '1.05rem' }}>
+              🎟️ Sedang Mendaftar Event di BaMbooChain?
+            </div>
+            <div style={{ color: '#ccc', fontSize: '0.88rem', marginTop: '4px' }}>
+              {hasClaimed ? 'Selamat! 10 BMC sudah Anda klaim. Potongan harga Member KoDiBa sudah aktif untuk event Anda!' : 'Klaim 10 BMC Gratis Anda di bawah ini, lalu kembali ke halaman event untuk menikmati potongan harga.'}
+            </div>
+          </div>
+          <a
+            href={`/#/events?event=${returnEventId}`}
+            style={{
+              backgroundColor: '#51cf66',
+              color: '#000',
+              fontWeight: 'bold',
+              padding: '10px 22px',
+              borderRadius: '10px',
+              textDecoration: 'none',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+          >
+            Kembali ke Pendaftaran Event →
+          </a>
+        </div>
+      )}
       <div style={styles.wrapper}>
         <div style={styles.hero}>
           <motion.div style={styles.badge} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>

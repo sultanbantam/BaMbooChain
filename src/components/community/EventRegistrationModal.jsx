@@ -10,7 +10,7 @@ import EventGallery from './EventGallery';
 import SocialInteractions from '../SocialInteractions';
 
 const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
-  const { user, addNotification } = useAuth();
+  const { user, addNotification, spendBmc } = useAuth();
   const { t } = useLanguage();
   const [activeModalTab, setActiveModalTab] = useState('info'); // 'info', 'register', 'attendance'
   const [step, setStep] = useState(1);
@@ -57,6 +57,8 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
   });
 
   const [attendanceIaiNumber, setAttendanceIaiNumber] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('bank');
+  const [useBmcDeduction, setUseBmcDeduction] = useState(false);
 
   const isHBD = eventTitle?.includes('Dunia');
   const isHBN = eventTitle?.includes('Nasional');
@@ -66,20 +68,38 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
   const isFieldVisit = eventTitle?.includes('Field Visit');
   const isUganda = eventTitle?.toLowerCase().includes('uganda');
   
-  const isKodibaMember = user && ((user.stakedBalance || 0) >= 10 || (user.transactions || []).some(t => t.type === 'Fiat'));
+  const userBmcBalance = Number(user?.bmcBalance || 0);
+  const hasClaimedKodiba = Boolean(user && (user.hasClaimedKodiba || (user.transactions || []).some(t => t.description?.toLowerCase().includes('kodiba') || t.description?.toLowerCase().includes('airdrop'))));
+  const isKodibaMember = Boolean(user && ((user.stakedBalance || 0) >= 10 || user.kodibaTier || hasClaimedKodiba || userBmcBalance >= 10 || (user.transactions || []).some(t => t.type === 'Fiat')));
 
   let baseCostNum = 750000;
+  if (eventData?.ticketPrice) {
+    const parsed = parseInt(String(eventData.ticketPrice).replace(/\D/g, ''), 10);
+    if (!isNaN(parsed) && parsed > 0) baseCostNum = parsed;
+  } else if (isHBD) {
+    baseCostNum = 500000;
+  }
+
   let isTba = false;
-  
-  if (isHBD) baseCostNum = 500000;
   if (isDiburuan || isHBN) isTba = true;
 
-  const discountAmount = isKodibaMember ? (baseCostNum * 0.2) : 0;
-  const finalCostNum = baseCostNum - discountAmount;
+  // KoDiBa 20% discount
+  const discountAmount = isKodibaMember ? Math.round(baseCostNum * 0.2) : 0;
+  const costAfterDiscount = baseCostNum - discountAmount;
+
+  // 10 BMC deduction from KoDiBa claim = Rp 150.000 discount
+  const bmcDeductionAmount = (useBmcDeduction && userBmcBalance >= 10) ? Math.min(150000, costAfterDiscount) : 0;
+  const finalCostNum = Math.max(0, costAfterDiscount - bmcDeductionAmount);
   
+  // Full BMC ticket cost
+  let eventCostBmc = eventData?.ticketBmc ? parseInt(String(eventData.ticketBmc).replace(/\D/g, ''), 10) : (Math.round(baseCostNum / 16000));
+  if (isKodibaMember) eventCostBmc = Math.max(1, Math.round(eventCostBmc * 0.8));
+
   const formatRupiah = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
   
-  let eventCostDisplay = isTba ? 'Rp ...... (Menunggu Konfirmasi)' : formatRupiah(finalCostNum);
+  let eventCostDisplay = isTba ? 'Rp ...... (Menunggu Konfirmasi)' : (
+    paymentMethod === 'bmc_full' ? `${eventCostBmc} BMC (Lunas via Saldo BMC)` : formatRupiah(finalCostNum)
+  );
 
   let statementText = "Saya menyatakan bersedia mengikuti seluruh rangkaian kegiatan dan mematuhi aturan yang berlaku.";
   if (isHBD) statementText = "Saya menyatakan bersedia mengikuti seluruh rangkaian kegiatan Hari Bambu Dunia di Kasepuhan Cibarani dan mematuhi aturan adat.";
@@ -163,14 +183,29 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
         costInfo: {
            baseCost: baseCostNum,
            discount: discountAmount,
+           bmcDeduction: bmcDeductionAmount,
            finalCost: finalCostNum,
-           isKodibaMember
+           isKodibaMember,
+           paymentMethod
         },
         status: 'pending_payment',
         timestamp: serverTimestamp()
       };
 
       submissionData.eventId = eventId;
+
+      // Deduct BMC from user balance if selected
+      if (paymentMethod === 'bmc_full' && spendBmc) {
+        const spent = await spendBmc(eventCostBmc, `Pembayaran Tiket Event: ${eventTitle}`);
+        if (!spent) {
+          setIsSubmitting(false);
+          return;
+        }
+        submissionData.status = 'paid_bmc';
+      } else if (useBmcDeduction && userBmcBalance >= 10 && spendBmc) {
+        await spendBmc(10, `Potongan Tiket Event: ${eventTitle} (Klaim KoDiBa)`);
+      }
+
       await addDoc(collection(db, "event_registrations"), submissionData);
 
       // Award +20 Points & +1.0 BMC to User's BambooID Passport
@@ -454,20 +489,72 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
             
             {!isTba && !isFGD && !isFieldVisit && (
               isKodibaMember ? (
-                <div style={{ backgroundColor: '#ebfbee', border: '1px solid #51cf66', padding: '15px', borderRadius: '15px', marginBottom: '25px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <CheckCircle color="#2b8a3e" size={32} />
-                  <div>
-                    <div style={{ fontWeight: 'bold', color: '#2b8a3e', fontSize: '1.1rem' }}>Harga Spesial Member KoDiBa Diterapkan!</div>
-                    <div style={{ fontSize: '0.85rem', color: '#40c057', marginTop: '4px' }}>Anda berhemat {formatRupiah(discountAmount)} untuk event ini.</div>
+                <div style={{ backgroundColor: '#ebfbee', border: '1px solid #51cf66', padding: '18px', borderRadius: '16px', marginBottom: '25px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                    <CheckCircle color="#2b8a3e" size={30} />
+                    <div>
+                      <div style={{ fontWeight: 'bold', color: '#2b8a3e', fontSize: '1.1rem' }}>Diskon Member KoDiBa & BMC Aktif!</div>
+                      <div style={{ fontSize: '0.85rem', color: '#2b8a3e' }}>
+                        Potongan 20% ({formatRupiah(discountAmount)}) langsung memotong harga tiket Anda.
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* BMC Balance & Deduction Option */}
+                  <div style={{ backgroundColor: '#ffffff', borderRadius: '12px', padding: '12px 16px', border: '1px solid #b2f2bb', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+                    <div>
+                      <div style={{ fontSize: '0.85rem', color: '#333', fontWeight: 'bold' }}>
+                        🪙 Saldo BMC Anda: <span style={{ color: '#0ca678' }}>{userBmcBalance} BMC</span>
+                      </div>
+                      <div style={{ fontSize: '0.78rem', color: '#666' }}>
+                        {userBmcBalance >= 10 ? 'Anda dapat menukarkan 10 BMC untuk potongan langsung Rp 150.000!' : 'Klaim Airdrop di KoDiBa untuk mendapatkan tambahan BMC gratis.'}
+                      </div>
+                    </div>
+
+                    {userBmcBalance >= 10 ? (
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', backgroundColor: useBmcDeduction ? '#d3f9d8' : '#f8f9fa', padding: '6px 12px', borderRadius: '8px', border: useBmcDeduction ? '1px solid #51cf66' : '1px solid #ddd' }}>
+                        <input
+                          type="checkbox"
+                          checked={useBmcDeduction}
+                          onChange={(e) => setUseBmcDeduction(e.target.checked)}
+                          style={{ width: '18px', height: '18px', accentColor: '#0ca678' }}
+                        />
+                        <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: useBmcDeduction ? '#2b8a3e' : '#333' }}>
+                          Potong 10 BMC (- Rp 150.000)
+                        </span>
+                      </label>
+                    ) : (
+                      <a
+                        href="#/bamboochain/kodiba"
+                        onClick={() => {
+                          try { sessionStorage.setItem('return_to_event', eventId || 'featured'); } catch(e){}
+                          onClose();
+                        }}
+                        style={{ fontSize: '0.8rem', color: '#e8590c', fontWeight: 'bold', textDecoration: 'underline' }}
+                      >
+                        Klaim BMC Tambahan →
+                      </a>
+                    )}
                   </div>
                 </div>
               ) : (
-                <div style={{ backgroundColor: '#fff4e6', border: '1px solid #fab005', padding: '15px', borderRadius: '15px', marginBottom: '25px', display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                  <div style={{ fontSize: '1.8rem' }}>💡</div>
+                <div style={{ backgroundColor: '#fff4e6', border: '1px solid #fab005', padding: '18px', borderRadius: '16px', marginBottom: '25px', display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
+                  <div style={{ fontSize: '2rem' }}>💡</div>
                   <div>
                     <div style={{ fontWeight: 'bold', color: '#e8590c', fontSize: '1.1rem', marginBottom: '6px' }}>Hemat {formatRupiah(baseCostNum * 0.2)} khusus Member KoDiBa!</div>
-                    <div style={{ fontSize: '0.85rem', color: '#d9480f', marginBottom: '12px' }}>Dapatkan potongan 20% tiket event ini dengan bergabung di Koperasi Digital Bambu sekarang juga.</div>
-                    <a href="#/kodiba" onClick={onClose} style={{ display: 'inline-block', backgroundColor: '#fab005', color: 'black', padding: '8px 16px', borderRadius: '10px', fontSize: '0.85rem', fontWeight: '900', textDecoration: 'none', boxShadow: '0 4px 10px rgba(250, 176, 5, 0.3)' }}>Daftar KoDiBa Sekarang</a>
+                    <div style={{ fontSize: '0.88rem', color: '#d9480f', marginBottom: '14px', lineHeight: '1.5' }}>
+                      Dapatkan potongan harga langsung 20% + klaim <strong>10 BMC Gratis</strong> di Koperasi Digital Bambu yang bisa digunakan untuk memotong biaya pembayaran tiket.
+                    </div>
+                    <a
+                      href="#/bamboochain/kodiba"
+                      onClick={() => {
+                        try { sessionStorage.setItem('return_to_event', eventId || 'featured'); } catch(e){}
+                        onClose();
+                      }}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: '#fab005', color: 'black', padding: '10px 20px', borderRadius: '12px', fontSize: '0.9rem', fontWeight: '900', textDecoration: 'none', boxShadow: '0 4px 12px rgba(250, 176, 5, 0.4)' }}
+                    >
+                      🎁 Daftar KoDiBa & Klaim 10 BMC Sekarang →
+                    </a>
                   </div>
                 </div>
               )
@@ -519,16 +606,80 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
                     Biaya kontribusi peserta sebesar <strong style={{ color: '#fff', fontSize: '1.1rem' }}>{eventCostDisplay}</strong> dapat ditransfer ke salah satu metode berikut:
                   </p>
                   
-                  <div style={{ marginBottom: '15px', padding: '15px', backgroundColor: '#111', borderRadius: '10px' }}>
-                    <div style={{ fontSize: '0.8rem', color: '#888', marginBottom: '5px' }}>Bank Transfer (Rupiah)</div>
-                    <div style={{ fontSize: '1.1rem', fontWeight: 'bold', letterSpacing: '1px' }}>BRI 1411 0100 0456 562</div>
-                    <div style={{ fontSize: '0.9rem', color: '#adb5bd' }}>a.n Yayasan Sabumi Nusantara Jaya</div>
+                  {/* Payment Method Toggle */}
+                  <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod('bank')}
+                      style={{
+                        flex: 1,
+                        padding: '12px',
+                        borderRadius: '12px',
+                        border: paymentMethod === 'bank' ? '2px solid #51cf66' : '1px solid #444',
+                        backgroundColor: paymentMethod === 'bank' ? 'rgba(81, 207, 102, 0.15)' : '#111',
+                        color: paymentMethod === 'bank' ? '#51cf66' : '#aaa',
+                        fontWeight: 'bold',
+                        fontSize: '0.9rem',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      🏦 Transfer Bank (Rupiah)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod('bmc_full')}
+                      style={{
+                        flex: 1,
+                        padding: '12px',
+                        borderRadius: '12px',
+                        border: paymentMethod === 'bmc_full' ? '2px solid #fab005' : '1px solid #444',
+                        backgroundColor: paymentMethod === 'bmc_full' ? 'rgba(250, 176, 5, 0.15)' : '#111',
+                        color: paymentMethod === 'bmc_full' ? '#fab005' : '#aaa',
+                        fontWeight: 'bold',
+                        fontSize: '0.9rem',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      🪙 Saldo Token BMC
+                    </button>
                   </div>
 
-                  <div style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#111', borderRadius: '10px' }}>
-                    <div style={{ fontSize: '0.8rem', color: '#888', marginBottom: '5px' }}>Crypto (USDT BEP20)</div>
-                    <div style={{ fontSize: '0.9rem', fontWeight: 'bold', wordBreak: 'break-all' }}>0xcb66199ea24746a7917a8dc171b0583cd7420e10</div>
-                  </div>
+                  {paymentMethod === 'bank' ? (
+                    <div style={{ marginBottom: '15px', padding: '16px', backgroundColor: '#111', borderRadius: '12px', border: '1px solid #333' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                        <span style={{ fontSize: '0.85rem', color: '#888' }}>Total yang Harus Ditransfer:</span>
+                        <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#51cf66' }}>{formatRupiah(finalCostNum)}</span>
+                      </div>
+                      {isKodibaMember && (
+                        <div style={{ fontSize: '0.78rem', color: '#40c057', marginBottom: '10px' }}>
+                          ✓ Termasuk potongan 20% Member KoDiBa (-{formatRupiah(discountAmount)})
+                          {useBmcDeduction && ` & potongan 10 BMC (-Rp 150.000)`}
+                        </div>
+                      )}
+                      <div style={{ fontSize: '0.8rem', color: '#888', marginBottom: '4px' }}>Bank Transfer (Rupiah):</div>
+                      <div style={{ fontSize: '1.15rem', fontWeight: 'bold', letterSpacing: '1px', color: '#fff' }}>BRI 1411 0100 0456 562</div>
+                      <div style={{ fontSize: '0.88rem', color: '#adb5bd' }}>a.n Yayasan Sabumi Nusantara Jaya</div>
+                    </div>
+                  ) : (
+                    <div style={{ marginBottom: '15px', padding: '16px', backgroundColor: '#111', borderRadius: '12px', border: '1px solid #fab005' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                        <span style={{ fontSize: '0.85rem', color: '#888' }}>Biaya Tiket Penuh:</span>
+                        <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#fab005' }}>{eventCostBmc} BMC</span>
+                      </div>
+                      <div style={{ fontSize: '0.85rem', color: '#ccc', marginBottom: '8px' }}>
+                        Saldo BMC Anda: <strong style={{ color: userBmcBalance >= eventCostBmc ? '#51cf66' : '#ff6b6b' }}>{userBmcBalance} BMC</strong>
+                      </div>
+                      {userBmcBalance < eventCostBmc ? (
+                        <div style={{ fontSize: '0.8rem', color: '#ff6b6b', marginTop: '6px' }}>
+                          ⚠️ Saldo BMC Anda belum mencukupi. Silakan pilih Transfer Bank atau klaim airdrop di KoDiBa terlebih dahulu.
+                        </div>
+                      ) : (
+                        <div style={{ fontSize: '0.8rem', color: '#51cf66', marginTop: '6px' }}>
+                          ✓ Saldo mencukupi! Pembayaran akan langsung memotong {eventCostBmc} BMC dari akun Anda saat menekan Selesaikan Pendaftaran.
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   <p style={{ fontSize: '0.85rem', color: '#fab005', fontStyle: 'italic', textAlign: 'center' }}>
                     *Mohon selesaikan pendaftaran untuk mendapatkan petunjuk konfirmasi pembayaran via WhatsApp.
@@ -1162,7 +1313,11 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
                   <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', padding: '20px', borderRadius: '15px', marginBottom: '30px' }}>
                     <p style={{ margin: '0 0 15px 0', color: '#fff' }}>{isFGD ? 'Konfirmasi pendaftaran Anda melalui WhatsApp ke:' : 'Konfirmasi pembayaran beserta bukti transfer melalui WhatsApp ke:'}</p>
                     <a 
-                      href={'https://wa.me/628174139994?text=' + encodeURIComponent(isFGD ? `Halo Panitia ${waEventName}, saya ${formData.fullName} ingin mengonfirmasi pendaftaran peserta.` : `Halo Panitia ${waEventName}, saya ${formData.fullName} ingin mengonfirmasi pembayaran pendaftaran peserta.\nJalur: ${isKodibaMember ? 'Member VIP KoDiBa (Diskon 20%)' : 'Reguler'}\nTotal Pembayaran: ${eventCostDisplay}`)}
+                      href={'https://wa.me/628174139994?text=' + encodeURIComponent(
+  isFGD 
+    ? `Halo Panitia ${waEventName}, saya ${formData.fullName} ingin mengonfirmasi pendaftaran peserta.` 
+    : `Halo Panitia ${waEventName}, saya ${formData.fullName} ingin mengonfirmasi pendaftaran acara.\nJalur: ${isKodibaMember ? 'Member VIP KoDiBa (Diskon 20%)' : 'Reguler'}${useBmcDeduction ? '\nPotongan BMC: -10 BMC (-Rp 150.000 Terpotong dari Akun)' : ''}\nMetode: ${paymentMethod === 'bmc_full' ? 'Lunas via Saldo BMC (' + eventCostBmc + ' BMC)' : 'Transfer Bank'}\nTotal: ${eventCostDisplay}`
+)}
                       target="_blank" 
                       rel="noreferrer"
                       style={{ 
