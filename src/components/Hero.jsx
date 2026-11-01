@@ -21,7 +21,7 @@ const Hero = () => {
         alignItems: 'center', 
         justifyContent: 'center',
         backgroundColor: '#162f22',
-        backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.8)), url("${getAssetUrl('agroforestry2.jpg')}"), url("${getAssetUrl('agroforestry2.png')}")`,
+        backgroundImage: `linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.85)), url("${getAssetUrl('agroforestry2.jpg')}")`,
         backgroundPosition: 'center',
         backgroundSize: 'cover',
         backgroundRepeat: 'no-repeat',
@@ -47,7 +47,7 @@ const Hero = () => {
           </button>
         </div>
         
-        <div style={{ marginTop: '40px', display: 'flex', justifyContent: 'center', gap: '24px', opacity: 0.8, fontSize: '0.9rem' }}>
+        <div style={{ marginTop: '36px', display: 'flex', justifyContent: 'center', gap: '16px', opacity: 0.85, fontSize: '0.9rem', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div style={{ width: '10px', height: '10px', background: 'var(--primary)', borderRadius: '50%' }}></div>
             {t('hero_badge_nature')}

@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">BaMbooChain</string>
-    <string name="title_activity_main">BaMbooChain</string>
+    <string name="app_name">BambooChain</string>
+    <string name="title_activity_main">BambooChain</string>
     <string name="package_name">id.bamboochain.app</string>
     <string name="custom_url_scheme">id.bamboochain.app</string>
     <string name="default_web_client_id">969704302314-9escksae1r8r6fdbd8gpm317ej7n1s1u.apps.googleusercontent.com</string>

@@ -13,7 +13,7 @@ const About = () => {
           <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>{t('about_vision_text')}</p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: '30px' }}>
           <div className="glass-card" style={{ padding: '40px', textAlign: 'center' }}>
             <div style={{ background: 'rgba(12, 166, 120, 0.1)', width: '70px', height: '70px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', color: 'var(--primary)' }}>
               <Leaf size={32} />

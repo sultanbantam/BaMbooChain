@@ -1,6 +1,6 @@
 {
   "appId": "id.bamboochain.app",
-  "appName": "BaMbooChain",
+  "appName": "BambooChain",
   "webDir": "dist",
   "server": {
     "androidScheme": "https"
@@ -14,7 +14,9 @@
     },
     "FirebaseAuthentication": {
       "skipNativeAuth": false,
-      "providers": ["google.com"]
+      "providers": [
+        "google.com"
+      ]
     }
   }
 }

@@ -265,7 +265,15 @@ const Navbar = () => {
             <div style={{ position: 'fixed', top: '70px', left: 0, width: '100%', height: 'calc(100vh - 70px)', background: 'var(--bg-color)', zIndex: 10001, overflowY: 'auto', padding: '20px', transition: 'background 0.3s ease', color: 'var(--text-main)' }}>
                {isAuthenticated ? (
                  <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)} style={{ width: '100%', background: '#f0fdf4', color: 'var(--primary)', border: '1px solid var(--primary)', padding: '16px', borderRadius: '12px', fontWeight: 'bold', marginBottom: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', textDecoration: 'none' }}>
-                   <img src={user?.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username || 'default'}`} alt="avatar" style={{ width: '24px', height: '24px', borderRadius: '50%' }} />
+                   <img 
+                        src={user?.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username || 'default'}`} 
+                        alt="avatar" 
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = getAssetUrl('logos/bmc.png');
+                        }}
+                        style={{ width: '24px', height: '24px', borderRadius: '50%' }} 
+                      />
                    {user?.name || t('nav_profile')}
                  </Link>
                ) : (
@@ -671,7 +679,15 @@ const Navbar = () => {
                   onClick={() => { setShowProfileMenu(!showProfileMenu); setShowNotifMenu(false); }}
                   style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#f0fdf4', padding: '6px 14px', borderRadius: '20px', fontSize: '0.85rem', color: 'var(--primary)', cursor: 'pointer', fontWeight: '600', border: '1px solid var(--primary)', position: 'relative' }}
                 >
-                  <img src={user?.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username || 'default'}`} alt="avatar" style={{ width: '20px', height: '20px', borderRadius: '50%' }} />
+                  <img 
+                              src={user?.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username || 'default'}`} 
+                              alt="avatar" 
+                              onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = getAssetUrl('logos/bmc.png');
+                              }}
+                              style={{ width: '20px', height: '20px', borderRadius: '50%' }} 
+                            />
                   {user?.name?.split(' ')[0] || 'User'}
                   
                   {showProfileMenu && (
