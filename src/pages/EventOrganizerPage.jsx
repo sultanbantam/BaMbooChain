@@ -105,6 +105,7 @@ const EventOrganizerPage = () => {
   const [isUploadingMaterial, setIsUploadingMaterial] = useState(false);
   const [materialUploadSuccess, setMaterialUploadSuccess] = useState(false);
   const [customMaterialLink, setCustomMaterialLink] = useState('');
+  const [customCategory, setCustomCategory] = useState('');
 
   // -- SPEAKER STATE --
   const [myEvents, setMyEvents] = useState([]);
@@ -291,9 +292,16 @@ const EventOrganizerPage = () => {
     // Use custom material link if provided
     const finalMaterialUrl = customMaterialLink.trim() || newEvent.materialUrl;
 
+    // Use custom category if 'Lainnya' is selected
+    const finalCategory = newEvent.category === 'Lainnya'
+      ? (customCategory.trim() || 'Lainnya')
+      : newEvent.category;
+
     // Safety check: ensure payload does not exceed Firestore limits (< 800KB)
     const eventPayload = {
       ...newEvent,
+      category: finalCategory,
+      customCategory: newEvent.category === 'Lainnya' ? customCategory.trim() : '',
       materialUrl: finalMaterialUrl,
       date: formattedDate,
       time: formattedTime,
@@ -315,6 +323,7 @@ const EventOrganizerPage = () => {
       setBannerPreview(null);
       setBannerCompressionInfo(null);
       setCustomMaterialLink('');
+      setCustomCategory('');
       setNewEvent({
         title: '',
         startDate: '',
@@ -664,9 +673,30 @@ const EventOrganizerPage = () => {
                         <option value="Temu Kopi / Meetup">Temu Kopi / Meetup</option>
                         <option value="Konferensi & Simposium">Konferensi & Simposium</option>
                         <option value="Aksi Sosial & Komunitas">Aksi Sosial & Komunitas</option>
+                        <option value="Lainnya">Lainnya</option>
                       </select>
                     </div>
                   </div>
+
+                  {/* Input Kategori Lainnya jika Kategori === 'Lainnya' */}
+                  {newEvent.category === 'Lainnya' && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: -6 }} 
+                      animate={{ opacity: 1, y: 0 }} 
+                      style={{ marginBottom: '15px' }}
+                    >
+                      <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '6px', color: '#51cf66' }}>
+                        Tuliskan Kategori Acara (Lainnya) *
+                      </label>
+                      <input 
+                        style={styles.input} 
+                        required 
+                        value={customCategory} 
+                        onChange={e => setCustomCategory(e.target.value)} 
+                        placeholder="Tuliskan kategori acara Anda (contoh: Festival Seni, Ekspedisi Alam, Bazar, dll.)..." 
+                      />
+                    </motion.div>
+                  )}
 
                   {/* Deskripsi */}
                   <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '6px', color: '#adb5bd' }}>Deskripsi Singkat Acara *</label>
