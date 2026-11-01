@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { db } from '../../firebase/config';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, doc, updateDoc, increment, arrayUnion } from 'firebase/firestore';
 import { X, CheckCircle, UploadCloud, ChevronRight, ChevronLeft, CreditCard } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
-import { useSpeakerMaterials } from '../../hooks/useFirestoreQueries';
+import { useSpeakerMaterials, deleteCommunityEvent } from '../../hooks/useFirestoreQueries';
 import EventGallery from './EventGallery';
 import SocialInteractions from '../SocialInteractions';
 
@@ -25,6 +25,9 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
   const materials = eventData?.materials || [];
 
   const { data: uploadedMaterials = [] } = useSpeakerMaterials(eventId === 'unknown' ? null : eventId);
+
+  const isAdmin = user?.role === 'admin' || user?.role === 'superadmin' || user?.username === 'albantani' || user?.name === 'albantani' || user?.email === 'sultanbantam@gmail.com';
+  const canManageEvent = user && (isAdmin || eventData?.organizerId === user?.id || eventData?.organizerName === user?.name || eventData?.organizerName === user?.username);
 
   const getSpeakerCvUrl = (speakerName, defaultUrl) => {
     const uploadedCv = uploadedMaterials.find(m => m.type === 'cv' && m.speakerName === speakerName);
@@ -167,10 +170,33 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
         timestamp: serverTimestamp()
       };
 
+      submissionData.eventId = eventId;
       await addDoc(collection(db, "event_registrations"), submissionData);
+
+      // Award +20 Points & +1.0 BMC to User's BambooID Passport
+      if (user && user.id && user.id !== 'guest') {
+        try {
+          const regTx = {
+            id: 'tx_reg_' + Date.now(),
+            type: 'Earn',
+            title: 'Pendaftaran Event: ' + eventTitle,
+            amount: '+1.0 BMC',
+            points: '+20 Poin',
+            eventId: eventId,
+            timestamp: new Date().toISOString()
+          };
+          await updateDoc(doc(db, 'users', user.id), {
+            points: increment(20),
+            bmcBalance: increment(1.0),
+            transactions: arrayUnion(regTx)
+          });
+        } catch (err) {
+          console.warn("Could not award registration points/BMC:", err);
+        }
+      }
       
       if(addNotification) {
-        addNotification("Pendaftaran berhasil! Silakan selesaikan pembayaran.", "success");
+        addNotification("Pendaftaran berhasil! +20 Poin & +1.0 BMC ditambahkan ke BambooID Passport.", "success");
       }
       setIsSuccess(true);
     } catch (error) {
@@ -197,9 +223,32 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
         iaiNumber: attendanceIaiNumber,
         timestamp: serverTimestamp()
       });
+
+      // Award +10 Points & +0.5 BMC to User's BambooID Passport
+      if (user && user.id && user.id !== 'guest') {
+        try {
+          const attendTx = {
+            id: 'tx_att_' + Date.now(),
+            type: 'Earn',
+            title: 'Kehadiran Terverifikasi: ' + eventTitle,
+            amount: '+0.5 BMC',
+            points: '+10 Poin',
+            eventId: eventId,
+            timestamp: new Date().toISOString()
+          };
+          await updateDoc(doc(db, 'users', user.id), {
+            points: increment(10),
+            bmcBalance: increment(0.5),
+            transactions: arrayUnion(attendTx)
+          });
+        } catch (err) {
+          console.warn("Could not award attendance points/BMC:", err);
+        }
+      }
+
       setAttendanceSuccess(true);
       if(addNotification) {
-        addNotification("Absensi kehadiran berhasil dicatat!", "success");
+        addNotification("Absensi kehadiran berhasil dicatat! +10 Poin & +0.5 BMC telah masuk ke Passport Anda.", "success");
       }
     } catch (error) {
       console.error("Error submitting attendance:", error);
@@ -441,8 +490,16 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
 
             <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', padding: '25px', borderRadius: '15px', border: '1px solid #444' }}>
               <h4 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <CreditCard color="#51cf66" /> Informasi Pembayaran
+                <CreditCard color="#51cf66" /> Informasi Pembayaran & Biaya
               </h4>
+
+              {/* Passport Reward Banner */}
+              <div style={{ marginBottom: '15px', padding: '12px 16px', backgroundColor: 'rgba(81, 207, 102, 0.1)', border: '1px solid #51cf66', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '1.2rem' }}>🌿</span>
+                <div style={{ fontSize: '0.82rem', color: '#d3f9d8', lineHeight: '1.5' }}>
+                  <strong>Integrasi BambooID Passport:</strong> Pendaftaran acara ini otomatis menambahkan <span style={{ color: '#51cf66', fontWeight: 'bold' }}>+20 Poin Ekosistem</span> & <span style={{ color: '#fab005', fontWeight: 'bold' }}>+1.0 BMC Reward</span> ke BambooID Passport Anda.
+                </div>
+              </div>
               
               {isFGD || isFieldVisit ? (
                 <>
@@ -488,9 +545,65 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
 
   const renderInfoTab = () => (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ padding: '10px 0' }}>
-      <p style={{ color: '#adb5bd', fontSize: '0.95rem', marginBottom: '25px', lineHeight: '1.6' }}>
-        Pelajari lebih lanjut tentang acara ini, unduh materi, dan lihat profil narasumber sebelum melakukan pendaftaran atau absensi.
+      <p style={{ color: '#adb5bd', fontSize: '0.95rem', marginBottom: '20px', lineHeight: '1.6' }}>
+        Pelajari lebih lanjut tentang acara ini, baca jadwal/itinerary langsung, unduh materi, dan lihat profil narasumber sebelum melakukan pendaftaran atau absensi.
       </p>
+
+      {/* Itinerary & Jadwal Kegiatan (Bisa Dibaca Langsung) */}
+      {eventData?.itineraryText && (
+        <div style={{ marginBottom: '25px', backgroundColor: 'rgba(255,255,255,0.03)', padding: '20px', borderRadius: '15px', border: '1px solid rgba(81, 207, 102, 0.3)' }}>
+          <h4 style={{ fontSize: '1.05rem', fontWeight: 'bold', marginBottom: '12px', color: '#51cf66', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            🗓️ Itinerary & Jadwal Acara (Baca Langsung)
+          </h4>
+          <div style={{ whiteSpace: 'pre-line', fontSize: '0.9rem', color: '#e9ecef', lineHeight: '1.7', backgroundColor: '#111', padding: '15px', borderRadius: '10px', border: '1px solid #333' }}>
+            {eventData.itineraryText}
+          </div>
+        </div>
+      )}
+
+      {/* Karakter Khusus: Wisata / Adventure (Titik Kumpul & Fasilitas) */}
+      {(eventData?.meetingPoint || eventData?.gearList || eventData?.facilityList) && (
+        <div style={{ marginBottom: '25px', backgroundColor: 'rgba(255,255,255,0.03)', padding: '20px', borderRadius: '15px', border: '1px solid #333' }}>
+          <h4 style={{ fontSize: '1rem', fontWeight: 'bold', marginBottom: '12px', color: '#fab005', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            🧭 Informasi Wisata, Petualangan & Titik Kumpul
+          </h4>
+          {eventData.meetingPoint && (
+            <div style={{ marginBottom: '10px', fontSize: '0.88rem', color: '#ccc' }}>
+              <strong style={{ color: 'white' }}>📍 Titik Kumpul (Meeting Point):</strong> {eventData.meetingPoint}
+            </div>
+          )}
+          {eventData.facilityList && (
+            <div style={{ marginBottom: '10px', fontSize: '0.88rem', color: '#ccc' }}>
+              <strong style={{ color: 'white' }}>📋 Fasilitas yang Didapat:</strong> {eventData.facilityList}
+            </div>
+          )}
+          {eventData.gearList && (
+            <div style={{ fontSize: '0.88rem', color: '#ccc' }}>
+              <strong style={{ color: 'white' }}>🎒 Perlengkapan Wajib yang Harus Dibawa:</strong> {eventData.gearList}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Karakter Khusus: Kompetisi / Sayembara (Hadiah & Ketentuan) */}
+      {(eventData?.prizePool || eventData?.customTerms) && (
+        <div style={{ marginBottom: '25px', backgroundColor: 'rgba(250, 176, 5, 0.05)', padding: '20px', borderRadius: '15px', border: '1px solid #fab005' }}>
+          <h4 style={{ fontSize: '1rem', fontWeight: 'bold', marginBottom: '12px', color: '#fab005', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            🏆 Total Hadiah & Ketentuan Sayembara
+          </h4>
+          {eventData.prizePool && (
+            <div style={{ marginBottom: '10px', fontSize: '1rem', color: '#51cf66', fontWeight: 'bold' }}>
+              💰 Total Hadiah (Prize Pool): {eventData.prizePool}
+            </div>
+          )}
+          {eventData.customTerms && (
+            <div style={{ whiteSpace: 'pre-line', fontSize: '0.85rem', color: '#adb5bd', lineHeight: '1.6' }}>
+              <strong style={{ color: 'white' }}>Syarat & Ketentuan Karya:</strong><br />
+              {eventData.customTerms}
+            </div>
+          )}
+        </div>
+      )}
 
       {eventId === 'fgd-rumah-modular-2026' && (
         <div style={{ marginBottom: '30px', backgroundColor: 'rgba(255,255,255,0.05)', padding: '20px', borderRadius: '15px' }}>
@@ -967,9 +1080,60 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
                 <h2 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 'bold' }}>Pendaftaran Event</h2>
                 <div style={{ fontSize: '0.85rem', color: '#51cf66' }}>{eventTitle}</div>
               </div>
-              <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer' }}>
-                <X size={24} />
-              </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {canManageEvent && (
+                  <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onClose();
+                        window.location.hash = `#/event-organizer?edit=${eventId}`;
+                      }}
+                      style={{
+                        background: '#fab005',
+                        color: 'black',
+                        border: 'none',
+                        padding: '6px 12px',
+                        borderRadius: '8px',
+                        fontSize: '0.75rem',
+                        fontWeight: 'bold',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      ✏️ Edit Acara
+                    </button>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (!window.confirm(`Apakah Anda yakin ingin menghapus acara "${eventTitle}"? Tindakan ini tidak dapat dibatalkan.`)) return;
+                        try {
+                          await deleteCommunityEvent(eventId);
+                          alert(`Acara "${eventTitle}" berhasil dihapus.`);
+                          onClose();
+                          window.location.reload();
+                        } catch (err) {
+                          alert("Gagal menghapus acara.");
+                        }
+                      }}
+                      style={{
+                        background: 'rgba(224, 49, 49, 0.2)',
+                        border: '1px solid #e03131',
+                        color: '#ff8787',
+                        padding: '6px 10px',
+                        borderRadius: '8px',
+                        fontSize: '0.75rem',
+                        fontWeight: 'bold',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      🗑️ Hapus
+                    </button>
+                  </div>
+                )}
+                <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer' }}>
+                  <X size={24} />
+                </button>
+              </div>
             </div>
 
             <div style={styles.content}>

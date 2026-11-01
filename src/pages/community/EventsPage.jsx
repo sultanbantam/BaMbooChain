@@ -3,15 +3,48 @@ import { motion } from 'framer-motion';
 import { FaCalendarAlt, FaMapMarkerAlt, FaClock, FaUsers, FaDownload } from 'react-icons/fa';
 import { getAssetUrl } from '../../utils/assets';
 import { eventsData, featuredEventData } from '../../utils/eventsData';
-import { useApprovedCommunityEvents } from '../../hooks/useFirestoreQueries';
+import { useApprovedCommunityEvents, deleteCommunityEvent } from '../../hooks/useFirestoreQueries';
+import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import EventRegistrationModal from '../../components/community/EventRegistrationModal';
 import SocialInteractions from '../../components/SocialInteractions';
 
 const EventsPage = () => {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
+
+  const isAdmin = user?.role === 'admin' || user?.role === 'superadmin' || user?.username === 'albantani' || user?.name === 'albantani' || user?.email === 'sultanbantam@gmail.com';
+
+  const canManageEvent = (ev) => {
+    if (!user || !ev) return false;
+    if (isAdmin) return true;
+    return (
+      ev.organizerId === user.id ||
+      ev.organizerName === user.name ||
+      ev.organizerName === user.username ||
+      (ev.organizer && (ev.organizer === user.name || ev.organizer === user.username))
+    );
+  };
+
+  const handleEditClick = (ev) => {
+    window.location.hash = `#/event-organizer?edit=${ev.id}`;
+  };
+
+  const handleDeleteClick = async (ev) => {
+    if (!window.confirm(`Apakah Anda yakin ingin menghapus acara "${ev.title}"? Tindakan ini tidak dapat dibatalkan.`)) {
+      return;
+    }
+    try {
+      await deleteCommunityEvent(ev.id);
+      alert(`Acara "${ev.title}" berhasil dihapus.`);
+      window.location.reload();
+    } catch (err) {
+      console.error("Gagal menghapus acara:", err);
+      alert("Gagal menghapus acara. Silakan coba lagi.");
+    }
+  };
 
   const { data: communityEvents = [], isLoading } = useApprovedCommunityEvents();
 
@@ -92,7 +125,17 @@ const EventsPage = () => {
       ] : eventMaterials,
       organizerId: ev.organizerId || null,
       organizerName: ev.organizerName || 'Panitia Acara',
-      financialReport: ev.financialReport || null
+      financialReport: ev.financialReport || null,
+      eventType: ev.eventType || 'general',
+      isPaid: ev.isPaid || false,
+      ticketPrice: ev.ticketPrice || '',
+      ticketBmc: ev.ticketBmc || '',
+      meetingPoint: ev.meetingPoint || '',
+      gearList: ev.gearList || '',
+      facilityList: ev.facilityList || '',
+      prizePool: ev.prizePool || '',
+      itineraryText: ev.itineraryText || '',
+      customTerms: ev.customTerms || ''
     };
   })];
 
@@ -337,6 +380,52 @@ const EventsPage = () => {
             >
               {t('event_join_btn')}
             </button>
+
+            {canManageEvent(featuredEvent) && (
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                <button
+                  type="button"
+                  onClick={() => handleEditClick(featuredEvent)}
+                  style={{
+                    flex: 1,
+                    padding: '10px 14px',
+                    backgroundColor: '#fab005',
+                    color: 'black',
+                    border: 'none',
+                    borderRadius: '10px',
+                    fontWeight: 'bold',
+                    fontSize: '0.85rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  ✏️ Edit Acara & Materi
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDeleteClick(featuredEvent)}
+                  style={{
+                    padding: '10px 16px',
+                    backgroundColor: 'rgba(224, 49, 49, 0.2)',
+                    border: '1px solid #e03131',
+                    color: '#ff8787',
+                    borderRadius: '10px',
+                    fontWeight: 'bold',
+                    fontSize: '0.85rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  🗑️ Hapus
+                </button>
+              </div>
+            )}
             <SocialInteractions 
               entityId={featuredEvent.id} 
               inCard={true} 
@@ -413,6 +502,52 @@ const EventsPage = () => {
                 >
                   {t('event_join_btn')}
                 </button>
+
+                {canManageEvent(event) && (
+                  <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
+                    <button
+                      type="button"
+                      onClick={() => handleEditClick(event)}
+                      style={{
+                        flex: 1,
+                        padding: '8px 10px',
+                        backgroundColor: '#fab005',
+                        color: 'black',
+                        border: 'none',
+                        borderRadius: '8px',
+                        fontWeight: 'bold',
+                        fontSize: '0.8rem',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '4px'
+                      }}
+                    >
+                      ✏️ Edit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteClick(event)}
+                      style={{
+                        padding: '8px 12px',
+                        backgroundColor: 'rgba(224, 49, 49, 0.2)',
+                        border: '1px solid #e03131',
+                        color: '#ff8787',
+                        borderRadius: '8px',
+                        fontWeight: 'bold',
+                        fontSize: '0.8rem',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '4px'
+                      }}
+                    >
+                      🗑️ Hapus
+                    </button>
+                  </div>
+                )}
                 <SocialInteractions 
                   entityId={event.id} 
                   inCard={true} 

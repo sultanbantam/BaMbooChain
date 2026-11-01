@@ -4,7 +4,9 @@ import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { eventsData, featuredEventData } from '../utils/eventsData';
 import { uploadSpeakerMaterial, useSpeakerMaterials, useCommunityEvents, createCommunityEvent, updateCommunityEventStatus, updateCommunityEvent, deleteCommunityEvent } from '../hooks/useFirestoreQueries';
-import { FileUp, CheckCircle, Upload, AlertCircle, Plus, Calendar, Clock, MapPin, Loader, Image as ImageIcon, X, Download, FileText, Link as LinkIcon, Sparkles, Edit2, Trash2, DollarSign } from 'lucide-react';
+import { db } from '../firebase/config';
+import { doc, updateDoc, increment, arrayUnion } from 'firebase/firestore';
+import { FileUp, CheckCircle, Upload, AlertCircle, Plus, Calendar, Clock, MapPin, Loader, Image as ImageIcon, X, Download, FileText, Link as LinkIcon, Sparkles, Edit2, Trash2, DollarSign, Compass, Trophy, Video, Users, Award, HelpCircle } from 'lucide-react';
 import BackButton from '../components/BackButton';
 
 // Helper: Auto-compress image in the browser (HTML5 Canvas)
@@ -84,6 +86,7 @@ const EventOrganizerPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [editingEventId, setEditingEventId] = useState(null);
+  const [selectedEventType, setSelectedEventType] = useState(null);
   const [newEvent, setNewEvent] = useState({
     title: '',
     startDate: '',
@@ -94,6 +97,18 @@ const EventOrganizerPage = () => {
     time: '',
     location: '',
     category: 'Workshop / Pelatihan',
+    eventType: 'general',
+    isPaid: false,
+    ticketPrice: '',
+    ticketBmc: '',
+    paymentInfo: '',
+    meetingPoint: '',
+    gearList: '',
+    facilityList: '',
+    prizePool: '',
+    submissionDeadline: '',
+    customTerms: '',
+    itineraryText: '',
     description: '',
     image: '',
     materials: [],
@@ -106,6 +121,106 @@ const EventOrganizerPage = () => {
       notes: ''
     }
   });
+
+  const eventTemplates = [
+    {
+      id: 'adventure',
+      name: 'Wisata, Adventure & Jelajah Alam',
+      icon: '🏔️',
+      color: '#51cf66',
+      badge: 'Berbayar / Kontribusi Tiket',
+      isPaid: true,
+      category: 'Wisata & Adventure',
+      desc: 'Petualangan alam bebas, jelajah adat Kasepuhan/Baduy, trekking, homestay, dan wisata bambu.',
+      defaultPrice: '750000',
+      defaultBmc: '25'
+    },
+    {
+      id: 'seminar',
+      name: 'Seminar & Simposium',
+      icon: '🎓',
+      color: '#339af0',
+      badge: 'Akademik / Profesional',
+      isPaid: false,
+      category: 'Seminar & Simposium',
+      desc: 'Pemaparan materi narasumber ahli, sesi panelis, tanya jawab, dan sertifikat partisipasi.',
+      defaultPrice: '',
+      defaultBmc: ''
+    },
+    {
+      id: 'webinar',
+      name: 'Webinar Online',
+      icon: '💻',
+      color: '#cc5de8',
+      badge: 'Daring / Virtual',
+      isPaid: false,
+      category: 'Webinar Online',
+      desc: 'Pertemuan daring interaktif via Zoom / Google Meet tanpa batasan lokasi fisik peserta.',
+      defaultPrice: '',
+      defaultBmc: ''
+    },
+    {
+      id: 'workshop',
+      name: 'Workshop & Pelatihan Praktik',
+      icon: '🛠️',
+      color: '#ff922b',
+      badge: 'Praktik / Hands-on',
+      isPaid: true,
+      category: 'Workshop / Pelatihan',
+      desc: 'Pelatihan keterampilan langsung, kerajinan bambu, konstruksi modular, atau pembibitan.',
+      defaultPrice: '350000',
+      defaultBmc: '15'
+    },
+    {
+      id: 'fgd',
+      name: 'Focus Group Discussion (FGD)',
+      icon: '🗣️',
+      color: '#20c997',
+      badge: 'Diskusi Terarah / Gratis',
+      isPaid: false,
+      category: 'Focus Group Discussion (FGD)',
+      desc: 'Diskusi terarah pemangku kepentingan untuk rumusan kebijakan, standar, RSNI, atau prototype.',
+      defaultPrice: '',
+      defaultBmc: ''
+    },
+    {
+      id: 'competition',
+      name: 'Kompetisi, Lomba & Sayembara',
+      icon: '🏆',
+      color: '#fab005',
+      badge: 'Hadiah Tunai & Token BMC',
+      isPaid: false,
+      category: 'Kompetisi & Sayembara',
+      desc: 'Sayembara desain arsitektur bambu, karya tulis, fotografi, atau inovasi dengan reward.',
+      defaultPrice: '',
+      defaultBmc: ''
+    },
+    {
+      id: 'custom',
+      name: 'Lain-lain (Kustom)',
+      icon: '✨',
+      color: '#adb5bd',
+      badge: 'Format Bebas / Kustom',
+      isPaid: false,
+      category: 'Lainnya',
+      desc: 'Pameran seni, pagelaran budaya, penanaman massal bambu, atau kegiatan komunitas lainnya.',
+      defaultPrice: '',
+      defaultBmc: ''
+    }
+  ];
+
+  const handleSelectTemplate = (tmpl) => {
+    setSelectedEventType(tmpl.id);
+    setNewEvent(prev => ({
+      ...prev,
+      eventType: tmpl.id,
+      category: tmpl.category,
+      isPaid: tmpl.isPaid,
+      ticketPrice: tmpl.defaultPrice || '',
+      ticketBmc: tmpl.defaultBmc || '',
+      location: tmpl.id === 'webinar' ? 'Online via Zoom / Google Meet' : prev.location
+    }));
+  };
 
   const [newItemUraian, setNewItemUraian] = useState('');
   const [newItemVol, setNewItemVol] = useState('');
@@ -133,6 +248,19 @@ const EventOrganizerPage = () => {
   const [errorMsg, setErrorMsg] = useState('');
 
   const { data: uploadedMaterials = [], refetch: refetchMaterials } = useSpeakerMaterials(selectedEvent?.id);
+
+  // Detect ?edit={id} from URL
+  useEffect(() => {
+    const rawQuery = window.location.search || (window.location.hash.includes('?') ? window.location.hash.split('?')[1] : '');
+    const params = new URLSearchParams(rawQuery);
+    const editId = params.get('edit');
+    if (editId && communityEvents.length > 0) {
+      const found = communityEvents.find(e => e.id === editId);
+      if (found) {
+        handleStartEdit(found);
+      }
+    }
+  }, [communityEvents]);
 
   useEffect(() => {
     if (user) {
@@ -379,6 +507,7 @@ const EventOrganizerPage = () => {
       });
     }
 
+    setSelectedEventType(ev.eventType || (isStandard ? 'custom' : 'custom'));
     setNewEvent({
       title: ev.title || '',
       startDate: ev.startDate || '',
@@ -389,6 +518,18 @@ const EventOrganizerPage = () => {
       time: ev.time || '',
       location: ev.location || '',
       category: isStandard ? ev.category : 'Lainnya',
+      eventType: ev.eventType || 'general',
+      isPaid: ev.isPaid || false,
+      ticketPrice: ev.ticketPrice || '',
+      ticketBmc: ev.ticketBmc || '',
+      paymentInfo: ev.paymentInfo || '',
+      meetingPoint: ev.meetingPoint || '',
+      gearList: ev.gearList || '',
+      facilityList: ev.facilityList || '',
+      prizePool: ev.prizePool || '',
+      submissionDeadline: ev.submissionDeadline || '',
+      customTerms: ev.customTerms || '',
+      itineraryText: ev.itineraryText || '',
       description: ev.description || '',
       image: ev.image || '',
       materials: existingMaterials,
@@ -480,8 +621,31 @@ const EventOrganizerPage = () => {
         await updateCommunityEvent(editingEventId, eventPayload);
         setSuccessMsg("Perubahan acara, banner, materi, dan laporan keuangan berhasil disimpan!");
       } else {
-        await createCommunityEvent(eventPayload);
-        setSuccessMsg("Acara berhasil dibuat dan banner otomatis terpasang di Kalender Event!");
+        const newDocId = await createCommunityEvent(eventPayload);
+        
+        // Award +50 Points & +5.0 BMC Reward to User's BambooID Passport
+        if (user && user.id && user.id !== 'guest') {
+          try {
+            const rewardTx = {
+              id: 'tx_ev_' + Date.now(),
+              type: 'Earn',
+              title: 'Inisiator Event Komunitas: ' + eventPayload.title,
+              amount: '+5.0 BMC',
+              points: '+50 Poin',
+              eventId: newDocId,
+              timestamp: new Date().toISOString()
+            };
+            await updateDoc(doc(db, 'users', user.id), {
+              points: increment(50),
+              bmcBalance: increment(5.0),
+              transactions: arrayUnion(rewardTx)
+            });
+          } catch (err) {
+            console.warn("Could not award inisiator points/BMC:", err);
+          }
+        }
+        
+        setSuccessMsg("Acara berhasil dibuat! +50 Poin & +5.0 BMC Reward telah dicatat ke BambooID Passport Anda.");
       }
       setShowCreateForm(false);
       setEditingEventId(null);
@@ -717,13 +881,83 @@ const EventOrganizerPage = () => {
                     </div>
                   )}
                 </div>
+              ) : (!selectedEventType && !editingEventId) ? (
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', flexWrap: 'wrap', gap: '10px' }}>
+                    <div>
+                      <h3 style={{ margin: 0, fontSize: '1.3rem', color: '#51cf66' }}>Pilih Format & Karakter Acara</h3>
+                      <p style={{ margin: '5px 0 0 0', fontSize: '0.85rem', color: '#888' }}>
+                        Setiap acara memiliki kebutuhan format, sistem pembiayaan, dan jadwal yang berbeda.
+                      </p>
+                    </div>
+                    <button type="button" onClick={() => setShowCreateForm(false)} style={{ background: 'none', border: 'none', color: '#adb5bd', cursor: 'pointer', fontSize: '0.9rem' }}>Batal</button>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '15px' }}>
+                    {eventTemplates.map(tmpl => (
+                      <div
+                        key={tmpl.id}
+                        onClick={() => handleSelectTemplate(tmpl)}
+                        style={{
+                          backgroundColor: '#111',
+                          border: '1px solid #333',
+                          borderRadius: '16px',
+                          padding: '22px',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'space-between'
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = tmpl.color; e.currentTarget.style.transform = 'translateY(-3px)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = '#333'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                      >
+                        <div>
+                          <div style={{ fontSize: '2.2rem', marginBottom: '12px' }}>{tmpl.icon}</div>
+                          <h4 style={{ margin: '0 0 8px 0', fontSize: '1.05rem', color: tmpl.color }}>{tmpl.name}</h4>
+                          <p style={{ margin: 0, fontSize: '0.82rem', color: '#adb5bd', lineHeight: '1.5' }}>{tmpl.desc}</p>
+                        </div>
+                        <div style={{ marginTop: '18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #222', paddingTop: '12px' }}>
+                          <span style={{ fontSize: '0.72rem', fontWeight: 'bold', padding: '3px 8px', borderRadius: '6px', backgroundColor: 'rgba(255,255,255,0.05)', color: tmpl.isPaid ? '#fab005' : '#51cf66' }}>
+                            {tmpl.badge}
+                          </span>
+                          <span style={{ fontSize: '0.82rem', color: tmpl.color, fontWeight: 'bold' }}>Pilih &rarr;</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               ) : (
                 <form onSubmit={handleCreateEvent}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                    <h3 style={{ margin: 0, color: editingEventId ? '#fab005' : 'white' }}>
-                      {editingEventId ? '✏️ Edit Acara & Materi' : 'Buat Acara Baru'}
-                    </h3>
-                    <button type="button" onClick={() => { setShowCreateForm(false); setEditingEventId(null); }} style={{ background: 'none', border: 'none', color: '#adb5bd', cursor: 'pointer' }}>Batal</button>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
+                    <div>
+                      <h3 style={{ margin: 0, color: editingEventId ? '#fab005' : 'white', fontSize: '1.3rem' }}>
+                        {editingEventId ? '✏️ Edit Acara, Materi & Keuangan' : 'Buat Acara Baru'}
+                      </h3>
+                      {selectedEventType && !editingEventId && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                          <span style={{ fontSize: '0.8rem', color: '#51cf66' }}>
+                            Format: <strong>{eventTemplates.find(t => t.id === selectedEventType)?.name || selectedEventType}</strong>
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedEventType(null)}
+                            style={{ background: 'none', border: 'none', color: '#fab005', cursor: 'pointer', fontSize: '0.75rem', textDecoration: 'underline' }}
+                          >
+                            (Ubah Format)
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                    <button type="button" onClick={() => { setShowCreateForm(false); setEditingEventId(null); setSelectedEventType(null); }} style={{ background: 'none', border: 'none', color: '#adb5bd', cursor: 'pointer' }}>Batal</button>
+                  </div>
+
+                  {/* BambooID Passport Rewards Badge */}
+                  <div style={{ marginBottom: '20px', padding: '14px 18px', backgroundColor: 'rgba(81, 207, 102, 0.08)', border: '1px solid rgba(81, 207, 102, 0.3)', borderRadius: '14px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <span style={{ fontSize: '1.5rem' }}>🌿</span>
+                    <div style={{ fontSize: '0.82rem', color: '#d3f9d8', lineHeight: '1.5' }}>
+                      <strong>Integrasi BambooID Passport & Reward:</strong> Sebagai penggagas acara, Anda otomatis mendapatkan <span style={{ color: '#51cf66', fontWeight: 'bold' }}>+50 Poin Ekosistem</span> dan <span style={{ color: '#fab005', fontWeight: 'bold' }}>+5.0 BMC Reward</span> yang tercatat resmi di BambooID Passport Anda.
+                    </div>
                   </div>
                   
                   {/* Judul Acara */}
@@ -923,24 +1157,170 @@ const EventOrganizerPage = () => {
                     )}
                   </div>
 
+                  {/* Sistem Biaya & Tiket (Gratis vs Berbayar) */}
+                  <div style={{ marginBottom: '18px', backgroundColor: 'rgba(255,255,255,0.03)', padding: '16px', borderRadius: '14px', border: '1px solid #333' }}>
+                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '10px', color: '#fab005' }}>
+                      Sifat Acara & Biaya Kontribusi
+                    </label>
+                    <div style={{ display: 'flex', gap: '20px', marginBottom: '12px' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.88rem' }}>
+                        <input
+                          type="radio"
+                          name="isPaid"
+                          checked={!newEvent.isPaid}
+                          onChange={() => setNewEvent(p => ({ ...p, isPaid: false }))}
+                        />
+                        <span>Gratis / Free (Didanai Kas / Sponsor)</span>
+                      </label>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.88rem' }}>
+                        <input
+                          type="radio"
+                          name="isPaid"
+                          checked={newEvent.isPaid}
+                          onChange={() => setNewEvent(p => ({ ...p, isPaid: true }))}
+                        />
+                        <span style={{ color: '#fab005', fontWeight: 'bold' }}>Berbayar (Tiket Peserta)</span>
+                      </label>
+                    </div>
+
+                    {newEvent.isPaid && (
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '10px' }}>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '0.8rem', color: '#adb5bd', marginBottom: '4px' }}>Biaya Tiket per Peserta (Rp) *</label>
+                          <input
+                            type="number"
+                            style={{ ...styles.input, marginBottom: 0 }}
+                            placeholder="Contoh: 750000"
+                            value={newEvent.ticketPrice || ''}
+                            onChange={e => setNewEvent(p => ({ ...p, ticketPrice: e.target.value }))}
+                          />
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '0.8rem', color: '#adb5bd', marginBottom: '4px' }}>Biaya dalam BMC Token (Opsional)</label>
+                          <input
+                            type="number"
+                            style={{ ...styles.input, marginBottom: 0 }}
+                            placeholder="Contoh: 25"
+                            value={newEvent.ticketBmc || ''}
+                            onChange={e => setNewEvent(p => ({ ...p, ticketBmc: e.target.value }))}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
                   {/* Lokasi & Kategori */}
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '5px' }}>
                     <div>
                       <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '6px', color: '#adb5bd' }}>Lokasi / Link Online *</label>
-                      <input style={styles.input} required value={newEvent.location} onChange={e => setNewEvent({...newEvent, location: e.target.value})} placeholder="Contoh: Balai Desa X / Zoom Link" />
+                      <input style={styles.input} required value={newEvent.location} onChange={e => setNewEvent({...newEvent, location: e.target.value})} placeholder="Contoh: Balai Desa X / Zoom Link / Cibarani" />
                     </div>
                     <div>
-                      <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '6px', color: '#adb5bd' }}>Kategori</label>
+                      <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '6px', color: '#adb5bd' }}>Kategori Acara</label>
                       <select style={styles.input} value={newEvent.category} onChange={e => setNewEvent({...newEvent, category: e.target.value})}>
+                        <option value="Wisata & Adventure">Wisata & Adventure</option>
+                        <option value="Seminar & Simposium">Seminar & Simposium</option>
+                        <option value="Webinar Online">Webinar Online</option>
                         <option value="Workshop / Pelatihan">Workshop / Pelatihan</option>
                         <option value="Focus Group Discussion (FGD)">Focus Group Discussion (FGD)</option>
-                        <option value="Webinar Online">Webinar Online</option>
+                        <option value="Kompetisi & Sayembara">Kompetisi & Sayembara</option>
                         <option value="Temu Kopi / Meetup">Temu Kopi / Meetup</option>
-                        <option value="Konferensi & Simposium">Konferensi & Simposium</option>
                         <option value="Aksi Sosial & Komunitas">Aksi Sosial & Komunitas</option>
                         <option value="Lainnya">Lainnya</option>
                       </select>
                     </div>
+                  </div>
+
+                  {/* Kolom Khusus Wisata & Adventure */}
+                  {(selectedEventType === 'adventure' || newEvent.category.includes('Wisata') || newEvent.category.includes('Adventure')) && (
+                    <div style={{ marginBottom: '18px', backgroundColor: 'rgba(81, 207, 102, 0.05)', padding: '16px', borderRadius: '14px', border: '1px solid rgba(81, 207, 102, 0.2)' }}>
+                      <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '8px', color: '#51cf66' }}>
+                        Detail Wisata, Titik Kumpul & Perlengkapan
+                      </label>
+                      <div style={{ marginBottom: '10px' }}>
+                        <label style={{ display: 'block', fontSize: '0.8rem', color: '#adb5bd', marginBottom: '4px' }}>Titik Kumpul (Meeting Point)</label>
+                        <input
+                          style={{ ...styles.input, marginBottom: 0 }}
+                          placeholder="Contoh: Stasiun Rangkasbitung / Pintu Gerbang Ciboleger"
+                          value={newEvent.meetingPoint || ''}
+                          onChange={e => setNewEvent(p => ({ ...p, meetingPoint: e.target.value }))}
+                        />
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '0.8rem', color: '#adb5bd', marginBottom: '4px' }}>Fasilitas yang Didapat</label>
+                          <input
+                            style={{ ...styles.input, marginBottom: 0 }}
+                            placeholder="Contoh: Homestay adat, Makan 3x, Guide lokal"
+                            value={newEvent.facilityList || ''}
+                            onChange={e => setNewEvent(p => ({ ...p, facilityList: e.target.value }))}
+                          />
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '0.8rem', color: '#adb5bd', marginBottom: '4px' }}>Perlengkapan yang Wajib Dibawa</label>
+                          <input
+                            style={{ ...styles.input, marginBottom: 0 }}
+                            placeholder="Contoh: Sepatu trekking, Jas hujan, Pakaian ganti"
+                            value={newEvent.gearList || ''}
+                            onChange={e => setNewEvent(p => ({ ...p, gearList: e.target.value }))}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Kolom Khusus Kompetisi / Sayembara */}
+                  {(selectedEventType === 'competition' || newEvent.category.includes('Kompetisi') || newEvent.category.includes('Sayembara')) && (
+                    <div style={{ marginBottom: '18px', backgroundColor: 'rgba(250, 176, 5, 0.05)', padding: '16px', borderRadius: '14px', border: '1px solid rgba(250, 176, 5, 0.3)' }}>
+                      <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '8px', color: '#fab005' }}>
+                        Detail Sayembara, Hadiah & Ketentuan
+                      </label>
+                      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '12px', marginBottom: '10px' }}>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '0.8rem', color: '#adb5bd', marginBottom: '4px' }}>Total Hadiah (Prize Pool) *</label>
+                          <input
+                            style={{ ...styles.input, marginBottom: 0 }}
+                            placeholder="Contoh: Rp 20.000.000 + 500 BMC"
+                            value={newEvent.prizePool || ''}
+                            onChange={e => setNewEvent(p => ({ ...p, prizePool: e.target.value }))}
+                          />
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '0.8rem', color: '#adb5bd', marginBottom: '4px' }}>Batas Pengumpulan (Deadline)</label>
+                          <input
+                            type="date"
+                            style={{ ...styles.input, marginBottom: 0 }}
+                            value={newEvent.submissionDeadline || ''}
+                            onChange={e => setNewEvent(p => ({ ...p, submissionDeadline: e.target.value }))}
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.8rem', color: '#adb5bd', marginBottom: '4px' }}>Syarat & Ketentuan Pengumpulan Karya</label>
+                        <textarea
+                          style={{ ...styles.input, minHeight: '60px', marginBottom: 0 }}
+                          placeholder="Jelaskan kriteria orisinalitas, format file (PDF/3D), dan kriteria penilaian juri..."
+                          value={newEvent.customTerms || ''}
+                          onChange={e => setNewEvent(p => ({ ...p, customTerms: e.target.value }))}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Input Jadwal & Itinerary Acara Lengkap (Tampil & Dibaca Langsung) */}
+                  <div style={{ marginBottom: '18px' }}>
+                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '6px', color: '#51cf66' }}>
+                      🗓️ Itinerary & Jadwal Kegiatan (Bisa Dibaca Langsung oleh Peserta)
+                    </label>
+                    <textarea 
+                      style={{ ...styles.input, minHeight: '110px', marginBottom: '4px' }} 
+                      value={newEvent.itineraryText || ''} 
+                      onChange={e => setNewEvent({...newEvent, itineraryText: e.target.value})} 
+                      placeholder={"Contoh:\nHari 1 (Sabtu, 14 Nov):\n- 06.00: Kumpul di Stasiun Rangkasbitung\n- 08.00: Perjalanan ke Kasepuhan Cibarani\n- 12.00: Makan siang & pembagian homestay\n- 14.00: Jelajah leuit & trekking hutan bambu\n\nHari 2 (Minggu, 15 Nov):\n- 07.00: Sarapan pagi & persiapan ke Baduy Luar (Ciboleger)..."} 
+                    />
+                    <span style={{ fontSize: '0.72rem', color: '#888' }}>
+                      * Teks ini akan langsung tampil di tab Informasi acara agar calon peserta bisa membaca agenda tanpa perlu mengunduh file.
+                    </span>
                   </div>
 
                   {/* Input Kategori Lainnya jika Kategori === 'Lainnya' */}
