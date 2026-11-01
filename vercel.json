@@ -1,4 +1,4 @@
-{
+﻿{
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "vite",
   "buildCommand": "npm run build",
@@ -19,6 +19,18 @@
     {
       "source": "/article/:id",
       "destination": "/api/share-article?id=:id"
+    },
+    {
+      "source": "/event/:id/image",
+      "destination": "/api/share-event?id=:id&type=image"
+    },
+    {
+      "source": "/event/:id",
+      "destination": "/api/share-event?id=:id"
+    },
+    {
+      "source": "/events",
+      "destination": "/api/share-event"
     },
     {
       "source": "/:path((?!api/|assets/|gambar/|logos/|favicon.svg|.*\\..*).*)",

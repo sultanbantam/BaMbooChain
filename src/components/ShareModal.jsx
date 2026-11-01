@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { X, Copy, Check } from 'lucide-react';
 import { normalizeShareUrl } from '../utils/shareUrl';
 
@@ -10,9 +10,12 @@ const ShareModal = ({ isOpen, onClose, shareUrl, shareTitle, url, title }) => {
   const finalShareUrl = normalizeShareUrl(shareUrl || url || '');
   const finalShareTitle = shareTitle || title || 'Lihat halaman menarik ini di BaMbooChain!';
 
+  const fullShareText = finalShareTitle.includes(finalShareUrl)
+    ? finalShareTitle
+    : `${finalShareTitle}\n\n${finalShareUrl}`;
+
   const handleCopy = () => {
-    const textToCopy = finalShareTitle.includes('http') ? finalShareTitle : `${finalShareTitle}\n\n${finalShareUrl}`;
-    navigator.clipboard.writeText(textToCopy);
+    navigator.clipboard.writeText(fullShareText);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -21,8 +24,8 @@ const ShareModal = ({ isOpen, onClose, shareUrl, shareTitle, url, title }) => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: finalShareTitle.split('\n')[0].replace(/[*🎋]/g, '').trim(),
-          text: finalShareTitle,
+          title: finalShareTitle.split('\n')[0].replace(/[*_#~]/g, '').trim(),
+          text: fullShareText,
           url: finalShareUrl
         });
       } catch (err) {
@@ -32,18 +35,18 @@ const ShareModal = ({ isOpen, onClose, shareUrl, shareTitle, url, title }) => {
   };
 
   const encodedUrl = encodeURIComponent(finalShareUrl);
-  const encodedTitle = encodeURIComponent(finalShareTitle);
+  const encodedFullText = encodeURIComponent(fullShareText);
 
   const socialChannels = [
     {
       name: 'WhatsApp',
-      url: `https://api.whatsapp.com/send?text=${encodeURIComponent(finalShareTitle + '\n\n' + finalShareUrl)}`,
+      url: `https://api.whatsapp.com/send?text=${encodedFullText}`,
       color: '#25D366',
       icon: '💬'
     },
     {
       name: 'Telegram',
-      url: `https://t.me/share/url?url=${encodedUrl}&text=${encodedTitle}`,
+      url: `https://t.me/share/url?url=${encodedUrl}&text=${encodeURIComponent(finalShareTitle)}`,
       color: '#0088cc',
       icon: '✈️'
     },
@@ -51,11 +54,11 @@ const ShareModal = ({ isOpen, onClose, shareUrl, shareTitle, url, title }) => {
       name: 'Facebook',
       url: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
       color: '#1877F2',
-      icon: '👥'
+      icon: '📘'
     },
     {
       name: 'Twitter / X',
-      url: `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`,
+      url: `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodeURIComponent(finalShareTitle)}`,
       color: '#1DA1F2',
       icon: '🐦'
     }
@@ -82,7 +85,7 @@ const ShareModal = ({ isOpen, onClose, shareUrl, shareTitle, url, title }) => {
         background: 'var(--bg-card, #ffffff)',
         border: '1px solid var(--border-color, #eeeeee)',
         borderRadius: '24px',
-        maxWidth: '400px',
+        maxWidth: '420px',
         width: '100%',
         padding: '30px',
         boxShadow: '0 20px 40px rgba(0,0,0,0.25)',
@@ -101,7 +104,7 @@ const ShareModal = ({ isOpen, onClose, shareUrl, shareTitle, url, title }) => {
         <div style={{ textAlign: 'center', marginBottom: '24px', padding: '0 20px' }}>
           <h3 style={{ fontSize: '1.25rem', fontWeight: '900', margin: '0 0 8px 0', color: 'var(--text-main)' }}>Bagikan Ke Sosial Media</h3>
           <p style={{ fontSize: '0.88rem', color: 'var(--text-muted, #888888)', margin: 0 }}>
-            Pilih platform untuk membagikan tautan ini.
+            Pilih platform untuk membagikan informasi acara ini.
           </p>
         </div>
 

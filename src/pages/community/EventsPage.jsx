@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FaCalendarAlt, FaMapMarkerAlt, FaClock, FaUsers, FaDownload } from 'react-icons/fa';
 import { getAssetUrl } from '../../utils/assets';
@@ -154,15 +154,73 @@ const EventsPage = () => {
   const featuredEvent = sortedEvents.length > 0 ? sortedEvents[0] : featuredEventData;
   const gridEvents = sortedEvents.slice(1);
 
+  // Auto-open modal if URL contains ?event={id}
+  useEffect(() => {
+    if (allEvents.length === 0) return;
+    const fullHref = window.location.href;
+    const match = fullHref.match(/[?&]event=([^&#]+)/);
+    if (match && match[1]) {
+      const targetId = decodeURIComponent(match[1]);
+      const found = allEvents.find(e => String(e.id) === targetId);
+      if (found) {
+        setSelectedEvent(found);
+        setIsModalOpen(true);
+      }
+    }
+  }, [allEvents.length]);
+
   const getEventShareTitle = (ev) => {
-    if (!ev) return 'Lihat acara di BaMbooChain!';
-    const descSnippet = ev.description ? (ev.description.length > 220 ? ev.description.slice(0, 220) + '...' : ev.description) : '';
-    let msg = `🎋 *${ev.title}*\n\n`;
-    if (descSnippet) msg += `${descSnippet}\n\n`;
-    msg += `📅 *Waktu:* ${ev.date} (${ev.time})\n`;
-    msg += `📍 *Lokasi:* ${ev.location}\n`;
-    if (ev.image) msg += `🖼️ *Banner Acara:* ${ev.image}\n`;
-    msg += `\nMari bergabung dan ikuti acara ini!`;
+    if (!ev) return "Lihat acara di BaMbooChain!";
+
+    const isAdventure = (ev.category || "").toLowerCase().includes("wisata") ||
+                        (ev.category || "").toLowerCase().includes("adventure") ||
+                        (ev.title || "").toLowerCase().includes("escape") ||
+                        (ev.title || "").toLowerCase().includes("baduy");
+
+    const isLomba = (ev.category || "").toLowerCase().includes("kompetisi") ||
+                    (ev.category || "").toLowerCase().includes("lomba") ||
+                    (ev.category || "").toLowerCase().includes("sayembara");
+
+    const isWebinarOrFGD = (ev.category || "").toLowerCase().includes("webinar") ||
+                           (ev.category || "").toLowerCase().includes("fgd") ||
+                           (ev.category || "").toLowerCase().includes("seminar") ||
+                           (ev.category || "").toLowerCase().includes("workshop");
+
+    let hookHeadline = "";
+    let hookBody = "";
+
+    if (isAdventure) {
+      hookHeadline = "🌿 *WEEKEND ESCAPE: RECHARGE ENERGI & PETUALANGAN HIJAU NUSANTARA!* 🎋";
+      hookBody = "Bosan akhir pekan cuma rebahan atau terjebak macet perkotaan? 🍃\nSaatnya rasakan pengalaman istimewa menjelajahi keindahan alam, kearifan adat, dan ketenangan desa asri bersama komunitas BaMbooChain!\n\n✨ *Highlight Pengalaman:*\n• Eksplorasi alam asri, trekking hijau & kearifan adat Baduy & Kasepuhan Cibarani\n• Belajar filosofi hidup lestari & aksi nyata pelestarian bambu nusantara\n• Camping & kebersamaan hangat dengan sesama pegiat alam\n• 🎁 *Reward Web3:* Dapatkan *+20 Poin & Token BMC* terverifikasi di *BaMbooChainID Passport*!";
+    } else if (isLomba) {
+      hookHeadline = "🏆 *CALLING ALL CREATORS: SAATNYA INOVASIMU MENGUBAH DUNIA!* 🌟";
+      hookBody = "Tantang kreativitas dan keahlianmu dalam kompetisi karya bambu berkelanjutan!\nTunjukkan karyamu kepada dewan juri profesional dan raih apresiasi nyata.\n\n✨ *Keuntungan & Benefit:*\n• Total hadiah bernilai jutaan rupiah & penghargaan ekosistem hijau\n• Eksposur karya ke jaringan industri dan arsitek nasional\n• 🎁 *Reward Web3:* Dapatkan sertifikat terverifikasi, *Poin Komunitas & Token BMC* di *BaMbooChainID Passport*!";
+    } else if (isWebinarOrFGD) {
+      hookHeadline = "💡 *UPGRADE WAWASAN & JARINGAN MASA DEPAN HIJAU BERSAMA PAKAR!* 🎓";
+      hookBody = "Ingin memperdalam keilmuan seputar sains, teknologi, dan ekonomi sirkular bambu?\nBergabunglah bersama para narasumber ahli di forum diskusi eksklusif ini!\n\n✨ *Fasilitas & Insight:*\n• Ilmu langsung dari para praktisi dan pemangku kebijakan\n• Sesi diskusi interaktif & tanya jawab terbuka\n• 🎁 *Reward Web3:* Dapatkan materi eksklusif, sertifikat digital & *Token BMC / Poin* di *BaMbooChainID Passport*!";
+    } else {
+      hookHeadline = "🎋 *AGENDA SPESIAL KOMUNITAS BAMBOOCHAIN NUSANTARA!* ✨";
+      hookBody = "Mari bergabung dalam agenda kolaborasi hijau demi menjaga bumi dan membangun masa depan berkelanjutan!\n\n✨ *Kenapa Kamu Wajib Hadir?*\n• Memperluas silaturahmi & jejaring komunitas bambu nusantara\n• Ikut serta dalam gerakan nyata ekonomi hijau sirkular\n• 🎁 *Reward Web3:* Raih *+20 Poin & Token BMC* terverifikasi di *BaMbooChainID Passport*!";
+    }
+
+    const shareEventUrl = `https://www.bamboochain.id/event/${ev.id || "featured"}`;
+    const calendarUrl = "https://www.bamboochain.id/#/events";
+
+    let msg = `${hookHeadline}\n\n`;
+    msg += `📌 *${ev.title}*\n\n`;
+    msg += `${hookBody}\n\n`;
+    msg += `📅 *Waktu:* ${ev.date || "Sesuai Jadwal"} (${ev.time || "WIB"})\n`;
+    msg += `📍 *Lokasi:* ${ev.location || "Indonesia"}\n`;
+    if (ev.isPaid && ev.ticketPrice) {
+      const priceFormatted = Number(String(ev.ticketPrice).replace(/[^0-9]/g, "")).toLocaleString("id-ID");
+      msg += `🎟️ *Investasi Tiket:* Rp ${priceFormatted} ${ev.ticketBmc ? `(${ev.ticketBmc} BMC)` : ""}\n`;
+    }
+    msg += "\n⚡ _*Kuota terbatas demi menjaga kenyamanan dan ketertiban kegiatan!*_\n";
+    msg += "Amankan pendaftaranmu sekarang sebelum kehabisan:\n\n";
+    msg += `👉 *Ikuti Acara Langsung:*\n${shareEventUrl}\n\n`;
+    msg += `🔗 *Link Kalender Event:* [BaMbooChain - Web3 Green Bamboo Ecosystem](${calendarUrl})\n\n`;
+    msg += "Sampai jumpa di lokasi acara! Salam Lestari Bambu Nusantara 🎋";
+
     return msg;
   };
 
@@ -430,10 +488,10 @@ const EventsPage = () => {
               entityId={featuredEvent.id} 
               inCard={true} 
               customShareTitle={getEventShareTitle(featuredEvent)}
-              customShareUrl="https://www.bamboochain.id/#/events"
-            />
-          </div>
-        </motion.div>
+              customShareUrl={`https://www.bamboochain.id/event/${event.id}`}
+                />
+              </div>
+            </motion.div>
 
         {/* Event List */}
         {isLoading && <div style={{ textAlign: 'center', padding: '40px', color: '#51cf66' }}>Memuat daftar acara...</div>}
@@ -552,7 +610,7 @@ const EventsPage = () => {
                   entityId={event.id} 
                   inCard={true} 
                   customShareTitle={getEventShareTitle(event)}
-                  customShareUrl="https://www.bamboochain.id/#/events"
+                  customShareUrl={`https://www.bamboochain.id/event/${event.id}`}
                 />
               </div>
             </motion.div>
@@ -570,3 +628,4 @@ const EventsPage = () => {
 };
 
 export default EventsPage;
+
