@@ -3,8 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { eventsData, featuredEventData } from '../utils/eventsData';
-import { uploadSpeakerMaterial, useSpeakerMaterials, useCommunityEvents, createCommunityEvent, updateCommunityEventStatus } from '../hooks/useFirestoreQueries';
-import { FileUp, CheckCircle, Upload, AlertCircle, Plus, Calendar, Clock, MapPin, Loader, Image as ImageIcon, X, Download, FileText, Link as LinkIcon, Sparkles } from 'lucide-react';
+import { uploadSpeakerMaterial, useSpeakerMaterials, useCommunityEvents, createCommunityEvent, updateCommunityEventStatus, updateCommunityEvent, deleteCommunityEvent } from '../hooks/useFirestoreQueries';
+import { FileUp, CheckCircle, Upload, AlertCircle, Plus, Calendar, Clock, MapPin, Loader, Image as ImageIcon, X, Download, FileText, Link as LinkIcon, Sparkles, Edit2, Trash2, DollarSign } from 'lucide-react';
 import BackButton from '../components/BackButton';
 
 // Helper: Auto-compress image in the browser (HTML5 Canvas)
@@ -83,6 +83,7 @@ const EventOrganizerPage = () => {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
+  const [editingEventId, setEditingEventId] = useState(null);
   const [newEvent, setNewEvent] = useState({
     title: '',
     startDate: '',
@@ -95,9 +96,22 @@ const EventOrganizerPage = () => {
     category: 'Workshop / Pelatihan',
     description: '',
     image: '',
+    materials: [],
     materialUrl: '',
-    materialName: ''
+    materialName: '',
+    financialReport: {
+      totalIncome: '',
+      totalExpense: '',
+      items: [],
+      notes: ''
+    }
   });
+
+  const [newItemUraian, setNewItemUraian] = useState('');
+  const [newItemVol, setNewItemVol] = useState('');
+  const [newItemSatuan, setNewItemSatuan] = useState('');
+  const [newItemJumlah, setNewItemJumlah] = useState('');
+  const [customMaterialTitle, setCustomMaterialTitle] = useState('');
 
   const [bannerPreview, setBannerPreview] = useState(null);
   const [bannerCompressionInfo, setBannerCompressionInfo] = useState(null);
@@ -226,8 +240,14 @@ const EventOrganizerPage = () => {
 
       if (res.ok) {
         const data = await res.json();
+        const uploadedFile = {
+          title: file.name,
+          fileUrl: data.secure_url,
+          size: formatFileSize(file.size)
+        };
         setNewEvent(prev => ({ 
           ...prev, 
+          materials: [...(prev.materials || []), uploadedFile],
           materialUrl: data.secure_url,
           materialName: file.name
         }));
@@ -238,8 +258,14 @@ const EventOrganizerPage = () => {
           // Under 500KB can safely be stored as DataURL
           const reader = new FileReader();
           reader.onload = (ev) => {
+            const uploadedFile = {
+              title: file.name,
+              fileUrl: ev.target.result,
+              size: formatFileSize(file.size)
+            };
             setNewEvent(prev => ({ 
               ...prev, 
+              materials: [...(prev.materials || []), uploadedFile],
               materialUrl: ev.target.result,
               materialName: file.name
             }));
@@ -275,6 +301,128 @@ const EventOrganizerPage = () => {
     }
   };
 
+  const handleAddCustomMaterialLink = () => {
+    if (!customMaterialLink.trim()) return;
+    const newMat = {
+      title: customMaterialTitle.trim() || 'Materi Online (Tautan Eksternal)',
+      fileUrl: customMaterialLink.trim()
+    };
+    setNewEvent(prev => ({
+      ...prev,
+      materials: [...(prev.materials || []), newMat],
+      materialUrl: prev.materialUrl || newMat.fileUrl,
+      materialName: prev.materialName || newMat.title
+    }));
+    setCustomMaterialLink('');
+    setCustomMaterialTitle('');
+  };
+
+  const handleAddFinancialItem = () => {
+    if (!newItemUraian.trim() || !newItemJumlah) return;
+    const newItem = {
+      uraian: newItemUraian.trim(),
+      vol: newItemVol.trim() || '1',
+      satuan: newItemSatuan.trim() || 'ls',
+      jumlah: Number(newItemJumlah) || 0
+    };
+    setNewEvent(prev => {
+      const currentItems = prev.financialReport?.items || [];
+      const updatedItems = [...currentItems, newItem];
+      const newTotalExpense = updatedItems.reduce((s, it) => s + (Number(it.jumlah) || 0), 0);
+      return {
+        ...prev,
+        financialReport: {
+          ...prev.financialReport,
+          items: updatedItems,
+          totalExpense: newTotalExpense
+        }
+      };
+    });
+    setNewItemUraian('');
+    setNewItemVol('');
+    setNewItemSatuan('');
+    setNewItemJumlah('');
+  };
+
+  const handleRemoveFinancialItem = (idx) => {
+    setNewEvent(prev => {
+      const updatedItems = (prev.financialReport?.items || []).filter((_, i) => i !== idx);
+      const newTotalExpense = updatedItems.reduce((s, it) => s + (Number(it.jumlah) || 0), 0);
+      return {
+        ...prev,
+        financialReport: {
+          ...prev.financialReport,
+          items: updatedItems,
+          totalExpense: newTotalExpense
+        }
+      };
+    });
+  };
+
+  const handleStartEdit = (ev) => {
+    setEditingEventId(ev.id);
+    const standardCategories = [
+      "Workshop / Pelatihan",
+      "Focus Group Discussion (FGD)",
+      "Webinar Online",
+      "Temu Kopi / Meetup",
+      "Konferensi & Simposium",
+      "Aksi Sosial & Komunitas"
+    ];
+    const isStandard = standardCategories.includes(ev.category);
+    
+    let existingMaterials = Array.isArray(ev.materials) ? [...ev.materials] : [];
+    if (ev.materialUrl && !existingMaterials.some(m => m.fileUrl === ev.materialUrl)) {
+      existingMaterials.unshift({
+        title: ev.materialName || 'Materi Acara',
+        fileUrl: ev.materialUrl
+      });
+    }
+
+    setNewEvent({
+      title: ev.title || '',
+      startDate: ev.startDate || '',
+      endDate: ev.endDate || '',
+      startTime: ev.startTime || '09:00',
+      endTime: ev.endTime || '16:00',
+      date: ev.date || '',
+      time: ev.time || '',
+      location: ev.location || '',
+      category: isStandard ? ev.category : 'Lainnya',
+      description: ev.description || '',
+      image: ev.image || '',
+      materials: existingMaterials,
+      materialUrl: ev.materialUrl || '',
+      materialName: ev.materialName || '',
+      financialReport: ev.financialReport || {
+        totalIncome: '',
+        totalExpense: '',
+        items: [],
+        notes: ''
+      }
+    });
+
+    setCustomCategory(isStandard ? '' : (ev.customCategory || ev.category || ''));
+    setBannerPreview(ev.image || null);
+    setShowCreateForm(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleDeleteEvent = async (eventId, eventTitle) => {
+    if (!window.confirm(`Apakah Anda yakin ingin menghapus acara "${eventTitle}"? Tindakan ini tidak dapat dibatalkan.`)) {
+      return;
+    }
+
+    try {
+      await deleteCommunityEvent(eventId);
+      setSuccessMsg(`Acara "${eventTitle}" berhasil dihapus.`);
+      refetchCommunityEvents();
+    } catch (err) {
+      console.error("Error deleting event:", err);
+      setErrorMsg("Gagal menghapus acara. Silakan coba lagi.");
+    }
+  };
+
   const handleCreateEvent = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -297,12 +445,23 @@ const EventOrganizerPage = () => {
       ? (customCategory.trim() || 'Lainnya')
       : newEvent.category;
 
+    // Calculate total expense from items if present
+    const finItems = newEvent.financialReport?.items || [];
+    const calculatedExpense = finItems.reduce((acc, curr) => acc + (Number(curr.jumlah) || 0), 0);
+
     // Safety check: ensure payload does not exceed Firestore limits (< 800KB)
     const eventPayload = {
       ...newEvent,
       category: finalCategory,
       customCategory: newEvent.category === 'Lainnya' ? customCategory.trim() : '',
       materialUrl: finalMaterialUrl,
+      materials: newEvent.materials || [],
+      financialReport: {
+        totalIncome: newEvent.financialReport?.totalIncome || '',
+        totalExpense: calculatedExpense || newEvent.financialReport?.totalExpense || '',
+        items: finItems,
+        notes: newEvent.financialReport?.notes || ''
+      },
       date: formattedDate,
       time: formattedTime,
       organizerId: user.id,
@@ -317,12 +476,19 @@ const EventOrganizerPage = () => {
     }
 
     try {
-      await createCommunityEvent(eventPayload);
-      setSuccessMsg("Acara berhasil dibuat dan banner otomatis terpasang di Kalender Event!");
+      if (editingEventId) {
+        await updateCommunityEvent(editingEventId, eventPayload);
+        setSuccessMsg("Perubahan acara, banner, materi, dan laporan keuangan berhasil disimpan!");
+      } else {
+        await createCommunityEvent(eventPayload);
+        setSuccessMsg("Acara berhasil dibuat dan banner otomatis terpasang di Kalender Event!");
+      }
       setShowCreateForm(false);
+      setEditingEventId(null);
       setBannerPreview(null);
       setBannerCompressionInfo(null);
       setCustomMaterialLink('');
+      setCustomMaterialTitle('');
       setCustomCategory('');
       setNewEvent({
         title: '',
@@ -336,8 +502,15 @@ const EventOrganizerPage = () => {
         category: 'Workshop / Pelatihan',
         description: '',
         image: '',
+        materials: [],
         materialUrl: '',
-        materialName: ''
+        materialName: '',
+        financialReport: {
+          totalIncome: '',
+          totalExpense: '',
+          items: [],
+          notes: ''
+        }
       });
       refetchCommunityEvents();
     } catch (error) {
@@ -495,6 +668,50 @@ const EventOrganizerPage = () => {
                               <button onClick={() => handleApprove(ev.id, 'rejected')} style={{ padding: '8px 15px', background: '#e03131', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Tolak</button>
                             </div>
                           )}
+
+                          {/* Tombol Edit & Hapus Acara */}
+                          {(isAdmin || ev.organizerId === user?.id || ev.organizerName === user?.name || ev.organizerName === user?.username || ev.organizerName === 'albantani') && (
+                            <div style={{ marginTop: '15px', display: 'flex', gap: '10px', flexWrap: 'wrap', borderTop: '1px solid #222', paddingTop: '12px' }}>
+                              <button
+                                type="button"
+                                onClick={() => handleStartEdit(ev)}
+                                style={{
+                                  backgroundColor: '#fab005',
+                                  color: 'black',
+                                  border: 'none',
+                                  padding: '7px 15px',
+                                  borderRadius: '8px',
+                                  fontWeight: 'bold',
+                                  fontSize: '0.85rem',
+                                  cursor: 'pointer',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '6px'
+                                }}
+                              >
+                                <Edit2 size={14} /> Edit Acara, Materi & Keuangan
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteEvent(ev.id, ev.title)}
+                                style={{
+                                  backgroundColor: 'rgba(224, 49, 49, 0.2)',
+                                  border: '1px solid #e03131',
+                                  color: '#ff8787',
+                                  padding: '7px 15px',
+                                  borderRadius: '8px',
+                                  fontWeight: 'bold',
+                                  fontSize: '0.85rem',
+                                  cursor: 'pointer',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '6px'
+                                }}
+                              >
+                                <Trash2 size={14} /> Hapus Acara
+                              </button>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -503,8 +720,10 @@ const EventOrganizerPage = () => {
               ) : (
                 <form onSubmit={handleCreateEvent}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                    <h3 style={{ margin: 0 }}>Buat Acara Baru</h3>
-                    <button type="button" onClick={() => setShowCreateForm(false)} style={{ background: 'none', border: 'none', color: '#adb5bd', cursor: 'pointer' }}>Batal</button>
+                    <h3 style={{ margin: 0, color: editingEventId ? '#fab005' : 'white' }}>
+                      {editingEventId ? '✏️ Edit Acara & Materi' : 'Buat Acara Baru'}
+                    </h3>
+                    <button type="button" onClick={() => { setShowCreateForm(false); setEditingEventId(null); }} style={{ background: 'none', border: 'none', color: '#adb5bd', cursor: 'pointer' }}>Batal</button>
                   </div>
                   
                   {/* Judul Acara */}
@@ -638,24 +857,70 @@ const EventOrganizerPage = () => {
                     </div>
 
                     {/* Input Tambahan: Link Google Drive / Dropbox */}
-                    <div style={{ position: 'relative' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr auto', gap: '8px', marginBottom: '8px' }}>
                       <input 
-                        type="url" 
-                        style={{ ...styles.input, marginBottom: '4px', paddingLeft: '35px' }} 
-                        placeholder="Atau tempel Tautan Google Drive / Dropbox / Canva materi..." 
-                        value={customMaterialLink} 
-                        onChange={e => {
-                          setCustomMaterialLink(e.target.value);
-                          if (e.target.value) {
-                            setNewEvent(prev => ({ ...prev, materialName: prev.materialName || 'Materi Presentasi Online' }));
-                          }
-                        }} 
+                        type="text" 
+                        style={{ ...styles.input, marginBottom: 0, fontSize: '0.85rem' }} 
+                        placeholder="Nama Materi (cth: Itinerary)" 
+                        value={customMaterialTitle} 
+                        onChange={e => setCustomMaterialTitle(e.target.value)} 
                       />
-                      <LinkIcon size={16} color="#666" style={{ position: 'absolute', left: '12px', top: '14px' }} />
+                      <div style={{ position: 'relative' }}>
+                        <input 
+                          type="url" 
+                          style={{ ...styles.input, marginBottom: 0, paddingLeft: '35px', fontSize: '0.85rem' }} 
+                          placeholder="Tempel Tautan Google Drive / Canva / Dropbox..." 
+                          value={customMaterialLink} 
+                          onChange={e => setCustomMaterialLink(e.target.value)} 
+                        />
+                        <LinkIcon size={16} color="#666" style={{ position: 'absolute', left: '12px', top: '14px' }} />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleAddCustomMaterialLink}
+                        style={{
+                          backgroundColor: '#51cf66',
+                          color: 'black',
+                          border: 'none',
+                          padding: '8px 14px',
+                          borderRadius: '8px',
+                          fontWeight: 'bold',
+                          fontSize: '0.85rem',
+                          cursor: 'pointer',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        + Tambah Link
+                      </button>
                     </div>
                     <span style={{ fontSize: '0.72rem', color: '#888' }}>
-                      * Jika materi berupa PDF/PPTX berukuran besar, Anda juga bisa langsung memasukkan tautan Google Drive / Cloud publik.
+                      * Anda dapat mengunggah beberapa berkas materi (Itinerary, Presentasi, Panduan, dll.).
                     </span>
+
+                    {/* Daftar Berkas Materi yang Dilampirkan */}
+                    {newEvent.materials && newEvent.materials.length > 0 && (
+                      <div style={{ marginTop: '12px', display: 'grid', gap: '8px' }}>
+                        <span style={{ fontSize: '0.8rem', color: '#51cf66', fontWeight: 'bold' }}>
+                          Materi yang Siap Ditampilkan ({newEvent.materials.length}):
+                        </span>
+                        {newEvent.materials.map((m, mIdx) => (
+                          <div key={mIdx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#181818', border: '1px solid #333', padding: '10px 14px', borderRadius: '8px' }}>
+                            <span style={{ fontSize: '0.85rem', color: 'white', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <FileText size={16} color="#51cf66" />
+                              <strong>{m.title}</strong> {m.size ? `(${m.size})` : ''}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setNewEvent(p => ({ ...p, materials: p.materials.filter((_, i) => i !== mIdx) }))}
+                              style={{ background: 'none', border: 'none', color: '#ff8787', cursor: 'pointer', padding: '4px' }}
+                              title="Hapus materi ini"
+                            >
+                              <X size={16} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   {/* Lokasi & Kategori */}
@@ -702,8 +967,147 @@ const EventOrganizerPage = () => {
                   <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '6px', color: '#adb5bd' }}>Deskripsi Singkat Acara *</label>
                   <textarea style={{...styles.input, minHeight: '100px'}} required value={newEvent.description} onChange={e => setNewEvent({...newEvent, description: e.target.value})} placeholder="Jelaskan tentang agenda, narasumber, dan benefit acara..." />
 
+                  {/* 5. Transparansi & Laporan Penggunaan Dana Peserta */}
+                  <div style={{ marginBottom: '25px', backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid #333', padding: '20px', borderRadius: '16px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                      <DollarSign size={20} color="#fab005" />
+                      <h4 style={{ margin: 0, fontSize: '1rem', color: '#fab005' }}>
+                        Laporan Penggunaan Dana dari Peserta (Transparansi Keuangan)
+                      </h4>
+                    </div>
+                    <p style={{ fontSize: '0.8rem', color: '#888', marginBottom: '15px' }}>
+                      Opsional. Isi rincian dana yang terkumpul dari pembayaran para peserta serta alokasi penggunaannya agar transparan bagi peserta.
+                    </p>
+
+                    <div style={{ marginBottom: '15px' }}>
+                      <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '6px', color: '#adb5bd' }}>
+                        Total Dana Terkumpul / Masuk dari Peserta (Rp)
+                      </label>
+                      <input 
+                        type="number" 
+                        style={styles.input} 
+                        placeholder="Contoh: 15000000" 
+                        value={newEvent.financialReport?.totalIncome || ''} 
+                        onChange={e => setNewEvent(prev => ({
+                          ...prev,
+                          financialReport: { ...prev.financialReport, totalIncome: e.target.value }
+                        }))} 
+                      />
+                    </div>
+
+                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '8px', color: '#adb5bd' }}>
+                      Rincian Alokasi / Pengeluaran Dana
+                    </label>
+
+                    {/* Input Baris Pengeluaran Baru */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr auto', gap: '8px', alignItems: 'center', marginBottom: '12px' }}>
+                      <input
+                        style={{ ...styles.input, marginBottom: 0, padding: '8px 12px', fontSize: '0.85rem' }}
+                        placeholder="Uraian (cth: Sewa Elf/Bus)"
+                        value={newItemUraian}
+                        onChange={e => setNewItemUraian(e.target.value)}
+                      />
+                      <input
+                        style={{ ...styles.input, marginBottom: 0, padding: '8px 12px', fontSize: '0.85rem' }}
+                        placeholder="Vol (cth: 1)"
+                        value={newItemVol}
+                        onChange={e => setNewItemVol(e.target.value)}
+                      />
+                      <input
+                        style={{ ...styles.input, marginBottom: 0, padding: '8px 12px', fontSize: '0.85rem' }}
+                        placeholder="Satuan (cth: Unit)"
+                        value={newItemSatuan}
+                        onChange={e => setNewItemSatuan(e.target.value)}
+                      />
+                      <input
+                        type="number"
+                        style={{ ...styles.input, marginBottom: 0, padding: '8px 12px', fontSize: '0.85rem' }}
+                        placeholder="Biaya (cth: 3500000)"
+                        value={newItemJumlah}
+                        onChange={e => setNewItemJumlah(e.target.value)}
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddFinancialItem}
+                        style={{
+                          backgroundColor: '#51cf66',
+                          color: 'black',
+                          border: 'none',
+                          padding: '9px 14px',
+                          borderRadius: '8px',
+                          fontWeight: 'bold',
+                          fontSize: '0.85rem',
+                          cursor: 'pointer',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        + Tambah
+                      </button>
+                    </div>
+
+                    {/* Tabel Rincian Pengeluaran */}
+                    {newEvent.financialReport?.items && newEvent.financialReport.items.length > 0 && (
+                      <div style={{ backgroundColor: '#111', borderRadius: '10px', padding: '12px', marginBottom: '15px', border: '1px solid #333' }}>
+                        <table style={{ width: '100%', fontSize: '0.82rem', color: 'white', borderCollapse: 'collapse' }}>
+                          <thead>
+                            <tr style={{ borderBottom: '1px solid #333', color: '#adb5bd' }}>
+                              <th style={{ padding: '6px', textAlign: 'left' }}>Uraian</th>
+                              <th style={{ padding: '6px', textAlign: 'center' }}>Vol</th>
+                              <th style={{ padding: '6px', textAlign: 'center' }}>Satuan</th>
+                              <th style={{ padding: '6px', textAlign: 'right' }}>Jumlah (Rp)</th>
+                              <th style={{ padding: '6px', textAlign: 'center' }}>Aksi</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {newEvent.financialReport.items.map((it, idx) => (
+                              <tr key={idx} style={{ borderBottom: '1px solid #222' }}>
+                                <td style={{ padding: '6px' }}>{it.uraian}</td>
+                                <td style={{ padding: '6px', textAlign: 'center' }}>{it.vol || '-'}</td>
+                                <td style={{ padding: '6px', textAlign: 'center' }}>{it.satuan || '-'}</td>
+                                <td style={{ padding: '6px', textAlign: 'right', color: '#ffc9c9' }}>
+                                  {Number(it.jumlah).toLocaleString('id-ID')}
+                                </td>
+                                <td style={{ padding: '6px', textAlign: 'center' }}>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveFinancialItem(idx)}
+                                    style={{ background: 'none', border: 'none', color: '#ff8787', cursor: 'pointer' }}
+                                  >
+                                    <X size={14} />
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                            <tr style={{ backgroundColor: 'rgba(250, 176, 5, 0.1)', fontWeight: 'bold' }}>
+                              <td colSpan="3" style={{ padding: '8px', textAlign: 'right' }}>Total Pengeluaran:</td>
+                              <td style={{ padding: '8px', textAlign: 'right', color: '#fab005' }}>
+                                Rp {newEvent.financialReport.items.reduce((s, i) => s + (Number(i.jumlah) || 0), 0).toLocaleString('id-ID')}
+                              </td>
+                              <td></td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+
+                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '6px', color: '#adb5bd' }}>
+                      Catatan / Keterangan Transparansi Panitia (Opsional)
+                    </label>
+                    <textarea
+                      style={{ ...styles.input, minHeight: '60px', marginBottom: 0 }}
+                      placeholder="Contoh: Seluruh sisa kas kegiatan dialokasikan untuk kas pemeliharaan leuit adat..."
+                      value={newEvent.financialReport?.notes || ''}
+                      onChange={e => setNewEvent(prev => ({
+                        ...prev,
+                        financialReport: { ...prev.financialReport, notes: e.target.value }
+                      }))}
+                    />
+                  </div>
+
                   <button type="submit" disabled={isSubmitting || isUploadingBanner || isUploadingMaterial} style={{ ...styles.button, width: '100%', marginTop: '10px' }}>
-                    {isSubmitting ? 'Memproses Pengajuan...' : 'Kirim Pengajuan Acara'}
+                    {isSubmitting 
+                      ? 'Menyimpan Data...' 
+                      : editingEventId ? 'Simpan Perubahan Acara' : 'Kirim Pengajuan Acara'}
                   </button>
                 </form>
               )}

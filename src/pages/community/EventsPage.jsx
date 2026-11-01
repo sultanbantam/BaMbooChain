@@ -48,12 +48,12 @@ const EventsPage = () => {
     const isRevolusi = ev.title?.includes('Revolusi Sebatang Bambu');
     const isSNAI = ev.title?.includes('Optimalisasi Teknologi');
     
-    let eventMaterials = ev.materials || [];
-    if (ev.materialUrl) {
-      eventMaterials = [
-        ...eventMaterials,
-        { title: ev.materialName || 'Materi Presentasi Acara', fileUrl: ev.materialUrl }
-      ];
+    let eventMaterials = Array.isArray(ev.materials) ? [...ev.materials] : [];
+    if (ev.materialUrl && !eventMaterials.some(m => m.fileUrl === ev.materialUrl)) {
+      eventMaterials.unshift({
+        title: ev.materialName || 'Materi Presentasi Acara',
+        fileUrl: ev.materialUrl
+      });
     }
 
     const eventDate = isUganda 
@@ -89,7 +89,10 @@ const EventsPage = () => {
         { title: 'Materi Acara', fileUrl: getAssetUrl('event/materi.pdf') },
         { title: 'Materi BLL', fileUrl: getAssetUrl('event/bll.pdf') },
         { title: 'Materi Tambahan 2', fileUrl: getAssetUrl('event/materi2.pdf') }
-      ] : eventMaterials
+      ] : eventMaterials,
+      organizerId: ev.organizerId || null,
+      organizerName: ev.organizerName || 'Panitia Acara',
+      financialReport: ev.financialReport || null
     };
   })];
 
@@ -107,6 +110,18 @@ const EventsPage = () => {
 
   const featuredEvent = sortedEvents.length > 0 ? sortedEvents[0] : featuredEventData;
   const gridEvents = sortedEvents.slice(1);
+
+  const getEventShareTitle = (ev) => {
+    if (!ev) return 'Lihat acara di BaMbooChain!';
+    const descSnippet = ev.description ? (ev.description.length > 220 ? ev.description.slice(0, 220) + '...' : ev.description) : '';
+    let msg = `🎋 *${ev.title}*\n\n`;
+    if (descSnippet) msg += `${descSnippet}\n\n`;
+    msg += `📅 *Waktu:* ${ev.date} (${ev.time})\n`;
+    msg += `📍 *Lokasi:* ${ev.location}\n`;
+    if (ev.image) msg += `🖼️ *Banner Acara:* ${ev.image}\n`;
+    msg += `\nMari bergabung dan ikuti acara ini!`;
+    return msg;
+  };
 
   const styles = {
     container: {
@@ -325,8 +340,8 @@ const EventsPage = () => {
             <SocialInteractions 
               entityId={featuredEvent.id} 
               inCard={true} 
-              customShareTitle={`Acara BaMbooChain: ${featuredEvent.title}\n📅 ${featuredEvent.date}\n📍 ${featuredEvent.location}\n\nMari ikuti acara ini!`}
-              customShareUrl={`https://www.bamboochain.id/#/events`}
+              customShareTitle={getEventShareTitle(featuredEvent)}
+              customShareUrl="https://www.bamboochain.id/#/events"
             />
           </div>
         </motion.div>
@@ -401,8 +416,8 @@ const EventsPage = () => {
                 <SocialInteractions 
                   entityId={event.id} 
                   inCard={true} 
-                  customShareTitle={`Acara BaMbooChain: ${event.title}\n📅 ${event.date}\n📍 ${event.location}\n\nMari ikuti acara ini!`}
-                  customShareUrl={`https://www.bamboochain.id/#/events`}
+                  customShareTitle={getEventShareTitle(event)}
+                  customShareUrl="https://www.bamboochain.id/#/events"
                 />
               </div>
             </motion.div>

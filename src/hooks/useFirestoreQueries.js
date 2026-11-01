@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { collection, getDocs, query, where, doc, getDoc, addDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, getDocs, query, where, doc, getDoc, addDoc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../firebase/config';
 
@@ -333,6 +333,21 @@ export async function updateCommunityEventStatus(eventId, newStatus) {
     status: newStatus,
     updatedAt: serverTimestamp()
   });
+}
+
+// 14b. Update Community Event Details (Edit)
+export async function updateCommunityEvent(eventId, eventData) {
+  const eventRef = doc(db, 'community_events', eventId);
+  await updateDoc(eventRef, {
+    ...eventData,
+    updatedAt: serverTimestamp()
+  });
+}
+
+// 14c. Delete Community Event
+export async function deleteCommunityEvent(eventId) {
+  const eventRef = doc(db, 'community_events', eventId);
+  await deleteDoc(eventRef);
 }
 
 // 15. Hook for User Events (Roles: Penggagas, Peserta, Narasumber, Pendukung, Panitia)

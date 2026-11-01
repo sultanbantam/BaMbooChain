@@ -17,6 +17,7 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [attendanceSuccess, setAttendanceSuccess] = useState(false);
+  const [previewMaterial, setPreviewMaterial] = useState(null);
 
   const eventTitle = eventData?.title || "";
   const eventId = eventData?.id || "unknown";
@@ -77,7 +78,7 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
   
   let eventCostDisplay = isTba ? 'Rp ...... (Menunggu Konfirmasi)' : formatRupiah(finalCostNum);
 
-  let statementText = "Saya menyatakan bersedia mengikuti seluruh rangkaian kegiatan Seren Taun di Kasepuhan Cibarani dan mematuhi aturan adat.";
+  let statementText = "Saya menyatakan bersedia mengikuti seluruh rangkaian kegiatan dan mematuhi aturan yang berlaku.";
   if (isHBD) statementText = "Saya menyatakan bersedia mengikuti seluruh rangkaian kegiatan Hari Bambu Dunia di Kasepuhan Cibarani dan mematuhi aturan adat.";
   if (isDiburuan) statementText = "Saya menyatakan bersedia mengikuti seluruh rangkaian kegiatan DIBURUAN FESTIVAL JILID IV 2026 dan mematuhi aturan.";
   if (isHBN) statementText = "Saya menyatakan bersedia mengikuti seluruh rangkaian kegiatan HARI BAMBU NASIONAL 2026 dan mematuhi aturan.";
@@ -98,6 +99,7 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
     'Dokumentasi & media',
     'Diskusi lingkungan',
     'Relawan kegiatan',
+    'Adventure',
     'Semua kegiatan'
   ];
 
@@ -336,8 +338,8 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
             <label style={styles.label}>Email *</label>
             <input required style={styles.input} type="email" name="email" value={formData.email} onChange={handleChange} placeholder="email@contoh.com" />
             
-            <label style={styles.label}>Nomor Anggota IAI (Opsional)</label>
-            <input style={styles.input} name="iaiNumber" value={formData.iaiNumber} onChange={handleChange} placeholder="Masukkan No. IAI jika ada" />
+            <label style={styles.label}>Nomor Anggota IAI / Komunitas / Lembaga (Opsional)</label>
+            <input style={styles.input} name="iaiNumber" value={formData.iaiNumber} onChange={handleChange} placeholder="Masukkan No. IAI / Komunitas / Lembaga jika ada" />
           </motion.div>
         );
       case 2:
@@ -613,16 +615,59 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
         <div>
           <h4 style={{ fontSize: '1rem', fontWeight: 'bold', marginBottom: '15px', color: 'white' }}>{t('event_materials_title')}</h4>
           <div style={{ display: 'grid', gap: '15px' }}>
-            {allMaterials.map((mat, idx) => (
-              <div key={idx} style={{ backgroundColor: 'rgba(81, 207, 102, 0.05)', border: '1px solid rgba(81, 207, 102, 0.2)', padding: '15px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ fontWeight: 'bold', color: 'white', fontSize: '0.9rem' }}>{mat.title}</div>
-                {mat.fileUrl && (
-                  <a href={mat.fileUrl} target="_blank" rel="noreferrer" style={{ backgroundColor: '#51cf66', color: 'black', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', textDecoration: 'none', fontWeight: 'bold', whiteSpace: 'nowrap', textAlign: 'center' }}>
-                    {t('event_download_file')}
-                  </a>
+            {allMaterials.map((mat, idx) => {
+              const isPreviewOpen = previewMaterial?.fileUrl === mat.fileUrl;
+              return (
+              <div key={idx} style={{ backgroundColor: 'rgba(81, 207, 102, 0.05)', border: '1px solid rgba(81, 207, 102, 0.2)', padding: '15px', borderRadius: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                  <div style={{ fontWeight: 'bold', color: 'white', fontSize: '0.9rem', wordBreak: 'break-word', flex: 1 }}>{mat.title}</div>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    {mat.fileUrl && (
+                      <button
+                        type="button"
+                        onClick={() => setPreviewMaterial(isPreviewOpen ? null : mat)}
+                        style={{
+                          backgroundColor: isPreviewOpen ? '#e03131' : '#1c7ed6',
+                          color: 'white',
+                          padding: '6px 12px',
+                          borderRadius: '8px',
+                          fontSize: '0.8rem',
+                          border: 'none',
+                          fontWeight: 'bold',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
+                      >
+                        {isPreviewOpen ? '✕ Tutup Baca' : '👁️ Baca Langsung'}
+                      </button>
+                    )}
+                    {mat.fileUrl && (
+                      <a href={mat.fileUrl} target="_blank" rel="noreferrer" style={{ backgroundColor: '#51cf66', color: 'black', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', textDecoration: 'none', fontWeight: 'bold', whiteSpace: 'nowrap', textAlign: 'center' }}>
+                        {t('event_download_file')}
+                      </a>
+                    )}
+                  </div>
+                </div>
+
+                {isPreviewOpen && mat.fileUrl && (
+                  <div style={{ marginTop: '14px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #51cf66', backgroundColor: '#000' }}>
+                    <div style={{ padding: '8px 12px', backgroundColor: '#111', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #333' }}>
+                      <span style={{ fontSize: '0.8rem', color: '#51cf66', fontWeight: 'bold' }}>📄 Pratinjau Dokumen: {mat.title}</span>
+                      <a href={mat.fileUrl} target="_blank" rel="noreferrer" style={{ fontSize: '0.75rem', color: '#adb5bd', textDecoration: 'underline' }}>Buka di tab baru ↗</a>
+                    </div>
+                    <iframe
+                      src={mat.fileUrl.includes('drive.google.com') 
+                        ? mat.fileUrl.replace('/view', '/preview') 
+                        : `https://docs.google.com/viewer?url=${encodeURIComponent(mat.fileUrl)}&embedded=true`}
+                      title={mat.title}
+                      style={{ width: '100%', height: '480px', border: 'none', backgroundColor: '#fff' }}
+                    />
+                  </div>
                 )}
               </div>
-            ))}
+            )})}
           </div>
         </div>
       )}
@@ -655,8 +700,8 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
           ) : (
             <div style={{ textAlign: 'left' }}>
               <div style={{ marginBottom: '20px' }}>
-                <label style={styles.label}>Nomor Anggota IAI (Opsional)</label>
-                <input style={styles.input} value={attendanceIaiNumber} onChange={(e) => setAttendanceIaiNumber(e.target.value)} placeholder="Masukkan No. IAI jika ada" />
+                <label style={styles.label}>Nomor Anggota IAI / Komunitas / Lembaga (Opsional)</label>
+                <input style={styles.input} value={attendanceIaiNumber} onChange={(e) => setAttendanceIaiNumber(e.target.value)} placeholder="Masukkan No. IAI / Komunitas / Lembaga jika ada" />
               </div>
               <div style={{ textAlign: 'center' }}>
                 <button 
@@ -677,9 +722,37 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
     </motion.div>
   );
 
-  const renderFinanceTab = () => (
+  const renderFinanceTab = () => {
+    const finReport = eventData?.financialReport;
+    const canManageEvent = user && (user.role === 'admin' || user.role === 'superadmin' || user.username === 'albantani' || eventData?.organizerId === user?.id || eventData?.organizerName === user?.name || eventData?.organizerName === user?.username);
+
+    return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ padding: '10px 0' }}>
-      <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '15px', color: '#fab005' }}>Anggaran & Transparansi Keuangan</h3>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', flexWrap: 'wrap', gap: '10px' }}>
+        <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', margin: 0, color: '#fab005' }}>Anggaran & Transparansi Keuangan</h3>
+        {canManageEvent && (
+          <a
+            href="/#/event-organizer"
+            onClick={onClose}
+            style={{
+              padding: '6px 14px',
+              borderRadius: '8px',
+              backgroundColor: 'rgba(250, 176, 5, 0.2)',
+              border: '1px solid #fab005',
+              color: '#fab005',
+              fontSize: '0.8rem',
+              fontWeight: 'bold',
+              textDecoration: 'none',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+          >
+            ✏️ Kelola di Event Organizer
+          </a>
+        )}
+      </div>
+
       {eventId === 'fgd-rumah-modular-2026' ? (
         <div>
           <p style={{ color: '#adb5bd', fontSize: '0.9rem', marginBottom: '20px', lineHeight: '1.6' }}>
@@ -760,13 +833,110 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
             </table>
           </div>
         </div>
+      ) : finReport && (finReport.totalIncome || (finReport.items && finReport.items.length > 0) || finReport.notes) ? (
+        <div>
+          <p style={{ color: '#adb5bd', fontSize: '0.9rem', marginBottom: '15px', lineHeight: '1.6' }}>
+            Berikut adalah laporan pertanggungjawaban dan transparansi penggunaan dana yang bersumber dari pembayaran / kontribusi peserta acara <strong>{eventTitle}</strong>.
+          </p>
+
+          {/* Stat Cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px', marginBottom: '20px' }}>
+            <div style={{ padding: '15px', backgroundColor: '#111', borderRadius: '12px', border: '1px solid #333' }}>
+              <div style={{ fontSize: '0.75rem', color: '#888', marginBottom: '4px' }}>Dana Masuk Peserta</div>
+              <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#51cf66' }}>
+                {finReport.totalIncome ? formatRupiah(Number(finReport.totalIncome)) : 'Rp 0'}
+              </div>
+            </div>
+            <div style={{ padding: '15px', backgroundColor: '#111', borderRadius: '12px', border: '1px solid #333' }}>
+              <div style={{ fontSize: '0.75rem', color: '#888', marginBottom: '4px' }}>Total Pengeluaran</div>
+              <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#ff8787' }}>
+                {finReport.totalExpense ? formatRupiah(Number(finReport.totalExpense)) : 'Rp 0'}
+              </div>
+            </div>
+            <div style={{ padding: '15px', backgroundColor: '#111', borderRadius: '12px', border: '1px solid #333' }}>
+              <div style={{ fontSize: '0.75rem', color: '#888', marginBottom: '4px' }}>Sisa Saldo Kas</div>
+              <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#fab005' }}>
+                {formatRupiah((Number(finReport.totalIncome) || 0) - (Number(finReport.totalExpense) || 0))}
+              </div>
+            </div>
+          </div>
+
+          {/* Table of items */}
+          {finReport.items && finReport.items.length > 0 && (
+            <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '15px', overflowX: 'auto', marginBottom: '15px' }}>
+              <table style={{ width: '100%', fontSize: '0.85rem', color: 'white', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid #444', color: '#adb5bd' }}>
+                    <th style={{ padding: '10px', textAlign: 'left' }}>No</th>
+                    <th style={{ padding: '10px', textAlign: 'left' }}>Uraian Penggunaan Dana</th>
+                    <th style={{ padding: '10px', textAlign: 'center' }}>Vol</th>
+                    <th style={{ padding: '10px', textAlign: 'center' }}>Satuan</th>
+                    <th style={{ padding: '10px', textAlign: 'right' }}>Jumlah Biaya</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {finReport.items.map((item, idx) => (
+                    <tr key={idx} style={{ borderBottom: '1px solid #333' }}>
+                      <td style={{ padding: '10px' }}>{idx + 1}</td>
+                      <td style={{ padding: '10px', fontWeight: 'bold' }}>{item.uraian}</td>
+                      <td style={{ padding: '10px', textAlign: 'center' }}>{item.vol || '-'}</td>
+                      <td style={{ padding: '10px', textAlign: 'center' }}>{item.satuan || '-'}</td>
+                      <td style={{ padding: '10px', textAlign: 'right', color: '#ffc9c9' }}>{formatRupiah(Number(item.jumlah) || 0)}</td>
+                    </tr>
+                  ))}
+                  <tr style={{ backgroundColor: 'rgba(250, 176, 5, 0.2)' }}>
+                    <td colSpan="4" style={{ padding: '12px', fontWeight: 'bold', textAlign: 'right' }}>Total Pengeluaran</td>
+                    <td style={{ padding: '12px', fontWeight: 'bold', textAlign: 'right', color: '#fab005' }}>
+                      {formatRupiah(Number(finReport.totalExpense) || 0)}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {finReport.notes && (
+            <div style={{ backgroundColor: '#111', padding: '15px', borderRadius: '12px', border: '1px solid #333', fontSize: '0.85rem', color: '#adb5bd', lineHeight: '1.6' }}>
+              <strong style={{ color: 'white' }}>Catatan Transparansi Panitia:</strong><br />
+              {finReport.notes}
+            </div>
+          )}
+        </div>
       ) : (
-        <div style={{ textAlign: 'center', padding: '30px' }}>
-          <p style={{ color: '#adb5bd' }}>Laporan keuangan untuk event ini belum tersedia atau didanai secara mandiri.</p>
+        <div style={{ textAlign: 'center', padding: '35px 20px', backgroundColor: '#111', borderRadius: '16px', border: '1px solid #333' }}>
+          <p style={{ color: '#adb5bd', fontSize: '0.95rem', marginBottom: canManageEvent ? '15px' : '0' }}>
+            Laporan keuangan untuk event ini belum tersedia atau didanai secara mandiri.
+          </p>
+          {canManageEvent && (
+            <div>
+              <p style={{ fontSize: '0.85rem', color: '#51cf66', marginBottom: '15px' }}>
+                Anda adalah penyelenggara/admin acara ini. Anda dapat menginput rincian penggunaan dana dari pembayaran peserta melalui menu Event Organizer.
+              </p>
+              <a
+                href="/#/event-organizer"
+                onClick={onClose}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '10px 20px',
+                  backgroundColor: '#fab005',
+                  color: 'black',
+                  borderRadius: '10px',
+                  fontWeight: 'bold',
+                  fontSize: '0.9rem',
+                  textDecoration: 'none'
+                }}
+              >
+                💰 Isi Laporan Keuangan di Event Organizer
+              </a>
+            </div>
+          )}
         </div>
       )}
     </motion.div>
   );
+  };
 
   const renderSocialTab = () => (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ padding: '10px 0' }}>

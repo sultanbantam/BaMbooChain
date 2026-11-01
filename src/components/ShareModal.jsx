@@ -11,9 +11,24 @@ const ShareModal = ({ isOpen, onClose, shareUrl, shareTitle, url, title }) => {
   const finalShareTitle = shareTitle || title || 'Lihat halaman menarik ini di BaMbooChain!';
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(finalShareUrl);
+    const textToCopy = finalShareTitle.includes('http') ? finalShareTitle : `${finalShareTitle}\n\n${finalShareUrl}`;
+    navigator.clipboard.writeText(textToCopy);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleNativeShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: finalShareTitle.split('\n')[0].replace(/[*🎋]/g, '').trim(),
+          text: finalShareTitle,
+          url: finalShareUrl
+        });
+      } catch (err) {
+        console.log('Share canceled', err);
+      }
+    }
   };
 
   const encodedUrl = encodeURIComponent(finalShareUrl);
@@ -22,7 +37,7 @@ const ShareModal = ({ isOpen, onClose, shareUrl, shareTitle, url, title }) => {
   const socialChannels = [
     {
       name: 'WhatsApp',
-      url: `https://api.whatsapp.com/send?text=${encodedTitle}%20${encodedUrl}`,
+      url: `https://api.whatsapp.com/send?text=${encodeURIComponent(finalShareTitle + '\n\n' + finalShareUrl)}`,
       color: '#25D366',
       icon: '💬'
     },
@@ -90,6 +105,29 @@ const ShareModal = ({ isOpen, onClose, shareUrl, shareTitle, url, title }) => {
           </p>
         </div>
 
+        {typeof navigator !== 'undefined' && navigator.share && (
+          <button
+            onClick={handleNativeShare}
+            style={{
+              width: '100%',
+              marginBottom: '15px',
+              padding: '12px',
+              borderRadius: '16px',
+              border: '1px solid #51cf66',
+              background: 'rgba(81, 207, 102, 0.15)',
+              color: '#51cf66',
+              fontWeight: 'bold',
+              fontSize: '0.92rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px'
+            }}
+          >
+            <span>📱</span> Bagikan Cepat via Aplikasi HP
+          </button>
+        )}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginBottom: '24px' }}>
           {socialChannels.map((ch) => (
             <a
