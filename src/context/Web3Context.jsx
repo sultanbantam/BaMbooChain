@@ -13,10 +13,10 @@ const BMC_ABI = [
 ];
 
 const BSC_RPCS = [
+  'https://rpc.ankr.com/bsc',
   'https://bsc-rpc.publicnode.com',
-  'https://bsc-dataseed.binance.org/',
-  'https://binance.llamarpc.com',
-  'https://1rpc.io/bsc'
+  'https://bsc.meowrpc.com',
+  'https://binance.nodereal.io'
 ];
 
 const BSC_CHAIN = {
@@ -31,8 +31,8 @@ const getReadOnlyProvider = async () => {
   try {
     const provider = await Promise.any(
       BSC_RPCS.map(async (rpcUrl) => {
-        const p = new JsonRpcProvider(rpcUrl, 56);
-        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 3000));
+        const p = new JsonRpcProvider(rpcUrl, 56, { staticNetwork: true });
+        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 3500));
         await Promise.race([p.getBlockNumber(), timeoutPromise]);
         return p;
       })
@@ -40,8 +40,7 @@ const getReadOnlyProvider = async () => {
     return provider;
   } catch (err) {
     console.warn('All fallback RPCs failed or timed out.', err);
-    // Return the first one as a last resort
-    return new JsonRpcProvider(BSC_RPCS[0], 56);
+    return new JsonRpcProvider(BSC_RPCS[0], 56, { staticNetwork: true });
   }
 };
 
