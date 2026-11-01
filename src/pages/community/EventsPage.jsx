@@ -499,8 +499,7 @@ const EventsPage = () => {
               entityId={featuredEvent.id} 
               inCard={true} 
               customShareTitle={getEventShareTitle(featuredEvent)}
-              customShareUrl={`https://www.bamboochain.id/event/${event.id}`}
-                />
+              customShareUrl={`https://www.bamboochain.id/event/${featuredEvent.id}`} />
               </div>
             </motion.div>
 
