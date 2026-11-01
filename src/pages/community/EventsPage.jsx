@@ -99,7 +99,22 @@ const EventsPage = () => {
   const nowTime = new Date().setHours(0, 0, 0, 0);
 
   const mappedCommunityEvents = activeCommunityEvents.map(ev => {
-    const isUganda = ev.title?.toLowerCase().includes('uganda');
+    const titleLower = ev.title?.toLowerCase() || '';
+    const isUganda = titleLower.includes('uganda');
+    const isRevolusi = titleLower.includes('revolusi sebatang bambu') || titleLower.includes('tangerang raya');
+    const isSNAI = titleLower.includes('optimalisasi teknologi') || titleLower.includes('snai');
+    const isSeren = titleLower.includes('seren taun');
+    const isHBN = titleLower.includes('hari bambu nasional');
+
+    let defaultImg = getAssetUrl('event/banner.png');
+    if (isUganda) defaultImg = getAssetUrl('event/uganda.png');
+    else if (isRevolusi) defaultImg = getAssetUrl('event/ebtr.png');
+    else if (isSNAI) defaultImg = getAssetUrl('event/snai.png');
+    else if (isSeren) defaultImg = getAssetUrl('event/serentaun.png');
+    else if (isHBN) defaultImg = getAssetUrl('event/hbn.png');
+
+    const finalImage = (ev.image && ev.image.trim() !== '' && ev.image !== 'NO_IMAGE') ? ev.image : defaultImg;
+
     return {
       id: ev.id,
       title: ev.title || 'Acara Komunitas',
@@ -107,7 +122,7 @@ const EventsPage = () => {
       time: ev.time || (ev.startTime ? `${ev.startTime} - ${ev.endTime || ''} WIB` : '09:00 - 17:00 WIB'),
       location: ev.location || 'Indonesia',
       category: ev.category || ev.customCategory || 'Komunitas',
-      image: ev.image || getAssetUrl(isUganda ? 'event/uganda.jpg' : 'event/cibarani-baduy.jpg'),
+      image: finalImage,
       color: '#51cf66',
       speakers: ev.speakers || [],
       materials: ev.materials || (ev.materialUrl ? [{ title: ev.materialName || 'Materi Acara', fileUrl: ev.materialUrl }] : []),
@@ -386,6 +401,10 @@ const EventsPage = () => {
         >
           <img 
             src={featuredEvent.image || getAssetUrl('event/serentaun.png')} 
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = getAssetUrl('event/serentaun.png');
+            }}
             style={styles.featuredImg}
             alt={featuredEvent.title}
           />
@@ -516,7 +535,19 @@ const EventsPage = () => {
               transition={{ delay: index * 0.1 }}
               whileHover={{ borderColor: '#51cf66', transform: 'translateY(-5px)' }}
             >
-              <img src={event.image} alt={event.title} style={styles.cardImg} />
+              <img 
+                src={event.image || getAssetUrl('event/banner.png')} 
+                alt={event.title} 
+                onError={(e) => {
+                  e.target.onerror = null;
+                  const tLow = event.title?.toLowerCase() || '';
+                  if (tLow.includes('uganda')) e.target.src = getAssetUrl('event/uganda.png');
+                  else if (tLow.includes('revolusi') || tLow.includes('tangerang')) e.target.src = getAssetUrl('event/ebtr.png');
+                  else if (tLow.includes('snai') || tLow.includes('optimalisasi')) e.target.src = getAssetUrl('event/snai.png');
+                  else e.target.src = getAssetUrl('event/banner.png');
+                }}
+                style={styles.cardImg} 
+              />
               <div style={styles.cardBody}>
                 <div style={{ ...styles.badge, backgroundColor: event.color, color: 'white', marginBottom: '15px' }}>
                   {event.category}
