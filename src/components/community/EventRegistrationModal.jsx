@@ -296,47 +296,53 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
   const styles = {
     overlay: {
       position: 'fixed',
-      top: 0, left: 0, width: '100%', height: '100%',
-      backgroundColor: 'rgba(0,0,0,0.8)',
-      backdropFilter: 'blur(5px)',
+      top: 0, left: 0, right: 0, bottom: 0,
+      backgroundColor: 'rgba(0,0,0,0.85)',
+      backdropFilter: 'blur(6px)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       zIndex: 99999,
-      padding: '20px'
+      padding: 'clamp(8px, 2.5vw, 16px)',
+      boxSizing: 'border-box'
     },
     modal: {
-      backgroundColor: '#1a1a1a',
-      borderRadius: '24px',
+      backgroundColor: '#141714',
+      borderRadius: '20px',
       width: '100%',
-      maxWidth: '650px',
-      maxHeight: '90vh',
+      maxWidth: '640px',
+      maxHeight: '92vh',
       display: 'flex',
       flexDirection: 'column',
-      border: '1px solid #333',
+      border: '1px solid #2e382e',
       overflow: 'hidden',
       color: 'white',
-      fontFamily: 'sans-serif'
+      fontFamily: 'sans-serif',
+      boxSizing: 'border-box'
     },
     header: {
-      padding: '25px',
-      borderBottom: '1px solid #333',
+      padding: '16px 20px',
+      borderBottom: '1px solid #2e382e',
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
-      backgroundColor: '#0a0f0a'
+      backgroundColor: '#0d120d',
+      boxSizing: 'border-box'
     },
     content: {
-      padding: '30px',
+      padding: 'clamp(14px, 3.5vw, 24px)',
       overflowY: 'auto',
-      flex: 1
+      flex: 1,
+      boxSizing: 'border-box',
+      width: '100%'
     },
     footer: {
-      padding: '20px 30px',
-      borderTop: '1px solid #333',
+      padding: '14px 20px',
+      borderTop: '1px solid #2e382e',
       display: 'flex',
       justifyContent: 'space-between',
-      backgroundColor: '#0a0f0a'
+      backgroundColor: '#0d120d',
+      boxSizing: 'border-box'
     },
     input: {
       width: '100%',
@@ -390,20 +396,27 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
     }),
     tabContainer: {
       display: 'flex',
-      gap: '10px',
-      marginBottom: '20px',
-      borderBottom: '1px solid #333',
-      paddingBottom: '10px'
+      gap: '8px',
+      marginBottom: '18px',
+      borderBottom: '1px solid #2e382e',
+      paddingBottom: '8px',
+      overflowX: 'auto',
+      WebkitOverflowScrolling: 'touch',
+      whiteSpace: 'nowrap',
+      scrollbarWidth: 'none',
+      boxSizing: 'border-box',
+      width: '100%'
     },
     tabBtn: (isActive) => ({
-      background: isActive ? 'rgba(81, 207, 102, 0.1)' : 'transparent',
+      background: isActive ? 'rgba(81, 207, 102, 0.15)' : 'transparent',
       color: isActive ? '#51cf66' : '#adb5bd',
-      border: 'none',
-      padding: '8px 16px',
+      border: isActive ? '1px solid #51cf66' : '1px solid transparent',
+      padding: '7px 13px',
       borderRadius: '8px',
       fontWeight: 'bold',
       cursor: 'pointer',
-      fontSize: '0.9rem'
+      fontSize: '0.84rem',
+      flexShrink: 0
     })
   };
 
@@ -706,7 +719,7 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
           <h4 style={{ fontSize: '1.05rem', fontWeight: 'bold', marginBottom: '12px', color: '#51cf66', display: 'flex', alignItems: 'center', gap: '8px' }}>
             🗓️ Itinerary & Jadwal Acara (Baca Langsung)
           </h4>
-          <div style={{ whiteSpace: 'pre-line', fontSize: '0.9rem', color: '#e9ecef', lineHeight: '1.7', backgroundColor: '#111', padding: '15px', borderRadius: '10px', border: '1px solid #333' }}>
+          <div style={{ whiteSpace: 'pre-line', wordBreak: 'break-word', overflowWrap: 'anywhere', fontSize: '0.88rem', color: '#e9ecef', lineHeight: '1.7', backgroundColor: '#111', padding: '14px', borderRadius: '10px', border: '1px solid #333', boxSizing: 'border-box' }}>
             {eventData.itineraryText}
           </div>
         </div>

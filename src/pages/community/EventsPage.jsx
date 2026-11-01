@@ -46,7 +46,29 @@ const EventsPage = () => {
     }
   };
 
+  // Instant LocalStorage Cache to eliminate any seconds-long delay / old event flashing
+  const [cachedEvents, setCachedEvents] = useState(() => {
+    try {
+      const saved = localStorage.getItem('cached_community_events');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return [];
+  });
+
   const { data: communityEvents = [], isLoading } = useApprovedCommunityEvents();
+
+  useEffect(() => {
+    if (communityEvents && communityEvents.length > 0) {
+      setCachedEvents(communityEvents);
+      try {
+        localStorage.setItem('cached_community_events', JSON.stringify(communityEvents));
+      } catch (e) {}
+    }
+  }, [communityEvents]);
+
+  const activeCommunityEvents = (communityEvents && communityEvents.length > 0)
+    ? communityEvents
+    : cachedEvents;
 
   const parseEventDate = (dateStr) => {
     if (!dateStr) return 0;
@@ -76,53 +98,20 @@ const EventsPage = () => {
 
   const nowTime = new Date().setHours(0, 0, 0, 0);
 
-  const allEvents = [...eventsData, featuredEventData, ...communityEvents.map(ev => {
+  const mappedCommunityEvents = activeCommunityEvents.map(ev => {
     const isUganda = ev.title?.toLowerCase().includes('uganda');
-    const isRevolusi = ev.title?.includes('Revolusi Sebatang Bambu');
-    const isSNAI = ev.title?.includes('Optimalisasi Teknologi');
-    
-    let eventMaterials = Array.isArray(ev.materials) ? [...ev.materials] : [];
-    if (ev.materialUrl && !eventMaterials.some(m => m.fileUrl === ev.materialUrl)) {
-      eventMaterials.unshift({
-        title: ev.materialName || 'Materi Presentasi Acara',
-        fileUrl: ev.materialUrl
-      });
-    }
-
-    const eventDate = isUganda 
-      ? '1-5 September 2026' 
-      : (ev.startDate && ev.endDate && ev.startDate !== ev.endDate 
-          ? `${ev.startDate} s/d ${ev.endDate}` 
-          : (ev.date || ev.startDate || 'TBA'));
-
-    const eventTime = isUganda 
-      ? '09:00 Sampai Dengan Selesai' 
-      : (isRevolusi 
-          ? '09.00 - 17.00 WIB' 
-          : (ev.startTime && ev.endTime 
-              ? `${ev.startTime} - ${ev.endTime} WIB` 
-              : (ev.time || '09:00 - 16:00 WIB')));
-
     return {
       id: ev.id,
-      title: isRevolusi ? 'Field Visit: Revolusi Sebatang Bambu di Indonesia Studi Lapangan Ekosistem Bambu Tangerang Raya bersama Tim Pusat Studi Arsitektur Nusantara FTSP Universitas Trisakti' : ev.title,
-      date: eventDate,
-      time: eventTime,
-      location: ev.location,
-      category: ev.category,
-      description: ev.description,
-      image: isUganda ? getAssetUrl('event/banner.png') : (isRevolusi ? getAssetUrl('event/ebtr.png') : (isSNAI ? getAssetUrl('event/snai.png') : (ev.image || ev.bannerUrl || getAssetUrl('event/placeholder.jpg')))),
-      color: '#fab005', // default color for community events
-      organizer: ev.organizerName,
-      speakers: isRevolusi ? [
-        { name: 'Mukoddas Syuhada', role: 'Narasumber Utama', cvUrl: getAssetUrl('event/cv.pdf') }
-      ] : ev.speakers,
-      materials: isRevolusi ? [
-        { title: 'Itinerary Kegiatan', fileUrl: getAssetUrl('event/itinerary.pdf') },
-        { title: 'Materi Acara', fileUrl: getAssetUrl('event/materi.pdf') },
-        { title: 'Materi BLL', fileUrl: getAssetUrl('event/bll.pdf') },
-        { title: 'Materi Tambahan 2', fileUrl: getAssetUrl('event/materi2.pdf') }
-      ] : eventMaterials,
+      title: ev.title || 'Acara Komunitas',
+      date: ev.date || (ev.startDate ? `${ev.startDate} s/d ${ev.endDate || ''}` : 'Segera Hadir'),
+      time: ev.time || (ev.startTime ? `${ev.startTime} - ${ev.endTime || ''} WIB` : '09:00 - 17:00 WIB'),
+      location: ev.location || 'Indonesia',
+      category: ev.category || ev.customCategory || 'Komunitas',
+      image: ev.image || getAssetUrl(isUganda ? 'event/uganda.jpg' : 'event/cibarani-baduy.jpg'),
+      color: '#51cf66',
+      speakers: ev.speakers || [],
+      materials: ev.materials || (ev.materialUrl ? [{ title: ev.materialName || 'Materi Acara', fileUrl: ev.materialUrl }] : []),
+      description: ev.description || '',
       organizerId: ev.organizerId || null,
       organizerName: ev.organizerName || 'Panitia Acara',
       financialReport: ev.financialReport || null,
@@ -137,7 +126,12 @@ const EventsPage = () => {
       itineraryText: ev.itineraryText || '',
       customTerms: ev.customTerms || ''
     };
-  })];
+  });
+
+  // Prioritize active community events FIRST so the latest event is ALWAYS featured immediately
+  const allEvents = mappedCommunityEvents.length > 0
+    ? [...mappedCommunityEvents, ...eventsData]
+    : [...eventsData, featuredEventData];
 
   const sortedEvents = allEvents.sort((a, b) => {
     const timeA = parseEventDate(a.date);
@@ -151,7 +145,7 @@ const EventsPage = () => {
     return timeB - timeA; // Most recent past event first
   });
 
-  const featuredEvent = sortedEvents.length > 0 ? sortedEvents[0] : featuredEventData;
+  const featuredEvent = sortedEvents.length > 0 ? sortedEvents[0] : (mappedCommunityEvents[0] || featuredEventData);
   const gridEvents = sortedEvents.slice(1);
 
   // Auto-open modal if URL contains ?event={id}
@@ -229,63 +223,78 @@ const EventsPage = () => {
       minHeight: '100vh',
       backgroundColor: '#0a0f0a',
       color: 'white',
-      paddingTop: '220px',
+      paddingTop: 'clamp(140px, 18vw, 200px)',
       paddingBottom: '80px',
-      paddingLeft: '20px',
-      paddingRight: '20px',
-      fontFamily: 'sans-serif'
+      paddingLeft: 'clamp(12px, 3vw, 20px)',
+      paddingRight: 'clamp(12px, 3vw, 20px)',
+      fontFamily: 'sans-serif',
+      width: '100%',
+      maxWidth: '100vw',
+      boxSizing: 'border-box',
+      overflowX: 'hidden'
     },
     wrapper: {
       maxWidth: '1200px',
-      margin: '0 auto'
+      width: '100%',
+      margin: '0 auto',
+      boxSizing: 'border-box'
     },
     header: {
-      marginBottom: '50px',
+      marginBottom: '35px',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
       textAlign: 'center',
-      gap: '20px'
+      gap: '15px',
+      width: '100%',
+      boxSizing: 'border-box'
     },
     title: {
-      fontSize: 'clamp(2rem, 8vw, 3.5rem)',
+      fontSize: 'clamp(1.8rem, 6vw, 3rem)',
       fontWeight: '900',
       margin: 0,
       textTransform: 'uppercase',
-      letterSpacing: '-1px'
+      letterSpacing: '-0.5px',
+      textAlign: 'center',
+      maxWidth: '100%',
+      wordBreak: 'break-word'
     },
     highlight: {
       color: '#51cf66'
     },
     subtitle: {
       color: '#adb5bd',
-      fontSize: '1.1rem',
+      fontSize: 'clamp(0.88rem, 3.2vw, 1.05rem)',
       lineHeight: '1.6',
-      whiteSpace: 'nowrap',
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
-      maxWidth: '100%'
+      maxWidth: '650px',
+      margin: '0 auto',
+      textAlign: 'center',
+      wordBreak: 'break-word',
+      boxSizing: 'border-box'
     },
     featuredCard: {
       backgroundColor: 'rgba(255,255,255,0.05)',
-      borderRadius: '30px',
+      borderRadius: '24px',
       overflow: 'hidden',
-      marginBottom: '60px',
+      marginBottom: '50px',
       display: 'flex',
       flexDirection: 'column',
       border: '1px solid rgba(255,255,255,0.1)',
-      cursor: 'pointer'
+      cursor: 'pointer',
+      width: '100%',
+      boxSizing: 'border-box'
     },
     featuredImg: {
       width: '100%',
       height: 'auto',
-      maxHeight: '500px',
+      maxHeight: '480px',
       objectFit: 'contain',
       backgroundColor: '#0a0a0a'
     },
     featuredContent: {
-      padding: '30px',
-      width: '100%'
+      padding: 'clamp(16px, 4vw, 30px)',
+      width: '100%',
+      boxSizing: 'border-box'
     },
     badge: {
       display: 'inline-block',
@@ -299,8 +308,10 @@ const EventsPage = () => {
     },
     grid: {
       display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-      gap: '30px'
+      gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))',
+      gap: '24px',
+      width: '100%',
+      boxSizing: 'border-box'
     },
     card: {
       backgroundColor: 'rgba(255,255,255,0.05)',

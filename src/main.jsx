@@ -15,14 +15,13 @@ import { ThemeProvider } from './context/ThemeContext.jsx'
 const handleChunkError = (errorMsg) => {
   if (
     errorMsg &&
-    (/Loading chunk [\d\w]+ failed|Failed to fetch dynamically imported module|Importing a module script failed/i.test(errorMsg))
+    (/Loading chunk [\d\w]+ failed|Failed to fetch dynamically imported module|Importing a module script failed|Unexpected token/i.test(errorMsg))
   ) {
     const lastReload = sessionStorage.getItem('chunk_reload_timestamp');
     const now = Date.now();
-    // Throttle reload to prevent infinite loop (at most once every 10 seconds)
-    if (!lastReload || now - parseInt(lastReload, 10) > 10000) {
+    if (!lastReload || now - parseInt(lastReload, 10) > 8000) {
       sessionStorage.setItem('chunk_reload_timestamp', now.toString());
-      console.warn('🔄 Stale version detected. Reloading latest build...');
+      console.warn('🔄 Stale version detected. Reloading latest build automatically...');
       window.location.reload();
     }
   }
