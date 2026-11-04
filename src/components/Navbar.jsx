@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { 
   Globe, Bell, ChevronDown, ChevronUp, ChevronRight, Menu, X, Shield, Layout, 
   TreeDeciduous, Truck, Factory, Wallet, Leaf, ShoppingCart, Users, GraduationCap, 
@@ -189,10 +189,10 @@ const Navbar = () => {
 
   const quickAccessItems = [
     { label: t('nav_home'), path: '/', icon: <Home size={15} /> },
-    { label: '🏢 BangunIn MBR', path: '/bangunin', icon: <Building2 size={15} /> },
-    { label: '🌱 Tobat Ekologi', path: '/tobat-ekologi', icon: <TreeDeciduous size={15} /> },
-    { label: '🚀 BoomBoom', path: '/boomboom', icon: <Car size={15} /> },
-    { label: '💰 WaniPiro?', path: '/wanipiro', icon: <TrendingUp size={15} /> },
+    { label: '🚗 BoomBoom', path: '/boomboom', icon: <Car size={15} /> },
+    { label: '🏗️ BangunIn MBR', path: '/bangunin', icon: <Building2 size={15} /> },
+    { label: '🌿 Tobat Ekologi', path: '/tobat-ekologi', icon: <TreeDeciduous size={15} /> },
+    { label: '📊 WaniPiro?', path: '/wanipiro', icon: <TrendingUp size={15} /> },
   ];
 
   const foundationLinks = [

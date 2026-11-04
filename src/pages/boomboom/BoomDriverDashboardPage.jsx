@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   subscribeIncomingOrders, 
@@ -166,62 +166,71 @@ const BoomDriverDashboardPage = () => {
               onClick={() => setIsOnline(!isOnline)}
               title="Ketuk untuk mengubah status Online / Offline"
               style={{
-                background: isOnline ? '#10b981' : '#64748b',
-                color: 'white',
-                border: '2px solid rgba(255,255,255,0.4)',
-                padding: '12px 24px',
+                background: isOnline ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : '#475569',
+                color: '#ffffff',
+                border: '2px solid rgba(255,255,255,0.6)',
+                padding: '10px 22px',
                 borderRadius: '20px',
-                fontWeight: '900',
-                fontSize: '0.95rem',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
-                boxShadow: isOnline ? '0 0 15px rgba(16, 185, 129, 0.5)' : 'none'
+                gap: '10px',
+                boxShadow: isOnline ? '0 0 18px rgba(16, 185, 129, 0.6)' : 'none',
+                textAlign: 'left'
               }}
             >
-              <Power size={18} /> {isOnline ? 'ONLINE (SIAP NARIK)' : 'OFFLINE'}
+              <Power size={20} color="#ffffff" style={{ flexShrink: 0 }} />
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', lineHeight: 1.15 }}>
+                <span style={{ fontSize: '0.95rem', fontWeight: '900', letterSpacing: '0.5px' }}>
+                  {isOnline ? 'ONLINE' : 'OFFLINE'}
+                </span>
+                {isOnline && (
+                  <span style={{ fontSize: '0.75rem', fontWeight: '800', opacity: 0.95, letterSpacing: '0.3px', whiteSpace: 'nowrap' }}>
+                    (SIAP NARIK)
+                  </span>
+                )}
+              </div>
             </button>
           </div>
         </div>
 
-        {/* TODAY'S PERFORMANCE GRID */}
+        {/* TODAY'S PERFORMANCE GRID - HIGH CONTRAST */}
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
           gap: '16px',
           marginBottom: '28px'
         }}>
-          <div style={{ background: '#ffffff', borderRadius: '20px', padding: '20px', border: '1px solid #e2e8f0', boxShadow: '0 4px 15px rgba(0,0,0,0.03)' }}>
-            <div style={{ fontSize: '0.8rem', fontWeight: '700', color: '#64748b', marginBottom: '4px' }}>PENDAPATAN HARI INI</div>
-            <div style={{ fontSize: '1.5rem', fontWeight: '900', color: '#047857' }}>
+          <div style={{ background: 'var(--bg-card, #ffffff)', borderRadius: '20px', padding: '20px', border: '1.5px solid var(--border-color, #cbd5e1)', boxShadow: '0 4px 15px rgba(0,0,0,0.06)' }}>
+            <div style={{ fontSize: '0.8rem', fontWeight: '800', color: 'var(--text-muted, #475569)', marginBottom: '6px', letterSpacing: '0.3px' }}>PENDAPATAN HARI INI</div>
+            <div style={{ fontSize: '1.6rem', fontWeight: '900', color: '#10b981' }}>
               Rp {driverState.todayEarnings.toLocaleString('id-ID')}
             </div>
-            <div style={{ fontSize: '0.75rem', color: '#10b981', marginTop: '4px' }}>+85% Bagi hasil pengemudi</div>
+            <div style={{ fontSize: '0.78rem', fontWeight: '700', color: '#34d399', marginTop: '6px' }}>+85% Bagi hasil pengemudi</div>
           </div>
 
-          <div style={{ background: '#ffffff', borderRadius: '20px', padding: '20px', border: '1px solid #e2e8f0', boxShadow: '0 4px 15px rgba(0,0,0,0.03)' }}>
-            <div style={{ fontSize: '0.8rem', fontWeight: '700', color: '#64748b', marginBottom: '4px' }}>TOTAL TRIP HARI INI</div>
-            <div style={{ fontSize: '1.5rem', fontWeight: '900', color: '#0f172a' }}>
+          <div style={{ background: 'var(--bg-card, #ffffff)', borderRadius: '20px', padding: '20px', border: '1.5px solid var(--border-color, #cbd5e1)', boxShadow: '0 4px 15px rgba(0,0,0,0.06)' }}>
+            <div style={{ fontSize: '0.8rem', fontWeight: '800', color: 'var(--text-muted, #475569)', marginBottom: '6px', letterSpacing: '0.3px' }}>TOTAL TRIP HARI INI</div>
+            <div style={{ fontSize: '1.6rem', fontWeight: '900', color: 'var(--text-main, #0f172a)' }}>
               {driverState.todayTrips} Trip
             </div>
-            <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '4px' }}>Perjalanan selesai</div>
+            <div style={{ fontSize: '0.78rem', fontWeight: '600', color: 'var(--text-muted, #64748b)', marginTop: '6px' }}>Perjalanan selesai</div>
           </div>
 
-          <div style={{ background: '#ffffff', borderRadius: '20px', padding: '20px', border: '1px solid #e2e8f0', boxShadow: '0 4px 15px rgba(0,0,0,0.03)' }}>
-            <div style={{ fontSize: '0.8rem', fontWeight: '700', color: '#64748b', marginBottom: '4px' }}>DURASI ONLINE</div>
-            <div style={{ fontSize: '1.5rem', fontWeight: '900', color: '#b45309' }}>
+          <div style={{ background: 'var(--bg-card, #ffffff)', borderRadius: '20px', padding: '20px', border: '1.5px solid var(--border-color, #cbd5e1)', boxShadow: '0 4px 15px rgba(0,0,0,0.06)' }}>
+            <div style={{ fontSize: '0.8rem', fontWeight: '800', color: 'var(--text-muted, #475569)', marginBottom: '6px', letterSpacing: '0.3px' }}>DURASI ONLINE</div>
+            <div style={{ fontSize: '1.6rem', fontWeight: '900', color: '#f59f00' }}>
               {driverState.onlineHours} Jam
             </div>
-            <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '4px' }}>Aktif menerima trip</div>
+            <div style={{ fontSize: '0.78rem', fontWeight: '600', color: 'var(--text-muted, #64748b)', marginTop: '6px' }}>Aktif menerima trip</div>
           </div>
 
-          <div style={{ background: '#ffffff', borderRadius: '20px', padding: '20px', border: '1px solid #e2e8f0', boxShadow: '0 4px 15px rgba(0,0,0,0.03)' }}>
-            <div style={{ fontSize: '0.8rem', fontWeight: '700', color: '#64748b', marginBottom: '4px' }}>REWARD BMC DRIVER</div>
-            <div style={{ fontSize: '1.5rem', fontWeight: '900', color: '#d97706' }}>
+          <div style={{ background: 'var(--bg-card, #ffffff)', borderRadius: '20px', padding: '20px', border: '1.5px solid var(--border-color, #cbd5e1)', boxShadow: '0 4px 15px rgba(0,0,0,0.06)' }}>
+            <div style={{ fontSize: '0.8rem', fontWeight: '800', color: 'var(--text-muted, #475569)', marginBottom: '6px', letterSpacing: '0.3px' }}>REWARD BMC DRIVER</div>
+            <div style={{ fontSize: '1.6rem', fontWeight: '900', color: '#fbbf24' }}>
               +14.5 BMC
             </div>
-            <div style={{ fontSize: '0.75rem', color: '#d97706', marginTop: '4px' }}>Insentif kontribusi aktif</div>
+            <div style={{ fontSize: '0.78rem', fontWeight: '700', color: '#fbbf24', marginTop: '6px' }}>Insentif kontribusi aktif</div>
           </div>
         </div>
 
@@ -245,7 +254,7 @@ const BoomDriverDashboardPage = () => {
               </span>
             </div>
 
-            <div style={{ fontSize: '1.2rem', fontWeight: '800', color: '#0f172a', marginBottom: '8px' }}>
+            <div style={{ fontSize: '1.2rem', fontWeight: '800', color: 'var(--text-main, #0f172a)', marginBottom: '8px' }}>
               Penumpang: {incomingOrder.passengerName} ({incomingOrder.serviceType})
             </div>
 
@@ -346,7 +355,7 @@ const BoomDriverDashboardPage = () => {
           border: '1px solid var(--border-color, #e2e8f0)',
           marginBottom: '28px'
         }}>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: '800', margin: '0 0 16px', color: '#0f172a' }}>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: '800', margin: '0 0 16px', color: 'var(--text-main, #0f172a)' }}>
             Navigasi Layar Pengemudi & Peta
           </h2>
           <MapViewComponent height="380px" showNearbyDrivers={isOnline} />

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   UserCheck, 
@@ -19,6 +19,7 @@ const BoomDriverRegisterPage = () => {
     fullName: '',
     phone: '',
     email: '',
+    ngopiUsername: '@majelisngopi',
     identityNumber: '',
     licenseNumber: '',
     vehicleType: 'BoomRide',
@@ -206,6 +207,23 @@ const BoomDriverRegisterPage = () => {
                       placeholder="+62 812-xxxx-xxxx"
                       style={inputStyle}
                     />
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted, #475569)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span>☕</span> Akun ngopi.top / Link Chat Driver (Wajib untuk Integrasi Order)
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.ngopiUsername}
+                      onChange={e => setFormData({ ...formData, ngopiUsername: e.target.value })}
+                      placeholder="Contoh: @majelisngopi atau link https://ngopi.top/chat/..."
+                      style={inputStyle}
+                    />
+                    <div style={{ fontSize: '0.72rem', color: '#059669', marginTop: '4px', fontWeight: '600' }}>
+                      💡 Pemesan akan langsung terhubung ke ruang obrolan ngopi.top Anda saat order dikonfirmasi.
+                    </div>
                   </div>
 
                   <div>

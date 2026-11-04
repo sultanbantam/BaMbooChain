@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Bike, 
@@ -63,8 +63,11 @@ const BoomBookPage = () => {
     assignDriverAndStartSimulation,
     updateBookingStep,
     completeTrip,
-    resetActiveBooking
+    resetActiveBooking,
+    recalculateRouteAndFare
   } = useBoomBoomStore();
+
+  const [isCalculating, setIsCalculating] = useState(false);
 
   const [pickupInput, setPickupInput] = useState(activeBooking.pickupAddress);
   const [destInput, setDestInput] = useState(activeBooking.destinationAddress);
@@ -144,10 +147,34 @@ const BoomBookPage = () => {
     isShared: activeBooking.serviceType === 'BoomTogether'
   });
 
-  const handleUpdateAddresses = (e) => {
-    e.preventDefault();
-    setPickup(pickupInput);
-    setDestination(destInput);
+  // Sinkronisasi otomatis saat titik GPS terdeteksi atau dipilih dari peta
+  useEffect(() => {
+    if (activeBooking.pickupAddress && activeBooking.pickupAddress !== pickupInput) {
+      setPickupInput(activeBooking.pickupAddress);
+    }
+  }, [activeBooking.pickupAddress]);
+
+  useEffect(() => {
+    if (activeBooking.destinationAddress && activeBooking.destinationAddress !== destInput) {
+      setDestInput(activeBooking.destinationAddress);
+    }
+  }, [activeBooking.destinationAddress]);
+
+  const handleUpdateAddresses = async (e) => {
+    if (e) e.preventDefault();
+    setIsCalculating(true);
+    try {
+      if (recalculateRouteAndFare) {
+        await recalculateRouteAndFare(pickupInput, destInput);
+      } else {
+        setPickup(pickupInput);
+        setDestination(destInput);
+      }
+    } catch (err) {
+      console.warn('Gagal menghitung rute:', err);
+    } finally {
+      setIsCalculating(false);
+    }
   };
 
   const handleConfirmOrder = async () => {
@@ -204,7 +231,11 @@ const BoomBookPage = () => {
     fare: activeBooking.fareCalc.grossFare,
     passenger_name: user?.displayName || 'Pengguna BaMbooChain',
     distance_km: activeBooking.fareCalc.distanceKm,
-    duration_min: activeBooking.fareCalc.durationMin
+    duration_min: activeBooking.fareCalc.durationMin,
+    driver_name: activeBooking.assignedDriver?.name || 'Asep Saepulloh',
+    driver_phone: activeBooking.assignedDriver?.phone || '+62 812-3456-7890',
+    driver_ngopi_username: activeBooking.assignedDriver?.ngopi_username || '@majelisngopi',
+    driver_ngopi_chat_url: activeBooking.assignedDriver?.ngopi_chat_url || 'https://ngopi.top/chat/f1c8c427-21bf-4fc1-8e99-9e651114d615?name=Ade%20Gunawan'
   };
 
   return (
@@ -492,18 +523,27 @@ const BoomBookPage = () => {
 
                   <button
                     type="submit"
+                    disabled={isCalculating}
+                    id="btn-confirm-pickup-route"
                     style={{
-                      background: 'var(--bg-secondary, #f1f5f9)',
-                      color: 'var(--text-main, #475569)',
-                      border: '1px solid var(--border-color, #cbd5e1)',
-                      padding: '10px',
-                      borderRadius: '12px',
-                      fontWeight: '800',
-                      fontSize: '0.8rem',
-                      cursor: 'pointer'
+                      background: 'linear-gradient(135deg, #065f46 0%, #047857 100%)',
+                      color: '#ffffff',
+                      border: '1.5px solid #34d399',
+                      padding: '13px 18px',
+                      borderRadius: '14px',
+                      fontWeight: '900',
+                      fontSize: '0.88rem',
+                      cursor: isCalculating ? 'not-allowed' : 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      boxShadow: '0 6px 18px rgba(4, 120, 87, 0.35)',
+                      transition: 'all 0.2s ease'
                     }}
                   >
-                    Perbarui Rute & Hitung Ulang Tarif
+                    <MapPin size={17} color="#34d399" />
+                    {isCalculating ? 'Menghitung Rute Nyata & Tarif...' : '📍 Konfirmasi Titik Penjemputan di Peta & Hitung Rute'}
                   </button>
                 </form>
 

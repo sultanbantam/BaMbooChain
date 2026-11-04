@@ -1,4 +1,4 @@
-import { create } from 'zustand';
+﻿import { create } from 'zustand';
 import { 
   MOCK_DRIVERS, 
   MOCK_OPERATORS, 
@@ -10,6 +10,24 @@ import {
 } from './mockData';
 import { DEFAULT_FARE_SETTINGS, calculateFare } from './fareEngine';
 import { createRewardLedgerEntry } from './rewardEngine';
+import { 
+  calculateRealisticRoadDistance, 
+  calculateRealisticEta, 
+  geocodeLocation, 
+  PRESET_COORDINATES 
+} from './geoService';
+
+// Helper sinkronisasi cepat koordinat dari teks
+const resolveCoordsSync = (address, defaultCoords) => {
+  if (!address || typeof address !== 'string') return defaultCoords;
+  const q = address.toLowerCase();
+  for (const [key, val] of Object.entries(PRESET_COORDINATES)) {
+    if (q.includes(key)) {
+      return { lat: val.lat, lng: val.lng };
+    }
+  }
+  return defaultCoords;
+};
 
 export const useBoomBoomStore = create((set, get) => ({
   // Feature Flags & System Config
@@ -73,23 +91,29 @@ export const useBoomBoomStore = create((set, get) => ({
     }));
   },
 
-  // Passenger Booking Actions
+  // Passenger Booking Actions dengan Perhitungan Jarak Nyata (Realistic Road Distance)
   setPickup: (address, coords) => {
     set((state) => {
-      const distance = 4.5;
-      const duration = 12;
+      const active = state.activeBooking;
+      const pickupCoords = coords || resolveCoordsSync(address, active.pickupCoords);
+      const destCoords = active.destinationCoords;
+
+      const distance = calculateRealisticRoadDistance(pickupCoords, destCoords);
+      const duration = calculateRealisticEta(distance, active.serviceType);
+
       const fareCalc = calculateFare({
-        serviceType: state.activeBooking.serviceType,
+        serviceType: active.serviceType,
         distanceKm: distance,
         durationMin: duration,
-        customConfig: state.fareSettings[state.activeBooking.serviceType],
-        isEvVehicle: state.activeBooking.isEvVehicle
+        customConfig: state.fareSettings[active.serviceType],
+        isEvVehicle: active.isEvVehicle
       });
+
       return {
         activeBooking: {
-          ...state.activeBooking,
+          ...active,
           pickupAddress: address,
-          pickupCoords: coords || state.activeBooking.pickupCoords,
+          pickupCoords,
           fareCalc
         }
       };
@@ -98,32 +122,78 @@ export const useBoomBoomStore = create((set, get) => ({
 
   setDestination: (address, coords) => {
     set((state) => {
-      const distance = 5.2;
-      const duration = 15;
+      const active = state.activeBooking;
+      const destCoords = coords || resolveCoordsSync(address, active.destinationCoords);
+      const pickupCoords = active.pickupCoords;
+
+      const distance = calculateRealisticRoadDistance(pickupCoords, destCoords);
+      const duration = calculateRealisticEta(distance, active.serviceType);
+
       const fareCalc = calculateFare({
-        serviceType: state.activeBooking.serviceType,
+        serviceType: active.serviceType,
         distanceKm: distance,
         durationMin: duration,
-        customConfig: state.fareSettings[state.activeBooking.serviceType],
-        isEvVehicle: state.activeBooking.isEvVehicle
+        customConfig: state.fareSettings[active.serviceType],
+        isEvVehicle: active.isEvVehicle
       });
+
       return {
         activeBooking: {
-          ...state.activeBooking,
+          ...active,
           destinationAddress: address,
-          destinationCoords: coords || state.activeBooking.destinationCoords,
+          destinationCoords: destCoords,
           fareCalc
         }
       };
     });
   },
 
+  // Perhitungan Rute & Tarif Komprehensif (Async Geocode + Realistic Distance)
+  recalculateRouteAndFare: async (pickupAddress, destinationAddress) => {
+    const state = get();
+    const serviceType = state.activeBooking.serviceType;
+    const isEvVehicle = state.activeBooking.isEvVehicle;
+
+    // Geocode titik jemput dan titik tujuan
+    const pickupGeo = await geocodeLocation(pickupAddress || state.activeBooking.pickupAddress);
+    const destGeo = await geocodeLocation(destinationAddress || state.activeBooking.destinationAddress);
+
+    const pickupCoords = { lat: pickupGeo.lat, lng: pickupGeo.lng };
+    const destCoords = { lat: destGeo.lat, lng: destGeo.lng };
+
+    const distance = calculateRealisticRoadDistance(pickupCoords, destCoords);
+    const duration = calculateRealisticEta(distance, serviceType);
+
+    const fareCalc = calculateFare({
+      serviceType,
+      distanceKm: distance,
+      durationMin: duration,
+      customConfig: state.fareSettings[serviceType],
+      isEvVehicle
+    });
+
+    set((s) => ({
+      activeBooking: {
+        ...s.activeBooking,
+        pickupAddress: pickupAddress || s.activeBooking.pickupAddress,
+        pickupCoords,
+        destinationAddress: destinationAddress || s.activeBooking.destinationAddress,
+        destinationCoords: destCoords,
+        fareCalc
+      }
+    }));
+
+    return { pickupCoords, destCoords, distance, duration, fareCalc };
+  },
+
   setServiceType: (serviceType) => {
     set((state) => {
+      const distance = state.activeBooking.fareCalc.distanceKm || 4.5;
+      const duration = calculateRealisticEta(distance, serviceType);
       const fareCalc = calculateFare({
         serviceType,
-        distanceKm: state.activeBooking.fareCalc.distanceKm || 4.5,
-        durationMin: state.activeBooking.fareCalc.durationMin || 12,
+        distanceKm: distance,
+        durationMin: duration,
         customConfig: state.fareSettings[serviceType],
         isEvVehicle: state.activeBooking.isEvVehicle
       });
@@ -212,6 +282,8 @@ export const useBoomBoomStore = create((set, get) => ({
       driver_name: activeBooking.assignedDriver?.name || 'Asep Saepulloh',
       driver_phone: activeBooking.assignedDriver?.phone || '+62 812-3456-7890',
       driver_photo: activeBooking.assignedDriver?.avatarUrl || '',
+      driver_ngopi_username: activeBooking.assignedDriver?.ngopi_username || '@majelisngopi',
+      driver_ngopi_chat_url: activeBooking.assignedDriver?.ngopi_chat_url || 'https://ngopi.top/chat/f1c8c427-21bf-4fc1-8e99-9e651114d615?name=Ade%20Gunawan',
       plate_number: activeBooking.assignedDriver?.plate_number || 'D 4892 BB',
       vehicle_model: activeBooking.assignedDriver?.vehicle_brand || 'Motor EV',
       service_type: activeBooking.serviceType,
@@ -270,14 +342,31 @@ export const useBoomBoomStore = create((set, get) => ({
     }));
   },
 
-  // Driver Registration Actions
+  // Driver Registration Actions dengan Integrasi Akun ngopi.top
   registerDriver: (driverFormData) => {
+    const rawNgopi = (driverFormData.ngopiUsername || '').trim();
+    const cleanUsername = rawNgopi.startsWith('@') ? rawNgopi : (rawNgopi ? `@${rawNgopi}` : '@majelisngopi');
+    
+    // Default chat link jika driver mendaftarkan @majelisngopi atau link personal
+    let ngopiChatUrl = driverFormData.ngopiChatUrl || '';
+    if (!ngopiChatUrl) {
+      if (cleanUsername.toLowerCase().includes('majelisngopi')) {
+        ngopiChatUrl = 'https://ngopi.top/chat/f1c8c427-21bf-4fc1-8e99-9e651114d615?name=Ade%20Gunawan';
+      } else if (rawNgopi.startsWith('http')) {
+        ngopiChatUrl = rawNgopi;
+      } else {
+        ngopiChatUrl = `https://ngopi.top/chat/f1c8c427-21bf-4fc1-8e99-9e651114d615?name=${encodeURIComponent(driverFormData.fullName || 'Mitra Driver')}`;
+      }
+    }
+
     const newDriver = {
       driver_id: `DRV-${Date.now().toString().slice(-4)}`,
       user_id: 'USR-CURRENT',
       name: driverFormData.fullName,
       phone: driverFormData.phone,
       email: driverFormData.email,
+      ngopi_username: cleanUsername,
+      ngopi_chat_url: ngopiChatUrl,
       status: 'SUBMITTED', // 'SUBMITTED' -> 'UNDER_REVIEW' -> 'VERIFIED'
       isOnline: false,
       vehicle_type: driverFormData.vehicleType,
@@ -340,7 +429,7 @@ export const useBoomBoomStore = create((set, get) => ({
       description: incidentData.description || 'Pengguna menekan tombol SOS darurat.',
       latitude: incidentData.lat || -6.6521,
       longitude: incidentData.lng || 107.6932,
-      status: 'OPEN', // 'OPEN' | 'INVESTIGATING' | 'RESOLVED'
+      status: 'OPEN',
       created_at: new Date().toISOString(),
       resolved_at: null
     };

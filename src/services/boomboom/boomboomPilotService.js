@@ -42,7 +42,7 @@ export const generateNgopiMessage = (trip) => {
     `https://www.bamboochain.id/#/boomboom/driver/dashboard?tripId=${tripId}`,
     ``,
     `💬 Koordinasi Komunitas via ngopi.top:`,
-    `https://ngopi.top/warkop`
+    `https://ngopi.top/contacts?join=BoomBoom`
   ].join('\n');
 };
 
@@ -52,7 +52,7 @@ export const openNgopiChat = (trip) => {
   if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(text).catch(() => {});
   }
-  const ngopiUrl = `https://ngopi.top/warkop`;
+  const ngopiUrl = `https://ngopi.top/contacts?join=BoomBoom`;
   window.open(ngopiUrl, '_blank', 'noopener,noreferrer');
 };
 

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * BOOMBOOM MOCK DATASET & SYSTEM CONSTANTS
  */
 
@@ -71,6 +71,8 @@ export const MOCK_DRIVERS = [
     name: 'Asep Saepulloh',
     phone: '+62 812-3456-7890',
     email: 'asep.saepulloh@bamboochain.id',
+    ngopi_username: '@majelisngopi',
+    ngopi_chat_url: 'https://ngopi.top/chat/f1c8c427-21bf-4fc1-8e99-9e651114d615?name=Ade%20Gunawan',
     status: 'VERIFIED',
     isOnline: true,
     vehicle_type: 'BoomRide',
@@ -93,6 +95,8 @@ export const MOCK_DRIVERS = [
     name: 'Siti Rahmawati',
     phone: '+62 813-9876-5432',
     email: 'siti.rahmawati@bamboochain.id',
+    ngopi_username: '@sitirahma',
+    ngopi_chat_url: 'https://ngopi.top/contacts?join=BoomBoom',
     status: 'VERIFIED',
     isOnline: true,
     vehicle_type: 'BoomCar',

@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Navigation, Car, Shield, Award, HelpCircle, UserCheck, Building2, History, Settings, Flame } from 'lucide-react';
 import { useBoomBoomStore } from '../../services/boomboom/boomboomStore';
+import LocationPermissionModal from './LocationPermissionModal';
 
 const BoomBoomNavHeader = () => {
   const location = useLocation();
@@ -28,10 +29,12 @@ const BoomBoomNavHeader = () => {
     { path: '/boomboom/safety', label: 'BoomSafe', icon: <Shield size={15} /> },
     { path: '/boomboom/help', label: 'Bantuan', icon: <HelpCircle size={15} /> },
     { path: '/boomboom/admin', label: 'Admin', icon: <Settings size={15} /> },
-    { path: 'https://ngopi.top/warkop', label: 'Warkop ngopi.top', isExternal: true, badge: 'Chat WA', icon: <span>☕</span> }
+    { path: 'https://ngopi.top/contacts?join=BoomBoom', label: 'ngopi.top', isExternal: true, badge: 'Chat WA', icon: <span>☕</span> }
   ];
 
   return (
+    <>
+      <LocationPermissionModal />
     <div style={{
       background: 'linear-gradient(135deg, #064e3b 0%, #047857 50%, #059669 100%)',
       color: '#ffffff',
@@ -83,7 +86,7 @@ const BoomBoomNavHeader = () => {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <a
-              href="https://ngopi.top/warkop"
+              href="https://ngopi.top/contacts?join=BoomBoom"
               target="_blank"
               rel="noopener noreferrer"
               style={{
@@ -235,6 +238,7 @@ const BoomBoomNavHeader = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

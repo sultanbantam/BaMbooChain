@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Building2, ShieldCheck, CheckCircle2, FileText, Phone, MapPin, ArrowRight } from 'lucide-react';
 import BoomBoomNavHeader from '../../components/boomboom/BoomBoomNavHeader';
@@ -49,7 +49,7 @@ const BoomOperatorRegisterPage = () => {
             </h1>
           </div>
           <p style={{ fontSize: '0.95rem', color: '#ecfdf5', margin: 0, maxWidth: '650px' }}>
-            BUMDes, Koperasi, Desa Wisata, Komunitas, atau Kampus dapat mendaftar menjadi Operator Wilayah resmi BoomBoom untuk mengelola pengemudi dan memperoleh bagi hasil komisi daerah.
+            BUMDes, Koperasi Merah Putih, BUMD, Komunitas Desa, Komunitas, atau Kampus dapat mendaftar menjadi Operator Wilayah resmi BoomBoom untuk mengelola pengemudi dan memperoleh bagi hasil komisi daerah.
           </p>
         </div>
 
@@ -128,9 +128,10 @@ const BoomOperatorRegisterPage = () => {
                     style={{ width: '100%', padding: '10px 12px', borderRadius: '12px', border: '1px solid #cbd5e1', marginTop: '4px' }}
                   >
                     <option value="BUMDes">BUMDes (Badan Usaha Milik Desa)</option>
-                    <option value="Koperasi">Koperasi Pemuda / Masyarakat</option>
+                    <option value="Koperasi Merah Putih">Koperasi Merah Putih / Koperasi Desa & UMKM</option>
+                    <option value="BUMD">BUMD (Badan Usaha Milik Daerah)</option>
                     <option value="Desa">Pemerintah Desa Direct</option>
-                    <option value="Komunitas">Komunitas / Pokdarwis</option>
+                    <option value="Komunitas">Komunitas / Pokdarwis / Kasepuhan Adat</option>
                     <option value="Kampus">Kampus / Akademisi</option>
                   </select>
                 </div>
