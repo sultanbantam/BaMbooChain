@@ -162,7 +162,9 @@ const BoomDriverDashboardPage = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
             <SosButton />
             <button
+              id="btn-driver-online-status"
               onClick={() => setIsOnline(!isOnline)}
+              title="Ketuk untuk mengubah status Online / Offline"
               style={{
                 background: isOnline ? '#10b981' : '#64748b',
                 color: 'white',

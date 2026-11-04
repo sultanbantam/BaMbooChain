@@ -20,7 +20,8 @@ const BoomBoomNavHeader = () => {
   const navItems = [
     { path: '/boomboom', label: 'Beranda', icon: <Navigation size={15} /> },
     { path: '/boomboom/book', label: 'Pesan', icon: <Car size={15} />, badge: 'Utama' },
-    { path: '/boomboom/driver', label: 'Pengemudi', icon: <UserCheck size={15} /> },
+    { path: '/boomboom/driver/dashboard', label: 'Dasbor Driver', icon: <UserCheck size={15} />, badge: 'Online' },
+    { path: '/boomboom/driver', label: 'Daftar Driver', icon: <Car size={15} /> },
     { path: '/boomboom/operator', label: 'Mitra', icon: <Building2 size={15} /> },
     { path: '/boomboom/trips', label: 'Riwayat', icon: <History size={15} /> },
     { path: '/boomboom/rewards', label: 'Reward', icon: <Award size={15} />, highlight: true },

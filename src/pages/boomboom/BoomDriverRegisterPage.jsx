@@ -58,6 +58,46 @@ const BoomDriverRegisterPage = () => {
 
       <div style={{ maxWidth: '900px', margin: '24px auto', padding: '0 16px' }}>
         
+        {/* BANNER MASUK DASBOR PENGEMUDI */}
+        <div style={{
+          background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
+          border: '2px solid #10b981',
+          borderRadius: '20px',
+          padding: '18px 24px',
+          marginBottom: '24px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '14px',
+          boxShadow: '0 6px 18px rgba(16, 185, 129, 0.15)'
+        }}>
+          <div>
+            <div style={{ fontWeight: '900', color: '#065f46', fontSize: '1.05rem', marginBottom: '4px' }}>
+              Sudah Terdaftar Sebagai Mitra Pengemudi?
+            </div>
+            <div style={{ fontSize: '0.85rem', color: '#047857' }}>
+              Langsung buka <strong>Dasbor Pengemudi</strong> untuk mengaktifkan status <strong>ONLINE (SIAP NARI)</strong> dan menerima pesanan masuk.
+            </div>
+          </div>
+          <button
+            onClick={() => navigate('/boomboom/driver/dashboard')}
+            style={{
+              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+              color: '#ffffff',
+              border: 'none',
+              padding: '12px 22px',
+              borderRadius: '14px',
+              fontWeight: '900',
+              fontSize: '0.9rem',
+              cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(16, 185, 129, 0.35)'
+            }}
+          >
+            Buka Dasbor Pengemudi (Online) ➔
+          </button>
+        </div>
+        
         {/* PAGE HEADER */}
         <div style={{
           background: 'linear-gradient(135deg, #064e3b 0%, #047857 100%)',
