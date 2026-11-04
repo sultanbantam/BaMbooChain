@@ -180,7 +180,7 @@ const BoomDriverDashboardPage = () => {
                 boxShadow: isOnline ? '0 0 15px rgba(16, 185, 129, 0.5)' : 'none'
               }}
             >
-              <Power size={18} /> {isOnline ? 'ONLINE (SIAP NARI)' : 'OFFLINE'}
+              <Power size={18} /> {isOnline ? 'ONLINE (SIAP NARIK)' : 'OFFLINE'}
             </button>
           </div>
         </div>

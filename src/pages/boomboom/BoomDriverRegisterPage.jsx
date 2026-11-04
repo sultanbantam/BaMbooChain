@@ -77,7 +77,7 @@ const BoomDriverRegisterPage = () => {
               Sudah Terdaftar Sebagai Mitra Pengemudi?
             </div>
             <div style={{ fontSize: '0.85rem', color: '#047857' }}>
-              Langsung buka <strong>Dasbor Pengemudi</strong> untuk mengaktifkan status <strong>ONLINE (SIAP NARI)</strong> dan menerima pesanan masuk.
+              Langsung buka <strong>Dasbor Pengemudi</strong> untuk mengaktifkan status <strong>ONLINE (SIAP NARIK)</strong> dan menerima pesanan masuk.
             </div>
           </div>
           <button
