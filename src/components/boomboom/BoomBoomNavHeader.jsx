@@ -27,6 +27,7 @@ const BoomBoomNavHeader = () => {
     { path: '/boomboom/safety', label: 'BoomSafe', icon: <Shield size={15} /> },
     { path: '/boomboom/help', label: 'Bantuan', icon: <HelpCircle size={15} /> },
     { path: '/boomboom/admin', label: 'Admin', icon: <Settings size={15} /> },
+    { path: 'https://ngopi.top/warkop', label: 'Warkop ngopi.top', isExternal: true, badge: 'Chat WA', icon: <span>☕</span> }
   ];
 
   return (
@@ -79,8 +80,30 @@ const BoomBoomNavHeader = () => {
             )}
           </div>
 
-          <span style={{
-            background: featureFlags.BOOMBOOM_PILOT_ENABLED ? 'rgba(52, 211, 153, 0.2)' : 'rgba(239, 68, 68, 0.2)',
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <a
+              href="https://ngopi.top/warkop"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                background: '#451a03',
+                border: '1px solid #92400e',
+                color: '#fef3c7',
+                padding: isMobile ? '3px 8px' : '4px 10px',
+                borderRadius: '20px',
+                fontSize: isMobile ? '0.65rem' : '0.72rem',
+                fontWeight: '800',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                textDecoration: 'none',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              ☕ ngopi.top
+            </a>
+            <span style={{
+              background: featureFlags.BOOMBOOM_PILOT_ENABLED ? 'rgba(52, 211, 153, 0.2)' : 'rgba(239, 68, 68, 0.2)',
             border: `1px solid ${featureFlags.BOOMBOOM_PILOT_ENABLED ? '#34d399' : '#f87171'}`,
             color: featureFlags.BOOMBOOM_PILOT_ENABLED ? '#34d399' : '#f87171',
             padding: isMobile ? '3px 8px' : '4px 10px',
@@ -99,7 +122,8 @@ const BoomBoomNavHeader = () => {
               flexShrink: 0
             }} />
             {featureFlags.BOOMBOOM_PILOT_ENABLED ? (isMobile ? 'Pilot' : 'Pilot Mode') : 'Inactive'}
-          </span>
+            </span>
+          </div>
         </div>
 
         {/* Nav Items — horizontal scroll, hide scrollbar */}
@@ -117,10 +141,61 @@ const BoomBoomNavHeader = () => {
           `}</style>
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
+            const commonStyle = {
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  padding: isMobile ? '7px 11px' : '8px 14px',
+                  borderRadius: '10px',
+                  fontSize: isMobile ? '0.78rem' : '0.83rem',
+                  fontWeight: isActive ? '800' : '600',
+                  textDecoration: 'none',
+                  whiteSpace: 'nowrap',
+                  transition: 'all 0.18s ease',
+                  background: item.isExternal
+                    ? 'rgba(69, 26, 3, 0.6)'
+                    : isActive
+                    ? 'rgba(255, 255, 255, 0.28)'
+                    : item.highlight
+                    ? 'rgba(245, 159, 0, 0.22)'
+                    : 'rgba(255, 255, 255, 0.1)',
+                  color: item.isExternal ? '#fef3c7' : isActive ? '#ffffff' : item.highlight ? '#fef08a' : '#d1fae5',
+                  border: item.isExternal ? '1px solid #78350f' : isActive ? '1px solid rgba(255,255,255,0.45)' : '1px solid transparent',
+                  flexShrink: 0
+                };
+
+                if (item.isExternal) {
+                  return (
+                    <a
+                      key={item.path}
+                      href={item.path}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={commonStyle}
+                    >
+                      {item.icon}
+                      <span>{item.label}</span>
+                      {item.badge && (
+                        <span style={{
+                          background: '#f59f00',
+                          color: '#000000',
+                          fontSize: '0.6rem',
+                          fontWeight: '900',
+                          padding: '1px 5px',
+                          borderRadius: '5px',
+                          marginLeft: '1px'
+                        }}>
+                          {item.badge}
+                        </span>
+                      )}
+                    </a>
+                  );
+                }
+
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -132,13 +207,9 @@ const BoomBoomNavHeader = () => {
                   textDecoration: 'none',
                   whiteSpace: 'nowrap',
                   transition: 'all 0.18s ease',
-                  background: isActive
-                    ? 'rgba(255, 255, 255, 0.28)'
-                    : item.highlight
-                    ? 'rgba(245, 159, 0, 0.22)'
-                    : 'rgba(255, 255, 255, 0.1)',
-                  color: isActive ? '#ffffff' : item.highlight ? '#fef08a' : '#d1fae5',
-                  border: isActive ? '1px solid rgba(255,255,255,0.45)' : '1px solid transparent',
+                  background: commonStyle.background,
+                  color: commonStyle.color,
+                  border: commonStyle.border,
                   flexShrink: 0
                 }}
               >

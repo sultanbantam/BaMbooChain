@@ -23,6 +23,16 @@ import MapViewComponent from '../../components/boomboom/MapViewComponent';
 import SosButton from '../../components/boomboom/SosButton';
 import { useBoomBoomStore } from '../../services/boomboom/boomboomStore';
 import { calculateGreenScore } from '../../services/boomboom/rewardEngine';
+import { useAuth } from '../../context/AuthContext';
+import { 
+  createPilotTripOrder, 
+  subscribePilotTripStatus, 
+  openNgopiChat, 
+  openWhatsAppDispatch, 
+  updatePilotTripStep,
+  generateNgopiMessage 
+} from '../../services/boomboom/boomboomPilotService';
+import { MessageSquare, Share2, Copy, Check, Radio, ExternalLink } from 'lucide-react';
 
 const useIsMobile = () => {
   const [w, setW] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
@@ -37,6 +47,11 @@ const useIsMobile = () => {
 const BoomBookPage = () => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [isCopied, setIsCopied] = useState(false);
+  const [useLivePilot, setUseLivePilot] = useState(true);
+  const [pilotTripId, setPilotTripId] = useState(null);
+  const [createdTripData, setCreatedTripData] = useState(null);
   const {
     activeBooking,
     setPickup,
@@ -57,8 +72,51 @@ const BoomBookPage = () => {
   const [ratingScore, setRatingScore] = useState(5);
   const [ratingComment, setRatingComment] = useState('');
 
-  // Auto-progress simulation logic for prototype demo
+  // Listener real-time status Firestore pada Tahap 1 Uji Lapangan
   useEffect(() => {
+    if (!pilotTripId || !useLivePilot) return;
+
+    const unsub = subscribePilotTripStatus(pilotTripId, (trip) => {
+      if (!trip) return;
+      setCreatedTripData(trip);
+
+      if (trip.status === 'DRIVER_ASSIGNED' && activeBooking.step === 'SEARCHING') {
+        const driver = {
+          driver_id: trip.driver_id || 'DRV-001',
+          name: trip.driver_name || 'Asep Saepulloh',
+          phone: trip.driver_phone || '+62 812-3456-7890',
+          avatarUrl: trip.driver_photo || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
+          plate_number: trip.plate_number || 'D 4892 BB',
+          vehicle_brand: trip.vehicle_model || 'Motor EV',
+          rating: 4.9
+        };
+        useBoomBoomStore.setState(state => ({
+          activeBooking: {
+            ...state.activeBooking,
+            step: 'DRIVER_ASSIGNED',
+            assignedDriver: driver
+          }
+        }));
+      } else if (trip.status === 'DRIVER_ARRIVING' && activeBooking.step !== 'DRIVER_ARRIVING') {
+        updateBookingStep('DRIVER_ARRIVING');
+      } else if (trip.status === 'DRIVER_ARRIVED' && activeBooking.step !== 'DRIVER_ARRIVED') {
+        updateBookingStep('DRIVER_ARRIVED');
+      } else if (trip.status === 'ON_TRIP' && activeBooking.step !== 'ON_TRIP') {
+        updateBookingStep('ON_TRIP');
+      } else if (trip.status === 'COMPLETED' && activeBooking.step !== 'COMPLETED') {
+        completeTrip(5, 'Uji lapangan selesai');
+      } else if (trip.status === 'CANCELLED' && activeBooking.step !== 'IDLE') {
+        cancelBooking();
+      }
+    });
+
+    return () => unsub && unsub();
+  }, [pilotTripId, useLivePilot, activeBooking.step, updateBookingStep, completeTrip, cancelBooking]);
+
+  // Fallback simulasi otomatis jika pengguna ingin uji mandiri (demo cepat)
+  useEffect(() => {
+    if (useLivePilot) return;
+
     let timer;
     if (activeBooking.step === 'SEARCHING') {
       timer = setTimeout(() => {
@@ -78,7 +136,7 @@ const BoomBookPage = () => {
       }, 3000);
     }
     return () => clearTimeout(timer);
-  }, [activeBooking.step, assignDriverAndStartSimulation, updateBookingStep]);
+  }, [useLivePilot, activeBooking.step, assignDriverAndStartSimulation, updateBookingStep]);
 
   const greenScore = calculateGreenScore({
     distanceKm: activeBooking.fareCalc.distanceKm || 4.5,
@@ -92,8 +150,61 @@ const BoomBookPage = () => {
     setDestination(destInput);
   };
 
-  const handleConfirmOrder = () => {
+  const handleConfirmOrder = async () => {
     startBookingFlow();
+    if (useLivePilot) {
+      try {
+        const orderData = await createPilotTripOrder({
+          pickupAddress: pickupInput,
+          destinationAddress: destInput,
+          pickupCoords: activeBooking.pickupCoords,
+          destinationCoords: activeBooking.destinationCoords,
+          serviceType: activeBooking.serviceType,
+          isEvVehicle: activeBooking.isEvVehicle,
+          fareCalc: activeBooking.fareCalc
+        }, user);
+        setCreatedTripData(orderData);
+        setPilotTripId(orderData.trip_id);
+        useBoomBoomStore.setState(state => ({
+          activeBooking: {
+            ...state.activeBooking,
+            currentTripId: orderData.trip_id
+          }
+        }));
+      } catch (err) {
+        console.warn('Gagal membuat order lapangan di Firestore:', err);
+      }
+    }
+  };
+
+  const handleCopyOrderText = () => {
+    const tripToShare = createdTripData || {
+      trip_id: activeBooking.currentTripId,
+      pickup_address: pickupInput,
+      destination_address: destInput,
+      service_type: activeBooking.serviceType,
+      fare: activeBooking.fareCalc.grossFare,
+      passenger_name: user?.displayName || 'Pengguna BaMbooChain',
+      distance_km: activeBooking.fareCalc.distanceKm,
+      duration_min: activeBooking.fareCalc.durationMin
+    };
+    const text = generateNgopiMessage(tripToShare);
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(text);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2500);
+    }
+  };
+
+  const activeTripObj = createdTripData || {
+    trip_id: activeBooking.currentTripId,
+    pickup_address: pickupInput,
+    destination_address: destInput,
+    service_type: activeBooking.serviceType,
+    fare: activeBooking.fareCalc.grossFare,
+    passenger_name: user?.displayName || 'Pengguna BaMbooChain',
+    distance_km: activeBooking.fareCalc.distanceKm,
+    duration_min: activeBooking.fareCalc.durationMin
   };
 
   return (
@@ -212,6 +323,48 @@ const BoomBookPage = () => {
                       {activeBooking.assignedDriver.vehicle_brand} ({activeBooking.assignedDriver.plate_number})
                     </div>
                   </div>
+                </div>
+
+                {/* CHAT ACTIONS: NGOPI.TOP & WHATSAPP */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '12px' }}>
+                  <button
+                    onClick={() => openNgopiChat(activeTripObj)}
+                    style={{
+                      background: '#451a03',
+                      color: '#fef3c7',
+                      border: '1px solid #78350f',
+                      padding: '10px 8px',
+                      borderRadius: '12px',
+                      fontWeight: '800',
+                      fontSize: '0.8rem',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    <span>☕</span> Chat di ngopi.top
+                  </button>
+                  <button
+                    onClick={() => openWhatsAppDispatch(activeTripObj, activeBooking.assignedDriver.phone)}
+                    style={{
+                      background: '#128c7e',
+                      color: '#ffffff',
+                      border: 'none',
+                      padding: '10px 8px',
+                      borderRadius: '12px',
+                      fontWeight: '800',
+                      fontSize: '0.8rem',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    <MessageSquare size={14} /> Chat via WA
+                  </button>
                 </div>
 
                 <div style={{ display: 'flex', gap: '10px' }}>
@@ -557,50 +710,151 @@ const BoomBookPage = () => {
               </div>
             )}
 
-            {/* STATE 2: SEARCHING DRIVER */}
+            {/* STATE 2: SEARCHING DRIVER WITH REAL-TIME DISPATCH & NGOPI.TOP */}
             {activeBooking.step === 'SEARCHING' && (
               <div style={{
                 background: 'var(--bg-card, #ffffff)',
                 borderRadius: '24px',
-                padding: '40px 24px',
+                padding: '30px 20px',
                 textAlign: 'center',
                 boxShadow: '0 8px 25px rgba(0,0,0,0.05)',
-                border: '1px solid var(--border-color, #cbd5e1)'
+                border: '1.5px solid #10b981'
               }}>
                 <div style={{
-                  width: '80px',
-                  height: '80px',
+                  width: '70px',
+                  height: '70px',
                   borderRadius: '50%',
                   background: '#d1fae5',
                   color: '#059669',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  margin: '0 auto 20px',
+                  margin: '0 auto 16px',
                   animation: 'pulse 1.2s infinite'
                 }}>
-                  <Bike size={42} />
+                  <Bike size={38} />
                 </div>
-                <h3 style={{ fontSize: '1.3rem', fontWeight: '800', color: 'var(--text-main, #0f172a)', margin: '0 0 8px' }}>
-                  Menghubungkan Pengemudi Desa...
+
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#ecfdf5', color: '#047857', padding: '4px 12px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '800', marginBottom: '8px' }}>
+                  <Radio size={12} color="#059669" /> TAHAP 1: UJI LAPANGAN AKTIF
+                </div>
+
+                <h3 style={{ fontSize: '1.25rem', fontWeight: '800', color: 'var(--text-main, #0f172a)', margin: '0 0 6px' }}>
+                  Pesanan Terdaftar di Cibarani
                 </h3>
-                <p style={{ fontSize: '0.9rem', color: 'var(--text-muted, #64748b)', maxWidth: '320px', margin: '0 auto 24px' }}>
-                  Sistem dispatch desentralisasi sedang mencocokkan pengemudi terdekat.
+                <div style={{ fontSize: '0.85rem', fontWeight: '700', color: '#047857', marginBottom: '14px' }}>
+                  ID Trip: #{pilotTripId || activeBooking.currentTripId} • Tarif Tunai: Rp {activeBooking.fareCalc.grossFare.toLocaleString('id-ID')}
+                </div>
+
+                <p style={{ fontSize: '0.82rem', color: 'var(--text-muted, #64748b)', maxWidth: '340px', margin: '0 auto 20px', lineHeight: 1.5 }}>
+                  Pesanan telah tersimpan di sistem. Kirim notifikasi pesanan ini ke komunitas pengemudi di <strong>ngopi.top</strong> atau WhatsApp agar segera diambil pengemudi:
                 </p>
-                <button
-                  onClick={cancelBooking}
-                  style={{
-                    background: '#fee2e2',
-                    color: '#dc2626',
-                    border: 'none',
-                    padding: '10px 20px',
-                    borderRadius: '12px',
-                    fontWeight: '700',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Batalkan Pencarian
-                </button>
+
+                {/* DISPATCH ACTION BUTTONS: NGOPI.TOP & WHATSAPP */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: '360px', margin: '0 auto 24px' }}>
+                  <button
+                    onClick={() => openNgopiChat(activeTripObj)}
+                    style={{
+                      background: 'linear-gradient(135deg, #451a03 0%, #78350f 100%)',
+                      color: '#fef3c7',
+                      border: 'none',
+                      padding: '12px 16px',
+                      borderRadius: '14px',
+                      fontWeight: '800',
+                      fontSize: '0.88rem',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      boxShadow: '0 4px 12px rgba(69, 26, 3, 0.25)'
+                    }}
+                  >
+                    <span>☕</span> Kirim Notifikasi ke ngopi.top <ExternalLink size={15} />
+                  </button>
+
+                  <button
+                    onClick={() => openWhatsAppDispatch(activeTripObj)}
+                    style={{
+                      background: 'linear-gradient(135deg, #128c7e 0%, #075e54 100%)',
+                      color: '#ffffff',
+                      border: 'none',
+                      padding: '12px 16px',
+                      borderRadius: '14px',
+                      fontWeight: '800',
+                      fontSize: '0.88rem',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      boxShadow: '0 4px 12px rgba(18, 140, 126, 0.25)'
+                    }}
+                  >
+                    <MessageSquare size={16} /> Kirim via WhatsApp Pengemudi / BUMDes <ExternalLink size={15} />
+                  </button>
+
+                  <button
+                    onClick={handleCopyOrderText}
+                    style={{
+                      background: 'var(--bg-secondary, #f1f5f9)',
+                      color: 'var(--text-main, #334155)',
+                      border: '1px solid var(--border-color, #cbd5e1)',
+                      padding: '10px 14px',
+                      borderRadius: '12px',
+                      fontWeight: '700',
+                      fontSize: '0.8rem',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    {isCopied ? <Check size={14} color="#059669" /> : <Copy size={14} />}
+                    {isCopied ? 'Teks Pesanan Berhasil Disalin!' : 'Salin Format Pesanan Lengkap'}
+                  </button>
+                </div>
+
+                <div style={{ borderTop: '1px dashed var(--border-color, #cbd5e1)', paddingTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted, #64748b)' }}>
+                    Pengujian tanpa driver kedua di lapangan?
+                  </div>
+                  <button
+                    onClick={() => {
+                      setUseLivePilot(false);
+                      assignDriverAndStartSimulation();
+                    }}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: '#059669',
+                      fontSize: '0.78rem',
+                      fontWeight: '800',
+                      cursor: 'pointer',
+                      textDecoration: 'underline'
+                    }}
+                  >
+                    Gunakan Pengemudi Virtual (Simulasi Demo Cepat)
+                  </button>
+
+                  <button
+                    onClick={cancelBooking}
+                    style={{
+                      background: '#fee2e2',
+                      color: '#dc2626',
+                      border: 'none',
+                      padding: '8px 16px',
+                      borderRadius: '10px',
+                      fontWeight: '700',
+                      fontSize: '0.78rem',
+                      cursor: 'pointer',
+                      marginTop: '6px'
+                    }}
+                  >
+                    Batalkan Pencarian
+                  </button>
+                </div>
               </div>
             )}
 

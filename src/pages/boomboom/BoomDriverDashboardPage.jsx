@@ -1,5 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { 
+  subscribeIncomingOrders, 
+  acceptPilotOrderInFirestore, 
+  updatePilotTripStep, 
+  playOrderNotificationSound, 
+  openNgopiChat, 
+  openWhatsAppDispatch 
+} from '../../services/boomboom/boomboomPilotService';
+import { MessageSquare, PhoneCall, Volume2, Radio, ExternalLink } from 'lucide-react';
 import { 
   UserCheck, 
   DollarSign, 
@@ -37,14 +46,80 @@ const BoomDriverDashboardPage = () => {
   });
 
   const [activeJob, setActiveJob] = useState(null);
+  const [jobStep, setJobStep] = useState('ASSIGNED'); // ASSIGNED | ARRIVED | ON_TRIP
 
-  const handleAcceptOrder = () => {
+  // Dengarkan pesanan masuk secara real-time dari Firestore saat driver ONLINE
+  useEffect(() => {
+    if (!isOnline) return;
+
+    const unsub = subscribeIncomingOrders((orders) => {
+      if (orders && orders.length > 0 && !activeJob) {
+        const latest = orders[0];
+        playOrderNotificationSound();
+        setIncomingOrder({
+          id: latest.trip_id || latest.id,
+          trip_id: latest.trip_id || latest.id,
+          passengerName: latest.passenger_name || 'Warga Cibarani',
+          passengerPhone: latest.passenger_phone || '',
+          pickup: latest.pickup_address || 'Sentra Bibit Bambu Cibarani',
+          destination: latest.destination_address || 'Pasar Desa Cibarani, Subang',
+          distanceKm: latest.distance_km || 4.5,
+          estFare: latest.fare || 18650,
+          driverEarnings: Math.round((latest.fare || 18650) * 0.85),
+          serviceType: latest.service_type || 'BoomRide',
+          isRealFirestore: true,
+          rawOrder: latest
+        });
+      }
+    });
+
+    return () => unsub && unsub();
+  }, [isOnline, activeJob]);
+
+  const handleAcceptOrder = async () => {
+    if (incomingOrder?.isRealFirestore && incomingOrder?.trip_id) {
+      try {
+        await acceptPilotOrderInFirestore(incomingOrder.trip_id, {
+          driver_id: 'DRV-CIBARANI-01',
+          name: 'Asep Saepulloh',
+          phone: '+62 812-3456-7890',
+          plate_number: 'D 4892 BB',
+          vehicle_brand: 'Honda Vario 160 (Hijau)',
+          avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'
+        });
+      } catch (err) {
+        console.warn('Gagal konfirmasi order driver di Firestore:', err);
+      }
+    }
     setActiveJob(incomingOrder);
+    setJobStep('ASSIGNED');
     setIncomingOrder(null);
   };
 
   const handleRejectOrder = () => {
     setIncomingOrder(null);
+  };
+
+  const handleDriverArrived = async () => {
+    setJobStep('ARRIVED');
+    if (activeJob?.trip_id) {
+      await updatePilotTripStep(activeJob.trip_id, 'DRIVER_ARRIVED');
+    }
+  };
+
+  const handleStartTrip = async () => {
+    setJobStep('ON_TRIP');
+    if (activeJob?.trip_id) {
+      await updatePilotTripStep(activeJob.trip_id, 'ON_TRIP');
+    }
+  };
+
+  const handleCompleteTrip = async () => {
+    if (activeJob?.trip_id) {
+      await updatePilotTripStep(activeJob.trip_id, 'COMPLETED');
+    }
+    setActiveJob(null);
+    setJobStep('ASSIGNED');
   };
 
   return (
@@ -177,6 +252,51 @@ const BoomDriverDashboardPage = () => {
               <div>🏁 <strong>Tujuan:</strong> {incomingOrder.destination} ({incomingOrder.distanceKm} km)</div>
             </div>
 
+            {/* Quick Dispatch Chat Options for Driver */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '14px' }}>
+              <button
+                type="button"
+                onClick={() => openNgopiChat(incomingOrder.rawOrder || incomingOrder)}
+                style={{
+                  background: '#451a03',
+                  color: '#fef3c7',
+                  border: 'none',
+                  padding: '10px 12px',
+                  borderRadius: '12px',
+                  fontWeight: '800',
+                  fontSize: '0.82rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px'
+                }}
+              >
+                <span>☕</span> Buka Obrolan ngopi.top <ExternalLink size={14} />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => openWhatsAppDispatch(incomingOrder.rawOrder || incomingOrder, incomingOrder.passengerPhone)}
+                style={{
+                  background: '#128c7e',
+                  color: '#ffffff',
+                  border: 'none',
+                  padding: '10px 12px',
+                  borderRadius: '12px',
+                  fontWeight: '800',
+                  fontSize: '0.82rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px'
+                }}
+              >
+                <MessageSquare size={15} /> Chat via WA <ExternalLink size={14} />
+              </button>
+            </div>
+
             <div style={{ display: 'flex', gap: '12px' }}>
               <button
                 onClick={handleRejectOrder}
@@ -230,27 +350,148 @@ const BoomDriverDashboardPage = () => {
           <MapViewComponent height="380px" showNearbyDrivers={isOnline} />
 
           {activeJob && (
-            <div style={{ marginTop: '20px', background: '#f0fdf4', borderRadius: '20px', padding: '20px', border: '1.5px solid #10b981' }}>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: '800', color: '#065f46', margin: '0 0 8px' }}>
-                Trip Sedang Berjalan: {activeJob.passengerName}
+            <div style={{ marginTop: '20px', background: '#f0fdf4', borderRadius: '24px', padding: '22px', border: '2px solid #10b981', boxShadow: '0 8px 20px rgba(16, 185, 129, 0.15)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                <span style={{ fontSize: '0.78rem', fontWeight: '800', background: '#10b981', color: '#ffffff', padding: '3px 10px', borderRadius: '10px' }}>
+                  TRIP AKTIF TAHAP 1 #{activeJob.trip_id || activeJob.id}
+                </span>
+                <span style={{ fontSize: '0.85rem', fontWeight: '900', color: '#047857' }}>
+                  Pendapatan Driver: Rp {activeJob.driverEarnings.toLocaleString('id-ID')}
+                </span>
+              </div>
+
+              <h3 style={{ fontSize: '1.2rem', fontWeight: '800', color: '#065f46', margin: '0 0 4px' }}>
+                Penumpang: {activeJob.passengerName} ({activeJob.serviceType})
               </h3>
-              <p style={{ fontSize: '0.85rem', color: '#047857', marginBottom: '16px' }}>
-                Menuju: {activeJob.destination} • Tarif Bersih Pengemudi: Rp {activeJob.driverEarnings.toLocaleString('id-ID')}
+              <p style={{ fontSize: '0.85rem', color: '#047857', marginBottom: '14px' }}>
+                Jemput: <strong>{activeJob.pickup}</strong> ➔ Antar: <strong>{activeJob.destination}</strong>
               </p>
-              <button
-                onClick={() => setActiveJob(null)}
-                style={{
-                  background: '#059669',
-                  color: 'white',
-                  border: 'none',
-                  padding: '12px 24px',
-                  borderRadius: '14px',
-                  fontWeight: '800',
-                  cursor: 'pointer'
-                }}
-              >
-                Selesaikan Perjalanan & Ambil Pembayaran
-              </button>
+
+              {/* Chat & Call links */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px', marginBottom: '16px' }}>
+                <button
+                  type="button"
+                  onClick={() => openNgopiChat(activeJob.rawOrder || activeJob)}
+                  style={{
+                    background: '#451a03',
+                    color: '#fef3c7',
+                    border: 'none',
+                    padding: '8px 12px',
+                    borderRadius: '10px',
+                    fontWeight: '800',
+                    fontSize: '0.78rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  <span>☕</span> Koordinasi ngopi.top
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => openWhatsAppDispatch(activeJob.rawOrder || activeJob, activeJob.passengerPhone)}
+                  style={{
+                    background: '#128c7e',
+                    color: '#ffffff',
+                    border: 'none',
+                    padding: '8px 12px',
+                    borderRadius: '10px',
+                    fontWeight: '800',
+                    fontSize: '0.78rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  <MessageSquare size={13} /> Chat WhatsApp
+                </button>
+
+                <a
+                  href={`tel:${activeJob.passengerPhone || '081234567890'}`}
+                  style={{
+                    background: 'rgba(16, 185, 129, 0.15)',
+                    color: '#047857',
+                    padding: '8px 12px',
+                    borderRadius: '10px',
+                    fontWeight: '800',
+                    fontSize: '0.78rem',
+                    textAlign: 'center',
+                    textDecoration: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  <PhoneCall size={13} /> Telepon
+                </a>
+              </div>
+
+              {/* Step Progression Buttons */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                {jobStep === 'ASSIGNED' && (
+                  <button
+                    onClick={handleDriverArrived}
+                    style={{
+                      flex: 1,
+                      background: '#059669',
+                      color: 'white',
+                      border: 'none',
+                      padding: '12px 20px',
+                      borderRadius: '14px',
+                      fontWeight: '800',
+                      fontSize: '0.9rem',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    📍 Saya Sudah Tiba di Titik Jemput
+                  </button>
+                )}
+
+                {jobStep === 'ARRIVED' && (
+                  <button
+                    onClick={handleStartTrip}
+                    style={{
+                      flex: 1,
+                      background: '#10b981',
+                      color: 'white',
+                      border: 'none',
+                      padding: '12px 20px',
+                      borderRadius: '14px',
+                      fontWeight: '800',
+                      fontSize: '0.9rem',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    🚀 Mulai Perjalanan Bersama Penumpang
+                  </button>
+                )}
+
+                {jobStep === 'ON_TRIP' && (
+                  <button
+                    onClick={handleCompleteTrip}
+                    style={{
+                      flex: 1,
+                      background: '#047857',
+                      color: 'white',
+                      border: 'none',
+                      padding: '14px 20px',
+                      borderRadius: '14px',
+                      fontWeight: '900',
+                      fontSize: '0.95rem',
+                      cursor: 'pointer',
+                      boxShadow: '0 6px 16px rgba(4, 120, 87, 0.35)'
+                    }}
+                  >
+                    ✅ Selesaikan Perjalanan & Terima Tunai Rp {activeJob.estFare.toLocaleString('id-ID')}
+                  </button>
+                )}
+              </div>
             </div>
           )}
         </div>
