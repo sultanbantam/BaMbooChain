@@ -1,1 +1,0 @@
-import{c as e}from"./vendor-others-BQAheKMM.js";export{e as SplashScreenWeb};

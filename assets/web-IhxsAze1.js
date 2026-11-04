@@ -1,1 +1,0 @@
-import{l as e}from"./vendor-others-BQAheKMM.js";export{e as AppWeb};

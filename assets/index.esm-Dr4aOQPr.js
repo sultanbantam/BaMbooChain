@@ -1,0 +1,1 @@
+import{et as e,ot as t,y as n}from"./vendor-firebase-BfSQ7o3h.js";export{n as addDoc,e as collection,t as serverTimestamp};
