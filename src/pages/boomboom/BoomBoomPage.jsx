@@ -207,7 +207,7 @@ const BoomBoomPage = () => {
                 color: '#047857', padding: '4px 10px', borderRadius: '10px', fontWeight: '700',
                 whiteSpace: 'nowrap'
               }}>
-                Area Aktif: Subang / Cibarani
+                Zona Pilot: 1. JaBoDeTaBek • 2. SeCiPaLe • 3. Lainnya
               </span>
             </div>
 
@@ -516,9 +516,9 @@ const BoomBoomPage = () => {
                   active: true,
                   done: true,
                   items: [
-                    'Geofence 6 Zona Pilot & Integrasi Proyek Desa',
+                    'Geofence Zona: 1. JaBoDeTaBek, 2. SeCiPaLe, 3. Lainnya (Kab/Kota & Prov)',
+                    'Dropdown Mitra: BUMDes, Yayasan, Perusahaan, Organisasi & Lain-lain',
                     '7 Metrik Telemetry: Completion, Respon, CSAT & Cancel',
-                    'Alur Resolusi Keluhan Warga & Insiden SOS',
                     'Kepatuhan Regulasi, KODIBA Sukarela & Marketplace'
                   ]
                 },

@@ -693,6 +693,13 @@ export const useBoomBoomStore = create((set, get) => ({
       }
     }
 
+    const isLainnyaZone = driverFormData.operatingRegion === 'REG-LAINNYA';
+    const regionLabel = driverFormData.operatingRegion === 'REG-JABODETABEK'
+      ? '1. JaBoDeTaBek (Jakarta, Bogor, Depok, Tangerang, Bekasi)'
+      : driverFormData.operatingRegion === 'REG-SECIPALE'
+        ? '2. SeCiPaLe (Serang, Cilegon, Pandeglang, Lebak)'
+        : `3. Lainnya: ${driverFormData.customRegencyCity || 'Kab/Kota'}, ${driverFormData.customProvince || 'Provinsi'}`;
+
     const newDriver = {
       driver_id: `DRV-${Date.now().toString().slice(-4)}`,
       user_id: userProfile?.uid || userProfile?.id || 'USR-CURRENT',
@@ -711,12 +718,18 @@ export const useBoomBoomStore = create((set, get) => ({
       plate_number: driverFormData.plateNumber,
       license_number: driverFormData.licenseNumber,
       operating_region: driverFormData.operatingRegion,
+      operating_region_label: regionLabel,
+      custom_regency_city: isLainnyaZone ? (driverFormData.customRegencyCity || '') : '',
+      custom_province: isLainnyaZone ? (driverFormData.customProvince || '') : '',
+      partner_type: driverFormData.partnerType || 'BUMDes',
+      custom_partner_type: driverFormData.partnerType === 'Lain-lain' ? (driverFormData.customPartnerType || '') : '',
+      other_partner_details: driverFormData.otherPartnerDetails || '',
       bank_account: driverFormData.bankAccount || '',
       emergency_contact: driverFormData.emergencyContact || '',
       rating: 5.0,
       completed_trips: 0,
-      currentLat: -6.6521,
-      currentLng: 107.6932,
+      currentLat: -6.2945,
+      currentLng: 106.7124,
       avatarUrl: driverFormData.profilePhotoUrl || userProfile?.photoURL || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150',
       created_at: new Date().toISOString()
     };
@@ -725,7 +738,7 @@ export const useBoomBoomStore = create((set, get) => ({
     get().addLocalAuditLog(
       'DRIVER_REGISTERED',
       newDriver.driver_id,
-      `Pendaftaran mitra pengemudi baru: ${newDriver.name} (${newDriver.plate_number})`,
+      `Pendaftaran mitra pengemudi baru: ${newDriver.name} (${newDriver.plate_number}) — Zona: ${regionLabel}, Mitra: ${newDriver.partner_type}`,
       newDriver.name
     );
 
@@ -750,13 +763,44 @@ export const useBoomBoomStore = create((set, get) => ({
 
   // Operator Actions
   registerOperator: (operatorFormData, userProfile = null) => {
+    const isLainnya = operatorFormData.region === 'REG-LAINNYA';
+    const regencyText = isLainnya
+      ? (operatorFormData.customRegencyCity || 'Kabupaten/Kota')
+      : operatorFormData.region === 'REG-SECIPALE'
+        ? 'Serang, Cilegon, Pandeglang, Lebak'
+        : 'Jakarta, Bogor, Depok, Tangerang, Bekasi';
+    const provinceText = isLainnya
+      ? (operatorFormData.customProvince || 'Provinsi')
+      : operatorFormData.region === 'REG-SECIPALE'
+        ? 'Banten'
+        : 'DKI Jakarta, Jawa Barat & Banten';
+
+    const operatingAreaLabel = isLainnya
+      ? `3. Lainnya: ${regencyText}, Provinsi ${provinceText}`
+      : operatorFormData.region === 'REG-SECIPALE'
+        ? '2. SeCiPaLe (Serang, Cilegon, Pandeglang, Lebak - Banten)'
+        : '1. JaBoDeTaBek (Jakarta, Bogor, Depok, Tangerang, Bekasi)';
+
+    const resolvedPartnerType = operatorFormData.type === 'Lain-lain' && operatorFormData.customTypeDetail
+      ? `Lain-lain (${operatorFormData.customTypeDetail})`
+      : operatorFormData.type;
+
     const newOp = {
       operator_id: `OP-${Date.now().toString().slice(-4)}`,
       user_id: userProfile?.uid || userProfile?.id || 'USR-CURRENT',
       name: operatorFormData.name,
       type: operatorFormData.type,
+      custom_type_detail: operatorFormData.customTypeDetail || '',
+      other_requirements_detail: operatorFormData.otherRequirementsDetail || '',
       region: operatorFormData.region,
+      regency_city: regencyText,
+      province: provinceText,
+      operating_area: operatingAreaLabel,
+      project_id: operatorFormData.projectId || (isLainnya ? 'PRJ-DESA-LAINNYA-03' : operatorFormData.region === 'REG-SECIPALE' ? 'PRJ-SECIPALE-02' : 'PRJ-JABODETABEK-01'),
       legal_entity: operatorFormData.legalEntity,
+      operator_legal_status: `${resolvedPartnerType} (${operatorFormData.legalEntity || 'Terdaftar'})`,
+      license_reference: `DISHUB-PILOT/${new Date().getFullYear()}`,
+      compliance_status: 'COMPLIANT_VERIFIED',
       contact_person: operatorFormData.contactPerson,
       phone: operatorFormData.phone,
       status: 'SUBMITTED',
@@ -769,12 +813,30 @@ export const useBoomBoomStore = create((set, get) => ({
     get().addLocalAuditLog(
       'OPERATOR_REGISTERED',
       newOp.operator_id,
-      `Pendaftaran Mitra Operator Wilayah: ${newOp.name} (${newOp.type})`,
+      `Pendaftaran Mitra Operator Wilayah: ${newOp.name} (${resolvedPartnerType}) di ${operatingAreaLabel}`,
       newOp.contact_person
     );
-    set((state) => ({
-      operators: [newOp, ...state.operators]
-    }));
+    set((state) => {
+      const updatedRegions = state.regions.map((r) => {
+        if (r.id !== operatorFormData.region) return r;
+        return {
+          ...r,
+          name: isLainnya ? `3. Lainnya: ${regencyText}, ${provinceText}` : r.name,
+          regency: regencyText,
+          province: provinceText,
+          customRegencyCity: isLainnya ? regencyText : r.customRegencyCity,
+          customProvince: isLainnya ? provinceText : r.customProvince,
+          operatorName: operatorFormData.name || r.operatorName,
+          operatorType: operatorFormData.type || r.operatorType,
+          operatorCustomType: operatorFormData.customTypeDetail || '',
+          operatorOtherDetails: operatorFormData.otherRequirementsDetail || r.operatorOtherDetails
+        };
+      });
+      return {
+        operators: [newOp, ...state.operators],
+        regions: updatedRegions
+      };
+    });
     return newOp;
   },
 
@@ -978,6 +1040,44 @@ export const useBoomBoomStore = create((set, get) => ({
       regionId,
       `Status zona Closed Regional Pilot ${regionId} diperbarui oleh Admin/Operator.`,
       'Central Admin BoomBoom'
+    );
+  },
+
+  updatePilotRegionConfig: (regionId, configUpdates) => {
+    set((state) => {
+      const updatedRegions = state.regions.map((r) => {
+        if (r.id !== regionId) return r;
+        const isLainnya = regionId === 'REG-LAINNYA' || r.zoneCategory === 'LAINNYA';
+        const nextRegency = configUpdates.regency !== undefined ? configUpdates.regency : r.regency;
+        const nextProvince = configUpdates.province !== undefined ? configUpdates.province : r.province;
+        const nextName = isLainnya && (nextRegency || nextProvince)
+          ? `3. Lainnya: ${nextRegency || 'Kabupaten/Kota'}, ${nextProvince || 'Provinsi'}`
+          : (configUpdates.name || r.name);
+
+        return {
+          ...r,
+          ...configUpdates,
+          name: nextName,
+          regency: nextRegency,
+          province: nextProvince,
+          customRegencyCity: isLainnya ? nextRegency : r.customRegencyCity,
+          customProvince: isLainnya ? nextProvince : r.customProvince
+        };
+      });
+      const pilotGeofence = checkGeofencePilotZone(state.activeBooking.pickupCoords, updatedRegions);
+      return {
+        regions: updatedRegions,
+        activeBooking: {
+          ...state.activeBooking,
+          pilotGeofence
+        }
+      };
+    });
+    get().addLocalAuditLog(
+      'PILOT_ZONE_CONFIG_UPDATED',
+      regionId,
+      `Konfigurasi Geofence & Mitra Zona Pilot ${regionId} diperbarui (${configUpdates.operatorType || 'Mitra'} - ${configUpdates.operatorName || ''})`,
+      'Admin / Operator Wilayah'
     );
   },
 

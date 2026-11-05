@@ -24,6 +24,7 @@ import BoomBoomNavHeader from '../../components/boomboom/BoomBoomNavHeader';
 import MapViewComponent from '../../components/boomboom/MapViewComponent';
 import SosButton from '../../components/boomboom/SosButton';
 import { useBoomBoomStore } from '../../services/boomboom/boomboomStore';
+import { PARTNER_ENTITY_TYPES, PILOT_ZONE_OPTIONS } from '../../services/boomboom/mockData';
 import { calculateGreenScore } from '../../services/boomboom/rewardEngine';
 import { useAuth } from '../../context/AuthContext';
 import { 
@@ -63,6 +64,7 @@ const BoomBookPage = () => {
   const {
     activeBooking,
     drivers,
+    regions,
     featureFlags,
     setPickup,
     setDestination,
@@ -79,8 +81,16 @@ const BoomBookPage = () => {
     setPaymentSession,
     pushNotification,
     submitTripRatingAndCsat,
-    submitComplaint
+    submitComplaint,
+    updatePilotRegionConfig
   } = useBoomBoomStore();
+
+  const [selectedPilotZoneId, setSelectedPilotZoneId] = useState('REG-JABODETABEK');
+  const [customZoneRegency, setCustomZoneRegency] = useState('Kabupaten Subang');
+  const [customZoneProvince, setCustomZoneProvince] = useState('Jawa Barat');
+  const [selectedMitraType, setSelectedMitraType] = useState('BUMDes');
+  const [customMitraTypeDetail, setCustomMitraTypeDetail] = useState('');
+  const [mitraOtherDetails, setMitraOtherDetails] = useState('Angkutan warga, komuter & distribusi produk lokal desa');
 
   const [isCalculating, setIsCalculating] = useState(false);
   const [codeCopied, setCodeCopied] = useState(false);
@@ -595,42 +605,225 @@ const BoomBookPage = () => {
                 </div>
               )}
 
-              {/* TAHAP III: GEOFENCE ZONA CLOSED REGIONAL PILOT & INTEGRASI PROJECT ECOSYSTEM */}
-              {activeBooking.pilotGeofence?.nearestRegion && (
-                <div style={{
-                  marginTop: '12px',
-                  background: activeBooking.pilotGeofence.isWithinPilotZone
-                    ? 'rgba(16, 185, 129, 0.1)'
-                    : 'rgba(245, 159, 0, 0.12)',
-                  border: activeBooking.pilotGeofence.isWithinPilotZone
-                    ? '1px solid rgba(16, 185, 129, 0.35)'
-                    : '1px solid rgba(245, 159, 0, 0.45)',
-                  borderRadius: '16px',
-                  padding: '12px 14px'
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '6px' }}>
-                    <span style={{ fontSize: '0.72rem', fontWeight: '900', color: activeBooking.pilotGeofence.isWithinPilotZone ? '#059669' : '#d97706', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <ShieldCheck size={15} />
-                      {activeBooking.pilotGeofence.isWithinPilotZone
-                        ? `ZONA PILOT AKTIF (TAHAP III): ${activeBooking.pilotGeofence.nearestRegion.name}`
-                        : `LUAR RADIUS INTI (${activeBooking.pilotGeofence.distanceToCenterKm} km dari ${activeBooking.pilotGeofence.nearestRegion.regency})`}
-                    </span>
-                    <span style={{
-                      fontSize: '0.65rem',
-                      fontWeight: '800',
-                      background: 'rgba(6, 78, 59, 0.12)',
-                      color: 'var(--primary, #047857)',
-                      padding: '2px 8px',
-                      borderRadius: '999px'
-                    }}>
-                      {activeBooking.pilotGeofence.nearestRegion.project_id || 'PRJ-CIBARANI-01'}
-                    </span>
+              {/* TAHAP III: GEOFENCE ZONA PILOT TERBATAS & INTEGRASI PROYEK DESA (1. JaBoDeTaBek, 2. SeCiPaLe, 3. Lainnya + Dropdown Mitra) */}
+              {(() => {
+                const currentZoneObj = regions.find((r) => r.id === selectedPilotZoneId) || activeBooking.pilotGeofence?.nearestRegion || regions[0];
+                return (
+                  <div style={{
+                    marginTop: '12px',
+                    background: 'rgba(16, 185, 129, 0.08)',
+                    border: '1.5px solid rgba(16, 185, 129, 0.38)',
+                    borderRadius: '18px',
+                    padding: '14px 16px'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '10px' }}>
+                      <span style={{ fontSize: '0.74rem', fontWeight: '900', color: '#059669', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <ShieldCheck size={16} />
+                        GEOFENCE ZONA PILOT TERBATAS & INTEGRASI PROYEK DESA
+                      </span>
+                      <span style={{
+                        fontSize: '0.66rem',
+                        fontWeight: '800',
+                        background: 'rgba(6, 78, 59, 0.14)',
+                        color: 'var(--primary, #047857)',
+                        padding: '3px 9px',
+                        borderRadius: '999px'
+                      }}>
+                        {currentZoneObj?.project_id || 'PRJ-JABODETABEK-01'}
+                      </span>
+                    </div>
+
+                    {/* PILIH ZONA PILOT: 1. JaBoDeTaBek | 2. SeCiPaLe | 3. Lainnya */}
+                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.68rem', fontWeight: '800', color: 'var(--text-muted, #64748b)', marginBottom: '4px' }}>
+                          Pilih Zona Pilot Terbatas:
+                        </label>
+                        <select
+                          value={selectedPilotZoneId}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setSelectedPilotZoneId(val);
+                            const found = regions.find((r) => r.id === val);
+                            if (found) {
+                              setSelectedMitraType(found.operatorType || 'BUMDes');
+                            }
+                          }}
+                          style={{
+                            width: '100%',
+                            padding: '8px 10px',
+                            borderRadius: '10px',
+                            border: '1px solid var(--border-color, #cbd5e1)',
+                            background: 'var(--bg-card, #ffffff)',
+                            color: 'var(--text-main, #0f172a)',
+                            fontSize: '0.76rem',
+                            fontWeight: '800'
+                          }}
+                        >
+                          {PILOT_ZONE_OPTIONS.map((opt) => (
+                            <option key={opt.id} value={opt.id}>
+                              {opt.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.68rem', fontWeight: '800', color: 'var(--text-muted, #64748b)', marginBottom: '4px' }}>
+                          Mitra Pengelola (Dropdown):
+                        </label>
+                        <select
+                          value={selectedMitraType}
+                          onChange={(e) => {
+                            const nextType = e.target.value;
+                            setSelectedMitraType(nextType);
+                            updatePilotRegionConfig(selectedPilotZoneId, { operatorType: nextType });
+                          }}
+                          style={{
+                            width: '100%',
+                            padding: '8px 10px',
+                            borderRadius: '10px',
+                            border: '1px solid var(--border-color, #cbd5e1)',
+                            background: 'var(--bg-card, #ffffff)',
+                            color: 'var(--text-main, #0f172a)',
+                            fontSize: '0.76rem',
+                            fontWeight: '800'
+                          }}
+                        >
+                          {PARTNER_ENTITY_TYPES.map((pt) => (
+                            <option key={pt.value} value={pt.value}>
+                              {pt.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* JIKA PILIH 3. LAINNYA: SEBUTKAN KABUPATEN/KOTA & PROVINSI */}
+                    {selectedPilotZoneId === 'REG-LAINNYA' && (
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+                        gap: '8px',
+                        marginBottom: '10px',
+                        padding: '10px',
+                        borderRadius: '12px',
+                        background: 'rgba(245, 159, 0, 0.1)',
+                        border: '1px dashed #f59f00'
+                      }}>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '0.68rem', fontWeight: '900', color: '#b45309', marginBottom: '3px' }}>
+                            Sebutkan Kabupaten / Kota (Lainnya) *
+                          </label>
+                          <input
+                            type="text"
+                            value={customZoneRegency}
+                            onChange={(e) => {
+                              setCustomZoneRegency(e.target.value);
+                              updatePilotRegionConfig('REG-LAINNYA', { regency: e.target.value, province: customZoneProvince });
+                            }}
+                            placeholder="Contoh: Kab. Subang / Kota Bandung"
+                            style={{
+                              width: '100%',
+                              padding: '7px 10px',
+                              borderRadius: '8px',
+                              border: '1px solid #f59f00',
+                              background: 'var(--bg-card, #ffffff)',
+                              color: 'var(--text-main, #0f172a)',
+                              fontSize: '0.75rem',
+                              fontWeight: '700',
+                              boxSizing: 'border-box'
+                            }}
+                          />
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '0.68rem', fontWeight: '900', color: '#b45309', marginBottom: '3px' }}>
+                            Sebutkan Provinsi (Lainnya) *
+                          </label>
+                          <input
+                            type="text"
+                            value={customZoneProvince}
+                            onChange={(e) => {
+                              setCustomZoneProvince(e.target.value);
+                              updatePilotRegionConfig('REG-LAINNYA', { regency: customZoneRegency, province: e.target.value });
+                            }}
+                            placeholder="Contoh: Jawa Barat / Jawa Tengah"
+                            style={{
+                              width: '100%',
+                              padding: '7px 10px',
+                              borderRadius: '8px',
+                              border: '1px solid #f59f00',
+                              background: 'var(--bg-card, #ffffff)',
+                              color: 'var(--text-main, #0f172a)',
+                              fontSize: '0.75rem',
+                              fontWeight: '700',
+                              boxSizing: 'border-box'
+                            }}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* JIKA PILIH MITRA "LAIN-LAIN" ATAU ISIAN KETERANGAN MITRA */}
+                    {selectedMitraType === 'Lain-lain' && (
+                      <div style={{ marginBottom: '8px' }}>
+                        <label style={{ display: 'block', fontSize: '0.68rem', fontWeight: '900', color: '#b45309', marginBottom: '3px' }}>
+                          Sebutkan Jenis Mitra Lain-lain & Apa yang Harus Diisi *
+                        </label>
+                        <input
+                          type="text"
+                          value={customMitraTypeDetail}
+                          onChange={(e) => {
+                            setCustomMitraTypeDetail(e.target.value);
+                            updatePilotRegionConfig(selectedPilotZoneId, { operatorCustomType: e.target.value });
+                          }}
+                          placeholder="Contoh: Kasepuhan Adat / Kelompok Tani Hutan / Pokdarwis / Kampus"
+                          style={{
+                            width: '100%',
+                            padding: '7px 10px',
+                            borderRadius: '8px',
+                            border: '1px solid #f59f00',
+                            background: 'var(--bg-card, #ffffff)',
+                            color: 'var(--text-main, #0f172a)',
+                            fontSize: '0.75rem',
+                            fontWeight: '700',
+                            boxSizing: 'border-box'
+                          }}
+                        />
+                      </div>
+                    )}
+
+                    <div style={{ marginBottom: '6px' }}>
+                      <label style={{ display: 'block', fontSize: '0.67rem', fontWeight: '800', color: 'var(--text-muted, #64748b)', marginBottom: '3px' }}>
+                        Keterangan Mitra & Lain-lainnya (Nama Entitas, Cakupan Desa/Kota, Peran):
+                      </label>
+                      <input
+                        type="text"
+                        value={mitraOtherDetails}
+                        onChange={(e) => {
+                          setMitraOtherDetails(e.target.value);
+                          updatePilotRegionConfig(selectedPilotZoneId, { operatorOtherDetails: e.target.value });
+                        }}
+                        placeholder="Isi nama BUMDes/Yayasan/Perusahaan/Organisasi & cakupan layanannya..."
+                        style={{
+                          width: '100%',
+                          padding: '7px 10px',
+                          borderRadius: '8px',
+                          border: '1px solid var(--border-color, #cbd5e1)',
+                          background: 'var(--bg-card, #ffffff)',
+                          color: 'var(--text-main, #0f172a)',
+                          fontSize: '0.74rem',
+                          boxSizing: 'border-box'
+                        }}
+                      />
+                    </div>
+
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted, #64748b)', lineHeight: 1.4 }}>
+                      Wilayah Aktif: <strong>{selectedPilotZoneId === 'REG-LAINNYA' ? `${customZoneRegency || 'Kabupaten/Kota'}, ${customZoneProvince || 'Provinsi'}` : currentZoneObj?.regency}</strong> • Kategori Mitra: <strong>{selectedMitraType}{selectedMitraType === 'Lain-lain' && customMitraTypeDetail ? ` (${customMitraTypeDetail})` : ''}</strong>
+                    </div>
                   </div>
-                  <div style={{ fontSize: '0.73rem', color: 'var(--text-muted, #64748b)', lineHeight: 1.45 }}>
-                    Mitra Operator Resmi: <strong>{activeBooking.pilotGeofence.nearestRegion.operatorName}</strong> ({activeBooking.pilotGeofence.nearestRegion.operatorType}) • Ref Izin: <code>{activeBooking.pilotGeofence.nearestRegion.license_reference || 'DISHUB-PILOT/2026'}</code>
-                  </div>
-                </div>
-              )}
+                );
+              })()}
             </div>
 
             {/* PAYMENT SANDBOX SIMULATOR CARD (Tahap II) */}

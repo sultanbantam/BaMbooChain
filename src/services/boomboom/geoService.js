@@ -31,6 +31,16 @@ export const SPECIFIC_LANDMARKS = {
   'monas': { lat: -6.1754, lng: 106.8272, label: 'Monas, Gambir, Jakarta Pusat' },
   'blok m': { lat: -6.2443, lng: 106.7974, label: 'Blok M, Jakarta Selatan' },
 
+  // SeCiPaLe (Serang, Cilegon, Pandeglang, Lebak - Banten)
+  'alun alun serang': { lat: -6.1149, lng: 106.1541, label: 'Alun-Alun Kota Serang, Banten' },
+  'stasiun serang': { lat: -6.1102, lng: 106.1614, label: 'Stasiun Serang, Kota Serang, Banten' },
+  'pelabuhan merak': { lat: -5.9316, lng: 105.9985, label: 'Pelabuhan Merak, Cilegon, Banten' },
+  'alun alun cilegon': { lat: -6.0174, lng: 106.0538, label: 'Alun-Alun Kota Cilegon, Banten' },
+  'alun alun pandeglang': { lat: -6.3086, lng: 106.1067, label: 'Alun-Alun Pandeglang, Banten' },
+  'tanjung lesung': { lat: -6.4805, lng: 105.6542, label: 'Kawasan Ekonomi Khusus Tanjung Lesung, Pandeglang' },
+  'stasiun rangkasbitung': { lat: -6.3526, lng: 106.2515, label: 'Stasiun Rangkasbitung, Lebak, Banten' },
+  'alun alun rangkasbitung': { lat: -6.3578, lng: 106.2486, label: 'Alun-Alun Rangkasbitung, Lebak, Banten' },
+
   // Subang & Kasepuhan Cibarani
   'sentra bibit bambu cibarani': { lat: -6.6521, lng: 107.6932, label: 'Sentra Bibit Bambu Cibarani, Subang' },
   'pasar desa cibarani': { lat: -6.6850, lng: 107.7200, label: 'Pasar Desa Cibarani, Subang' },
@@ -43,6 +53,11 @@ export const SPECIFIC_LANDMARKS = {
 
 // Fallback hanya jika API online gagal dan tidak ada landmark spesifik
 const CITY_FALLBACKS = {
+  'serang': { lat: -6.1149, lng: 106.1541, label: 'Kota/Kab. Serang, Banten' },
+  'cilegon': { lat: -6.0174, lng: 106.0538, label: 'Kota Cilegon, Banten' },
+  'pandeglang': { lat: -6.3086, lng: 106.1067, label: 'Kab. Pandeglang, Banten' },
+  'rangkasbitung': { lat: -6.3526, lng: 106.2515, label: 'Rangkasbitung, Kab. Lebak, Banten' },
+  'lebak': { lat: -6.3578, lng: 106.2486, label: 'Kab. Lebak, Banten' },
   'pamulang': { lat: -6.3429, lng: 106.7381, label: 'Pamulang, Tangerang Selatan' },
   'ciputat': { lat: -6.3117, lng: 106.7467, label: 'Ciputat, Tangerang Selatan' },
   'serpong': { lat: -6.3016, lng: 106.6534, label: 'Serpong, Tangerang Selatan' },

@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import BoomBoomNavHeader from '../../components/boomboom/BoomBoomNavHeader';
 import { useBoomBoomStore } from '../../services/boomboom/boomboomStore';
+import { PARTNER_ENTITY_TYPES } from '../../services/boomboom/mockData';
 
 const BoomAdminDashboardPage = () => {
   const { 
@@ -28,6 +29,7 @@ const BoomAdminDashboardPage = () => {
     pilotMetrics,
     regions,
     togglePilotRegionStatus,
+    updatePilotRegionConfig,
     auditLogs
   } = useBoomBoomStore();
 
@@ -426,36 +428,147 @@ const BoomAdminDashboardPage = () => {
 
             {/* ZONA CLOSED REGIONAL PILOT AKTIF */}
             <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '2px dashed var(--border-color, #cbd5e1)' }}>
-              <h3 style={{ fontSize: '1.15rem', fontWeight: '800', margin: '0 0 12px' }}>
-                📍 Pengaturan Geofence Zona Closed Regional Pilot (Tahap III)
+              <h3 style={{ fontSize: '1.15rem', fontWeight: '800', margin: '0 0 6px' }}>
+                📍 Geofence Zona Pilot Terbatas & Integrasi Proyek Desa (1. JaBoDeTaBek | 2. SeCiPaLe | 3. Lainnya)
               </h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '12px' }}>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted, #64748b)', margin: '0 0 14px' }}>
+                Kelola cakupan zona geofence (JaBoDeTaBek, SeCiPaLe, atau Lainnya dengan menyebut Kabupaten/Kota & Provinsi) serta pilih jenis mitra pengelola (BUMDes, Yayasan, Perusahaan, Organisasi, atau Lain-lain).
+              </p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
                 {regions.map((reg) => (
-                  <div key={reg.id} style={{ background: 'var(--bg-secondary, #f8fafc)', padding: '14px', borderRadius: '14px', border: '1px solid var(--border-color, #cbd5e1)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                      <strong style={{ fontSize: '0.85rem' }}>{reg.name}</strong>
+                  <div
+                    key={reg.id}
+                    style={{
+                      background: 'var(--bg-secondary, #f8fafc)',
+                      padding: '16px',
+                      borderRadius: '16px',
+                      border: reg.status === 'ACTIVE_PILOT' ? '1.5px solid #10b981' : '1px solid var(--border-color, #cbd5e1)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '10px'
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+                      <strong style={{ fontSize: '0.88rem' }}>{reg.name}</strong>
                       <span style={{ fontSize: '0.68rem', fontWeight: '900', color: reg.status === 'ACTIVE_PILOT' ? '#047857' : '#dc2626' }}>
                         {reg.status}
                       </span>
                     </div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted, #64748b)', marginBottom: '8px' }}>
-                      {reg.operatorName} • Izin: {reg.license_reference || 'DISHUB-PILOT'}
+
+                    {(reg.id === 'REG-LAINNYA' || reg.zoneCategory === 'LAINNYA') ? (
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', background: 'rgba(245, 159, 0, 0.1)', padding: '10px', borderRadius: '10px', border: '1px dashed #f59f00' }}>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '0.68rem', fontWeight: '900', color: '#b45309', marginBottom: '2px' }}>
+                            Kabupaten / Kota *
+                          </label>
+                          <input
+                            type="text"
+                            value={reg.regency || ''}
+                            onChange={(e) => updatePilotRegionConfig(reg.id, { regency: e.target.value })}
+                            placeholder="Kabupaten / Kota"
+                            style={{ width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid #f59f00', fontSize: '0.75rem', fontWeight: '700', boxSizing: 'border-box' }}
+                          />
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '0.68rem', fontWeight: '900', color: '#b45309', marginBottom: '2px' }}>
+                            Provinsi *
+                          </label>
+                          <input
+                            type="text"
+                            value={reg.province || ''}
+                            onChange={(e) => updatePilotRegionConfig(reg.id, { province: e.target.value })}
+                            placeholder="Provinsi"
+                            style={{ width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid #f59f00', fontSize: '0.75rem', fontWeight: '700', boxSizing: 'border-box' }}
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted, #64748b)' }}>
+                        Wilayah: <strong>{reg.regency}</strong> ({reg.province})
+                      </div>
+                    )}
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '800', color: 'var(--text-muted, #475569)', marginBottom: '3px' }}>
+                        Dropdown Mitra Pengelola:
+                      </label>
+                      <select
+                        value={reg.operatorType || 'BUMDes'}
+                        onChange={(e) => updatePilotRegionConfig(reg.id, { operatorType: e.target.value })}
+                        style={{
+                          width: '100%',
+                          padding: '8px 10px',
+                          borderRadius: '10px',
+                          border: '1px solid var(--border-color, #cbd5e1)',
+                          background: 'var(--bg-card, #ffffff)',
+                          color: 'var(--text-main, #0f172a)',
+                          fontSize: '0.76rem',
+                          fontWeight: '800'
+                        }}
+                      >
+                        {PARTNER_ENTITY_TYPES.map((pt) => (
+                          <option key={pt.value} value={pt.value}>
+                            {pt.label}
+                          </option>
+                        ))}
+                      </select>
                     </div>
-                    <button
-                      onClick={() => togglePilotRegionStatus(reg.id)}
-                      style={{
-                        background: reg.status === 'ACTIVE_PILOT' ? '#fee2e2' : '#10b981',
-                        color: reg.status === 'ACTIVE_PILOT' ? '#dc2626' : '#ffffff',
-                        border: 'none',
-                        padding: '6px 12px',
-                        borderRadius: '8px',
-                        fontSize: '0.74rem',
-                        fontWeight: '800',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      {reg.status === 'ACTIVE_PILOT' ? 'Nonaktifkan Sementara' : 'Aktifkan Zona Pilot'}
-                    </button>
+
+                    {reg.operatorType === 'Lain-lain' && (
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.68rem', fontWeight: '900', color: '#b45309', marginBottom: '2px' }}>
+                          Sebutkan Jenis Mitra Lain-lain *
+                        </label>
+                        <input
+                          type="text"
+                          value={reg.operatorCustomType || ''}
+                          onChange={(e) => updatePilotRegionConfig(reg.id, { operatorCustomType: e.target.value })}
+                          placeholder="Contoh: Kasepuhan Adat / Kelompok Tani / Kampus"
+                          style={{ width: '100%', padding: '7px 9px', borderRadius: '8px', border: '1px solid #f59f00', fontSize: '0.75rem', fontWeight: '700', boxSizing: 'border-box' }}
+                        />
+                      </div>
+                    )}
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.68rem', fontWeight: '800', color: 'var(--text-muted, #475569)', marginBottom: '2px' }}>
+                        Nama Mitra & Keterangan Lain-lainnya:
+                      </label>
+                      <input
+                        type="text"
+                        value={reg.operatorName || ''}
+                        onChange={(e) => updatePilotRegionConfig(reg.id, { operatorName: e.target.value })}
+                        placeholder="Nama BUMDes / Yayasan / Perusahaan / Organisasi"
+                        style={{ width: '100%', padding: '7px 9px', borderRadius: '8px', border: '1px solid var(--border-color, #cbd5e1)', fontSize: '0.75rem', fontWeight: '700', marginBottom: '5px', boxSizing: 'border-box' }}
+                      />
+                      <input
+                        type="text"
+                        value={reg.operatorOtherDetails || ''}
+                        onChange={(e) => updatePilotRegionConfig(reg.id, { operatorOtherDetails: e.target.value })}
+                        placeholder="Keterangan operasional & lain-lain yang harus diisi..."
+                        style={{ width: '100%', padding: '7px 9px', borderRadius: '8px', border: '1px solid var(--border-color, #cbd5e1)', fontSize: '0.74rem', boxSizing: 'border-box' }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
+                      <span style={{ fontSize: '0.72rem', fontWeight: '800', color: '#059669' }}>
+                        {reg.project_id}
+                      </span>
+                      <button
+                        onClick={() => togglePilotRegionStatus(reg.id)}
+                        style={{
+                          background: reg.status === 'ACTIVE_PILOT' ? '#fee2e2' : '#10b981',
+                          color: reg.status === 'ACTIVE_PILOT' ? '#dc2626' : '#ffffff',
+                          border: 'none',
+                          padding: '6px 12px',
+                          borderRadius: '8px',
+                          fontSize: '0.74rem',
+                          fontWeight: '800',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {reg.status === 'ACTIVE_PILOT' ? 'Nonaktifkan Sementara' : 'Aktifkan Zona Pilot'}
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>

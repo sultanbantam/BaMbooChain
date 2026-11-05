@@ -10,12 +10,13 @@ import {
 } from 'lucide-react';
 import BoomBoomNavHeader from '../../components/boomboom/BoomBoomNavHeader';
 import { useBoomBoomStore } from '../../services/boomboom/boomboomStore';
+import { PARTNER_ENTITY_TYPES, PILOT_ZONE_OPTIONS } from '../../services/boomboom/mockData';
 import { useAuth } from '../../context/AuthContext';
 
 const BoomDriverRegisterPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { registerDriver, regions } = useBoomBoomStore();
+  const { registerDriver } = useBoomBoomStore();
 
   const [formData, setFormData] = useState({
     fullName: user?.displayName || '',
@@ -28,7 +29,12 @@ const BoomDriverRegisterPage = () => {
     vehicleBrand: 'Honda Vario 160 EV',
     vehicleYear: '2023',
     plateNumber: '',
-    operatingRegion: regions[0]?.id || 'REG-CIBARANI',
+    operatingRegion: 'REG-JABODETABEK',
+    customRegencyCity: '',
+    customProvince: '',
+    partnerType: 'BUMDes',
+    customPartnerType: '',
+    otherPartnerDetails: '',
     bankAccount: '',
     emergencyContact: '',
     profilePhotoUrl: user?.photoURL || '',
@@ -322,18 +328,110 @@ const BoomDriverRegisterPage = () => {
                   </div>
 
                   <div>
-                    <label style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted, #475569)' }}>Wilayah Operasional Mitra</label>
+                    <label style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted, #475569)' }}>
+                      Geofence Zona Pilot Terbatas & Integrasi Proyek Desa *
+                    </label>
                     <select
                       value={formData.operatingRegion}
                       onChange={e => setFormData({ ...formData, operatingRegion: e.target.value })}
                       style={inputStyle}
                     >
-                      {regions.map(r => (
+                      {PILOT_ZONE_OPTIONS.map(r => (
                         <option key={r.id} value={r.id}>
-                          {r.name} ({r.regency})
+                          {r.label}
                         </option>
                       ))}
                     </select>
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted, #475569)' }}>
+                      Jenis Mitra Pengelola Wilayah (Dropdown) *
+                    </label>
+                    <select
+                      value={formData.partnerType}
+                      onChange={e => setFormData({ ...formData, partnerType: e.target.value })}
+                      style={inputStyle}
+                    >
+                      {PARTNER_ENTITY_TYPES.map((pt) => (
+                        <option key={pt.value} value={pt.value}>
+                          {pt.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* JIKA PILIH 3. LAINNYA: WAJIB ISI KABUPATEN/KOTA & PROVINSI */}
+                {formData.operatingRegion === 'REG-LAINNYA' && (
+                  <div style={{
+                    marginTop: '14px',
+                    padding: '14px',
+                    borderRadius: '14px',
+                    background: 'rgba(245, 159, 0, 0.08)',
+                    border: '1px dashed #f59f00',
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                    gap: '12px'
+                  }}>
+                    <div>
+                      <label style={{ fontSize: '0.78rem', fontWeight: '800', color: '#b45309' }}>
+                        Sebutkan Kabupaten / Kota (Zona Lainnya) *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={formData.customRegencyCity}
+                        onChange={e => setFormData({ ...formData, customRegencyCity: e.target.value })}
+                        placeholder="Contoh: Kabupaten Subang / Kota Bandung"
+                        style={inputStyle}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: '0.78rem', fontWeight: '800', color: '#b45309' }}>
+                        Sebutkan Provinsi (Zona Lainnya) *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={formData.customProvince}
+                        onChange={e => setFormData({ ...formData, customProvince: e.target.value })}
+                        placeholder="Contoh: Jawa Barat / Jawa Tengah"
+                        style={inputStyle}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* JIKA PILIH MITRA "LAIN-LAIN" ATAU RINCIAN TAMBAHAN MITRA */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px', marginTop: '14px' }}>
+                  {formData.partnerType === 'Lain-lain' && (
+                    <div>
+                      <label style={{ fontSize: '0.78rem', fontWeight: '800', color: '#b45309' }}>
+                        Sebutkan Jenis Mitra Lain-lain (Apa Bentuk Lembaganya?) *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={formData.customPartnerType}
+                        onChange={e => setFormData({ ...formData, customPartnerType: e.target.value })}
+                        placeholder="Contoh: Kasepuhan Adat / Kelompok Tani / Pokdarwis"
+                        style={inputStyle}
+                      />
+                    </div>
+                  )}
+                  <div>
+                    <label style={{ fontSize: '0.78rem', fontWeight: '700', color: 'var(--text-muted, #475569)' }}>
+                      Nama Mitra / Keterangan Lain-lainnya (Opsional/Wajib diisi jika Lain-lain)
+                    </label>
+                    <input
+                      type="text"
+                      required={formData.partnerType === 'Lain-lain'}
+                      value={formData.otherPartnerDetails}
+                      onChange={e => setFormData({ ...formData, otherPartnerDetails: e.target.value })}
+                      placeholder="Contoh: Nama BUMDes / Yayasan / PT / Organisasi pengelola"
+                      style={inputStyle}
+                    />
                   </div>
                 </div>
               </div>
