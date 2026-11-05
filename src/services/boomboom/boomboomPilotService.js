@@ -721,3 +721,208 @@ export const recordSosIncidentInFirestore = async (incidentObj) => {
   }
   return incidentObj;
 };
+
+// ============================================================================
+// 7. TAHAP III — CLOSED REGIONAL PILOT: GEOFENCE, CSAT, COMPLAINTS & KODIBA
+// ============================================================================
+/**
+ * Memeriksa apakah titik koordinat penjemputan berada di dalam Geofence Wilayah Pilot Aktif (Tahap III)
+ */
+export const checkGeofencePilotZone = (coords, regions = []) => {
+  const lat = Number(coords?.lat ?? -6.6521);
+  const lng = Number(coords?.lng ?? 107.6932);
+  if (!Array.isArray(regions) || regions.length === 0) {
+    return {
+      isWithinPilotZone: true,
+      nearestRegion: null,
+      distanceToCenterKm: 0
+    };
+  }
+
+  let bestRegion = regions[0];
+  let minDistance = Infinity;
+
+  regions.forEach((reg) => {
+    const d = calculateHaversineDistance(lat, lng, reg.centerLat || -6.6521, reg.centerLng || 107.6932);
+    if (d < minDistance) {
+      minDistance = d;
+      bestRegion = reg;
+    }
+  });
+
+  const maxRadiusKm = bestRegion?.radiusKm || 30;
+  const isActivePilot = bestRegion?.status === 'ACTIVE_PILOT';
+  const isWithinPilotZone = isActivePilot && minDistance <= maxRadiusKm;
+
+  return {
+    isWithinPilotZone,
+    nearestRegion: bestRegion,
+    distanceToCenterKm: Number(minDistance.toFixed(1)),
+    maxRadiusKm
+  };
+};
+
+/**
+ * Simpan penilaian kepuasan warga (Rating 1-5 & CSAT Feedback Tags) ke Firestore boomboom_ratings
+ */
+export const recordTripRatingAndCsatInFirestore = async ({
+  tripId,
+  rating = 5,
+  tags = [],
+  comment = '',
+  passengerName = 'Warga Komunitas',
+  driverId = 'DRV-001'
+}) => {
+  const ratingId = `RAT-${Date.now().toString().slice(-6)}`;
+  const payload = {
+    rating_id: ratingId,
+    trip_id: tripId || `TRIP-${Date.now().toString().slice(-5)}`,
+    driver_id: driverId,
+    passenger_name: passengerName,
+    rating: Number(rating),
+    csat_tags: Array.isArray(tags) ? tags : [],
+    comment: comment || '',
+    created_at: new Date().toISOString()
+  };
+
+  try {
+    const docRef = doc(db, 'boomboom_ratings', ratingId);
+    await setDoc(docRef, {
+      ...payload,
+      server_time: serverTimestamp()
+    });
+    await recordAuditLog({
+      action: 'CSAT_RATING_SUBMITTED',
+      entityId: payload.trip_id,
+      details: `Penilaian kepuasan ★${payload.rating}/5 (${payload.csat_tags.join(', ') || 'Puas'}) untuk Trip #${payload.trip_id}`,
+      actorName: passengerName
+    });
+  } catch (err) {
+    console.warn('[BoomBoom CSAT] Fallback local rating record:', err);
+  }
+  return payload;
+};
+
+/**
+ * Kirim tiket keluhan/masukan operasional ke Firestore boomboom_complaints (Tahap III)
+ */
+export const submitComplaintInFirestore = async (complaintObj) => {
+  if (!complaintObj) return null;
+  try {
+    const docRef = doc(db, 'boomboom_complaints', complaintObj.complaint_id);
+    await setDoc(docRef, {
+      ...complaintObj,
+      server_time: serverTimestamp()
+    });
+    await recordAuditLog({
+      action: 'COMPLAINT_SUBMITTED',
+      entityId: complaintObj.complaint_id,
+      details: `Laporan keluhan/masukan [${complaintObj.category}]: "${complaintObj.subject}" oleh ${complaintObj.reporter_name}`,
+      actorName: complaintObj.reporter_name
+    });
+  } catch (err) {
+    console.warn('[BoomBoom Complaint] Fallback local complaint submission:', err);
+  }
+  return complaintObj;
+};
+
+/**
+ * Tindak lanjut / selesaikan tiket keluhan warga oleh Operator Wilayah / Admin
+ */
+export const resolveComplaintInFirestore = async (complaintId, resolutionNote, resolverName = 'Operator Wilayah') => {
+  const resolvedAt = new Date().toISOString();
+  try {
+    const docRef = doc(db, 'boomboom_complaints', complaintId);
+    await setDoc(docRef, {
+      status: 'RESOLVED',
+      resolution_note: resolutionNote,
+      resolved_by: resolverName,
+      resolved_at: resolvedAt
+    }, { merge: true });
+    await recordAuditLog({
+      action: 'COMPLAINT_RESOLVED',
+      entityId: complaintId,
+      details: `Tiket keluhan #${complaintId} diselesaikan oleh ${resolverName}: "${resolutionNote}"`,
+      actorName: resolverName
+    });
+  } catch (err) {
+    console.warn('[BoomBoom Complaint] Fallback local complaint resolution:', err);
+  }
+  return { status: 'RESOLVED', resolved_at: resolvedAt };
+};
+
+/**
+ * Tindak lanjut / selesaikan insiden keselamatan SOS oleh Operator Wilayah / Admin
+ */
+export const resolveSosIncidentInFirestore = async (incidentId, resolutionNote, resolverName = 'Operator Wilayah') => {
+  const resolvedAt = new Date().toISOString();
+  try {
+    const docRef = doc(db, 'boomboom_incidents', incidentId);
+    await setDoc(docRef, {
+      status: 'RESOLVED',
+      resolution_note: resolutionNote,
+      resolved_by: resolverName,
+      resolved_at: resolvedAt
+    }, { merge: true });
+    await recordAuditLog({
+      action: 'SOS_INCIDENT_RESOLVED',
+      entityId: incidentId,
+      details: `Insiden Keselamatan #${incidentId} ditindaklanjuti & ditutup oleh ${resolverName}: "${resolutionNote}"`,
+      actorName: resolverName
+    });
+  } catch (err) {
+    console.warn('[BoomBoom SOS] Fallback local incident resolution:', err);
+  }
+  return { status: 'RESOLVED', resolved_at: resolvedAt };
+};
+
+/**
+ * Catat alasan pembatalan perjalanan (Metrik Cancellation Tahap III)
+ */
+export const recordCancellationReasonInFirestore = async (tripId, reason, passengerName = 'Penumpang') => {
+  try {
+    if (tripId) {
+      const tripRef = doc(db, 'boomboom_trips', tripId);
+      await setDoc(tripRef, {
+        status: 'CANCELLED',
+        cancellation_reason: reason,
+        cancelled_at: new Date().toISOString()
+      }, { merge: true });
+    }
+    await recordAuditLog({
+      action: 'TRIP_CANCELLED',
+      entityId: tripId || 'TRIP-CANCEL',
+      details: `Perjalanan dibatalkan oleh ${passengerName}. Alasan: "${reason}"`,
+      actorName: passengerName
+    });
+  } catch (err) {
+    console.warn('[BoomBoom Cancel] Fallback local cancellation log:', err);
+  }
+};
+
+/**
+ * Persetujuan eksplisit pengemudi untuk bergabung sebagai Anggota Koperasi Digital Bambu (KODIBA)
+ * Sesuai boom.md Bagian 18 (Hubungan dengan KODIBA)
+ */
+export const optInDriverKodibaMembershipInFirestore = async (driverId, driverName = 'Mitra Pengemudi') => {
+  const memberId = `KODIBA-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+  try {
+    const docRef = doc(db, 'boomboom_driver_profiles', driverId);
+    await setDoc(docRef, {
+      driver_id: driverId,
+      kodiba_member: true,
+      kodiba_member_id: memberId,
+      kodiba_joined_at: new Date().toISOString()
+    }, { merge: true });
+    await recordAuditLog({
+      action: 'KODIBA_OPT_IN',
+      entityId: driverId,
+      details: `Pengemudi ${driverName} (${driverId}) secara sukarela bergabung ke Koperasi Digital Bambu (${memberId})`,
+      actorId: driverId,
+      actorName: driverName
+    });
+  } catch (err) {
+    console.warn('[BoomBoom KODIBA] Fallback local KODIBA opt-in:', err);
+  }
+  return memberId;
+};

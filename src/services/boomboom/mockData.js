@@ -1,9 +1,10 @@
-﻿/**
- * BOOMBOOM MOCK DATASET & SYSTEM CONSTANTS
+/**
+ * BOOMBOOM MOCK DATASET & SYSTEM CONSTANTS (TAHAP I, II & III — CLOSED REGIONAL PILOT)
  */
 
 export const INITIAL_FEATURE_FLAGS = {
   BOOMBOOM_PILOT_ENABLED: true,
+  BOOMBOOM_PHASE_3_REGIONAL_PILOT: true,
   ENABLE_EV_REWARDS: true,
   ENABLE_COMMUNITY_CARPOOL: true,
   ENABLE_REALTIME_MAP: true,
@@ -21,9 +22,15 @@ export const INITIAL_OPERATING_REGIONS = [
     regency: 'Subang',
     operatorName: 'BUMDes Cibarani Jaya',
     operatorType: 'BUMDes',
+    operator_legal_status: 'Badan Usaha Milik Desa (SK Kemenkumham AHU-0019283-BUMDES.2023)',
+    license_reference: 'DISHUB-SBG/PILOT-KOMUNITAS/2026-01',
+    compliance_status: 'COMPLIANT_VERIFIED',
+    project_id: 'PRJ-CIBARANI-01',
+    project_name: 'Sentra Konservasi & Agroforestri Bambu Cibarani',
     activeDriversCount: 14,
     centerLat: -6.6521,
     centerLng: 107.6932,
+    radiusKm: 25,
     status: 'ACTIVE_PILOT'
   },
   {
@@ -33,9 +40,51 @@ export const INITIAL_OPERATING_REGIONS = [
     regency: 'Bogor',
     operatorName: 'Koperasi Bambu Cisadane',
     operatorType: 'Koperasi',
+    operator_legal_status: 'Koperasi Primer Daerah (KOP-882910/KOP/2024)',
+    license_reference: 'DISHUB-BGR/PILOT-DESA/2026-02',
+    compliance_status: 'COMPLIANT_VERIFIED',
+    project_id: 'PRJ-CISADANE-02',
+    project_name: 'Restorasi DAS Cisadane & Ekowisata Bambu',
     activeDriversCount: 22,
     centerLat: -6.5971,
     centerLng: 106.7996,
+    radiusKm: 25,
+    status: 'ACTIVE_PILOT'
+  },
+  {
+    id: 'REG-TANGSEL',
+    name: 'Zona Pilot Komunitas Tangsel (Ciputat - Pamulang - Jombang)',
+    province: 'Banten',
+    regency: 'Tangerang Selatan',
+    operatorName: 'Koperasi Mobilitas Hijau Tangsel',
+    operatorType: 'Koperasi',
+    operator_legal_status: 'Koperasi Jasa Angkutan Komunitas (AHU-0048219.AH.01.29.2025)',
+    license_reference: 'DISHUB-TANGSEL/UJI-TERBATAS/2026-03',
+    compliance_status: 'COMPLIANT_VERIFIED',
+    project_id: 'PRJ-URBAN-TANGSEL-03',
+    project_name: 'Koridor Komuter Hijau Stasiun Sudimara - Balai Kota Tangsel',
+    activeDriversCount: 19,
+    centerLat: -6.2945,
+    centerLng: 106.7124,
+    radiusKm: 20,
+    status: 'ACTIVE_PILOT'
+  },
+  {
+    id: 'REG-JAKTIM',
+    name: 'Koridor Komunitas Pondok Kelapa & Duren Sawit',
+    province: 'DKI Jakarta',
+    regency: 'Jakarta Timur',
+    operatorName: 'Koperasi Warga Bambu Pondok Kelapa',
+    operatorType: 'Koperasi',
+    operator_legal_status: 'Koperasi Konsumen & Jasa (AHU-0091204.AH.01.26.2025)',
+    license_reference: 'SUDINHUB-JT/PILOT-LINGKUNGAN/2026-04',
+    compliance_status: 'COMPLIANT_VERIFIED',
+    project_id: 'PRJ-HQ-PONDOKKELAPA-04',
+    project_name: 'Hub Inovasi Yayasan Bambu Indonesia Pondok Kelapa',
+    activeDriversCount: 16,
+    centerLat: -6.2415,
+    centerLng: 106.9385,
+    radiusKm: 18,
     status: 'ACTIVE_PILOT'
   },
   {
@@ -45,9 +94,15 @@ export const INITIAL_OPERATING_REGIONS = [
     regency: 'Garut',
     operatorName: 'Komunitas Pemuda Bambu Garut',
     operatorType: 'Komunitas',
+    operator_legal_status: 'Perkumpulan Berbadan Hukum (AHU-0031120-KOM.2024)',
+    license_reference: 'DISHUB-GRT/PILOT-WISATA/2026-05',
+    compliance_status: 'COMPLIANT_VERIFIED',
+    project_id: 'PRJ-GARUT-05',
+    project_name: 'Desa Wisata & Kerajinan Bambu Selaawi Garut',
     activeDriversCount: 18,
     centerLat: -7.2278,
     centerLng: 107.9087,
+    radiusKm: 25,
     status: 'ACTIVE_PILOT'
   },
   {
@@ -57,9 +112,15 @@ export const INITIAL_OPERATING_REGIONS = [
     regency: 'Bandung Barat',
     operatorName: 'BUMDes Lembang Asri',
     operatorType: 'BUMDes',
+    operator_legal_status: 'BUMDes Bersama Lembang Asri (PERDES No. 4 Tahun 2024)',
+    license_reference: 'DISHUB-KBB/PILOT-AGRO/2026-06',
+    compliance_status: 'UNDER_REGULATORY_REVIEW',
+    project_id: 'PRJ-LEMBANG-06',
+    project_name: 'Agroforestri & Mobilitas Desa Lembang',
     activeDriversCount: 29,
     centerLat: -6.8169,
     centerLng: 107.6151,
+    radiusKm: 25,
     status: 'ACTIVE_PILOT'
   }
 ];
@@ -75,6 +136,8 @@ export const MOCK_DRIVERS = [
     ngopi_chat_url: 'https://ngopi.top/chat/f1c8c427-21bf-4fc1-8e99-9e651114d615?name=Ade%20Gunawan',
     status: 'VERIFIED',
     isOnline: true,
+    kodiba_member: true,
+    kodiba_member_id: 'KODIBA-2026-0014',
     vehicle_type: 'BoomRide',
     vehicle_brand: 'Honda Vario 160 (EV Conversion)',
     vehicle_model: 'Vario EV',
@@ -84,6 +147,7 @@ export const MOCK_DRIVERS = [
     operating_region: 'REG-CIBARANI',
     rating: 4.9,
     completed_trips: 184,
+    total_earnings_idr: 4850000,
     currentLat: -6.6515,
     currentLng: 107.6925,
     avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150',
@@ -99,6 +163,8 @@ export const MOCK_DRIVERS = [
     ngopi_chat_url: 'https://ngopi.top/contacts?join=BoomBoom',
     status: 'VERIFIED',
     isOnline: true,
+    kodiba_member: true,
+    kodiba_member_id: 'KODIBA-2026-0029',
     vehicle_type: 'BoomCar',
     vehicle_brand: 'Wuling Air EV',
     vehicle_model: 'Air EV Long Range',
@@ -108,6 +174,7 @@ export const MOCK_DRIVERS = [
     operating_region: 'REG-CISADANE',
     rating: 5.0,
     completed_trips: 240,
+    total_earnings_idr: 8120000,
     currentLat: -6.5980,
     currentLng: 106.8010,
     avatarUrl: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150',
@@ -119,19 +186,24 @@ export const MOCK_DRIVERS = [
     name: 'Budi Santoso',
     phone: '+62 856-1122-3344',
     email: 'budi.santoso@bamboochain.id',
+    ngopi_username: '@budisantoso',
+    ngopi_chat_url: 'https://ngopi.top/contacts?join=BoomBoom',
     status: 'VERIFIED',
-    isOnline: false,
+    isOnline: true,
+    kodiba_member: false,
+    kodiba_member_id: null,
     vehicle_type: 'BoomRide',
     vehicle_brand: 'Yamaha NMAX 155',
     vehicle_model: 'NMAX Connected',
     vehicle_year: '2022',
-    plate_number: 'Z 3341 GR',
+    plate_number: 'B 6341 WKS',
     license_number: 'SIM-C-771239014',
-    operating_region: 'REG-GARUT',
+    operating_region: 'REG-TANGSEL',
     rating: 4.8,
     completed_trips: 96,
-    currentLat: -7.2285,
-    currentLng: 107.9090,
+    total_earnings_idr: 2940000,
+    currentLat: -6.2952,
+    currentLng: 106.7135,
     avatarUrl: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150',
     created_at: '2026-02-10T14:15:00Z'
   },
@@ -143,6 +215,8 @@ export const MOCK_DRIVERS = [
     email: 'kiki.ramdani@bamboochain.id',
     status: 'UNDER_REVIEW',
     isOnline: false,
+    kodiba_member: false,
+    kodiba_member_id: null,
     vehicle_type: 'BoomCar',
     vehicle_brand: 'Toyota Avanza',
     vehicle_model: '1.5 G CVT',
@@ -152,6 +226,7 @@ export const MOCK_DRIVERS = [
     operating_region: 'REG-BANDUNG',
     rating: 4.7,
     completed_trips: 12,
+    total_earnings_idr: 640000,
     currentLat: -6.8175,
     currentLng: 107.6160,
     avatarUrl: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=150',
@@ -165,7 +240,12 @@ export const MOCK_OPERATORS = [
     name: 'BUMDes Cibarani Jaya',
     type: 'BUMDes',
     region: 'REG-CIBARANI',
+    operating_area: 'Kec. Jalancagak & Cibarani, Kab. Subang',
     legal_entity: 'AHU-0019283-BUMDES.2023',
+    operator_legal_status: 'Badan Usaha Milik Desa Terdaftar',
+    license_reference: 'DISHUB-SBG/PILOT-KOMUNITAS/2026-01',
+    compliance_status: 'COMPLIANT_VERIFIED',
+    project_id: 'PRJ-CIBARANI-01',
     contact_person: 'Pak Dudung (Kepala BUMDes)',
     phone: '+62 811-2233-4455',
     status: 'VERIFIED',
@@ -179,7 +259,12 @@ export const MOCK_OPERATORS = [
     name: 'Koperasi Bambu Cisadane',
     type: 'Koperasi',
     region: 'REG-CISADANE',
+    operating_area: 'Kawasan Eco Park Cisadane & Bogor Barat',
     legal_entity: 'KOP-882910/KOP/2024',
+    operator_legal_status: 'Koperasi Primer Berbadan Hukum',
+    license_reference: 'DISHUB-BGR/PILOT-DESA/2026-02',
+    compliance_status: 'COMPLIANT_VERIFIED',
+    project_id: 'PRJ-CISADANE-02',
     contact_person: 'Ibu Ratna (Pengurus Koperasi)',
     phone: '+62 812-9988-7766',
     status: 'VERIFIED',
@@ -187,6 +272,25 @@ export const MOCK_OPERATORS = [
     monthly_trips: 680,
     monthly_revenue: 20400000,
     created_at: '2025-12-05T00:00:00Z'
+  },
+  {
+    operator_id: 'OP-003',
+    name: 'Koperasi Mobilitas Hijau Tangsel',
+    type: 'Koperasi',
+    region: 'REG-TANGSEL',
+    operating_area: 'Ciputat, Jombang, Sudimara & Pamulang (Tangerang Selatan)',
+    legal_entity: 'AHU-0048219.AH.01.29.2025',
+    operator_legal_status: 'Koperasi Jasa Angkutan Komunitas',
+    license_reference: 'DISHUB-TANGSEL/UJI-TERBATAS/2026-03',
+    compliance_status: 'COMPLIANT_VERIFIED',
+    project_id: 'PRJ-URBAN-TANGSEL-03',
+    contact_person: 'Pak Hendra Wijaya (Ketua Koperasi)',
+    phone: '+62 815-8899-1122',
+    status: 'VERIFIED',
+    driver_count: 19,
+    monthly_trips: 510,
+    monthly_revenue: 15800000,
+    created_at: '2026-01-20T00:00:00Z'
   }
 ];
 
@@ -204,16 +308,20 @@ export const MOCK_TRIPS = [
     service_type: 'BoomRide',
     pickup_address: 'Sentra Bibit Bambu Cibarani, Jalancabang',
     destination_address: 'Pasar Desa Cibarani, Subang',
+    pilot_region_id: 'REG-CIBARANI',
+    project_id: 'PRJ-CIBARANI-01',
     distance_km: 4.2,
     estimated_duration: 12,
+    response_time_sec: 38,
     estimated_fare: 15500,
     final_fare: 15500,
-    trip_status: 'COMPLETED', // 'SEARCHING', 'DRIVER_ASSIGNED', 'DRIVER_ARRIVING', 'DRIVER_ARRIVED', 'ON_TRIP', 'COMPLETED', 'CANCELLED'
+    trip_status: 'COMPLETED',
     payment_status: 'PAID',
     payment_method: 'QRIS / Rupiah',
     bmc_reward_earned: 2.5,
     green_co2_saved: 0.35,
     rating_given: 5,
+    csat_tags: ['Tepat Waktu', 'Ramah & Sopan', 'Rute Aman'],
     created_at: '2026-09-28T14:20:00Z',
     completed_at: '2026-09-28T14:32:00Z'
   },
@@ -230,8 +338,11 @@ export const MOCK_TRIPS = [
     service_type: 'BoomTogether',
     pickup_address: 'Stasiun Kereta Cisadane',
     destination_address: 'Kawasan Wisata Hutan Bambu',
+    pilot_region_id: 'REG-CISADANE',
+    project_id: 'PRJ-CISADANE-02',
     distance_km: 7.8,
     estimated_duration: 18,
+    response_time_sec: 45,
     estimated_fare: 28000,
     final_fare: 28000,
     trip_status: 'COMPLETED',
@@ -240,6 +351,7 @@ export const MOCK_TRIPS = [
     bmc_reward_earned: 4.5,
     green_co2_saved: 0.95,
     rating_given: 5,
+    csat_tags: ['Kendaraan Bersih', 'Tarif Transparan', 'Hemat Emisi EV'],
     created_at: '2026-09-30T09:10:00Z',
     completed_at: '2026-09-30T09:28:00Z'
   }
@@ -292,7 +404,84 @@ export const MOCK_INCIDENTS = [
     latitude: -6.6520,
     longitude: 107.6930,
     status: 'RESOLVED',
+    resolution_note: 'Dikonfirmasi aman oleh Kepala BUMDes Cibarani, jalan utama sedang dicor.',
     created_at: '2026-09-28T14:25:00Z',
     resolved_at: '2026-09-28T14:30:00Z'
   }
 ];
+
+export const MOCK_COMPLAINTS = [
+  {
+    complaint_id: 'CMP-301',
+    trip_id: 'TRIP-9001',
+    reporter_name: 'Mang Ujang',
+    reporter_role: 'PASSENGER',
+    category: 'WAIT_TIME',
+    subject: 'Waktu tunggu di simpang kebun agak lama saat hujan',
+    description: 'Sinyal GPS sempat lambat 2 menit di dekat lembah bambu, namun driver ramah dan memberi kabar via ngopi.top.',
+    region_id: 'REG-CIBARANI',
+    status: 'RESOLVED',
+    resolution_note: 'Titik jemput pos kebun ditambahkan ke preset koordinat akurat.',
+    created_at: '2026-09-28T15:00:00Z',
+    resolved_at: '2026-09-28T16:15:00Z'
+  },
+  {
+    complaint_id: 'CMP-302',
+    trip_id: 'TRIP-9002',
+    reporter_name: 'Kang Dedi (Warga)',
+    reporter_role: 'PASSENGER',
+    category: 'PICKUP_POINT',
+    subject: 'Usulan penambahan titik tunggu BoomTogether di Pintu Barat Stasiun',
+    description: 'Mohon ditambahkan rambu titik kumpul resmi Koperasi agar penumpang BoomTogether lebih mudah bertemu driver.',
+    region_id: 'REG-CISADANE',
+    status: 'OPEN',
+    resolution_note: null,
+    created_at: '2026-10-02T10:20:00Z',
+    resolved_at: null
+  }
+];
+
+/**
+ * 7 Metrik Evaluasi Wajib Tahap III — Closed Regional Pilot (Sesuai boom.md Bagian 15 Tahap 3)
+ * 1. trip completion rate
+ * 2. response time
+ * 3. cancellation
+ * 4. complaints
+ * 5. safety incidents
+ * 6. driver earnings
+ * 7. user satisfaction
+ */
+export const INITIAL_PILOT_METRICS = {
+  total_pilot_requests: 1642,
+  completed_trips_count: 1550,
+  cancelled_trips_count: 92,
+  trip_completion_rate_pct: 94.4,
+  avg_response_time_sec: 42,
+  avg_pickup_arrival_min: 4.3,
+  cancellation_rate_pct: 5.6,
+  cancellation_reasons: {
+    'Berubah pikiran / salah titik jemput': 41,
+    'Cuaca hujan deras di jalur desa': 24,
+    'Beralih ke Kode BoomInstan di tempat': 19,
+    'Pengemudi terlalu jauh (>5 km)': 8
+  },
+  total_complaints: 6,
+  resolved_complaints: 5,
+  safety_incidents_total: 1,
+  safety_incidents_open: 0,
+  zero_fatality_days: 120,
+  total_driver_earnings_idr: 38450000,
+  avg_driver_daily_earnings_idr: 185000,
+  driver_revenue_share_pct: 85,
+  operator_revenue_share_pct: 5,
+  user_satisfaction_csat_pct: 97.2,
+  avg_star_rating: 4.92,
+  total_ratings_submitted: 1410,
+  top_csat_tags: [
+    { tag: 'Tepat Waktu', count: 980 },
+    { tag: 'Ramah & Sopan', count: 945 },
+    { tag: 'Tarif Transparan (85% ke Driver)', count: 890 },
+    { tag: 'Rute Aman & Hafal Jalan Desa', count: 812 },
+    { tag: 'Kendaraan Bersih / EV Ramah Lingkungan', count: 640 }
+  ]
+};

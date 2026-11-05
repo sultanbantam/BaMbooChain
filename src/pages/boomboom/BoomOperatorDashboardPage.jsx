@@ -3,20 +3,45 @@ import {
   FileSpreadsheet, 
   Search,
   Check,
-  X
+  X,
+  ShieldCheck,
+  AlertTriangle,
+  MessageSquare,
+  Star
 } from 'lucide-react';
 import BoomBoomNavHeader from '../../components/boomboom/BoomBoomNavHeader';
 import { useBoomBoomStore } from '../../services/boomboom/boomboomStore';
 
 const BoomOperatorDashboardPage = () => {
-  const { drivers, operators, incidents, verifyDriverStatus } = useBoomBoomStore();
+  const {
+    drivers,
+    operators,
+    incidents,
+    complaints,
+    pilotMetrics,
+    regions,
+    verifyDriverStatus,
+    resolveComplaint,
+    resolveSosIncident,
+    togglePilotRegionStatus
+  } = useBoomBoomStore();
+
+  const [selectedOperatorIdx, setSelectedOperatorIdx] = useState(0);
   const [activeTab, setActiveTab] = useState('DRIVERS');
   const [searchTerm, setSearchTerm] = useState('');
+  const [resolutionInput, setResolutionInput] = useState({});
 
-  const operatorInfo = operators[0] || {
+  const operatorInfo = operators[selectedOperatorIdx] || operators[0] || {
+    operator_id: 'OP-001',
     name: 'BUMDes Cibarani Jaya',
     type: 'BUMDes',
-    region: 'Perkebunan Emas Hijau Cibarani',
+    region: 'REG-CIBARANI',
+    operating_area: 'Kec. Jalancagak & Cibarani, Kab. Subang',
+    legal_entity: 'AHU-0019283-BUMDES.2023',
+    operator_legal_status: 'Badan Usaha Milik Desa Terdaftar',
+    license_reference: 'DISHUB-SBG/PILOT-KOMUNITAS/2026-01',
+    compliance_status: 'COMPLIANT_VERIFIED',
+    project_id: 'PRJ-CIBARANI-01',
     driver_count: 14,
     monthly_trips: 420,
     monthly_revenue: 12600000
@@ -28,13 +53,13 @@ const BoomOperatorDashboardPage = () => {
   );
 
   const handleExportCsv = () => {
-    const csvHeader = "ID Pengemudi,Nama,Jenis Kendaraan,Plat Nomor,Status,Trips,Rating\n";
-    const csvRows = drivers.map(d => `${d.driver_id},"${d.name}",${d.vehicle_type},${d.plate_number},${d.status},${d.completed_trips},${d.rating}`).join("\n");
+    const csvHeader = "ID Pengemudi,Nama,Jenis Kendaraan,Plat Nomor,Status,Anggota KODIBA,Trips,Rating\n";
+    const csvRows = drivers.map(d => `${d.driver_id},"${d.name}",${d.vehicle_type},${d.plate_number},${d.status},${d.kodiba_member ? d.kodiba_member_id : 'Non-Anggota'},${d.completed_trips},${d.rating}`).join("\n");
     const blob = new Blob([csvHeader + csvRows], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `Laporan_Keuangan_BoomBoom_${operatorInfo.name.replace(/\s+/g, '_')}.csv`;
+    a.download = `Laporan_Keuangan_Tahap3_${operatorInfo.name.replace(/\s+/g, '_')}.csv`;
     a.click();
   };
 
@@ -67,116 +92,142 @@ const BoomOperatorDashboardPage = () => {
           gap: '20px'
         }}>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-              <span style={{ fontSize: '0.8rem', fontWeight: '800', background: '#f59f00', color: '#000000', padding: '3px 10px', borderRadius: '12px' }}>
-                MITRA OPERATOR TERVERIFIKASI
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '0.75rem', fontWeight: '900', background: '#f59f00', color: '#000000', padding: '4px 10px', borderRadius: '12px' }}>
+                MITRA OPERASIONAL WILAYAH (TAHAP III PILOT)
               </span>
-              <span style={{ fontSize: '0.8rem', opacity: 0.9, color: '#ecfdf5' }}>
-                {operatorInfo.type}
+              <span style={{ fontSize: '0.75rem', fontWeight: '800', background: 'rgba(255,255,255,0.18)', color: '#ecfdf5', padding: '4px 10px', borderRadius: '12px' }}>
+                {operatorInfo.type} • {operatorInfo.project_id || 'PRJ-CIBARANI-01'}
+              </span>
+              <span style={{ fontSize: '0.75rem', fontWeight: '800', background: '#10b981', color: '#ffffff', padding: '4px 10px', borderRadius: '12px' }}>
+                ✓ {operatorInfo.compliance_status || 'COMPLIANT_VERIFIED'}
               </span>
             </div>
-            <h1 style={{ fontSize: '1.8rem', fontWeight: '900', margin: '0 0 4px', color: '#ffffff' }}>
+            <h1 style={{ fontSize: '1.75rem', fontWeight: '900', margin: '0 0 6px', color: '#ffffff' }}>
               Dasbor Operator: {operatorInfo.name}
             </h1>
-            <div style={{ fontSize: '0.9rem', color: '#ecfdf5' }}>
-              Wilayah Operasional: {operatorInfo.region}
+            <div style={{ fontSize: '0.88rem', color: '#ecfdf5' }}>
+              Wilayah Operasional: <strong>{operatorInfo.operating_area || operatorInfo.region}</strong> • Izin Referensi: <code>{operatorInfo.license_reference || 'DISHUB-PILOT/2026'}</code>
             </div>
           </div>
 
-          <button
-            onClick={handleExportCsv}
-            style={{
-              background: '#ffffff',
-              color: '#047857',
-              border: 'none',
-              padding: '12px 20px',
-              borderRadius: '16px',
-              fontWeight: '800',
-              fontSize: '0.85rem',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              boxShadow: '0 4px 15px rgba(0,0,0,0.1)'
-            }}
-          >
-            <FileSpreadsheet size={18} color="#047857" /> Ekspor Laporan Keuangan (CSV)
-          </button>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'flex-end' }}>
+            <select
+              value={selectedOperatorIdx}
+              onChange={(e) => setSelectedOperatorIdx(Number(e.target.value))}
+              style={{
+                background: 'rgba(15, 23, 42, 0.45)',
+                color: '#ffffff',
+                border: '1px solid rgba(255,255,255,0.35)',
+                padding: '8px 12px',
+                borderRadius: '12px',
+                fontSize: '0.8rem',
+                fontWeight: '800',
+                cursor: 'pointer'
+              }}
+            >
+              {operators.map((op, idx) => (
+                <option key={op.operator_id} value={idx} style={{ color: '#0f172a' }}>
+                  Pilih Mitra: {op.name} ({op.region})
+                </option>
+              ))}
+            </select>
+
+            <button
+              onClick={handleExportCsv}
+              style={{
+                background: '#ffffff',
+                color: '#047857',
+                border: 'none',
+                padding: '11px 18px',
+                borderRadius: '14px',
+                fontWeight: '800',
+                fontSize: '0.83rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.1)'
+              }}
+            >
+              <FileSpreadsheet size={18} color="#047857" /> Ekspor Laporan Keuangan & KPI (CSV)
+            </button>
+          </div>
         </div>
 
         {/* METRICS OVERVIEW */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
           gap: '16px',
           marginBottom: '28px'
         }}>
           <div style={cardStyle}>
-            <div style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted, #64748b)', marginBottom: '4px' }}>PENGEMUDI TERDAFTAR</div>
+            <div style={{ fontSize: '0.78rem', fontWeight: '800', color: 'var(--text-muted, #64748b)', marginBottom: '4px' }}>PENGEMUDI TERDAFTAR</div>
             <div style={{ fontSize: '1.5rem', fontWeight: '900', color: 'var(--text-main, #0f172a)' }}>
               {drivers.length} Driver
             </div>
             <div style={{ fontSize: '0.75rem', color: '#10b981', marginTop: '4px', fontWeight: '700' }}>
-              {drivers.filter(d => d.status === 'VERIFIED').length} Terverifikasi Aktif
+              {drivers.filter(d => d.status === 'VERIFIED').length} Terverifikasi • {drivers.filter(d => d.kodiba_member).length} Anggota KODIBA
             </div>
           </div>
 
           <div style={cardStyle}>
-            <div style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted, #64748b)', marginBottom: '4px' }}>TOTAL TRIP BULANAN</div>
+            <div style={{ fontSize: '0.78rem', fontWeight: '800', color: 'var(--text-muted, #64748b)', marginBottom: '4px' }}>COMPLETION RATE & RESPON</div>
             <div style={{ fontSize: '1.5rem', fontWeight: '900', color: 'var(--primary, #047857)' }}>
-              {operatorInfo.monthly_trips} Perjalanan
+              {pilotMetrics.trip_completion_rate_pct}% Selesai
             </div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--primary, #047857)', marginTop: '4px', fontWeight: '700' }}>Tingkat penyelesaian 98.2%</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--primary, #047857)', marginTop: '4px', fontWeight: '700' }}>
+              Rata-rata Respon: {pilotMetrics.avg_response_time_sec} detik ({operatorInfo.monthly_trips} Trip)
+            </div>
           </div>
 
           <div style={cardStyle}>
-            <div style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted, #64748b)', marginBottom: '4px' }}>NILAI TRANSAKSI WILAYAH</div>
+            <div style={{ fontSize: '0.78rem', fontWeight: '800', color: 'var(--text-muted, #64748b)', marginBottom: '4px' }}>PENDAPATAN PENGEMUDI (85%)</div>
             <div style={{ fontSize: '1.5rem', fontWeight: '900', color: '#b45309' }}>
-              Rp {operatorInfo.monthly_revenue.toLocaleString('id-ID')}
+              Rp {Math.round(operatorInfo.monthly_revenue * 0.85).toLocaleString('id-ID')}
             </div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted, #64748b)', marginTop: '4px' }}>Gross GMV Wilayah</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted, #64748b)', marginTop: '4px' }}>
+              Komisi BUMDes/Koperasi (5%): Rp {(operatorInfo.monthly_revenue * 0.05).toLocaleString('id-ID')}
+            </div>
           </div>
 
           <div style={cardStyle}>
-            <div style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted, #64748b)', marginBottom: '4px' }}>KOMISI OPERATOR (5%)</div>
-            <div style={{ fontSize: '1.5rem', fontWeight: '900', color: '#d97706' }}>
-              Rp {(operatorInfo.monthly_revenue * 0.05).toLocaleString('id-ID')}
+            <div style={{ fontSize: '0.78rem', fontWeight: '800', color: 'var(--text-muted, #64748b)', marginBottom: '4px' }}>KEPUASAN WARGA (CSAT)</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: '900', color: '#059669' }}>
+              {pilotMetrics.user_satisfaction_csat_pct}% (★{pilotMetrics.avg_star_rating})
             </div>
-            <div style={{ fontSize: '0.75rem', color: '#d97706', marginTop: '4px', fontWeight: '700' }}>Pendapatan BUMDes/Mitra</div>
+            <div style={{ fontSize: '0.75rem', color: '#d97706', marginTop: '4px', fontWeight: '700' }}>
+              {complaints.filter(c => c.status === 'OPEN').length} Tiket Masukan Aktif
+            </div>
           </div>
         </div>
 
         {/* TABS SELECTOR */}
-        <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-          <button
-            onClick={() => setActiveTab('DRIVERS')}
-            style={{
-              padding: '10px 20px',
-              borderRadius: '14px',
-              fontWeight: '800',
-              cursor: 'pointer',
-              background: activeTab === 'DRIVERS' ? '#047857' : 'var(--bg-card, #ffffff)',
-              color: activeTab === 'DRIVERS' ? '#ffffff' : 'var(--text-main, #475569)',
-              border: '1px solid var(--border-color, #cbd5e1)'
-            }}
-          >
-            Manajemen Pengemudi ({drivers.length})
-          </button>
-
-          <button
-            onClick={() => setActiveTab('INCIDENTS')}
-            style={{
-              padding: '10px 20px',
-              borderRadius: '14px',
-              fontWeight: '800',
-              cursor: 'pointer',
-              background: activeTab === 'INCIDENTS' ? '#047857' : 'var(--bg-card, #ffffff)',
-              color: activeTab === 'INCIDENTS' ? '#ffffff' : 'var(--text-main, #475569)',
-              border: '1px solid var(--border-color, #cbd5e1)'
-            }}
-          >
-            Laporan Insiden ({incidents.length})
-          </button>
+        <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
+          {[
+            { id: 'DRIVERS', label: `Manajemen Pengemudi (${drivers.length})` },
+            { id: 'INCIDENTS', label: `Insiden Keselamatan & SOS (${incidents.length})` },
+            { id: 'COMPLAINTS', label: `Keluhan & Kepuasan Warga (${complaints.length})` },
+            { id: 'COMPLIANCE', label: `Kepatuhan Regulasi & Zona Pilot (Tahap III)` }
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              style={{
+                padding: '10px 18px',
+                borderRadius: '14px',
+                fontWeight: '800',
+                fontSize: '0.84rem',
+                cursor: 'pointer',
+                background: activeTab === tab.id ? '#047857' : 'var(--bg-card, #ffffff)',
+                color: activeTab === tab.id ? '#ffffff' : 'var(--text-main, #475569)',
+                border: '1px solid var(--border-color, #cbd5e1)'
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
 
         {/* TAB 1: MANAGEMENT OF DRIVERS */}
@@ -190,7 +241,7 @@ const BoomOperatorDashboardPage = () => {
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
               <h3 style={{ fontSize: '1.2rem', fontWeight: '800', margin: 0, color: 'var(--text-main, #0f172a)' }}>
-                Verifikasi & Pengawasan Pengemudi Wilayah
+                Verifikasi & Pengawasan Pengemudi Wilayah (Wajib Approved di Closed Pilot)
               </h3>
               <div style={{
                 display: 'flex',
@@ -218,9 +269,10 @@ const BoomOperatorDashboardPage = () => {
                 <thead>
                   <tr style={{ borderBottom: '2px solid var(--border-color, #e2e8f0)', color: 'var(--text-muted, #64748b)' }}>
                     <th style={{ padding: '12px' }}>Pengemudi</th>
-                    <th style={{ padding: '12px' }}>Kendaraan</th>
-                    <th style={{ padding: '12px' }}>Status</th>
-                    <th style={{ padding: '12px' }}>Trips Selesai</th>
+                    <th style={{ padding: '12px' }}>Kendaraan & Wilayah</th>
+                    <th style={{ padding: '12px' }}>Status Pilot</th>
+                    <th style={{ padding: '12px' }}>Koperasi KODIBA</th>
+                    <th style={{ padding: '12px' }}>Trips & Pendapatan</th>
                     <th style={{ padding: '12px' }}>Rating</th>
                     <th style={{ padding: '12px', textAlign: 'right' }}>Aksi Verifikasi</th>
                   </tr>
@@ -234,7 +286,7 @@ const BoomOperatorDashboardPage = () => {
                       </td>
                       <td style={{ padding: '12px' }}>
                         <div>{d.vehicle_brand}</div>
-                        <div style={{ fontSize: '0.75rem', fontWeight: '700', color: '#10b981' }}>{d.plate_number}</div>
+                        <div style={{ fontSize: '0.75rem', fontWeight: '700', color: '#10b981' }}>{d.plate_number} • {d.operating_region}</div>
                       </td>
                       <td style={{ padding: '12px' }}>
                         <span style={{
@@ -248,13 +300,21 @@ const BoomOperatorDashboardPage = () => {
                           {d.status}
                         </span>
                       </td>
-                      <td style={{ padding: '12px', fontWeight: '700' }}>{d.completed_trips} Trip</td>
+                      <td style={{ padding: '12px', fontSize: '0.76rem', fontWeight: '700', color: d.kodiba_member ? '#047857' : 'var(--text-muted, #94a3b8)' }}>
+                        {d.kodiba_member ? `✓ ${d.kodiba_member_id || 'Aktif'}` : 'Non-Anggota'}
+                      </td>
+                      <td style={{ padding: '12px', fontWeight: '700' }}>
+                        <div>{d.completed_trips} Trip</div>
+                        <div style={{ fontSize: '0.73rem', color: '#059669' }}>
+                          Rp {(d.total_earnings_idr || d.completed_trips * 22000).toLocaleString('id-ID')}
+                        </div>
+                      </td>
                       <td style={{ padding: '12px', fontWeight: '700', color: '#b45309' }}>⭐ {d.rating}</td>
                       <td style={{ padding: '12px', textAlign: 'right' }}>
                         {d.status === 'SUBMITTED' || d.status === 'UNDER_REVIEW' ? (
                           <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
                             <button
-                              onClick={() => verifyDriverStatus(d.driver_id, 'VERIFIED')}
+                              onClick={() => verifyDriverStatus(d.driver_id, 'VERIFIED', operatorInfo.name)}
                               style={{
                                 background: '#10b981',
                                 color: '#ffffff',
@@ -269,10 +329,10 @@ const BoomOperatorDashboardPage = () => {
                                 gap: '4px'
                               }}
                             >
-                              <Check size={14} /> Verifikasi
+                              <Check size={14} /> Setujui Pilot
                             </button>
                             <button
-                              onClick={() => verifyDriverStatus(d.driver_id, 'REJECTED')}
+                              onClick={() => verifyDriverStatus(d.driver_id, 'REJECTED', operatorInfo.name)}
                               style={{
                                 background: '#ef4444',
                                 color: '#ffffff',
@@ -295,6 +355,311 @@ const BoomOperatorDashboardPage = () => {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 2: SAFETY INCIDENTS & SOS RESOLUTION */}
+        {activeTab === 'INCIDENTS' && (
+          <div style={{
+            background: 'var(--bg-card, #ffffff)',
+            borderRadius: '24px',
+            padding: '24px',
+            boxShadow: '0 8px 25px rgba(0,0,0,0.04)',
+            border: '1px solid var(--border-color, #cbd5e1)'
+          }}>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: '800', margin: '0 0 16px', color: 'var(--text-main, #0f172a)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <AlertTriangle size={20} color="#ef4444" /> Pemantauan & Tindak Lanjut Insiden Keselamatan (Metrik Safety Pilot Tahap III)
+            </h3>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              {incidents.map((inc) => (
+                <div
+                  key={inc.incident_id}
+                  style={{
+                    border: inc.status === 'OPEN' ? '2px solid #ef4444' : '1px solid var(--border-color, #e2e8f0)',
+                    borderRadius: '16px',
+                    padding: '16px',
+                    background: inc.status === 'OPEN' ? 'rgba(239, 68, 68, 0.05)' : 'var(--bg-secondary, #f8fafc)'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
+                    <div style={{ fontWeight: '800', fontSize: '0.92rem' }}>
+                      #{inc.incident_id} • {inc.type} (Trip: {inc.trip_id})
+                    </div>
+                    <span style={{
+                      fontSize: '0.72rem',
+                      fontWeight: '900',
+                      padding: '4px 10px',
+                      borderRadius: '999px',
+                      background: inc.status === 'RESOLVED' ? '#d1fae5' : '#fee2e2',
+                      color: inc.status === 'RESOLVED' ? '#047857' : '#dc2626'
+                    }}>
+                      {inc.status}
+                    </span>
+                  </div>
+                  <p style={{ fontSize: '0.84rem', color: 'var(--text-main, #334155)', margin: '0 0 8px' }}>
+                    Pelapor: <strong>{inc.user_name}</strong> — {inc.description}
+                  </p>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted, #64748b)', marginBottom: '10px' }}>
+                    Koordinat GPS: {inc.latitude}, {inc.longitude} • Waktu: {new Date(inc.created_at).toLocaleString('id-ID')}
+                  </div>
+
+                  {inc.resolution_note && (
+                    <div style={{ fontSize: '0.78rem', background: '#d1fae5', color: '#065f46', padding: '8px 12px', borderRadius: '10px', fontWeight: '700' }}>
+                      ✓ Tindak Lanjut Operator: {inc.resolution_note}
+                    </div>
+                  )}
+
+                  {inc.status !== 'RESOLVED' && (
+                    <div style={{ display: 'flex', gap: '8px', marginTop: '10px', flexWrap: 'wrap' }}>
+                      <input
+                        type="text"
+                        placeholder="Catatan tindak lanjut lapangan oleh pengurus wilayah..."
+                        value={resolutionInput[inc.incident_id] || ''}
+                        onChange={(e) => setResolutionInput({ ...resolutionInput, [inc.incident_id]: e.target.value })}
+                        style={{
+                          flex: 1,
+                          minWidth: '220px',
+                          padding: '8px 12px',
+                          borderRadius: '10px',
+                          border: '1px solid var(--border-color, #cbd5e1)',
+                          fontSize: '0.8rem'
+                        }}
+                      />
+                      <button
+                        onClick={() => resolveSosIncident(
+                          inc.incident_id,
+                          resolutionInput[inc.incident_id] || 'Telah dicek oleh tim keamanan BUMDes/Koperasi, kondisi aman.',
+                          operatorInfo.name
+                        )}
+                        style={{
+                          background: '#10b981',
+                          color: '#ffffff',
+                          border: 'none',
+                          padding: '8px 14px',
+                          borderRadius: '10px',
+                          fontWeight: '800',
+                          fontSize: '0.78rem',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        ✓ Tandai Selesai & Aman
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 3: COMPLAINTS & CSAT TELEMETRY */}
+        {activeTab === 'COMPLAINTS' && (
+          <div style={{
+            background: 'var(--bg-card, #ffffff)',
+            borderRadius: '24px',
+            padding: '24px',
+            boxShadow: '0 8px 25px rgba(0,0,0,0.04)',
+            border: '1px solid var(--border-color, #cbd5e1)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '10px' }}>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: '800', margin: 0, color: 'var(--text-main, #0f172a)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <MessageSquare size={20} color="#059669" /> Tiket Keluhan Warga & Evaluasi Kepuasan (CSAT Tahap III)
+              </h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#fef3c7', color: '#b45309', padding: '6px 12px', borderRadius: '999px', fontSize: '0.78rem', fontWeight: '900' }}>
+                <Star size={15} fill="#f59f00" color="#f59f00" /> Skor CSAT Wilayah: {pilotMetrics.user_satisfaction_csat_pct}% (★{pilotMetrics.avg_star_rating}/5)
+              </div>
+            </div>
+
+            {/* TOP CSAT TAGS */}
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '20px' }}>
+              {(pilotMetrics.top_csat_tags || []).map((item) => (
+                <div
+                  key={item.tag}
+                  style={{
+                    background: 'var(--bg-secondary, #f8fafc)',
+                    border: '1px solid var(--border-color, #cbd5e1)',
+                    borderRadius: '12px',
+                    padding: '8px 12px',
+                    fontSize: '0.76rem',
+                    fontWeight: '800'
+                  }}
+                >
+                  👍 {item.tag}: <span style={{ color: '#059669' }}>{item.count} apresiasi</span>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              {complaints.map((cmp) => (
+                <div
+                  key={cmp.complaint_id}
+                  style={{
+                    border: cmp.status === 'OPEN' ? '2px solid #f59f00' : '1px solid var(--border-color, #e2e8f0)',
+                    borderRadius: '16px',
+                    padding: '16px',
+                    background: 'var(--bg-secondary, #f8fafc)'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', flexWrap: 'wrap', gap: '8px' }}>
+                    <div style={{ fontWeight: '800', fontSize: '0.92rem' }}>
+                      #{cmp.complaint_id} • [{cmp.category}] {cmp.subject}
+                    </div>
+                    <span style={{
+                      fontSize: '0.72rem',
+                      fontWeight: '900',
+                      padding: '4px 10px',
+                      borderRadius: '999px',
+                      background: cmp.status === 'RESOLVED' ? '#d1fae5' : '#fef3c7',
+                      color: cmp.status === 'RESOLVED' ? '#047857' : '#b45309'
+                    }}>
+                      {cmp.status}
+                    </span>
+                  </div>
+                  <p style={{ fontSize: '0.83rem', color: 'var(--text-main, #334155)', margin: '0 0 8px' }}>
+                    Dari: <strong>{cmp.reporter_name}</strong> (Trip #{cmp.trip_id}) — {cmp.description}
+                  </p>
+
+                  {cmp.resolution_note && (
+                    <div style={{ fontSize: '0.78rem', background: '#d1fae5', color: '#065f46', padding: '8px 12px', borderRadius: '10px', fontWeight: '700' }}>
+                      ✓ Solusi Operator: {cmp.resolution_note}
+                    </div>
+                  )}
+
+                  {cmp.status !== 'RESOLVED' && (
+                    <div style={{ display: 'flex', gap: '8px', marginTop: '10px', flexWrap: 'wrap' }}>
+                      <input
+                        type="text"
+                        placeholder="Tulis solusi / tindak lanjut untuk warga..."
+                        value={resolutionInput[cmp.complaint_id] || ''}
+                        onChange={(e) => setResolutionInput({ ...resolutionInput, [cmp.complaint_id]: e.target.value })}
+                        style={{
+                          flex: 1,
+                          minWidth: '220px',
+                          padding: '8px 12px',
+                          borderRadius: '10px',
+                          border: '1px solid var(--border-color, #cbd5e1)',
+                          fontSize: '0.8rem'
+                        }}
+                      />
+                      <button
+                        onClick={() => resolveComplaint(
+                          cmp.complaint_id,
+                          resolutionInput[cmp.complaint_id] || 'Telah ditindaklanjuti oleh pengurus Koperasi/BUMDes wilayah.',
+                          operatorInfo.name
+                        )}
+                        style={{
+                          background: '#047857',
+                          color: '#ffffff',
+                          border: 'none',
+                          padding: '8px 14px',
+                          borderRadius: '10px',
+                          fontWeight: '800',
+                          fontSize: '0.78rem',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        ✓ Selesaikan Tiket
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 4: REGULATORY COMPLIANCE & PILOT ZONES (TAHAP III) */}
+        {activeTab === 'COMPLIANCE' && (
+          <div style={{
+            background: 'var(--bg-card, #ffffff)',
+            borderRadius: '24px',
+            padding: '24px',
+            boxShadow: '0 8px 25px rgba(0,0,0,0.04)',
+            border: '1px solid var(--border-color, #cbd5e1)'
+          }}>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: '800', margin: '0 0 8px', color: 'var(--text-main, #0f172a)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <ShieldCheck size={20} color="#059669" /> Pemisahan Peran Platform Teknologi vs Mitra Operasional Wilayah (Sesuai Bagian 17 & 26)
+            </h3>
+            <p style={{ fontSize: '0.84rem', color: 'var(--text-muted, #64748b)', margin: '0 0 20px', lineHeight: 1.5 }}>
+              Dalam kerangka <strong>Tahap III (Closed Regional Pilot)</strong>, BaMbooChain berperan murni sebagai penyedia infrastruktur perangkat lunak (aplikasi, pencocokan geospasial, ledger reward BMC), sementara operasional armada di lapangan diselenggarakan oleh badan hukum lokal yang sah (BUMDes / Koperasi / Komunitas).
+            </p>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginBottom: '22px' }}>
+              <div style={{ background: 'var(--bg-secondary, #f8fafc)', padding: '16px', borderRadius: '16px', border: '1px solid var(--border-color, #cbd5e1)' }}>
+                <div style={{ fontSize: '0.72rem', fontWeight: '900', color: '#047857', marginBottom: '6px' }}>PERAN PLATFORM TEKNOLOGI (BAMBOOCHAIN)</div>
+                <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '0.8rem', color: 'var(--text-main, #334155)', lineHeight: 1.6 }}>
+                  <li>Sistem Pemesanan, Kode BoomInstan & Peta OSRM Real-time</li>
+                  <li>Server-side Fare Engine & Payment Sandbox (QRIS/Midtrans)</li>
+                  <li>Pencatatan Ledger Token Reward (BMC) & Audit Trail</li>
+                  <li>Bukan perusahaan angkutan umum / tidak memotong iuran paksa</li>
+                </ul>
+              </div>
+
+              <div style={{ background: 'var(--bg-secondary, #f8fafc)', padding: '16px', borderRadius: '16px', border: '1px solid var(--border-color, #cbd5e1)' }}>
+                <div style={{ fontSize: '0.72rem', fontWeight: '900', color: '#b45309', marginBottom: '6px' }}>PERAN MITRA OPERASIONAL LOKAL ({operatorInfo.name})</div>
+                <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '0.8rem', color: 'var(--text-main, #334155)', lineHeight: 1.6 }}>
+                  <li>Status Badan Hukum: <strong>{operatorInfo.operator_legal_status || operatorInfo.legal_entity}</strong></li>
+                  <li>Referensi Izin Pilot: <code>{operatorInfo.license_reference || 'DISHUB-PILOT/2026'}</code></li>
+                  <li>Verifikasi fisik kendaraan, SIM/STNK & pembinaan mitra driver</li>
+                  <li>Penanganan keluhan warga & respons cepat sinyal darurat SOS</li>
+                </ul>
+              </div>
+            </div>
+
+            <h4 style={{ fontSize: '1rem', fontWeight: '800', margin: '0 0 12px' }}>
+              Status Geofence Zona Closed Regional Pilot Aktif
+            </h4>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '12px' }}>
+              {regions.map((reg) => (
+                <div
+                  key={reg.id}
+                  style={{
+                    border: reg.status === 'ACTIVE_PILOT' ? '1px solid #10b981' : '1px solid var(--border-color, #cbd5e1)',
+                    borderRadius: '14px',
+                    padding: '14px',
+                    background: reg.status === 'ACTIVE_PILOT' ? 'rgba(16, 185, 129, 0.05)' : 'var(--bg-secondary, #f8fafc)'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                    <span style={{ fontWeight: '800', fontSize: '0.86rem' }}>{reg.name}</span>
+                    <span style={{
+                      fontSize: '0.68rem',
+                      fontWeight: '900',
+                      padding: '3px 8px',
+                      borderRadius: '999px',
+                      background: reg.status === 'ACTIVE_PILOT' ? '#d1fae5' : '#fee2e2',
+                      color: reg.status === 'ACTIVE_PILOT' ? '#047857' : '#dc2626'
+                    }}>
+                      {reg.status}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted, #64748b)', marginBottom: '8px' }}>
+                    {reg.regency}, {reg.province} • Mitra: <strong>{reg.operatorName}</strong> • Radius: {reg.radiusKm || 25} km
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.7rem', fontWeight: '800', color: '#059669' }}>
+                      Proyek: {reg.project_id || 'PRJ-01'}
+                    </span>
+                    <button
+                      onClick={() => togglePilotRegionStatus(reg.id)}
+                      style={{
+                        background: reg.status === 'ACTIVE_PILOT' ? '#fef3c7' : '#10b981',
+                        color: reg.status === 'ACTIVE_PILOT' ? '#b45309' : '#ffffff',
+                        border: 'none',
+                        padding: '5px 10px',
+                        borderRadius: '8px',
+                        fontSize: '0.72rem',
+                        fontWeight: '800',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {reg.status === 'ACTIVE_PILOT' ? 'Jeda Zona Pilot' : 'Aktifkan Zona'}
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}

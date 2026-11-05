@@ -5,6 +5,8 @@ import {
   MOCK_TRIPS, 
   MOCK_REWARDS, 
   MOCK_INCIDENTS,
+  MOCK_COMPLAINTS,
+  INITIAL_PILOT_METRICS,
   INITIAL_FEATURE_FLAGS,
   INITIAL_OPERATING_REGIONS 
 } from './mockData';
@@ -24,7 +26,14 @@ import {
   registerOperatorInFirestore,
   claimRewardInFirestore,
   recordSosIncidentInFirestore,
-  claimInstantOrderByCodeInFirestore
+  claimInstantOrderByCodeInFirestore,
+  checkGeofencePilotZone,
+  recordTripRatingAndCsatInFirestore,
+  submitComplaintInFirestore,
+  resolveComplaintInFirestore,
+  resolveSosIncidentInFirestore,
+  recordCancellationReasonInFirestore,
+  optInDriverKodibaMembershipInFirestore
 } from './boomboomPilotService';
 
 // Helper sinkronisasi cepat koordinat dari teks
@@ -91,6 +100,8 @@ export const useBoomBoomStore = create((set, get) => ({
   trips: [...MOCK_TRIPS],
   rewards: [...MOCK_REWARDS],
   incidents: [...MOCK_INCIDENTS],
+  complaints: [...MOCK_COMPLAINTS],
+  pilotMetrics: { ...INITIAL_PILOT_METRICS },
   auditLogs: [...INITIAL_AUDIT_LOGS],
   notifications: [],
 
@@ -105,6 +116,7 @@ export const useBoomBoomStore = create((set, get) => ({
     serviceType: 'BoomRide',
     isEvVehicle: false,
     fareCalc: calculateFare({ serviceType: 'BoomRide', distanceKm: 4.5, durationMin: 12 }),
+    pilotGeofence: checkGeofencePilotZone({ lat: -6.6521, lng: 107.6932 }, INITIAL_OPERATING_REGIONS),
     assignedDriver: null,
     matchedCandidates: [],
     paymentSession: null,
@@ -228,6 +240,7 @@ export const useBoomBoomStore = create((set, get) => ({
       });
 
       const matchResult = findBestMatchingDriver(pickupCoords, active.serviceType, state.drivers);
+      const pilotGeofence = checkGeofencePilotZone(pickupCoords, state.regions);
 
       return {
         activeBooking: {
@@ -235,6 +248,7 @@ export const useBoomBoomStore = create((set, get) => ({
           pickupAddress: address,
           pickupCoords,
           fareCalc,
+          pilotGeofence,
           matchedCandidates: matchResult.rankedCandidates
         }
       };
@@ -294,6 +308,7 @@ export const useBoomBoomStore = create((set, get) => ({
     });
 
     const matchResult = findBestMatchingDriver(pickupCoords, serviceType, state.drivers);
+    const pilotGeofence = checkGeofencePilotZone(pickupCoords, state.regions);
 
     set((s) => ({
       activeBooking: {
@@ -303,11 +318,12 @@ export const useBoomBoomStore = create((set, get) => ({
         destinationAddress: destinationAddress || s.activeBooking.destinationAddress,
         destinationCoords: destCoords,
         fareCalc,
+        pilotGeofence,
         matchedCandidates: matchResult.rankedCandidates
       }
     }));
 
-    return { pickupCoords, destCoords, distance, duration, fareCalc, matchResult };
+    return { pickupCoords, destCoords, distance, duration, fareCalc, matchResult, pilotGeofence };
   },
 
   regenerateInstantCode: () => {
@@ -493,8 +509,35 @@ export const useBoomBoomStore = create((set, get) => ({
     }));
   },
 
-  cancelBooking: () => {
+  cancelBooking: (reason = 'Berubah pikiran / salah titik jemput', passengerName = 'Penumpang') => {
+    const { activeBooking, pilotMetrics } = get();
+    const tripId = activeBooking.currentTripId;
+    if (reason) {
+      recordCancellationReasonInFirestore(tripId, reason, passengerName);
+      get().addLocalAuditLog(
+        'TRIP_CANCELLED',
+        tripId || 'TRIP-CANCEL',
+        `Pembatalan perjalanan oleh ${passengerName}. Alasan: "${reason}"`,
+        passengerName
+      );
+    }
+
+    const updatedReasons = { ...(pilotMetrics.cancellation_reasons || {}) };
+    updatedReasons[reason] = (updatedReasons[reason] || 0) + 1;
+    const newCancelledCount = (pilotMetrics.cancelled_trips_count || 92) + 1;
+    const newTotalReq = (pilotMetrics.total_pilot_requests || 1642) + 1;
+    const newCancelRate = Number(((newCancelledCount / newTotalReq) * 100).toFixed(1));
+    const newCompletionRate = Number((100 - newCancelRate).toFixed(1));
+
     set((state) => ({
+      pilotMetrics: {
+        ...state.pilotMetrics,
+        total_pilot_requests: newTotalReq,
+        cancelled_trips_count: newCancelledCount,
+        cancellation_rate_pct: newCancelRate,
+        trip_completion_rate_pct: newCompletionRate,
+        cancellation_reasons: updatedReasons
+      },
       activeBooking: {
         ...state.activeBooking,
         step: 'IDLE',
@@ -760,8 +803,225 @@ export const useBoomBoomStore = create((set, get) => ({
     );
 
     set((state) => ({
-      incidents: [incident, ...state.incidents]
+      incidents: [incident, ...state.incidents],
+      pilotMetrics: {
+        ...state.pilotMetrics,
+        safety_incidents_total: (state.pilotMetrics.safety_incidents_total || 1) + 1,
+        safety_incidents_open: (state.pilotMetrics.safety_incidents_open || 0) + 1
+      }
     }));
     return incident;
+  },
+
+  // ============================================================================
+  // TAHAP III — CLOSED REGIONAL PILOT TELEMETRY, GOVERNANCE & ECOSYSTEM ACTIONS
+  // ============================================================================
+  submitTripRatingAndCsat: async ({ tripId, rating = 5, tags = [], comment = '', passengerName = 'Warga Komunitas' }) => {
+    const { activeBooking, pilotMetrics, trips } = get();
+    const targetTripId = tripId || activeBooking.lastCompletedTrip?.trip_id || activeBooking.currentTripId || `TRIP-${Date.now()}`;
+    const driverId = activeBooking.lastCompletedTrip?.driver_id || activeBooking.assignedDriver?.driver_id || 'DRV-001';
+
+    await recordTripRatingAndCsatInFirestore({
+      tripId: targetTripId,
+      rating,
+      tags,
+      comment,
+      passengerName,
+      driverId
+    });
+
+    const prevCount = pilotMetrics.total_ratings_submitted || 1410;
+    const prevAvg = pilotMetrics.avg_star_rating || 4.92;
+    const newCount = prevCount + 1;
+    const newAvg = Number((((prevAvg * prevCount) + Number(rating)) / newCount).toFixed(2));
+    const newCsatPct = Number(Math.min(100, (newAvg / 5) * 100 - 1.2).toFixed(1));
+
+    const updatedTags = [...(pilotMetrics.top_csat_tags || [])];
+    tags.forEach((t) => {
+      const idx = updatedTags.findIndex((item) => item.tag.toLowerCase().includes(t.toLowerCase()));
+      if (idx >= 0) {
+        updatedTags[idx] = { ...updatedTags[idx], count: updatedTags[idx].count + 1 };
+      } else {
+        updatedTags.push({ tag: t, count: 1 });
+      }
+    });
+
+    set((state) => ({
+      trips: trips.map((tr) => tr.trip_id === targetTripId ? { ...tr, rating_given: rating, csat_tags: tags, csat_comment: comment } : tr),
+      pilotMetrics: {
+        ...state.pilotMetrics,
+        total_ratings_submitted: newCount,
+        avg_star_rating: newAvg,
+        user_satisfaction_csat_pct: newCsatPct,
+        top_csat_tags: updatedTags
+      },
+      activeBooking: {
+        ...state.activeBooking,
+        lastCompletedTrip: state.activeBooking.lastCompletedTrip
+          ? { ...state.activeBooking.lastCompletedTrip, rating_given: rating, csat_tags: tags, csat_comment: comment }
+          : null
+      }
+    }));
+
+    get().addLocalAuditLog(
+      'CSAT_RATING_SUBMITTED',
+      targetTripId,
+      `Penilaian CSAT ★${rating}/5 (${tags.join(', ') || 'Sangat Puas'}) dikirim oleh ${passengerName}`,
+      passengerName
+    );
+    get().pushNotification(
+      'reward_received',
+      `Terima Kasih atas Penilaian ★${rating}/5!`,
+      `Umpan balik Anda terekam di Metrik Evaluasi Pilot Tahap III.`
+    );
+  },
+
+  submitComplaint: async ({ tripId, category, subject, description, reporterName = 'Penumpang BoomBoom', regionId = 'REG-CIBARANI' }) => {
+    const complaintObj = {
+      complaint_id: `CMP-${Date.now().toString().slice(-4)}`,
+      trip_id: tripId || get().activeBooking.currentTripId || 'TRIP-9001',
+      reporter_name: reporterName,
+      reporter_role: 'PASSENGER',
+      category: category || 'SERVICE_FEEDBACK',
+      subject: subject || 'Masukan Layanan Pilot Wilayah',
+      description: description || '',
+      region_id: regionId,
+      status: 'OPEN',
+      resolution_note: null,
+      created_at: new Date().toISOString(),
+      resolved_at: null
+    };
+
+    await submitComplaintInFirestore(complaintObj);
+    set((state) => ({
+      complaints: [complaintObj, ...state.complaints],
+      pilotMetrics: {
+        ...state.pilotMetrics,
+        total_complaints: (state.pilotMetrics.total_complaints || 6) + 1
+      }
+    }));
+
+    get().addLocalAuditLog(
+      'COMPLAINT_SUBMITTED',
+      complaintObj.complaint_id,
+      `Keluhan/masukan baru [${complaintObj.category}]: "${complaintObj.subject}"`,
+      reporterName
+    );
+    get().pushNotification(
+      'driver_arrived',
+      `Tiket #${complaintObj.complaint_id} Terkirim`,
+      `Laporan Anda diteruskan ke Operator Wilayah & Admin BoomBoom.`
+    );
+    return complaintObj;
+  },
+
+  resolveComplaint: async (complaintId, resolutionNote = 'Telah ditindaklanjuti bersama pengurus wilayah.', resolverName = 'Operator Wilayah') => {
+    await resolveComplaintInFirestore(complaintId, resolutionNote, resolverName);
+    set((state) => ({
+      complaints: state.complaints.map((c) =>
+        c.complaint_id === complaintId
+          ? { ...c, status: 'RESOLVED', resolution_note: resolutionNote, resolved_at: new Date().toISOString() }
+          : c
+      ),
+      pilotMetrics: {
+        ...state.pilotMetrics,
+        resolved_complaints: (state.pilotMetrics.resolved_complaints || 5) + 1
+      }
+    }));
+    get().addLocalAuditLog(
+      'COMPLAINT_RESOLVED',
+      complaintId,
+      `Tiket keluhan #${complaintId} diselesaikan: "${resolutionNote}"`,
+      resolverName
+    );
+  },
+
+  resolveSosIncident: async (incidentId, resolutionNote = 'Situasi lapangan telah dikonfirmasi aman oleh pengurus wilayah.', resolverName = 'Operator Wilayah') => {
+    await resolveSosIncidentInFirestore(incidentId, resolutionNote, resolverName);
+    set((state) => ({
+      incidents: state.incidents.map((inc) =>
+        inc.incident_id === incidentId
+          ? { ...inc, status: 'RESOLVED', resolution_note: resolutionNote, resolved_at: new Date().toISOString() }
+          : inc
+      ),
+      pilotMetrics: {
+        ...state.pilotMetrics,
+        safety_incidents_open: Math.max(0, (state.pilotMetrics.safety_incidents_open || 1) - 1)
+      }
+    }));
+    get().addLocalAuditLog(
+      'SOS_INCIDENT_RESOLVED',
+      incidentId,
+      `Insiden keselamatan #${incidentId} ditutup: "${resolutionNote}"`,
+      resolverName
+    );
+  },
+
+  togglePilotRegionStatus: (regionId) => {
+    set((state) => {
+      const updatedRegions = state.regions.map((r) => {
+        if (r.id !== regionId) return r;
+        const nextStatus = r.status === 'ACTIVE_PILOT' ? 'PAUSED_PILOT' : 'ACTIVE_PILOT';
+        return { ...r, status: nextStatus };
+      });
+      const pilotGeofence = checkGeofencePilotZone(state.activeBooking.pickupCoords, updatedRegions);
+      return {
+        regions: updatedRegions,
+        activeBooking: {
+          ...state.activeBooking,
+          pilotGeofence
+        }
+      };
+    });
+    get().addLocalAuditLog(
+      'PILOT_ZONE_TOGGLED',
+      regionId,
+      `Status zona Closed Regional Pilot ${regionId} diperbarui oleh Admin/Operator.`,
+      'Central Admin BoomBoom'
+    );
+  },
+
+  updateOperatorComplianceStatus: (operatorId, complianceStatus, licenseReference) => {
+    set((state) => ({
+      operators: state.operators.map((op) =>
+        op.operator_id === operatorId
+          ? {
+              ...op,
+              compliance_status: complianceStatus || op.compliance_status,
+              license_reference: licenseReference || op.license_reference,
+              status: complianceStatus === 'COMPLIANT_VERIFIED' ? 'VERIFIED' : op.status
+            }
+          : op
+      )
+    }));
+    get().addLocalAuditLog(
+      'OPERATOR_COMPLIANCE_UPDATED',
+      operatorId,
+      `Status kepatuhan regulasi operator ${operatorId} diubah menjadi ${complianceStatus}`,
+      'Admin Kepatuhan Regulasi'
+    );
+  },
+
+  optInDriverKodiba: async (driverId, driverName = 'Mitra Pengemudi') => {
+    const memberId = await optInDriverKodibaMembershipInFirestore(driverId, driverName);
+    set((state) => ({
+      drivers: state.drivers.map((d) =>
+        d.driver_id === driverId
+          ? { ...d, kodiba_member: true, kodiba_member_id: memberId }
+          : d
+      )
+    }));
+    get().addLocalAuditLog(
+      'KODIBA_OPT_IN',
+      driverId,
+      `Mitra Pengemudi ${driverName} bergabung secara sukarela ke Koperasi Digital Bambu (${memberId})`,
+      driverName
+    );
+    get().pushNotification(
+      'reward_received',
+      `Selamat Bergabung di KODIBA (${memberId})!`,
+      `Keanggotaan sukarela Koperasi Digital Bambu Anda telah aktif.`
+    );
+    return memberId;
   }
 }));

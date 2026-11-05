@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   subscribeIncomingOrders, 
   acceptPilotOrderInFirestore, 
@@ -8,11 +9,7 @@ import {
   openWhatsAppDispatch,
   updateDriverLiveLocationInFirestore
 } from '../../services/boomboom/boomboomPilotService';
-import { MessageSquare, PhoneCall, ExternalLink } from 'lucide-react';
-import { 
-  Power, 
-  MapPin
-} from 'lucide-react';
+import { MessageSquare, PhoneCall, ExternalLink, Power, MapPin, ShieldCheck, ShoppingBag } from 'lucide-react';
 import BoomBoomNavHeader from '../../components/boomboom/BoomBoomNavHeader';
 import MapViewComponent from '../../components/boomboom/MapViewComponent';
 import SosButton from '../../components/boomboom/SosButton';
@@ -20,8 +17,9 @@ import { useBoomBoomStore } from '../../services/boomboom/boomboomStore';
 import { useAuth } from '../../context/AuthContext';
 
 const BoomDriverDashboardPage = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
-  const { driverState, drivers, activeBooking, featureFlags, pairOrderByInstantCode } = useBoomBoomStore();
+  const { driverState, drivers, activeBooking, featureFlags, pairOrderByInstantCode, optInDriverKodiba } = useBoomBoomStore();
   const [isOnline, setIsOnline] = useState(driverState.isOnline);
   const [gpsStatus, setGpsStatus] = useState('Siap Memancarkan Koordinat GPS');
   const [instantCodeInput, setInstantCodeInput] = useState('');
@@ -659,6 +657,153 @@ const BoomDriverDashboardPage = () => {
               </div>
             </div>
           )}
+        </div>
+
+        {/* TAHAP III: INTEGRASI EKOSISTEM KODIBA (SUKARELA) & BAMBOOCHAIN MARKETPLACE */}
+        <div style={{
+          marginTop: '24px',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+          gap: '20px'
+        }}>
+          {/* KARTU 1: KEANGGOTAAN SUKARELA KODIBA (KOPERASI DIGITAL BAMBU) */}
+          <div style={{
+            background: 'var(--bg-card, #ffffff)',
+            borderRadius: '22px',
+            padding: '22px',
+            border: '1px solid var(--border-color, #e2e8f0)',
+            boxShadow: '0 4px 15px rgba(0,0,0,0.03)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between'
+          }}>
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', gap: '8px', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '0.72rem', fontWeight: '900', color: '#059669', background: '#d1fae5', padding: '4px 10px', borderRadius: '999px', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                  <ShieldCheck size={14} /> INTEGRASI KODIBA (TAHAP III)
+                </span>
+                <span style={{
+                  fontSize: '0.7rem',
+                  fontWeight: '800',
+                  color: currentDriverProfile.kodiba_member ? '#047857' : '#d97706'
+                }}>
+                  {currentDriverProfile.kodiba_member ? `✓ Anggota Aktif (${currentDriverProfile.kodiba_member_id || 'KODIBA-2026-0014'})` : 'Opsional / Sukarela'}
+                </span>
+              </div>
+              <h4 style={{ fontSize: '1.05rem', fontWeight: '800', margin: '0 0 6px', color: 'var(--text-main, #0f172a)' }}>
+                Koperasi Digital Bambu (KODIBA)
+              </h4>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted, #64748b)', lineHeight: 1.5, margin: '0 0 14px' }}>
+                Sesuai Tata Kelola Tahap III, keanggotaan KODIBA bersifat <strong>sukarela & transparan</strong> (tanpa potongan otomatis dari tarif perjalanan). Anggota berhak mengakses program pembiayaan konversi motor listrik (EV), tabungan SHU, dan pelatihan keselamatan komunitas.
+              </p>
+            </div>
+
+            {currentDriverProfile.kodiba_member ? (
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <div style={{ flex: 1, background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '10px 14px', borderRadius: '12px', fontSize: '0.78rem', fontWeight: '800', color: '#047857' }}>
+                  ID Koperasi: <code>{currentDriverProfile.kodiba_member_id || 'KODIBA-2026-0014'}</code>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => navigate('/kodiba')}
+                  style={{
+                    background: '#064e3b',
+                    color: '#ffffff',
+                    border: 'none',
+                    padding: '10px 16px',
+                    borderRadius: '12px',
+                    fontWeight: '800',
+                    fontSize: '0.78rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Buka Portal KODIBA
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => optInDriverKodiba(currentDriverProfile.driver_id, currentDriverProfile.name)}
+                style={{
+                  background: 'linear-gradient(135deg, #064e3b 0%, #047857 100%)',
+                  color: '#ffffff',
+                  border: 'none',
+                  padding: '12px 16px',
+                  borderRadius: '12px',
+                  fontWeight: '800',
+                  fontSize: '0.82rem',
+                  cursor: 'pointer'
+                }}
+              >
+                🤝 Setuju Bergabung Sukarela sebagai Anggota KODIBA
+              </button>
+            )}
+          </div>
+
+          {/* KARTU 2: INTEGRASI BAMBOOCHAIN MARKETPLACE */}
+          <div style={{
+            background: 'var(--bg-card, #ffffff)',
+            borderRadius: '22px',
+            padding: '22px',
+            border: '1px solid var(--border-color, #e2e8f0)',
+            boxShadow: '0 4px 15px rgba(0,0,0,0.03)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between'
+          }}>
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', gap: '8px' }}>
+                <span style={{ fontSize: '0.72rem', fontWeight: '900', color: '#b45309', background: '#fef3c7', padding: '4px 10px', borderRadius: '999px', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                  <ShoppingBag size={14} /> EKOSISTEM MARKETPLACE DESA
+                </span>
+                <span style={{ fontSize: '0.7rem', fontWeight: '800', color: 'var(--text-muted, #64748b)' }}>
+                  Tukar BMC / Rupiah
+                </span>
+              </div>
+              <h4 style={{ fontSize: '1.05rem', fontWeight: '800', margin: '0 0 6px', color: 'var(--text-main, #0f172a)' }}>
+                Perlengkapan Mitra & Produk Lokal BaMbooChain
+              </h4>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted, #64748b)', lineHeight: 1.5, margin: '0 0 14px' }}>
+                Dapatkan helm standar SNI komunitas, jaket reflektif BoomBoom, paket perawatan baterai EV, serta dukung pemasaran produk kerajinan & bibit bambu desa mitra.
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                onClick={() => navigate('/marketplace')}
+                style={{
+                  flex: 1,
+                  background: '#f59f00',
+                  color: '#000000',
+                  border: 'none',
+                  padding: '11px 16px',
+                  borderRadius: '12px',
+                  fontWeight: '900',
+                  fontSize: '0.82rem',
+                  cursor: 'pointer'
+                }}
+              >
+                🛒 Kunjungi Marketplace BaMbooChain
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate('/boomboom/rewards')}
+                style={{
+                  background: 'var(--bg-secondary, #f1f5f9)',
+                  color: 'var(--text-main, #334155)',
+                  border: '1px solid var(--border-color, #cbd5e1)',
+                  padding: '11px 14px',
+                  borderRadius: '12px',
+                  fontWeight: '800',
+                  fontSize: '0.8rem',
+                  cursor: 'pointer'
+                }}
+              >
+                Cek Saldo BMC
+              </button>
+            </div>
+          </div>
         </div>
 
       </div>

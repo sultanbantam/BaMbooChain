@@ -476,7 +476,7 @@ const BoomBoomPage = () => {
                 fontSize: '0.75rem',
                 fontWeight: '900'
               }}>
-                ⚡ TAHAP II SEDANG BERJALAN
+                ⚡ TAHAP III (CLOSED REGIONAL PILOT) AKTIF
               </span>
             </div>
 
@@ -500,26 +500,26 @@ const BoomBoomPage = () => {
                 },
                 {
                   phase: 'TAHAP II — Backend Pilot & Matching Engine',
-                  status: 'AKTIF SEKARANG',
-                  active: true,
+                  status: 'SELESAI 100%',
+                  active: false,
                   done: true,
                   items: [
                     'Autentikasi Riil & Multi-Role Firestore',
-                    'Verifikasi Driver & Operator Real-Time',
-                    'Geospatial Matching Engine & Live GPS',
+                    'Sistem Kode BoomInstan (Ala Gojek Instan)',
+                    'Geospatial Matching Engine & Rute OSRM',
                     'Server-Validated Fare, Payment Sandbox & Audit Logs'
                   ]
                 },
                 {
                   phase: 'TAHAP III — Closed Regional Pilot',
-                  status: 'SIAP VALIDASI',
-                  active: false,
-                  done: false,
+                  status: 'AKTIF SEKARANG',
+                  active: true,
+                  done: true,
                   items: [
-                    'Aktivasi Zona Terbatas (BOOMBOOM_PILOT_ENABLED)',
-                    'Pengukuran Completion Rate & Response Time',
-                    'Evaluasi Pendapatan Driver & BUMDes',
-                    'Audit Insiden Keselamatan BoomSafe'
+                    'Geofence 6 Zona Pilot & Integrasi Proyek Desa',
+                    '7 Metrik Telemetry: Completion, Respon, CSAT & Cancel',
+                    'Alur Resolusi Keluhan Warga & Insiden SOS',
+                    'Kepatuhan Regulasi, KODIBA Sukarela & Marketplace'
                   ]
                 },
                 {

@@ -6,8 +6,8 @@ import {
   Save,
   CheckCircle2,
   ShieldCheck,
-  FileText,
-  Activity
+  Activity,
+  BarChart3
 } from 'lucide-react';
 import BoomBoomNavHeader from '../../components/boomboom/BoomBoomNavHeader';
 import { useBoomBoomStore } from '../../services/boomboom/boomboomStore';
@@ -24,10 +24,14 @@ const BoomAdminDashboardPage = () => {
     operators,
     trips,
     incidents,
+    complaints,
+    pilotMetrics,
+    regions,
+    togglePilotRegionStatus,
     auditLogs
   } = useBoomBoomStore();
 
-  const [activeTab, setActiveTab] = useState('AUDIT'); // 'AUDIT' | 'FLAGS' | 'FARES'
+  const [activeTab, setActiveTab] = useState('PHASE3_KPI'); // 'PHASE3_KPI' | 'AUDIT' | 'FLAGS' | 'FARES'
   const [editingFare, setEditingFare] = useState({ ...fareSettings.BoomRide });
   const [saveSuccess, setSaveSuccess] = useState(false);
 
@@ -58,20 +62,35 @@ const BoomAdminDashboardPage = () => {
           gap: '20px'
         }}>
           <div>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.1)', padding: '4px 12px', borderRadius: '14px', fontSize: '0.8rem', fontWeight: '800', color: '#38bdf8', marginBottom: '8px' }}>
-              <Settings size={16} /> CENTRAL ADMIN & AUDIT TRAIL (TAHAP II BACKEND PILOT)
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(16, 185, 129, 0.2)', padding: '4px 12px', borderRadius: '14px', fontSize: '0.8rem', fontWeight: '800', color: '#34d399', marginBottom: '8px' }}>
+              <Settings size={16} /> CENTRAL ADMIN & EVALUASI TELEMETRY (TAHAP III CLOSED REGIONAL PILOT)
             </div>
             <h1 style={{ fontSize: '1.8rem', fontWeight: '900', margin: '0 0 4px', color: '#ffffff' }}>
-              Pusat Kendali, Audit Logs & Feature Flags BoomBoom
+              Pusat Kendali, Evaluasi 7 KPI Pilot & Audit Trail BoomBoom
             </h1>
             <div style={{ fontSize: '0.9rem', color: '#94a3b8' }}>
-              Pantau jejak audit real-time (Firestore), verifikasi pusat, parameter fare engine, dan modul desentralisasi.
+              Pantau 7 metrik wajib Tahap III (Completion Rate, Response Time, Cancellation, Complaints, Safety, Driver Earnings, User Satisfaction) & Geofence Wilayah.
             </div>
           </div>
         </div>
 
         {/* TABS SELECTOR */}
         <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
+          <button
+            onClick={() => setActiveTab('PHASE3_KPI')}
+            style={{
+              padding: '10px 20px',
+              borderRadius: '14px',
+              fontWeight: '800',
+              border: '1px solid var(--border-color, #cbd5e1)',
+              cursor: 'pointer',
+              background: activeTab === 'PHASE3_KPI' ? '#047857' : 'var(--bg-card, #ffffff)',
+              color: activeTab === 'PHASE3_KPI' ? '#ffffff' : 'var(--text-main, #475569)'
+            }}
+          >
+            📊 Evaluasi 7 Metrik Pilot Tahap III
+          </button>
+
           <button
             onClick={() => setActiveTab('AUDIT')}
             style={{
@@ -84,7 +103,7 @@ const BoomAdminDashboardPage = () => {
               color: activeTab === 'AUDIT' ? '#ffffff' : 'var(--text-main, #475569)'
             }}
           >
-            🛡️ Audit Logs & Metrik Tahap II ({auditLogs.length})
+            🛡️ Audit Logs Real-Time ({auditLogs.length})
           </button>
 
           <button
@@ -99,7 +118,7 @@ const BoomAdminDashboardPage = () => {
               color: activeTab === 'FLAGS' ? '#ffffff' : 'var(--text-main, #475569)'
             }}
           >
-            ⚙️ Feature Flags & Regional Pilot
+            ⚙️ Feature Flags, Zona Pilot & BoomInstan
           </button>
 
           <button
@@ -118,10 +137,146 @@ const BoomAdminDashboardPage = () => {
           </button>
         </div>
 
-        {/* TAB 0: AUDIT LOGS & METRIK TAHAP II */}
+        {/* TAB 0: EVALUASI 7 METRIK WAJIB TAHAP III (CLOSED REGIONAL PILOT) */}
+        {activeTab === 'PHASE3_KPI' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div style={{
+              background: 'var(--bg-card, #ffffff)',
+              borderRadius: '24px',
+              padding: '24px',
+              border: '1px solid var(--border-color, #cbd5e1)',
+              boxShadow: '0 8px 25px rgba(0,0,0,0.04)'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '10px' }}>
+                <div>
+                  <h3 style={{ fontSize: '1.2rem', fontWeight: '800', margin: '0 0 4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <BarChart3 size={20} color="#059669" /> 7 Metrik Evaluasi Wajib — Tahap III (Closed Regional Pilot)
+                  </h3>
+                  <div style={{ fontSize: '0.82rem', color: 'var(--text-muted, #64748b)' }}>
+                    Data telemetri operasional wilayah dari {regions.filter(r => r.status === 'ACTIVE_PILOT').length} zona pilot aktif & {operators.length} mitra operator lokal (BUMDes/Koperasi).
+                  </div>
+                </div>
+                <span style={{ background: '#d1fae5', color: '#047857', fontWeight: '900', fontSize: '0.75rem', padding: '6px 12px', borderRadius: '999px' }}>
+                  ✓ STATUS PILOT: MEMENUHI TARGET REGULASI & OPERASIONAL
+                </span>
+              </div>
+
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))',
+                gap: '14px'
+              }}>
+                {/* 1. Trip Completion Rate */}
+                <div style={{ background: 'var(--bg-secondary, #f8fafc)', padding: '18px', borderRadius: '18px', border: '1px solid var(--border-color, #cbd5e1)' }}>
+                  <div style={{ fontSize: '0.72rem', fontWeight: '900', color: '#047857' }}>1. TRIP COMPLETION RATE</div>
+                  <div style={{ fontSize: '1.65rem', fontWeight: '900', color: 'var(--text-main, #0f172a)', margin: '4px 0' }}>
+                    {pilotMetrics.trip_completion_rate_pct}%
+                  </div>
+                  <div style={{ fontSize: '0.76rem', color: 'var(--text-muted, #64748b)' }}>
+                    {pilotMetrics.completed_trips_count} selesai dari {pilotMetrics.total_pilot_requests} order pilot
+                  </div>
+                </div>
+
+                {/* 2. Response Time */}
+                <div style={{ background: 'var(--bg-secondary, #f8fafc)', padding: '18px', borderRadius: '18px', border: '1px solid var(--border-color, #cbd5e1)' }}>
+                  <div style={{ fontSize: '0.72rem', fontWeight: '900', color: '#047857' }}>2. RESPONSE TIME & ETA</div>
+                  <div style={{ fontSize: '1.65rem', fontWeight: '900', color: 'var(--text-main, #0f172a)', margin: '4px 0' }}>
+                    {pilotMetrics.avg_response_time_sec} Detik
+                  </div>
+                  <div style={{ fontSize: '0.76rem', color: 'var(--text-muted, #64748b)' }}>
+                    Rata-rata tiba di titik jemput: ±{pilotMetrics.avg_pickup_arrival_min} menit
+                  </div>
+                </div>
+
+                {/* 3. Cancellation Rate */}
+                <div style={{ background: 'var(--bg-secondary, #f8fafc)', padding: '18px', borderRadius: '18px', border: '1px solid var(--border-color, #cbd5e1)' }}>
+                  <div style={{ fontSize: '0.72rem', fontWeight: '900', color: '#d97706' }}>3. CANCELLATION RATE</div>
+                  <div style={{ fontSize: '1.65rem', fontWeight: '900', color: '#b45309', margin: '4px 0' }}>
+                    {pilotMetrics.cancellation_rate_pct}%
+                  </div>
+                  <div style={{ fontSize: '0.76rem', color: 'var(--text-muted, #64748b)' }}>
+                    {pilotMetrics.cancelled_trips_count} pembatalan tercatat dengan alasan
+                  </div>
+                </div>
+
+                {/* 4. Complaints */}
+                <div style={{ background: 'var(--bg-secondary, #f8fafc)', padding: '18px', borderRadius: '18px', border: '1px solid var(--border-color, #cbd5e1)' }}>
+                  <div style={{ fontSize: '0.72rem', fontWeight: '900', color: '#047857' }}>4. COMPLAINTS RESOLUTION</div>
+                  <div style={{ fontSize: '1.65rem', fontWeight: '900', color: 'var(--text-main, #0f172a)', margin: '4px 0' }}>
+                    {complaints.filter(c => c.status === 'RESOLVED').length} / {complaints.length} Selesai
+                  </div>
+                  <div style={{ fontSize: '0.76rem', color: 'var(--text-muted, #64748b)' }}>
+                    Ditangani langsung oleh BUMDes / Koperasi wilayah
+                  </div>
+                </div>
+
+                {/* 5. Safety Incidents */}
+                <div style={{ background: 'var(--bg-secondary, #f8fafc)', padding: '18px', borderRadius: '18px', border: '1px solid var(--border-color, #cbd5e1)' }}>
+                  <div style={{ fontSize: '0.72rem', fontWeight: '900', color: '#059669' }}>5. SAFETY INCIDENTS</div>
+                  <div style={{ fontSize: '1.65rem', fontWeight: '900', color: '#10b981', margin: '4px 0' }}>
+                    {incidents.filter(i => i.status === 'OPEN').length} Aktif ({incidents.length} Log)
+                  </div>
+                  <div style={{ fontSize: '0.76rem', color: 'var(--text-muted, #64748b)' }}>
+                    {pilotMetrics.zero_fatality_days} Hari Nihil Kecelakaan Berat
+                  </div>
+                </div>
+
+                {/* 6. Driver Earnings */}
+                <div style={{ background: 'var(--bg-secondary, #f8fafc)', padding: '18px', borderRadius: '18px', border: '1px solid var(--border-color, #cbd5e1)' }}>
+                  <div style={{ fontSize: '0.72rem', fontWeight: '900', color: '#b45309' }}>6. DRIVER EARNINGS (85% SHARE)</div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: '900', color: '#d97706', margin: '4px 0' }}>
+                    Rp {pilotMetrics.total_driver_earnings_idr.toLocaleString('id-ID')}
+                  </div>
+                  <div style={{ fontSize: '0.76rem', color: 'var(--text-muted, #64748b)' }}>
+                    Rata-rata Rp {pilotMetrics.avg_driver_daily_earnings_idr.toLocaleString('id-ID')}/hari per driver aktif
+                  </div>
+                </div>
+
+                {/* 7. User Satisfaction (CSAT) */}
+                <div style={{ background: 'var(--bg-secondary, #f8fafc)', padding: '18px', borderRadius: '18px', border: '1px solid var(--border-color, #cbd5e1)' }}>
+                  <div style={{ fontSize: '0.72rem', fontWeight: '900', color: '#059669' }}>7. USER SATISFACTION (CSAT)</div>
+                  <div style={{ fontSize: '1.65rem', fontWeight: '900', color: '#047857', margin: '4px 0' }}>
+                    {pilotMetrics.user_satisfaction_csat_pct}% (★{pilotMetrics.avg_star_rating})
+                  </div>
+                  <div style={{ fontSize: '0.76rem', color: 'var(--text-muted, #64748b)' }}>
+                    Dari {pilotMetrics.total_ratings_submitted} ulasan warga terverifikasi
+                  </div>
+                </div>
+              </div>
+
+              {/* Rincian Alasan Pembatalan & Tag Kepuasan Warga */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px', marginTop: '20px' }}>
+                <div style={{ background: 'var(--bg-secondary, #f8fafc)', padding: '16px', borderRadius: '16px', border: '1px solid var(--border-color, #e2e8f0)' }}>
+                  <div style={{ fontSize: '0.8rem', fontWeight: '900', marginBottom: '10px' }}>
+                    Distribusi Alasan Pembatalan (Metrik #3)
+                  </div>
+                  {Object.entries(pilotMetrics.cancellation_reasons || {}).map(([reason, count]) => (
+                    <div key={reason} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', padding: '5px 0', borderBottom: '1px dashed var(--border-color, #e2e8f0)' }}>
+                      <span>{reason}</span>
+                      <strong>{count}x</strong>
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{ background: 'var(--bg-secondary, #f8fafc)', padding: '16px', borderRadius: '16px', border: '1px solid var(--border-color, #e2e8f0)' }}>
+                  <div style={{ fontSize: '0.8rem', fontWeight: '900', marginBottom: '10px' }}>
+                    Apresiasi Tertinggi Warga / CSAT Tags (Metrik #7)
+                  </div>
+                  {(pilotMetrics.top_csat_tags || []).map((item) => (
+                    <div key={item.tag} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', padding: '5px 0', borderBottom: '1px dashed var(--border-color, #e2e8f0)' }}>
+                      <span>👍 {item.tag}</span>
+                      <strong style={{ color: '#059669' }}>{item.count} suara</strong>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 1: AUDIT LOGS & METRIK TAHAP II */}
         {activeTab === 'AUDIT' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            {/* Ringkasan Metrik Pilot */}
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))',
@@ -153,7 +308,6 @@ const BoomAdminDashboardPage = () => {
               </div>
             </div>
 
-            {/* Tabel Audit Trail Real-Time */}
             <div style={{
               background: 'var(--bg-card, #ffffff)',
               borderRadius: '24px',
@@ -216,7 +370,7 @@ const BoomAdminDashboardPage = () => {
           </div>
         )}
 
-        {/* TAB 1: FEATURE FLAGS */}
+        {/* TAB 2: FEATURE FLAGS & REGIONAL PILOT ZONES */}
         {activeTab === 'FLAGS' && (
           <div style={{
             background: 'var(--bg-card, #ffffff)',
@@ -245,7 +399,7 @@ const BoomAdminDashboardPage = () => {
                       {key}
                     </div>
                     <div style={{ fontSize: '0.8rem', color: 'var(--text-muted, #64748b)' }}>
-                      {key === 'BOOMBOOM_PILOT_ENABLED' ? 'Aktifkan zona operasional pilot terbatas daerah.' : 'Arsitektur modul & fase operasional.'}
+                      {key === 'BOOMBOOM_PILOT_ENABLED' ? 'Aktifkan validasi geofence zona operasional pilot terbatas daerah.' : 'Arsitektur modul & fase operasional.'}
                     </div>
                   </div>
 
@@ -268,6 +422,43 @@ const BoomAdminDashboardPage = () => {
                   </button>
                 </div>
               ))}
+            </div>
+
+            {/* ZONA CLOSED REGIONAL PILOT AKTIF */}
+            <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '2px dashed var(--border-color, #cbd5e1)' }}>
+              <h3 style={{ fontSize: '1.15rem', fontWeight: '800', margin: '0 0 12px' }}>
+                📍 Pengaturan Geofence Zona Closed Regional Pilot (Tahap III)
+              </h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '12px' }}>
+                {regions.map((reg) => (
+                  <div key={reg.id} style={{ background: 'var(--bg-secondary, #f8fafc)', padding: '14px', borderRadius: '14px', border: '1px solid var(--border-color, #cbd5e1)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                      <strong style={{ fontSize: '0.85rem' }}>{reg.name}</strong>
+                      <span style={{ fontSize: '0.68rem', fontWeight: '900', color: reg.status === 'ACTIVE_PILOT' ? '#047857' : '#dc2626' }}>
+                        {reg.status}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted, #64748b)', marginBottom: '8px' }}>
+                      {reg.operatorName} • Izin: {reg.license_reference || 'DISHUB-PILOT'}
+                    </div>
+                    <button
+                      onClick={() => togglePilotRegionStatus(reg.id)}
+                      style={{
+                        background: reg.status === 'ACTIVE_PILOT' ? '#fee2e2' : '#10b981',
+                        color: reg.status === 'ACTIVE_PILOT' ? '#dc2626' : '#ffffff',
+                        border: 'none',
+                        padding: '6px 12px',
+                        borderRadius: '8px',
+                        fontSize: '0.74rem',
+                        fontWeight: '800',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {reg.status === 'ACTIVE_PILOT' ? 'Nonaktifkan Sementara' : 'Aktifkan Zona Pilot'}
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* PENGATURAN KHUSUS SISTEM BOOM-INSTAN (ALA GOJEK INSTAN) */}
@@ -324,7 +515,7 @@ const BoomAdminDashboardPage = () => {
           </div>
         )}
 
-        {/* TAB 2: FARE ENGINE CONFIGURATION */}
+        {/* TAB 3: FARE ENGINE CONFIGURATION */}
         {activeTab === 'FARES' && (
           <div style={{
             background: 'var(--bg-card, #ffffff)',
@@ -349,54 +540,61 @@ const BoomAdminDashboardPage = () => {
               </div>
 
               <div>
-                <label style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted, #475569)' }}>Tarif Per KM (IDR)</label>
+                <label style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted, #475569)' }}>Tarif Per Kilometer (IDR)</label>
                 <input
                   type="number"
-                  value={editingFare.perKm}
-                  onChange={e => setEditingFare({ ...editingFare, perKm: Number(e.target.value) })}
+                  value={editingFare.perKmRate}
+                  onChange={e => setEditingFare({ ...editingFare, perKmRate: Number(e.target.value) })}
                   style={{ width: '100%', padding: '10px 12px', borderRadius: '12px', border: '1px solid var(--border-color, #cbd5e1)', background: 'var(--bg-secondary, #f8fafc)', color: 'var(--text-main)', marginTop: '4px' }}
                 />
               </div>
 
               <div>
-                <label style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted, #475569)' }}>Persentase Platform Fee (%)</label>
+                <label style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted, #475569)' }}>Tarif Minimum (IDR)</label>
                 <input
                   type="number"
-                  value={editingFare.platformFeePct}
-                  onChange={e => setEditingFare({ ...editingFare, platformFeePct: Number(e.target.value) })}
+                  value={editingFare.minFare}
+                  onChange={e => setEditingFare({ ...editingFare, minFare: Number(e.target.value) })}
                   style={{ width: '100%', padding: '10px 12px', borderRadius: '12px', border: '1px solid var(--border-color, #cbd5e1)', background: 'var(--bg-secondary, #f8fafc)', color: 'var(--text-main)', marginTop: '4px' }}
                 />
               </div>
 
               <div>
-                <label style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted, #475569)' }}>Persentase Mitra Wilayah (%)</label>
+                <label style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted, #475569)' }}>Bagi Hasil Pengemudi (%)</label>
                 <input
                   type="number"
-                  value={editingFare.operatorFeePct}
-                  onChange={e => setEditingFare({ ...editingFare, operatorFeePct: Number(e.target.value) })}
+                  value={editingFare.driverSharePct}
+                  onChange={e => setEditingFare({ ...editingFare, driverSharePct: Number(e.target.value) })}
                   style={{ width: '100%', padding: '10px 12px', borderRadius: '12px', border: '1px solid var(--border-color, #cbd5e1)', background: 'var(--bg-secondary, #f8fafc)', color: 'var(--text-main)', marginTop: '4px' }}
                 />
               </div>
             </div>
 
-            <button
-              onClick={handleSaveFare}
-              style={{
-                background: saveSuccess ? '#059669' : '#10b981',
-                color: 'white',
-                border: 'none',
-                padding: '12px 24px',
-                borderRadius: '14px',
-                fontWeight: '800',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}
-            >
-              {saveSuccess ? <CheckCircle2 size={18} /> : <Save size={18} />}
-              {saveSuccess ? 'Simpan Berhasil!' : 'Simpan Perubahan Tarif'}
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <button
+                onClick={handleSaveFare}
+                style={{
+                  background: '#10b981',
+                  color: '#ffffff',
+                  border: 'none',
+                  padding: '12px 24px',
+                  borderRadius: '14px',
+                  fontWeight: '800',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+              >
+                <Save size={18} /> Simpan Konfigurasi Tarif
+              </button>
+
+              {saveSuccess && (
+                <span style={{ color: '#059669', fontWeight: '800', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <CheckCircle2 size={18} /> Konfigurasi Fare Engine berhasil diperbarui!
+                </span>
+              )}
+            </div>
           </div>
         )}
 

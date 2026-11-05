@@ -77,11 +77,55 @@ const BoomBookPage = () => {
     recalculateRouteAndFare,
     regenerateInstantCode,
     setPaymentSession,
-    pushNotification
+    pushNotification,
+    submitTripRatingAndCsat,
+    submitComplaint
   } = useBoomBoomStore();
 
   const [isCalculating, setIsCalculating] = useState(false);
   const [codeCopied, setCodeCopied] = useState(false);
+  const [csatRating, setCsatRating] = useState(5);
+  const [selectedCsatTags, setSelectedCsatTags] = useState(['Tepat Waktu', 'Ramah & Sopan', 'Tarif Transparan (85% ke Driver)']);
+  const [csatComment, setCsatComment] = useState('');
+  const [csatSubmitted, setCsatSubmitted] = useState(false);
+  const [showComplaintForm, setShowComplaintForm] = useState(false);
+  const [complaintCategory, setComplaintCategory] = useState('WAIT_TIME');
+  const [complaintSubject, setComplaintSubject] = useState('');
+  const [complaintDesc, setComplaintDesc] = useState('');
+  const [selectedCancelReason, setSelectedCancelReason] = useState('Berubah pikiran / salah titik jemput');
+
+  const toggleCsatTag = (tag) => {
+    setSelectedCsatTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+    );
+  };
+
+  const handleSubmitCsat = async () => {
+    await submitTripRatingAndCsat({
+      tripId: pilotTripId || activeBooking.currentTripId,
+      rating: csatRating,
+      tags: selectedCsatTags,
+      comment: csatComment,
+      passengerName: user?.displayName || 'Penumpang BoomBoom'
+    });
+    setCsatSubmitted(true);
+  };
+
+  const handleSendComplaint = async (e) => {
+    if (e) e.preventDefault();
+    if (!complaintSubject.trim()) return;
+    await submitComplaint({
+      tripId: pilotTripId || activeBooking.currentTripId,
+      category: complaintCategory,
+      subject: complaintSubject,
+      description: complaintDesc,
+      reporterName: user?.displayName || 'Penumpang BoomBoom',
+      regionId: activeBooking.pilotGeofence?.nearestRegion?.id || 'REG-CIBARANI'
+    });
+    setComplaintSubject('');
+    setComplaintDesc('');
+    setShowComplaintForm(false);
+  };
 
   const [pickupInput, setPickupInput] = useState(activeBooking.pickupAddress);
   const [destInput, setDestInput] = useState(activeBooking.destinationAddress);
@@ -547,6 +591,43 @@ const BoomBookPage = () => {
                         Acak Kode
                       </button>
                     </div>
+                  </div>
+                </div>
+              )}
+
+              {/* TAHAP III: GEOFENCE ZONA CLOSED REGIONAL PILOT & INTEGRASI PROJECT ECOSYSTEM */}
+              {activeBooking.pilotGeofence?.nearestRegion && (
+                <div style={{
+                  marginTop: '12px',
+                  background: activeBooking.pilotGeofence.isWithinPilotZone
+                    ? 'rgba(16, 185, 129, 0.1)'
+                    : 'rgba(245, 159, 0, 0.12)',
+                  border: activeBooking.pilotGeofence.isWithinPilotZone
+                    ? '1px solid rgba(16, 185, 129, 0.35)'
+                    : '1px solid rgba(245, 159, 0, 0.45)',
+                  borderRadius: '16px',
+                  padding: '12px 14px'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '6px' }}>
+                    <span style={{ fontSize: '0.72rem', fontWeight: '900', color: activeBooking.pilotGeofence.isWithinPilotZone ? '#059669' : '#d97706', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <ShieldCheck size={15} />
+                      {activeBooking.pilotGeofence.isWithinPilotZone
+                        ? `ZONA PILOT AKTIF (TAHAP III): ${activeBooking.pilotGeofence.nearestRegion.name}`
+                        : `LUAR RADIUS INTI (${activeBooking.pilotGeofence.distanceToCenterKm} km dari ${activeBooking.pilotGeofence.nearestRegion.regency})`}
+                    </span>
+                    <span style={{
+                      fontSize: '0.65rem',
+                      fontWeight: '800',
+                      background: 'rgba(6, 78, 59, 0.12)',
+                      color: 'var(--primary, #047857)',
+                      padding: '2px 8px',
+                      borderRadius: '999px'
+                    }}>
+                      {activeBooking.pilotGeofence.nearestRegion.project_id || 'PRJ-CIBARANI-01'}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '0.73rem', color: 'var(--text-muted, #64748b)', lineHeight: 1.45 }}>
+                    Mitra Operator Resmi: <strong>{activeBooking.pilotGeofence.nearestRegion.operatorName}</strong> ({activeBooking.pilotGeofence.nearestRegion.operatorType}) • Ref Izin: <code>{activeBooking.pilotGeofence.nearestRegion.license_reference || 'DISHUB-PILOT/2026'}</code>
                   </div>
                 </div>
               )}
@@ -1239,27 +1320,52 @@ const BoomBookPage = () => {
                     ⚡ Tugaskan Kandidat Pengemudi Terdekat Sekarang
                   </button>
 
-                  <button
-                    onClick={cancelBooking}
-                    style={{
-                      background: '#fee2e2',
-                      color: '#dc2626',
-                      border: 'none',
-                      padding: '8px 16px',
-                      borderRadius: '10px',
-                      fontWeight: '700',
-                      fontSize: '0.78rem',
-                      cursor: 'pointer',
-                      marginTop: '6px'
-                    }}
-                  >
-                    Batalkan Pencarian
-                  </button>
+                  <div style={{ width: '100%', maxWidth: '340px', marginTop: '8px' }}>
+                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '800', color: 'var(--text-muted, #64748b)', marginBottom: '4px' }}>
+                      Alasan Pembatalan (Metrik Evaluasi Tahap III):
+                    </label>
+                    <select
+                      value={selectedCancelReason}
+                      onChange={(e) => setSelectedCancelReason(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '8px 10px',
+                        borderRadius: '10px',
+                        border: '1px solid var(--border-color, #cbd5e1)',
+                        background: 'var(--bg-secondary, #f8fafc)',
+                        color: 'var(--text-main, #0f172a)',
+                        fontSize: '0.76rem',
+                        fontWeight: '700',
+                        marginBottom: '8px'
+                      }}
+                    >
+                      <option value="Berubah pikiran / salah titik jemput">Berubah pikiran / salah titik jemput</option>
+                      <option value="Cuaca hujan deras di jalur desa">Cuaca hujan deras di jalur desa</option>
+                      <option value="Beralih ke Kode BoomInstan di tempat">Beralih ke Kode BoomInstan di tempat</option>
+                      <option value="Pengemudi terlalu jauh (>5 km)">Pengemudi terlalu jauh (&gt;5 km)</option>
+                    </select>
+                    <button
+                      onClick={() => cancelBooking(selectedCancelReason, user?.displayName || 'Penumpang')}
+                      style={{
+                        width: '100%',
+                        background: '#fee2e2',
+                        color: '#dc2626',
+                        border: 'none',
+                        padding: '9px 16px',
+                        borderRadius: '10px',
+                        fontWeight: '800',
+                        fontSize: '0.78rem',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Batalkan Pencarian & Catat Alasan
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
 
-            {/* STATE 3: COMPLETED TRIP */}
+            {/* STATE 3: COMPLETED TRIP + TAHAP III CSAT & COMPLAINT TELEMETRY */}
             {activeBooking.step === 'COMPLETED' && (
               <div style={{
                 background: 'var(--bg-card, #ffffff)',
@@ -1286,9 +1392,208 @@ const BoomBookPage = () => {
                 <h3 style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--text-main, #065f46)', margin: '0 0 6px' }}>
                   Perjalanan Selesai!
                 </h3>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted, #64748b)', marginBottom: '20px' }}>
-                  Terima kasih telah berkontribusi membangun ekonomi mobilitas hijau desa. Reward +2.5 BMC telah dicatat di Ledger.
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted, #64748b)', marginBottom: '18px' }}>
+                  Terima kasih telah berkontribusi membangun ekonomi mobilitas hijau desa. Reward <strong>+2.5 BMC</strong> telah dicatat di Ledger.
                 </p>
+
+                {/* TAHAP III: USER SATISFACTION (CSAT) & RATING */}
+                <div style={{
+                  background: 'var(--bg-secondary, #f8fafc)',
+                  border: '1px solid var(--border-color, #e2e8f0)',
+                  borderRadius: '18px',
+                  padding: '18px',
+                  marginBottom: '18px',
+                  textAlign: 'left'
+                }}>
+                  <div style={{ fontSize: '0.75rem', fontWeight: '900', color: 'var(--primary, #047857)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', textAlign: 'center' }}>
+                    Evaluasi Kepuasan Warga (Metrik CSAT Pilot Tahap III)
+                  </div>
+
+                  {!csatSubmitted ? (
+                    <>
+                      <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginBottom: '12px' }}>
+                        {[1, 2, 3, 4, 5].map((starVal) => (
+                          <button
+                            key={starVal}
+                            type="button"
+                            onClick={() => setCsatRating(starVal)}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              cursor: 'pointer',
+                              padding: '4px',
+                              transform: csatRating >= starVal ? 'scale(1.12)' : 'scale(1)',
+                              transition: 'transform 0.15s'
+                            }}
+                          >
+                            <Star
+                              size={28}
+                              fill={csatRating >= starVal ? '#f59f00' : 'transparent'}
+                              color={csatRating >= starVal ? '#f59f00' : '#cbd5e1'}
+                            />
+                          </button>
+                        ))}
+                      </div>
+
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', justifyContent: 'center', marginBottom: '12px' }}>
+                        {[
+                          'Tepat Waktu',
+                          'Ramah & Sopan',
+                          'Tarif Transparan (85% ke Driver)',
+                          'Rute Aman & Hafal Jalan Desa',
+                          'Kendaraan Bersih / EV Ramah Lingkungan'
+                        ].map((tag) => {
+                          const active = selectedCsatTags.includes(tag);
+                          return (
+                            <button
+                              key={tag}
+                              type="button"
+                              onClick={() => toggleCsatTag(tag)}
+                              style={{
+                                background: active ? '#064e3b' : 'var(--bg-card, #ffffff)',
+                                color: active ? '#a7f3d0' : 'var(--text-muted, #64748b)',
+                                border: active ? '1px solid #10b981' : '1px solid var(--border-color, #cbd5e1)',
+                                borderRadius: '999px',
+                                padding: '5px 11px',
+                                fontSize: '0.72rem',
+                                fontWeight: '800',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              {active ? '✓ ' : '+ '}{tag}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      <input
+                        type="text"
+                        value={csatComment}
+                        onChange={(e) => setCsatComment(e.target.value)}
+                        placeholder="Catatan tambahan untuk pengemudi / operator wilayah (opsional)..."
+                        style={{
+                          width: '100%',
+                          padding: '10px 12px',
+                          borderRadius: '12px',
+                          border: '1px solid var(--border-color, #cbd5e1)',
+                          background: 'var(--bg-card, #ffffff)',
+                          color: 'var(--text-main, #0f172a)',
+                          fontSize: '0.8rem',
+                          marginBottom: '10px',
+                          boxSizing: 'border-box'
+                        }}
+                      />
+
+                      <button
+                        type="button"
+                        onClick={handleSubmitCsat}
+                        style={{
+                          width: '100%',
+                          background: 'linear-gradient(135deg, #064e3b 0%, #047857 100%)',
+                          color: '#ffffff',
+                          border: 'none',
+                          padding: '11px',
+                          borderRadius: '12px',
+                          fontWeight: '800',
+                          fontSize: '0.82rem',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        ★ Kirim Penilaian Kepuasan ({csatRating}/5) ke Telemetry Pilot
+                      </button>
+                    </>
+                  ) : (
+                    <div style={{ textAlign: 'center', color: '#059669', fontWeight: '800', fontSize: '0.85rem', padding: '8px 0' }}>
+                      ✓ Penilaian ★{csatRating}/5 & Tag CSAT berhasil direkam ke Telemetry Pilot Tahap III!
+                    </div>
+                  )}
+
+                  {/* TOMBOL LAPOR KELUHAN / MASUKAN OPERASIONAL */}
+                  <div style={{ marginTop: '12px', borderTop: '1px dashed var(--border-color, #cbd5e1)', paddingTop: '10px', textAlign: 'center' }}>
+                    <button
+                      type="button"
+                      onClick={() => setShowComplaintForm(!showComplaintForm)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#d97706',
+                        fontSize: '0.76rem',
+                        fontWeight: '800',
+                        cursor: 'pointer',
+                        textDecoration: 'underline'
+                      }}
+                    >
+                      {showComplaintForm ? 'Tutup Form Masukan / Keluhan' : 'Ada kendala atau usulan titik jemput wilayah? Kirim Tiket ke Operator BUMDes/Koperasi'}
+                    </button>
+
+                    {showComplaintForm && (
+                      <form onSubmit={handleSendComplaint} style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '8px', textAlign: 'left' }}>
+                        <select
+                          value={complaintCategory}
+                          onChange={(e) => setComplaintCategory(e.target.value)}
+                          style={{
+                            padding: '8px 10px',
+                            borderRadius: '10px',
+                            border: '1px solid var(--border-color, #cbd5e1)',
+                            background: 'var(--bg-card, #ffffff)',
+                            color: 'var(--text-main, #0f172a)',
+                            fontSize: '0.78rem',
+                            fontWeight: '700'
+                          }}
+                        >
+                          <option value="WAIT_TIME">Waktu Tunggu / Penjemputan</option>
+                          <option value="PICKUP_POINT">Usulan Titik Jemput / Rambu Komunitas</option>
+                          <option value="ROUTE_SAFETY">Rute & Keselamatan Jalan Wilayah</option>
+                          <option value="FARE_PAYMENT">Transparansi Tarif & Pembayaran QRIS</option>
+                        </select>
+                        <input
+                          type="text"
+                          required
+                          value={complaintSubject}
+                          onChange={(e) => setComplaintSubject(e.target.value)}
+                          placeholder="Judul keluhan / usulan singkat..."
+                          style={{
+                            padding: '9px 12px',
+                            borderRadius: '10px',
+                            border: '1px solid var(--border-color, #cbd5e1)',
+                            background: 'var(--bg-card, #ffffff)',
+                            color: 'var(--text-main, #0f172a)',
+                            fontSize: '0.8rem'
+                          }}
+                        />
+                        <textarea
+                          rows={2}
+                          value={complaintDesc}
+                          onChange={(e) => setComplaintDesc(e.target.value)}
+                          placeholder="Detail lokasi atau kronologi singkat untuk ditindaklanjuti pengurus wilayah..."
+                          style={{
+                            padding: '9px 12px',
+                            borderRadius: '10px',
+                            border: '1px solid var(--border-color, #cbd5e1)',
+                            background: 'var(--bg-card, #ffffff)',
+                            color: 'var(--text-main, #0f172a)',
+                            fontSize: '0.8rem'
+                          }}
+                        />
+                        <button
+                          type="submit"
+                          style={{
+                            background: '#f59f00',
+                            color: '#000000',
+                            border: 'none',
+                            padding: '9px 14px',
+                            borderRadius: '10px',
+                            fontWeight: '900',
+                            fontSize: '0.78rem',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Kirim Tiket Masukan ke Operator Wilayah
+                        </button>
+                      </form>
+                    )}
+                  </div>
+                </div>
 
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <button
