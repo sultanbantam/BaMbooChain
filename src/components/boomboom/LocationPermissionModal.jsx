@@ -1,13 +1,51 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapPin, Navigation, AlertTriangle, CheckCircle2, ShieldCheck, X } from 'lucide-react';
 import { useBoomBoomStore } from '../../services/boomboom/boomboomStore';
 
 const LocationPermissionModal = () => {
-  const { activeBooking, setPickup } = useBoomBoomStore();
+  const { setPickup } = useBoomBoomStore();
   const [isOpen, setIsOpen] = useState(false);
   const [status, setStatus] = useState('IDLE'); // 'IDLE' | 'LOCATING' | 'SUCCESS' | 'DENIED' | 'UNSUPPORTED'
   const [locationName, setLocationName] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+
+  const applyCoords = async (lat, lng) => {
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`, {
+        headers: { 'Accept-Language': 'id,en', 'User-Agent': 'BaMbooChain-BoomBoom/1.0' }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const road = data.address?.road || data.address?.suburb || data.address?.village || data.address?.city || 'Lokasi Saya Saat Ini';
+        const full = data.display_name ? data.display_name.split(',').slice(0, 3).join(',') : `Titik GPS (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+        const address = `${road} (${full})`;
+        setLocationName(address);
+        setPickup(address, { lat, lng });
+      } else {
+        const fallback = `Titik GPS Presisi (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+        setLocationName(fallback);
+        setPickup(fallback, { lat, lng });
+      }
+    } catch {
+      const fallback = `Titik GPS Presisi (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+      setLocationName(fallback);
+      setPickup(fallback, { lat, lng });
+    }
+  };
+
+  const autoDetectSilent = () => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        await applyCoords(latitude, longitude);
+      },
+      (err) => {
+        console.warn('Auto-detect lokasi gagal:', err);
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  };
 
   useEffect(() => {
     // Periksa status lokasi saat komponen pertama kali dimuat
@@ -33,44 +71,6 @@ const LocationPermissionModal = () => {
       }
     }
   }, []);
-
-  const autoDetectSilent = () => {
-    if (!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const { latitude, longitude } = pos.coords;
-        await applyCoords(latitude, longitude);
-      },
-      (err) => {
-        console.warn('Auto-detect lokasi gagal:', err);
-      },
-      { enableHighAccuracy: true, timeout: 8000 }
-    );
-  };
-
-  const applyCoords = async (lat, lng) => {
-    try {
-      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`, {
-        headers: { 'Accept-Language': 'id,en', 'User-Agent': 'BaMbooChain-BoomBoom/1.0' }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        const road = data.address?.road || data.address?.suburb || data.address?.village || data.address?.city || 'Lokasi Saya Saat Ini';
-        const full = data.display_name ? data.display_name.split(',').slice(0, 3).join(',') : `Titik GPS (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
-        const address = `${road} (${full})`;
-        setLocationName(address);
-        setPickup(address, { lat, lng });
-      } else {
-        const fallback = `Titik GPS Presisi (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
-        setLocationName(fallback);
-        setPickup(fallback, { lat, lng });
-      }
-    } catch {
-      const fallback = `Titik GPS Presisi (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
-      setLocationName(fallback);
-      setPickup(fallback, { lat, lng });
-    }
-  };
 
   const handleRequestLocation = () => {
     if (!navigator.geolocation) {

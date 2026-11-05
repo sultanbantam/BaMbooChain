@@ -24,15 +24,29 @@ const useIsMobile = () => {
 const BoomBoomPage = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const { activeBooking, setServiceType, setPickup, setDestination } = useBoomBoomStore();
+  const { activeBooking, setServiceType, setPickup, setDestination, recalculateRouteAndFare } = useBoomBoomStore();
 
   const [pickupInput, setPickupInput] = useState(activeBooking.pickupAddress);
   const [destInput, setDestInput] = useState(activeBooking.destinationAddress);
 
-  const handleQuickBook = (e) => {
+  // Sinkronisasi responsif saat teks alamat diubah di beranda BoomBoom
+  useEffect(() => {
+    if (!pickupInput || !destInput) return;
+    if (
+      pickupInput === activeBooking.pickupAddress &&
+      destInput === activeBooking.destinationAddress
+    ) {
+      return;
+    }
+    const timer = setTimeout(() => {
+      recalculateRouteAndFare(pickupInput, destInput);
+    }, 650);
+    return () => clearTimeout(timer);
+  }, [pickupInput, destInput]);
+
+  const handleQuickBook = async (e) => {
     e.preventDefault();
-    setPickup(pickupInput);
-    setDestination(destInput);
+    await recalculateRouteAndFare(pickupInput, destInput);
     navigate('/boomboom/book');
   };
 
@@ -431,6 +445,122 @@ const BoomBoomPage = () => {
                   color: 'var(--text-muted, #64748b)', opacity: 0.85
                 }}>
                   {m.icon} {m.label}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ══ ROADMAP PELAKSANAAN BERTAHAP BOOMBOOM ══ */}
+          <div style={{
+            marginTop: '28px',
+            background: 'var(--bg-card, #ffffff)',
+            borderRadius: '24px',
+            padding: isMobile ? '20px 16px' : '26px',
+            boxShadow: '0 8px 28px rgba(0,0,0,0.04)',
+            border: '1px solid var(--border-color, #e2e8f0)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '18px' }}>
+              <div>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: '900', margin: '0 0 4px', color: 'var(--text-main, #0f172a)' }}>
+                  Roadmap Pelaksanaan Bertahap BoomBoom
+                </h3>
+                <p style={{ fontSize: '0.82rem', color: 'var(--text-muted, #64748b)', margin: 0 }}>
+                  Status pengembangan ekosistem mobilitas hijau komunitas BaMbooChain.
+                </p>
+              </div>
+              <span style={{
+                background: 'rgba(16,185,129,0.15)',
+                color: '#047857',
+                padding: '5px 12px',
+                borderRadius: '12px',
+                fontSize: '0.75rem',
+                fontWeight: '900'
+              }}>
+                ⚡ TAHAP II SEDANG BERJALAN
+              </span>
+            </div>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(230px, 1fr))',
+              gap: '14px'
+            }}>
+              {[
+                {
+                  phase: 'TAHAP I — UI/Prototype & Uji Lapangan Awal',
+                  status: 'SELESAI 100%',
+                  active: false,
+                  done: true,
+                  items: [
+                    '11 Rute Halaman & Peta Responsif OSM',
+                    'Modal Wajib GPS & Rute Jalan Raya Nyata',
+                    'Pendaftaran Driver, Operator BUMDes/Koperasi',
+                    'Notifikasi Order ngopi.top & WhatsApp'
+                  ]
+                },
+                {
+                  phase: 'TAHAP II — Backend Pilot & Matching Engine',
+                  status: 'AKTIF SEKARANG',
+                  active: true,
+                  done: true,
+                  items: [
+                    'Autentikasi Riil & Multi-Role Firestore',
+                    'Verifikasi Driver & Operator Real-Time',
+                    'Geospatial Matching Engine & Live GPS',
+                    'Server-Validated Fare, Payment Sandbox & Audit Logs'
+                  ]
+                },
+                {
+                  phase: 'TAHAP III — Closed Regional Pilot',
+                  status: 'SIAP VALIDASI',
+                  active: false,
+                  done: false,
+                  items: [
+                    'Aktivasi Zona Terbatas (BOOMBOOM_PILOT_ENABLED)',
+                    'Pengukuran Completion Rate & Response Time',
+                    'Evaluasi Pendapatan Driver & BUMDes',
+                    'Audit Insiden Keselamatan BoomSafe'
+                  ]
+                },
+                {
+                  phase: 'TAHAP IV — Production Scaling',
+                  status: 'MENDATANG',
+                  active: false,
+                  done: false,
+                  items: [
+                    'Ekspansi Multi-Region Nusantara',
+                    'Payment Gateway Production Penuh',
+                    'WebSocket Tracking & Optimasi Rute',
+                    'Pembukaan Modul BoomSend & BoomTour'
+                  ]
+                }
+              ].map((rm, idx) => (
+                <div key={idx} style={{
+                  background: rm.active ? 'rgba(16,185,129,0.08)' : 'var(--bg-secondary, #f8fafc)',
+                  border: rm.active ? '2px solid #10b981' : '1px solid var(--border-color, #e2e8f0)',
+                  borderRadius: '18px',
+                  padding: '16px'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', gap: '6px' }}>
+                    <span style={{
+                      fontSize: '0.68rem',
+                      fontWeight: '900',
+                      padding: '3px 8px',
+                      borderRadius: '8px',
+                      background: rm.active ? '#10b981' : rm.done ? '#d1fae5' : 'rgba(148,163,184,0.2)',
+                      color: rm.active ? '#ffffff' : rm.done ? '#047857' : 'var(--text-muted, #64748b)'
+                    }}>
+                      {rm.status}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '0.9rem', fontWeight: '800', color: 'var(--text-main, #0f172a)', marginBottom: '10px', lineHeight: 1.35 }}>
+                    {rm.phase}
+                  </div>
+                  <ul style={{ margin: 0, paddingLeft: '16px', fontSize: '0.78rem', color: 'var(--text-muted, #64748b)', lineHeight: 1.6 }}>
+                    {rm.items.map((it, j) => (
+                      <li key={j}>{it}</li>
+                    ))}
+                  </ul>
                 </div>
               ))}
             </div>

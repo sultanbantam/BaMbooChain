@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Leaf, CheckCircle2, Sparkles, TrendingUp } from 'lucide-react';
 import BoomBoomNavHeader from '../../components/boomboom/BoomBoomNavHeader';
 import { useBoomBoomStore } from '../../services/boomboom/boomboomStore';
+import { useAuth } from '../../context/AuthContext';
 
 const useIsMobile = () => {
   const [w, setW] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
@@ -14,16 +15,17 @@ const useIsMobile = () => {
 };
 
 const BoomRewardsPage = () => {
+  const { user } = useAuth();
   const { rewards, claimReward } = useBoomBoomStore();
   const [claimingId, setClaimingId] = useState(null);
   const isMobile = useIsMobile();
 
-  const handleClaim = (rewardId) => {
+  const handleClaim = async (rewardId) => {
     setClaimingId(rewardId);
+    await claimReward(rewardId, user);
     setTimeout(() => {
-      claimReward(rewardId);
       setClaimingId(null);
-    }, 1200);
+    }, 600);
   };
 
   const totalBmcEarned = rewards.reduce((acc, r) => acc + r.bmc_amount, 0);

@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   UserCheck, 
@@ -10,15 +10,17 @@ import {
 } from 'lucide-react';
 import BoomBoomNavHeader from '../../components/boomboom/BoomBoomNavHeader';
 import { useBoomBoomStore } from '../../services/boomboom/boomboomStore';
+import { useAuth } from '../../context/AuthContext';
 
 const BoomDriverRegisterPage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { registerDriver, regions } = useBoomBoomStore();
 
   const [formData, setFormData] = useState({
-    fullName: '',
-    phone: '',
-    email: '',
+    fullName: user?.displayName || '',
+    phone: user?.phoneNumber || '',
+    email: user?.email || '',
     ngopiUsername: '@majelisngopi',
     identityNumber: '',
     licenseNumber: '',
@@ -29,15 +31,26 @@ const BoomDriverRegisterPage = () => {
     operatingRegion: regions[0]?.id || 'REG-CIBARANI',
     bankAccount: '',
     emergencyContact: '',
-    profilePhotoUrl: '',
+    profilePhotoUrl: user?.photoURL || '',
     vehiclePhotoUrl: ''
   });
+
+  useEffect(() => {
+    if (user) {
+      setFormData((prev) => ({
+        ...prev,
+        fullName: prev.fullName || user.displayName || '',
+        email: prev.email || user.email || '',
+        phone: prev.phone || user.phoneNumber || ''
+      }));
+    }
+  }, [user]);
 
   const [submittedDriver, setSubmittedDriver] = useState(null);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const newDriver = registerDriver(formData);
+    const newDriver = registerDriver(formData, user);
     setSubmittedDriver(newDriver);
   };
 
@@ -111,11 +124,11 @@ const BoomDriverRegisterPage = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
             <UserCheck size={28} color="#a7f3d0" />
             <h1 style={{ fontSize: '1.8rem', fontWeight: '900', margin: 0, color: '#ffffff' }}>
-              Jadi Pengemudi BoomBoom
+              Jadi Pengemudi BoomBoom (Tahap II Terverifikasi)
             </h1>
           </div>
           <p style={{ fontSize: '0.95rem', color: '#ecfdf5', margin: 0, maxWidth: '650px' }}>
-            Bergabunglah sebagai mitra pengemudi lokal terverifikasi. Nikmati bagi hasil adil, reward token BMC harian, dan dukung ekonomi desa Anda.
+            Data pendaftaran Anda langsung tersinkronisasi ke database Firestore <code>boomboom_driver_profiles</code> untuk diverifikasi oleh BUMDes / Mitra Operator Wilayah.
           </p>
         </div>
 
@@ -144,14 +157,14 @@ const BoomDriverRegisterPage = () => {
             </div>
 
             <h2 style={{ fontSize: '1.5rem', fontWeight: '800', color: 'var(--text-main, #065f46)', margin: '0 0 8px' }}>
-              Pendaftaran Berhasil Dikirim!
+              Pendaftaran Tersimpan di Database Pilot!
             </h2>
             <p style={{ fontSize: '0.95rem', color: 'var(--text-muted, #475569)', maxWidth: '500px', margin: '0 auto 20px' }}>
-              ID Pengemudi: <strong>{submittedDriver.driver_id}</strong><br />
-              Status Permohonan: <span style={{ background: '#fef3c7', color: '#b45309', padding: '2px 8px', borderRadius: '8px', fontWeight: '700' }}>{submittedDriver.status}</span>
+              ID Pengemudi: <strong>{submittedDriver.driver_id}</strong> • Akun ngopi.top: <strong>{submittedDriver.ngopi_username}</strong><br />
+              Status Verifikasi: <span style={{ background: '#fef3c7', color: '#b45309', padding: '2px 8px', borderRadius: '8px', fontWeight: '700' }}>{submittedDriver.status}</span>
             </p>
 
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
               <button
                 onClick={() => navigate('/boomboom/driver/dashboard')}
                 style={{
@@ -164,7 +177,21 @@ const BoomDriverRegisterPage = () => {
                   cursor: 'pointer'
                 }}
               >
-                Buka Dashboard Pengemudi
+                Buka Dasbor Pengemudi
+              </button>
+              <button
+                onClick={() => navigate('/boomboom/operator/dashboard')}
+                style={{
+                  background: 'var(--bg-secondary, #f1f5f9)',
+                  color: 'var(--text-main, #0f172a)',
+                  border: '1px solid var(--border-color, #cbd5e1)',
+                  padding: '12px 20px',
+                  borderRadius: '14px',
+                  fontWeight: '700',
+                  cursor: 'pointer'
+                }}
+              >
+                Verifikasi di Dasbor Operator
               </button>
             </div>
           </div>
@@ -182,7 +209,7 @@ const BoomDriverRegisterPage = () => {
               {/* SECTION 1: PERSONAL DETAILS */}
               <div>
                 <h3 style={{ fontSize: '1.05rem', fontWeight: '800', color: 'var(--text-main, #0f172a)', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <FileText size={18} color="#10b981" /> 1. Data Diri & Kontak
+                  <FileText size={18} color="#10b981" /> 1. Data Diri & Kontak (Terhubung Akun BaMbooChain)
                 </h3>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px' }}>
                   <div>

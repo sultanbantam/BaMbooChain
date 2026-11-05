@@ -1,39 +1,50 @@
-﻿import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
 import { 
   subscribeIncomingOrders, 
   acceptPilotOrderInFirestore, 
   updatePilotTripStep, 
   playOrderNotificationSound, 
   openNgopiChat, 
-  openWhatsAppDispatch 
+  openWhatsAppDispatch,
+  updateDriverLiveLocationInFirestore
 } from '../../services/boomboom/boomboomPilotService';
-import { MessageSquare, PhoneCall, Volume2, Radio, ExternalLink } from 'lucide-react';
+import { MessageSquare, PhoneCall, ExternalLink } from 'lucide-react';
 import { 
-  UserCheck, 
-  DollarSign, 
-  Clock, 
-  Star, 
-  Award, 
   Power, 
-  MapPin, 
-  Navigation, 
-  Check, 
-  X, 
-  AlertTriangle,
-  History,
-  Wallet,
-  ShieldCheck
+  MapPin
 } from 'lucide-react';
 import BoomBoomNavHeader from '../../components/boomboom/BoomBoomNavHeader';
 import MapViewComponent from '../../components/boomboom/MapViewComponent';
 import SosButton from '../../components/boomboom/SosButton';
 import { useBoomBoomStore } from '../../services/boomboom/boomboomStore';
+import { useAuth } from '../../context/AuthContext';
 
 const BoomDriverDashboardPage = () => {
-  const navigate = useNavigate();
-  const { driverState, trips } = useBoomBoomStore();
+  const { user } = useAuth();
+  const { driverState, drivers, activeBooking, featureFlags, pairOrderByInstantCode } = useBoomBoomStore();
   const [isOnline, setIsOnline] = useState(driverState.isOnline);
+  const [gpsStatus, setGpsStatus] = useState('Siap Memancarkan Koordinat GPS');
+  const [instantCodeInput, setInstantCodeInput] = useState('');
+  const [instantPairingLoading, setInstantPairingLoading] = useState(false);
+  const [instantError, setInstantError] = useState('');
+  const [instantSuccessMsg, setInstantSuccessMsg] = useState('');
+
+  // Cari profil driver milik user yang sedang login, atau gunakan driver utama Cibarani
+  const currentDriverProfile = drivers.find(
+    (d) => (user?.uid && d.user_id === user.uid) || (user?.email && d.email === user.email)
+  ) || drivers[0] || {
+    driver_id: 'DRV-001',
+    name: 'Asep Saepulloh',
+    phone: '+62 812-3456-7890',
+    ngopi_username: '@majelisngopi',
+    ngopi_chat_url: 'https://ngopi.top/chat/f1c8c427-21bf-4fc1-8e99-9e651114d615?name=Ade%20Gunawan',
+    plate_number: 'D 4892 BB',
+    vehicle_brand: 'Honda Vario 160 EV',
+    operating_region: 'Subang / Cibarani',
+    status: 'VERIFIED',
+    rating: 4.9
+  };
+
   const [incomingOrder, setIncomingOrder] = useState({
     id: 'ORDER-771',
     passengerName: 'Neng Ani',
@@ -41,12 +52,36 @@ const BoomDriverDashboardPage = () => {
     destination: 'Kawasan Wisata Hutan Bambu',
     distanceKm: 7.8,
     estFare: 28000,
-    driverEarnings: 23800, // 85%
+    driverEarnings: 23800,
     serviceType: 'BoomCar'
   });
 
   const [activeJob, setActiveJob] = useState(null);
   const [jobStep, setJobStep] = useState('ASSIGNED'); // ASSIGNED | ARRIVED | ON_TRIP
+
+  // Tahap II Live GPS Heartbeat saat pengemudi ONLINE (SIAP NARIK)
+  useEffect(() => {
+    if (!isOnline) {
+      setGpsStatus('Offline — Pemancar GPS Nonaktif');
+      updateDriverLiveLocationInFirestore(currentDriverProfile.driver_id, -6.6521, 107.6932, false);
+      return;
+    }
+
+    if (typeof navigator !== 'undefined' && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const { latitude, longitude } = pos.coords;
+          setGpsStatus(`GPS Live Aktif (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`);
+          updateDriverLiveLocationInFirestore(currentDriverProfile.driver_id, latitude, longitude, true);
+        },
+        () => {
+          setGpsStatus('GPS Live Aktif (Zona Pilot Cibarani)');
+          updateDriverLiveLocationInFirestore(currentDriverProfile.driver_id, -6.6521, 107.6932, true);
+        },
+        { enableHighAccuracy: true, timeout: 6000 }
+      );
+    }
+  }, [isOnline, currentDriverProfile.driver_id]);
 
   // Dengarkan pesanan masuk secara real-time dari Firestore saat driver ONLINE
   useEffect(() => {
@@ -67,6 +102,7 @@ const BoomDriverDashboardPage = () => {
           estFare: latest.fare || 18650,
           driverEarnings: Math.round((latest.fare || 18650) * 0.85),
           serviceType: latest.service_type || 'BoomRide',
+          paymentMethod: latest.payment_method || 'QRIS / Tunai',
           isRealFirestore: true,
           rawOrder: latest
         });
@@ -79,14 +115,7 @@ const BoomDriverDashboardPage = () => {
   const handleAcceptOrder = async () => {
     if (incomingOrder?.isRealFirestore && incomingOrder?.trip_id) {
       try {
-        await acceptPilotOrderInFirestore(incomingOrder.trip_id, {
-          driver_id: 'DRV-CIBARANI-01',
-          name: 'Asep Saepulloh',
-          phone: '+62 812-3456-7890',
-          plate_number: 'D 4892 BB',
-          vehicle_brand: 'Honda Vario 160 (Hijau)',
-          avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'
-        });
+        await acceptPilotOrderInFirestore(incomingOrder.trip_id, currentDriverProfile);
       } catch (err) {
         console.warn('Gagal konfirmasi order driver di Firestore:', err);
       }
@@ -98,6 +127,27 @@ const BoomDriverDashboardPage = () => {
 
   const handleRejectOrder = () => {
     setIncomingOrder(null);
+  };
+
+  // Handler Sistem Gojek Instan: Driver memasukkan kode 6-digit dari Pemesan
+  const handlePairByInstantCode = async (e) => {
+    if (e) e.preventDefault();
+    setInstantError('');
+    setInstantSuccessMsg('');
+    setInstantPairingLoading(true);
+    try {
+      const matchedJob = await pairOrderByInstantCode(instantCodeInput, currentDriverProfile);
+      playOrderNotificationSound();
+      setActiveJob(matchedJob);
+      setJobStep('ON_TRIP');
+      setIncomingOrder(null);
+      setInstantSuccessMsg(`Berhasil! Kode Instan [${matchedJob.instantCode}] milik ${matchedJob.passengerName} terhubung. Perjalanan dimulai!`);
+      setInstantCodeInput('');
+    } catch (err) {
+      setInstantError(err.message || 'Kode Instan tidak ditemukan.');
+    } finally {
+      setInstantPairingLoading(false);
+    }
   };
 
   const handleDriverArrived = async () => {
@@ -143,19 +193,22 @@ const BoomDriverDashboardPage = () => {
           gap: '20px'
         }}>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-              <span style={{ fontSize: '0.8rem', fontWeight: '800', background: 'rgba(255,255,255,0.2)', padding: '4px 10px', borderRadius: '12px', color: '#a7f3d0' }}>
-                MITRA PENGEMUDI TERVERIFIKASI
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '0.78rem', fontWeight: '800', background: 'rgba(255,255,255,0.2)', padding: '4px 10px', borderRadius: '12px', color: '#a7f3d0' }}>
+                STATUS: {currentDriverProfile.status || 'VERIFIED'}
               </span>
-              <span style={{ fontSize: '0.8rem', fontWeight: '800', background: '#f59f00', color: '#000', padding: '4px 10px', borderRadius: '12px' }}>
-                ⭐ {driverState.rating}
+              <span style={{ fontSize: '0.78rem', fontWeight: '800', background: '#f59f00', color: '#000', padding: '4px 10px', borderRadius: '12px' }}>
+                ⭐ {currentDriverProfile.rating || driverState.rating}
+              </span>
+              <span style={{ fontSize: '0.75rem', fontWeight: '800', background: '#451a03', color: '#fef3c7', padding: '4px 10px', borderRadius: '12px' }}>
+                ☕ {currentDriverProfile.ngopi_username || '@majelisngopi'}
               </span>
             </div>
             <h1 style={{ fontSize: '1.8rem', fontWeight: '900', margin: '0 0 4px' }}>
-              Dasbor Pengemudi: Asep Saepulloh
+              Dasbor Pengemudi: {currentDriverProfile.name}
             </h1>
             <div style={{ fontSize: '0.9rem', color: '#ecfdf5' }}>
-              Kendaraan: Honda Vario 160 EV (D 4892 BB) • Wilayah Subang / Cibarani
+              Kendaraan: {currentDriverProfile.vehicle_brand} ({currentDriverProfile.plate_number}) • {gpsStatus}
             </div>
           </div>
 
@@ -234,6 +287,107 @@ const BoomDriverDashboardPage = () => {
           </div>
         </div>
 
+        {/* ══ SISTEM BOOM-INSTAN (ALA GOJEK INSTAN: INPUT KODE DARI PEMESAN) ══ */}
+        {featureFlags.ENABLE_BOOM_INSTANT_CODE !== false && (
+          <div style={{
+            background: 'var(--bg-card, #ffffff)',
+            borderRadius: '24px',
+            padding: '24px',
+            border: '2px solid #10b981',
+            boxShadow: '0 8px 25px rgba(16, 185, 129, 0.14)',
+            marginBottom: '28px'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{
+                  background: '#10b981',
+                  color: '#ffffff',
+                  fontWeight: '900',
+                  fontSize: '0.75rem',
+                  padding: '4px 10px',
+                  borderRadius: '10px'
+                }}>
+                  ⚡ FITUR BOOM-INSTAN (ON-SPOT PAIRING)
+                </span>
+                <h2 style={{ fontSize: '1.15rem', fontWeight: '900', margin: 0, color: 'var(--text-main, #0f172a)' }}>
+                  Masukkan Kode Instan dari Pemesan
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setInstantCodeInput(activeBooking.instantCode || '482915')}
+                style={{
+                  background: 'rgba(16, 185, 129, 0.12)',
+                  color: '#047857',
+                  border: '1px solid #10b981',
+                  padding: '6px 12px',
+                  borderRadius: '10px',
+                  fontSize: '0.75rem',
+                  fontWeight: '800',
+                  cursor: 'pointer'
+                }}
+              >
+                Isi Kode Aktif Pemesan ({activeBooking.instantCode || '482915'})
+              </button>
+            </div>
+
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted, #64748b)', margin: '0 0 16px', lineHeight: 1.5 }}>
+              Seperti sistem <strong>Gojek Instan</strong>: jika penumpang sudah berada di depan Anda, minta <strong>6-Digit Kode BoomInstan</strong> dari layar HP pemesan, masukkan di bawah ini, dan perjalanan langsung dimulai tanpa perlu menunggu antrean radar!
+            </p>
+
+            <form onSubmit={handlePairByInstantCode} style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+              <input
+                type="text"
+                maxLength={8}
+                value={instantCodeInput}
+                onChange={(e) => setInstantCodeInput(e.target.value)}
+                placeholder="Ketik 6-Digit Kode Pemesan (Misal: 482915)"
+                style={{
+                  flex: '1 1 240px',
+                  padding: '14px 18px',
+                  borderRadius: '16px',
+                  border: '2px solid var(--border-color, #cbd5e1)',
+                  background: 'var(--bg-secondary, #f8fafc)',
+                  color: 'var(--text-main, #0f172a)',
+                  fontSize: '1.15rem',
+                  fontWeight: '900',
+                  letterSpacing: '3px',
+                  fontFamily: 'monospace'
+                }}
+              />
+              <button
+                type="submit"
+                disabled={instantPairingLoading || !instantCodeInput.trim()}
+                style={{
+                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  color: '#ffffff',
+                  border: 'none',
+                  padding: '14px 24px',
+                  borderRadius: '16px',
+                  fontWeight: '900',
+                  fontSize: '0.95rem',
+                  cursor: instantPairingLoading || !instantCodeInput.trim() ? 'not-allowed' : 'pointer',
+                  boxShadow: '0 6px 18px rgba(16, 185, 129, 0.35)'
+                }}
+              >
+                {instantPairingLoading ? 'Mencocokkan Kode...' : '🔑 HUBUNGKAN KODE & MULAI JALAN'}
+              </button>
+            </form>
+
+            {instantError && (
+              <div style={{ marginTop: '12px', background: '#fee2e2', color: '#dc2626', padding: '10px 14px', borderRadius: '12px', fontSize: '0.82rem', fontWeight: '800' }}>
+                ⚠️ {instantError}
+              </div>
+            )}
+
+            {instantSuccessMsg && (
+              <div style={{ marginTop: '12px', background: '#d1fae5', color: '#065f46', padding: '10px 14px', borderRadius: '12px', fontSize: '0.82rem', fontWeight: '800' }}>
+                ✅ {instantSuccessMsg}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* INCOMING ORDER NOTIFICATION POPUP SIMULATION */}
         {isOnline && incomingOrder && !activeJob && (
           <div style={{
@@ -245,16 +399,16 @@ const BoomDriverDashboardPage = () => {
             marginBottom: '28px',
             animation: 'pulse 2s infinite'
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
               <span style={{ fontSize: '0.8rem', fontWeight: '900', color: '#92400e', background: '#fef08a', padding: '4px 12px', borderRadius: '12px' }}>
-                ⚡ ORDER MASUK (TAWARAN TRIP TERDEKAT)
+                ⚡ ORDER MASUK (MATCHING ENGINE TAHAP II)
               </span>
               <span style={{ fontSize: '0.85rem', fontWeight: '800', color: '#047857' }}>
-                Pendapatan Bersih: Rp {incomingOrder.driverEarnings.toLocaleString('id-ID')}
+                Pendapatan Bersih (85%): Rp {incomingOrder.driverEarnings.toLocaleString('id-ID')}
               </span>
             </div>
 
-            <div style={{ fontSize: '1.2rem', fontWeight: '800', color: 'var(--text-main, #0f172a)', marginBottom: '8px' }}>
+            <div style={{ fontSize: '1.2rem', fontWeight: '800', color: '#0f172a', marginBottom: '8px' }}>
               Penumpang: {incomingOrder.passengerName} ({incomingOrder.serviceType})
             </div>
 
@@ -362,9 +516,9 @@ const BoomDriverDashboardPage = () => {
 
           {activeJob && (
             <div style={{ marginTop: '20px', background: '#f0fdf4', borderRadius: '24px', padding: '22px', border: '2px solid #10b981', boxShadow: '0 8px 20px rgba(16, 185, 129, 0.15)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
                 <span style={{ fontSize: '0.78rem', fontWeight: '800', background: '#10b981', color: '#ffffff', padding: '3px 10px', borderRadius: '10px' }}>
-                  TRIP AKTIF TAHAP 1 #{activeJob.trip_id || activeJob.id}
+                  TRIP AKTIF TAHAP II #{activeJob.trip_id || activeJob.id}
                 </span>
                 <span style={{ fontSize: '0.85rem', fontWeight: '900', color: '#047857' }}>
                   Pendapatan Driver: Rp {activeJob.driverEarnings.toLocaleString('id-ID')}
@@ -499,7 +653,7 @@ const BoomDriverDashboardPage = () => {
                       boxShadow: '0 6px 16px rgba(4, 120, 87, 0.35)'
                     }}
                   >
-                    ✅ Selesaikan Perjalanan & Terima Tunai Rp {activeJob.estFare.toLocaleString('id-ID')}
+                    ✅ Selesaikan Perjalanan & Konfirmasi Pembayaran Rp {activeJob.estFare.toLocaleString('id-ID')}
                   </button>
                 )}
               </div>

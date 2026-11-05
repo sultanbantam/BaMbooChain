@@ -1,11 +1,13 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Building2, ShieldCheck, CheckCircle2, FileText, Phone, MapPin, ArrowRight } from 'lucide-react';
 import BoomBoomNavHeader from '../../components/boomboom/BoomBoomNavHeader';
 import { useBoomBoomStore } from '../../services/boomboom/boomboomStore';
+import { useAuth } from '../../context/AuthContext';
 
 const BoomOperatorRegisterPage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { registerOperator } = useBoomBoomStore();
 
   const [formData, setFormData] = useState({
@@ -13,9 +15,9 @@ const BoomOperatorRegisterPage = () => {
     type: 'BUMDes',
     region: 'Perkebunan Emas Hijau Cibarani',
     legalEntity: '',
-    contactPerson: '',
-    phone: '',
-    email: '',
+    contactPerson: user?.displayName || '',
+    phone: user?.phoneNumber || '',
+    email: user?.email || '',
     description: ''
   });
 
@@ -23,7 +25,7 @@ const BoomOperatorRegisterPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const op = registerOperator(formData);
+    const op = registerOperator(formData, user);
     setSubmittedOp(op);
   };
 
