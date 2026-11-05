@@ -1,0 +1,1 @@
+import{c as e}from"./vendor-others-DgF0PTtR.js";export{e as SplashScreenWeb};
