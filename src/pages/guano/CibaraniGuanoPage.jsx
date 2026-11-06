@@ -275,39 +275,16 @@ export default function CibaraniGuanoPage() {
         <BackButton to="/" label="Kembali ke Beranda BaMbooChain" />
 
         {/* ── MODE DEMO & KONSERVASI TOP BANNER ── */}
-        <div style={{
-          background: 'linear-gradient(90deg, #fef3c7 0%, #fde68a 100%)',
-          color: '#78350f',
-          padding: '12px 18px',
-          borderRadius: '16px',
-          border: '1.5px solid #f59e0b',
-          marginBottom: '18px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '10px',
-          fontSize: '0.82rem',
-          fontWeight: '700'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Info size={18} color="#b45309" style={{ flexShrink: 0 }} />
+        <div className="guano-top-warning-banner">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: '1 1 500px' }}>
+            <Info size={20} style={{ flexShrink: 0 }} />
             <span>
               <strong>PERINGATAN MODE DEMO & DATA ASUMSI:</strong> Seluruh data contoh berlabel <code>[DEMO]</code> dan parameter rencana bisnis berlabel <code>[ASUMSI — BELUM DISEPAKATI]</code>. Volume guano aktual Cibarani berstatus <strong>Belum Disurvei</strong>. Koordinat gua dirahasiakan demi perlindungan koloni kelelawar.
             </span>
           </div>
           <Link
             to="/cibarani-guano/trace/CG-TRC-9F4A2C8E1B7D"
-            style={{
-              background: '#78350f',
-              color: '#fef3c7',
-              padding: '6px 12px',
-              borderRadius: '10px',
-              textDecoration: 'none',
-              fontWeight: '900',
-              fontSize: '0.75rem',
-              whiteSpace: 'nowrap'
-            }}
+            className="guano-banner-btn"
           >
             🔍 Uji Halaman Publik QR Traceability
           </Link>
