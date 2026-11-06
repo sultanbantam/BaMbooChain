@@ -246,6 +246,81 @@ const BoomDriverDashboardPage = () => {
           </div>
         </div>
 
+        {/* REKENING HASIL & WALLET PAYOUT CARD (Point 6) */}
+        <div style={{
+          background: 'var(--bg-card, #ffffff)',
+          borderRadius: '24px',
+          padding: '22px',
+          border: '1.5px solid var(--border-color, #cbd5e1)',
+          boxShadow: '0 4px 18px rgba(0,0,0,0.05)',
+          marginBottom: '28px'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{ width: '38px', height: '38px', borderRadius: '12px', background: 'rgba(16, 185, 129, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10b981' }}>
+                <Wallet size={20} />
+              </div>
+              <div>
+                <h3 style={{ fontSize: '1.15rem', fontWeight: '800', margin: 0, color: 'var(--text-main, #0f172a)' }}>
+                  Rekening Hasil & Dompet Payout Driver
+                </h3>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted, #64748b)', margin: 0 }}>
+                  Penarikan bagi hasil perjalanan (Rupiah, BMC Token & USDT) otomatis tersinkronisasi.
+                </p>
+              </div>
+            </div>
+            <span style={{ fontSize: '0.75rem', fontWeight: '800', background: 'rgba(16, 185, 129, 0.12)', color: '#047857', padding: '5px 12px', borderRadius: '10px' }}>
+              ✓ Rekening Terverifikasi
+            </span>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '14px' }}>
+            {/* Rekening Bank / E-Wallet */}
+            <div style={{ background: 'var(--bg-secondary, #f8fafc)', padding: '16px', borderRadius: '16px', border: '1px solid var(--border-color, #e2e8f0)' }}>
+              <div style={{ fontSize: '0.75rem', fontWeight: '800', color: '#047857', marginBottom: '4px' }}>
+                1. REKENING BANK / E-WALLET (RUPIAH)
+              </div>
+              <div style={{ fontSize: '0.92rem', fontWeight: '900', color: 'var(--text-main, #0f172a)', marginBottom: '4px' }}>
+                {currentDriverProfile.bank_account || (typeof window !== 'undefined' && localStorage.getItem('boomboom_driver_bank_account')) || 'Bank Mandiri 130009827162 (a.n. ' + currentDriverProfile.name + ')'}
+              </div>
+              <div style={{ fontSize: '0.74rem', color: 'var(--text-muted, #64748b)' }}>
+                Tujuan transfer otomatis 85% bagi hasil tarif Rupiah harian.
+              </div>
+            </div>
+
+            {/* Wallet BMC */}
+            <div style={{ background: 'var(--bg-secondary, #f8fafc)', padding: '16px', borderRadius: '16px', border: '1px solid var(--border-color, #e2e8f0)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                <div style={{ fontSize: '0.75rem', fontWeight: '800', color: '#059669' }}>
+                  2. NOMOR WALLET BMC (BaMbooChain)
+                </div>
+                <span style={{ fontSize: '0.68rem', fontWeight: '800', background: 'rgba(16, 185, 129, 0.15)', color: '#047857', padding: '2px 6px', borderRadius: '6px' }}>
+                  Saldo: {user?.bmcBalance || 14.5} BMC
+                </span>
+              </div>
+              <div style={{ fontSize: '0.86rem', fontWeight: '800', color: 'var(--text-main, #0f172a)', wordBreak: 'break-all', marginBottom: '4px' }}>
+                {currentDriverProfile.wallet_bmc || (typeof window !== 'undefined' && localStorage.getItem('boomboom_driver_wallet_bmc')) || user?.walletAddress || '0xbmc71a9e8b2f4c0d1e5a8726b91cibarani'}
+              </div>
+              <div style={{ fontSize: '0.74rem', color: 'var(--text-muted, #64748b)' }}>
+                Tampungan insentif & reward per km mobilitas hijau BaMbooChain.
+              </div>
+            </div>
+
+            {/* Wallet USDT */}
+            <div style={{ background: 'var(--bg-secondary, #f8fafc)', padding: '16px', borderRadius: '16px', border: '1px solid var(--border-color, #e2e8f0)' }}>
+              <div style={{ fontSize: '0.75rem', fontWeight: '800', color: '#0284c7', marginBottom: '4px' }}>
+                3. NOMOR WALLET USDT (POLYGON / BEP-20)
+              </div>
+              <div style={{ fontSize: '0.86rem', fontWeight: '800', color: 'var(--text-main, #0f172a)', wordBreak: 'break-all', marginBottom: '4px' }}>
+                {currentDriverProfile.wallet_usdt || (typeof window !== 'undefined' && localStorage.getItem('boomboom_driver_wallet_usdt')) || user?.usdtWallet || '0x99b4f2c8d17a0e5b38291f0c2a7e4d82polygon'}
+              </div>
+              <div style={{ fontSize: '0.74rem', color: 'var(--text-muted, #64748b)' }}>
+                Tampungan pembayaran kripto USDT Web3 dari penumpang.
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* TODAY'S PERFORMANCE GRID - HIGH CONTRAST */}
         <div style={{
           display: 'grid',
@@ -422,7 +497,7 @@ const BoomDriverDashboardPage = () => {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '14px' }}>
               <button
                 type="button"
-                onClick={() => openNgopiChat(incomingOrder.rawOrder || incomingOrder)}
+                onClick={() => openNgopiChat(incomingOrder.rawOrder || incomingOrder, incomingOrder.passengerUsername || incomingOrder.passengerName)}
                 style={{
                   background: '#451a03',
                   color: '#fef3c7',
@@ -537,7 +612,7 @@ const BoomDriverDashboardPage = () => {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px', marginBottom: '16px' }}>
                 <button
                   type="button"
-                  onClick={() => openNgopiChat(activeJob.rawOrder || activeJob)}
+                  onClick={() => openNgopiChat(activeJob.rawOrder || activeJob, activeJob.passengerUsername || activeJob.passengerName)}
                   style={{
                     background: '#451a03',
                     color: '#fef3c7',
@@ -763,7 +838,7 @@ const BoomDriverDashboardPage = () => {
                   Tukar BMC / Rupiah
                 </span>
               </div>
-              <h4 style={{ fontSize: '1.05rem', fontWeight: '800', margin: '0 0 6px', color: 'var(--text-main, #0f172a)', whiteSpace: 'nowrap' }}>
+              <h4 style={{ fontSize: '1.02rem', fontWeight: '800', margin: '0 0 6px', color: 'var(--text-main, #0f172a)', lineHeight: 1.35, wordBreak: 'break-word' }}>
                 Perlengkapan Mitra & Produk Lokal BaMbooChain
               </h4>
               <p style={{ fontSize: '0.8rem', color: 'var(--text-muted, #64748b)', lineHeight: 1.5, margin: '0 0 14px' }}>

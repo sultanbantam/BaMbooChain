@@ -36,6 +36,8 @@ const BoomDriverRegisterPage = () => {
     customPartnerType: '',
     otherPartnerDetails: '',
     bankAccount: '',
+    walletBmc: user?.walletAddress || user?.bmcWallet || '0xbmc71a9e8b2f4c0d1e5a8726b91cibarani',
+    walletUsdt: user?.usdtWallet || '0x99b4f2c8d17a0e5b38291f0c2a7e4d82polygon',
     emergencyContact: typeof window !== 'undefined' ? (localStorage.getItem('boomboom_emergency_contact') || '') : '',
     profilePhotoUrl: user?.photoURL || '',
     vehiclePhotoUrl: ''
@@ -64,6 +66,11 @@ const BoomDriverRegisterPage = () => {
         console.warn('Gagal menyimpan kontak darurat:', err);
       }
     }
+    try {
+      if (formData.bankAccount) localStorage.setItem('boomboom_driver_bank_account', formData.bankAccount);
+      if (formData.walletBmc) localStorage.setItem('boomboom_driver_wallet_bmc', formData.walletBmc);
+      if (formData.walletUsdt) localStorage.setItem('boomboom_driver_wallet_usdt', formData.walletUsdt);
+    } catch (e) {}
     const newDriver = registerDriver(formData, user);
     setSubmittedDriver(newDriver);
   };
@@ -101,7 +108,7 @@ const BoomDriverRegisterPage = () => {
           boxShadow: '0 6px 18px rgba(16, 185, 129, 0.15)'
         }}>
           <div>
-            <div style={{ fontWeight: '900', color: '#065f46', fontSize: '1.05rem', marginBottom: '4px', whiteSpace: 'nowrap' }}>
+            <div style={{ fontWeight: '900', color: '#065f46', fontSize: '1.02rem', marginBottom: '4px', lineHeight: 1.3, wordBreak: 'break-word' }}>
               Sudah Terdaftar Sebagai Mitra Pengemudi?
             </div>
             <div style={{ fontSize: '0.85rem', color: '#047857' }}>
@@ -445,20 +452,44 @@ const BoomDriverRegisterPage = () => {
                 </div>
               </div>
 
-              {/* SECTION 3: BANK ACCOUNT & EMERGENCY CONTACT */}
+              {/* SECTION 3: REKENING HASIL, WALLET BMC/USDT & KONTAK DARURAT (Point 6) */}
               <div>
                 <h3 style={{ fontSize: '1.05rem', fontWeight: '800', color: 'var(--text-main, #0f172a)', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <CreditCard size={18} color="#10b981" /> 3. Rekening Hasil & Kontak Darurat
                 </h3>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px' }}>
                   <div>
-                    <label style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted, #475569)' }}>Rekening Bank / E-Wallet Pembayaran</label>
+                    <label style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted, #475569)' }}>Rekening Bank / E-Wallet (Rupiah)</label>
                     <input
                       type="text"
                       required
                       value={formData.bankAccount}
                       onChange={e => setFormData({ ...formData, bankAccount: e.target.value })}
-                      placeholder="Bank Mandiri 13000xxxx (a.n. Asep)"
+                      placeholder="Bank Mandiri / BCA / GoPay / DANA (a.n. Anda)"
+                      style={inputStyle}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted, #475569)' }}>Nomor / Alamat Wallet BMC (BaMbooChain Token)</label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.walletBmc}
+                      onChange={e => setFormData({ ...formData, walletBmc: e.target.value })}
+                      placeholder="Alamat Wallet BMC (0x...)"
+                      style={inputStyle}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted, #475569)' }}>Nomor / Alamat Wallet USDT (Polygon / BEP-20)</label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.walletUsdt}
+                      onChange={e => setFormData({ ...formData, walletUsdt: e.target.value })}
+                      placeholder="Alamat Wallet USDT (0x...)"
                       style={inputStyle}
                     />
                   </div>

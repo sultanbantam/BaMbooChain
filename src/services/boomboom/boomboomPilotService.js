@@ -103,19 +103,41 @@ export const generateNgopiMessage = (trip) => {
   ].join('\n');
 };
 
-export const openNgopiChat = (trip) => {
+export const openNgopiChat = (trip, preferredTargetUsername = null) => {
   const text = generateNgopiMessage(trip);
   if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(text).catch(() => {});
   }
-  let customUrl = trip?.driver_ngopi_chat_url;
-  if (!customUrl && trip?.driver_ngopi_username) {
-    const cleanUser = trip.driver_ngopi_username.replace('@', '').trim();
-    customUrl = `https://ngopi.top/@${cleanUser}`;
+
+  // 1. Tentukan username pemesan/penumpang yang ingin dihubungi driver
+  let rawUsername = preferredTargetUsername ||
+    trip?.passenger_ngopi_username ||
+    trip?.passenger_username ||
+    trip?.passengerUsername ||
+    trip?.passengerName ||
+    trip?.passenger_name ||
+    trip?.customer_username ||
+    trip?.customer_details?.first_name ||
+    trip?.driver_ngopi_username ||
+    'pemesan';
+
+  // 2. Bersihkan username
+  let cleanUser = String(rawUsername || '').trim();
+  if (cleanUser.startsWith('@')) cleanUser = cleanUser.slice(1);
+  if (cleanUser.includes('@')) cleanUser = cleanUser.split('@')[0];
+  cleanUser = cleanUser.replace(/[^a-zA-Z0-9._-]/g, '');
+
+  let customUrl = '';
+  if (cleanUser && !['GUEST-USER', 'Penumpang', 'Warga', 'Pemesan'].some(x => cleanUser.toLowerCase() === x.toLowerCase())) {
+    // Tautkan langsung ke profil/obrolan akun ngopi.top milik pemesan
+    customUrl = `https://ngopi.top/@${encodeURIComponent(cleanUser)}?msg=${encodeURIComponent(text)}`;
+  } else if (trip?.driver_ngopi_chat_url) {
+    customUrl = trip.driver_ngopi_chat_url;
+  } else {
+    // Fallback ke profil pemesan atau grup
+    customUrl = `https://ngopi.top/@${cleanUser || 'perpubi'}?msg=${encodeURIComponent(text)}`;
   }
-  if (!customUrl) {
-    customUrl = `https://ngopi.top/contacts?join=BoomBoom`;
-  }
+
   window.open(customUrl, '_blank', 'noopener,noreferrer');
 };
 
@@ -500,6 +522,8 @@ export const createPilotTripOrder = async (bookingData, userProfile = null) => {
     instant_code: String(instantCode).replace(/[^0-9]/g, ''),
     passenger_id: userProfile?.uid || userProfile?.id || 'GUEST-USER',
     passenger_name: userProfile?.displayName || userProfile?.name || 'Penumpang BoomBoom',
+    passenger_username: userProfile?.username || (userProfile?.email ? userProfile.email.split('@')[0] : '') || 'penumpang',
+    passenger_ngopi_username: userProfile?.ngopiUsername || userProfile?.username || (userProfile?.email ? userProfile.email.split('@')[0] : '') || '@penumpang',
     passenger_phone: userProfile?.phoneNumber || userProfile?.phone || '',
     pickup_address: bookingData.pickupAddress || 'Titik Penjemputan Penumpang',
     pickup_coords: bookingData.pickupCoords || { lat: -6.3198, lng: 106.7069 },

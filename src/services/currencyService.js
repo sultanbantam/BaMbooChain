@@ -105,3 +105,4 @@ export function idrToUsdt(idrAmount, rate = DEFAULT_USDT_IDR_RATE) {
 export function idrToBmc(idrAmount, rate = DEFAULT_USDT_IDR_RATE) {
   return idrToUsdt(idrAmount, rate); // 1 BMC = 1 USDT
 }
+

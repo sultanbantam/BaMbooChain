@@ -27,6 +27,7 @@ import { useBoomBoomStore } from '../../services/boomboom/boomboomStore';
 import { PARTNER_ENTITY_TYPES, PILOT_ZONE_OPTIONS, ROUTE_OPTIMIZATION_MODES } from '../../services/boomboom/mockData';
 import { calculateGreenScore, calculateDriverReward, calculatePassengerReward } from '../../services/boomboom/rewardEngine';
 import { useAuth } from '../../context/AuthContext';
+import { useLiveUsdtRate } from '../../services/currencyService';
 import { 
   createPilotTripOrder, 
   subscribePilotTripStatus, 
@@ -1103,7 +1104,7 @@ const BoomBookPage = () => {
                 border: '1px solid var(--border-color, #cbd5e1)'
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
-                  <h2 style={{ fontSize: '1.25rem', fontWeight: '800', margin: 0, color: 'var(--text-main, #0f172a)', whiteSpace: 'nowrap' }}>
+                  <h2 style={{ fontSize: '1.2rem', fontWeight: '800', margin: 0, color: 'var(--text-main, #0f172a)', wordBreak: 'break-word' }}>
                     Konfirmasi Detail Pesanan
                   </h2>
                   <span style={{ fontSize: '0.72rem', fontWeight: '800', background: 'rgba(16,185,129,0.12)', color: '#047857', padding: '4px 10px', borderRadius: '10px' }}>
