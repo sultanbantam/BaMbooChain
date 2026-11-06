@@ -82,17 +82,50 @@ const buildFirebaseUserProfile = (fbUser) => {
   };
 };
 
+export const isUserAdminAccount = (u) => {
+  if (!u) return false;
+  return Boolean(
+    u.role === 'admin_yayasan' ||
+    u.role === 'admin' ||
+    u.role === 'superadmin' ||
+    u.isAdmin === true ||
+    u.username === 'admin_yayasan' ||
+    u.username === 'sultanbantam' ||
+    u.username === 'albantani' ||
+    u.email === 'sultanbantam@gmail.com' ||
+    (u.name && u.name.toLowerCase().includes('sultan'))
+  );
+};
+
 const ensureFirebaseUserProfile = async (fbUser) => {
   const userDocRef = doc(db, "users", fbUser.uid);
   const userDoc = await getDoc(userDocRef);
 
+  let profileData;
   if (userDoc.exists()) {
-    return { id: userDoc.id, ...userDoc.data() };
+    profileData = { id: userDoc.id, ...userDoc.data() };
+  } else {
+    profileData = buildFirebaseUserProfile(fbUser);
+    await setDoc(userDocRef, profileData);
   }
 
-  const newUser = buildFirebaseUserProfile(fbUser);
-  await setDoc(userDocRef, newUser);
-  return newUser;
+  // Ensure Admin accounts automatically have admin role and verified KYC status
+  if (isUserAdminAccount(profileData) || fbUser.email === 'sultanbantam@gmail.com') {
+    let needsUpdate = false;
+    const updates = {};
+    if (!profileData.isAdmin) { profileData.isAdmin = true; updates.isAdmin = true; needsUpdate = true; }
+    if (!profileData.role || profileData.role === 'user') { profileData.role = 'admin_yayasan'; updates.role = 'admin_yayasan'; needsUpdate = true; }
+    if (profileData.kycStatus !== 'verified') { profileData.kycStatus = 'verified'; updates.kycStatus = 'verified'; needsUpdate = true; }
+    if (needsUpdate) {
+      try {
+        await updateDoc(userDocRef, updates);
+      } catch (e) {
+        console.warn("Could not auto-verify admin KYC in Firestore:", e);
+      }
+    }
+  }
+
+  return profileData;
 };
 export const AuthProvider = ({ children }) => {
   const {
@@ -227,10 +260,18 @@ export const AuthProvider = ({ children }) => {
         const userDocRef = doc(db, "users", firebaseUser.uid);
         unsubUserDoc = onSnapshot(userDocRef, (docSnap) => {
           if (docSnap.exists()) {
-            const userData = docSnap.data();
-            setUser({ id: docSnap.id, ...userData });
+            const rawData = docSnap.data();
+            const userData = { id: docSnap.id, ...rawData };
+            if (isUserAdminAccount(userData)) {
+              userData.isAdmin = true;
+              userData.role = userData.role || 'admin_yayasan';
+              if (userData.kycStatus !== 'verified') {
+                userData.kycStatus = 'verified';
+              }
+            }
+            setUser(userData);
             setIsAuthenticated(true);
-            localStorage.setItem('yayasan_user', JSON.stringify({ id: docSnap.id, ...userData }));
+            localStorage.setItem('yayasan_user', JSON.stringify(userData));
           }
         }, (err) => {
           console.error("Real-time User Profile sync error:", err);
@@ -1544,10 +1585,11 @@ export const AuthProvider = ({ children }) => {
       submitArticle: async (articleData) => {
         try {
           const articleId = 'art_' + Date.now();
+          const isUserAdmin = isUserAdminAccount(user);
           const newArticle = {
             ...articleData,
             id: articleId,
-            approved: false, // Default is pending approval
+            approved: isUserAdmin ? true : false, // Admin articles auto-approved
             userId: user?.id || 'guest',
             username: user?.username || 'Guest',
             date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),

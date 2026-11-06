@@ -133,6 +133,25 @@ const AcademyPage = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { user, setIsAuthModalOpen, setAuthModalInitialTab, submitArticle, updateArticle, giftBmc } = useAuth();
+
+  const isUserAdmin = Boolean(
+    user?.role === 'admin' ||
+    user?.role === 'admin_yayasan' ||
+    user?.role === 'superadmin' ||
+    user?.isAdmin === true ||
+    user?.username === 'admin_yayasan' ||
+    user?.username === 'sultanbantam' ||
+    user?.username === 'albantani' ||
+    user?.email === 'sultanbantam@gmail.com' ||
+    (user?.name && user.name.toLowerCase().includes('sultan'))
+  );
+
+  const isKycVerifiedOrAdmin = Boolean(
+    isUserAdmin ||
+    user?.kycStatus === 'verified' ||
+    user?.kycStatus === 'VERIFIED' ||
+    user?.kycVerified === true
+  );
   const { data: articles = [] } = useArticles();
   const [searchQuery, setSearchQuery] = useState("");
   const [isGlobalMode, setIsGlobalMode] = useState(false);
@@ -520,8 +539,8 @@ const AcademyPage = () => {
   const handleUploadMatSubmit = async (e) => {
     e.preventDefault();
     console.log("🚀 handleUploadMatSubmit triggered!");
-    if (!user || user.kycStatus !== 'verified') {
-      alert("⚠️ Hanya kontributor terverifikasi KYC yang dapat mengunggah materi!");
+    if (!user || !isKycVerifiedOrAdmin) {
+      alert("⚠️ Hanya kontributor terverifikasi KYC atau Admin yang dapat mengunggah materi!");
       return;
     }
     if (!newMatForm.title || !newMatForm.desc || !newMatForm.pdf || !newMatForm.cover) {
@@ -632,8 +651,8 @@ const AcademyPage = () => {
 
   const handleUploadCourseSubmit = async (e) => {
     e.preventDefault();
-    if (!user || user.kycStatus !== 'verified') {
-      alert("⚠️ Hanya kontributor terverifikasi KYC yang dapat mengunggah modul!");
+    if (!user || !isKycVerifiedOrAdmin) {
+      alert("⚠️ Hanya kontributor terverifikasi KYC atau Admin yang dapat mengunggah modul!");
       return;
     }
     if (!newDynamicCourseForm.title || !newDynamicCourseForm.tutor || !newDynamicCourseForm.cover || !newDynamicCourseForm.pdf) {
@@ -1586,7 +1605,7 @@ const AcademyPage = () => {
               </h2>
               <p style={{ color: 'var(--text-muted)', margin: 0 }}>{t('academy_catalog_desc')}</p>
             </div>
-            {user?.kycStatus === 'verified' && (
+            {isKycVerifiedOrAdmin && (
               <button 
                 onClick={() => setIsUploadCourseModalOpen(true)}
                 style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '12px', fontWeight: 'bold', fontSize: '0.9rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 15px rgba(12,166,120,0.15)' }}
@@ -1827,8 +1846,8 @@ const AcademyPage = () => {
                       <div>
                         <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Status Akses Unduhan:</div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
-                          {user?.kycStatus === 'verified' ? (
-                            <span style={{ color: '#12b886', fontWeight: 'bold', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}><ShieldCheck size={16} /> Akun Terverifikasi (Akses Terbuka)</span>
+                          {isKycVerifiedOrAdmin ? (
+                            <span style={{ color: '#12b886', fontWeight: 'bold', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}><ShieldCheck size={16} /> {isUserAdmin ? 'Akun Admin (Akses Penuh)' : 'Akun Terverifikasi (Akses Terbuka)'}</span>
                           ) : (
                             <span style={{ color: '#fa5252', fontWeight: 'bold', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}><Lock size={16} /> Perlu KYC Terverifikasi</span>
                           )}
@@ -1839,7 +1858,7 @@ const AcademyPage = () => {
                           if (!user) {
                             if (setAuthModalInitialTab) setAuthModalInitialTab('login');
                             if (setIsAuthModalOpen) setIsAuthModalOpen(true);
-                          } else if (user.kycStatus !== 'verified') {
+                          } else if (!isKycVerifiedOrAdmin) {
                             alert(`⚠️ Akses Terkunci!\n\nUntuk mendownload Ebook '${ebook.title}' secara gratis, Anda harus berstatus KYC TERVERIFIKASI di sistem. Silakan selesaikan pengajuan KYC Anda di menu KYC Center pada halaman Wallet Dashboard.`);
                             window.location.hash = "/bamboochain/token-wallet";
                           } else {
@@ -1887,7 +1906,7 @@ const AcademyPage = () => {
                           }
                         }}
                         style={{
-                          background: user?.kycStatus === 'verified' ? 'var(--primary)' : 'var(--text-muted)',
+                          background: isKycVerifiedOrAdmin ? 'var(--primary)' : 'var(--text-muted)',
                           color: 'white',
                           border: 'none',
                           padding: '14px 28px',
@@ -1897,11 +1916,11 @@ const AcademyPage = () => {
                           display: 'flex',
                           alignItems: 'center',
                           gap: '8px',
-                          boxShadow: user?.kycStatus === 'verified' ? '0 4px 15px rgba(12,166,120,0.25)' : 'none',
+                          boxShadow: isKycVerifiedOrAdmin ? '0 4px 15px rgba(12,166,120,0.25)' : 'none',
                           transition: 'background 0.2s'
                         }}
                       >
-                        <DownloadCloud size={18} /> {user?.kycStatus === 'verified' ? 'Unduh PDF Gratis' : 'Verifikasi KYC & Unduh'}
+                        <DownloadCloud size={18} /> {isKycVerifiedOrAdmin ? 'Unduh PDF Gratis' : 'Verifikasi KYC & Unduh'}
                       </button>
                     </div>
 
@@ -2024,7 +2043,7 @@ const AcademyPage = () => {
                 if (!user) {
                   if (setAuthModalInitialTab) setAuthModalInitialTab('login');
                   if (setIsAuthModalOpen) setIsAuthModalOpen(true);
-                } else if (user.kycStatus !== 'verified') {
+                } else if (!isKycVerifiedOrAdmin) {
                   alert("⚠️ Akses Ditolak!\n\nAnda harus berstatus KYC TERVERIFIKASI untuk berkontribusi menulis esai, artikel, atau tulisan di kolom ini. Silakan selesaikan pengajuan KYC Anda di menu KYC Center pada halaman Wallet Dashboard.");
                 } else {
                   setIsWriterModalOpen(true);
