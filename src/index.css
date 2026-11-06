@@ -959,3 +959,20 @@ section {
 [data-theme="dark"] [style*="color:#334155"] {
   color: #f1f5f9 !important;
 }
+
+
+/* Universal placeholder styling: contoh isian form warna abu-abu (tidak hitam) */
+input::placeholder,
+textarea::placeholder,
+select::placeholder {
+  color: #94a3b8 !important;
+  opacity: 1 !important;
+  font-weight: 400 !important;
+}
+
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder,
+[data-theme="dark"] select::placeholder {
+  color: #64748b !important;
+  opacity: 1 !important;
+}

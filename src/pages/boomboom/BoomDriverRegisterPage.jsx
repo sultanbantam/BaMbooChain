@@ -22,11 +22,11 @@ const BoomDriverRegisterPage = () => {
     fullName: user?.displayName || '',
     phone: user?.phoneNumber || '',
     email: user?.email || '',
-    ngopiUsername: user?.ngopiUsername || '@majelisngopi',
+    ngopiUsername: user?.ngopiUsername || '',
     identityNumber: '',
     licenseNumber: '',
     vehicleType: 'BoomRide',
-    vehicleBrand: 'Honda Vario 160 EV',
+    vehicleBrand: '',
     vehicleYear: '2023',
     plateNumber: '',
     operatingRegion: 'REG-JABODETABEK',
@@ -35,9 +35,16 @@ const BoomDriverRegisterPage = () => {
     partnerType: 'BUMDes',
     customPartnerType: '',
     otherPartnerDetails: '',
+    // Payout method dropdown & separated fields
+    payoutChannel: 'BANK', // 'BANK', 'EWALLET', 'BMC', 'USDT'
+    payoutBank: 'Bank Mandiri',
+    customBankName: '',
+    payoutEwallet: 'DANA',
+    payoutAccountNumber: '',
+    payoutAccountHolder: '',
     bankAccount: '',
-    walletBmc: user?.walletAddress || user?.bmcWallet || '0xbmc71a9e8b2f4c0d1e5a8726b91cibarani',
-    walletUsdt: user?.usdtWallet || '0x99b4f2c8d17a0e5b38291f0c2a7e4d82polygon',
+    walletBmc: user?.walletAddress || user?.bmcWallet || '',
+    walletUsdt: user?.usdtWallet || '',
     emergencyContact: typeof window !== 'undefined' ? (localStorage.getItem('boomboom_emergency_contact') || '') : '',
     profilePhotoUrl: user?.photoURL || '',
     vehiclePhotoUrl: ''
@@ -50,7 +57,9 @@ const BoomDriverRegisterPage = () => {
         fullName: prev.fullName || user.displayName || '',
         email: prev.email || user.email || '',
         phone: prev.phone || user.phoneNumber || '',
-        ngopiUsername: prev.ngopiUsername || user.ngopiUsername || '@majelisngopi'
+        ngopiUsername: prev.ngopiUsername || user.ngopiUsername || '',
+        walletBmc: prev.walletBmc || user.walletAddress || user.bmcWallet || '',
+        walletUsdt: prev.walletUsdt || user.usdtWallet || ''
       }));
     }
   }, [user]);
@@ -66,12 +75,30 @@ const BoomDriverRegisterPage = () => {
         console.warn('Gagal menyimpan kontak darurat:', err);
       }
     }
+
+    // Format string rekening hasil sesuai channel yang dipilih di dropdown
+    let finalBankAccount = formData.bankAccount;
+    if (formData.payoutChannel === 'BANK') {
+      const bName = formData.payoutBank === 'LAIN' ? (formData.customBankName || 'Bank') : formData.payoutBank;
+      finalBankAccount = `${bName} ${formData.payoutAccountNumber} (a.n. ${formData.payoutAccountHolder})`;
+    } else if (formData.payoutChannel === 'EWALLET') {
+      finalBankAccount = `${formData.payoutEwallet} ${formData.payoutAccountNumber} (a.n. ${formData.payoutAccountHolder})`;
+    } else if (formData.payoutChannel === 'BMC') {
+      finalBankAccount = `Wallet BMC: ${formData.walletBmc}`;
+    } else if (formData.payoutChannel === 'USDT') {
+      finalBankAccount = `Wallet USDT: ${formData.walletUsdt}`;
+    }
+
     try {
-      if (formData.bankAccount) localStorage.setItem('boomboom_driver_bank_account', formData.bankAccount);
+      if (finalBankAccount) localStorage.setItem('boomboom_driver_bank_account', finalBankAccount);
       if (formData.walletBmc) localStorage.setItem('boomboom_driver_wallet_bmc', formData.walletBmc);
       if (formData.walletUsdt) localStorage.setItem('boomboom_driver_wallet_usdt', formData.walletUsdt);
     } catch (e) {}
-    const newDriver = registerDriver(formData, user);
+
+    const newDriver = registerDriver({
+      ...formData,
+      bankAccount: finalBankAccount
+    }, user);
     setSubmittedDriver(newDriver);
   };
 
@@ -82,7 +109,7 @@ const BoomDriverRegisterPage = () => {
     border: '1.5px solid var(--border-color, #cbd5e1)',
     background: 'var(--bg-secondary, #f8fafc)',
     fontSize: '0.9rem',
-    fontWeight: '700',
+    fontWeight: '500',
     color: 'var(--text-main, #0f172a)',
     marginTop: '4px'
   };
@@ -90,6 +117,18 @@ const BoomDriverRegisterPage = () => {
   return (
     <div style={{ background: 'var(--bg-color, #f8fafc)', color: 'var(--text-main, #0f172a)', minHeight: '100vh', paddingBottom: '60px' }}>
       <BoomBoomNavHeader />
+
+      <style>{`
+        .boomboom-form-input::placeholder {
+          color: #94a3b8 !important;
+          opacity: 1 !important;
+          font-weight: 400 !important;
+        }
+        [data-theme="dark"] .boomboom-form-input::placeholder {
+          color: #64748b !important;
+          opacity: 1 !important;
+        }
+      `}</style>
 
       <div style={{ maxWidth: '900px', margin: '24px auto', padding: '0 16px' }}>
         
@@ -242,6 +281,7 @@ const BoomDriverRegisterPage = () => {
                       value={formData.fullName}
                       onChange={e => setFormData({ ...formData, fullName: e.target.value })}
                       placeholder="Contoh: Asep Saepulloh"
+                      className="boomboom-form-input"
                       style={inputStyle}
                     />
                   </div>
@@ -254,6 +294,7 @@ const BoomDriverRegisterPage = () => {
                       value={formData.phone}
                       onChange={e => setFormData({ ...formData, phone: e.target.value })}
                       placeholder="+62 812-xxxx-xxxx"
+                      className="boomboom-form-input"
                       style={inputStyle}
                     />
                   </div>
@@ -267,7 +308,8 @@ const BoomDriverRegisterPage = () => {
                       required
                       value={formData.ngopiUsername}
                       onChange={e => setFormData({ ...formData, ngopiUsername: e.target.value })}
-                      placeholder="Contoh: @majelisngopi atau link https://ngopi.top/chat/..."
+                      placeholder="@username (contoh: @asep_cibarani)"
+                      className="boomboom-form-input"
                       style={inputStyle}
                     />
                     <div style={{ fontSize: '0.72rem', color: '#059669', marginTop: '4px', fontWeight: '600' }}>
@@ -283,6 +325,7 @@ const BoomDriverRegisterPage = () => {
                       value={formData.identityNumber}
                       onChange={e => setFormData({ ...formData, identityNumber: e.target.value })}
                       placeholder="16 digit NIK KTP"
+                      className="boomboom-form-input"
                       style={inputStyle}
                     />
                   </div>
@@ -295,6 +338,7 @@ const BoomDriverRegisterPage = () => {
                       value={formData.licenseNumber}
                       onChange={e => setFormData({ ...formData, licenseNumber: e.target.value })}
                       placeholder="SIM C atau SIM A"
+                      className="boomboom-form-input"
                       style={inputStyle}
                     />
                   </div>
@@ -312,6 +356,7 @@ const BoomDriverRegisterPage = () => {
                     <select
                       value={formData.vehicleType}
                       onChange={e => setFormData({ ...formData, vehicleType: e.target.value })}
+                      className="boomboom-form-input"
                       style={inputStyle}
                     >
                       <option value="BoomRide">BoomRide (Sepeda Motor / Motor Listrik)</option>
@@ -327,6 +372,7 @@ const BoomDriverRegisterPage = () => {
                       value={formData.vehicleBrand}
                       onChange={e => setFormData({ ...formData, vehicleBrand: e.target.value })}
                       placeholder="Contoh: Honda Vario 160 EV"
+                      className="boomboom-form-input"
                       style={inputStyle}
                     />
                   </div>
@@ -339,6 +385,7 @@ const BoomDriverRegisterPage = () => {
                       value={formData.plateNumber}
                       onChange={e => setFormData({ ...formData, plateNumber: e.target.value })}
                       placeholder="Contoh: D 4892 BB"
+                      className="boomboom-form-input"
                       style={inputStyle}
                     />
                   </div>
@@ -350,6 +397,7 @@ const BoomDriverRegisterPage = () => {
                     <select
                       value={formData.operatingRegion}
                       onChange={e => setFormData({ ...formData, operatingRegion: e.target.value })}
+                      className="boomboom-form-input"
                       style={inputStyle}
                     >
                       {PILOT_ZONE_OPTIONS.map(r => (
@@ -367,6 +415,7 @@ const BoomDriverRegisterPage = () => {
                     <select
                       value={formData.partnerType}
                       onChange={e => setFormData({ ...formData, partnerType: e.target.value })}
+                      className="boomboom-form-input"
                       style={inputStyle}
                     >
                       {PARTNER_ENTITY_TYPES.map((pt) => (
@@ -400,6 +449,7 @@ const BoomDriverRegisterPage = () => {
                         value={formData.customRegencyCity}
                         onChange={e => setFormData({ ...formData, customRegencyCity: e.target.value })}
                         placeholder="Contoh: Kabupaten Subang / Kota Bandung"
+                        className="boomboom-form-input"
                         style={inputStyle}
                       />
                     </div>
@@ -413,6 +463,7 @@ const BoomDriverRegisterPage = () => {
                         value={formData.customProvince}
                         onChange={e => setFormData({ ...formData, customProvince: e.target.value })}
                         placeholder="Contoh: Jawa Barat / Jawa Tengah"
+                        className="boomboom-form-input"
                         style={inputStyle}
                       />
                     </div>
@@ -432,6 +483,7 @@ const BoomDriverRegisterPage = () => {
                         value={formData.customPartnerType}
                         onChange={e => setFormData({ ...formData, customPartnerType: e.target.value })}
                         placeholder="Contoh: Kasepuhan Adat / Kelompok Tani / Pokdarwis"
+                        className="boomboom-form-input"
                         style={inputStyle}
                       />
                     </div>
@@ -446,66 +498,227 @@ const BoomDriverRegisterPage = () => {
                       value={formData.otherPartnerDetails}
                       onChange={e => setFormData({ ...formData, otherPartnerDetails: e.target.value })}
                       placeholder="Contoh: Nama BUMDes / Yayasan / PT / Organisasi pengelola"
+                      className="boomboom-form-input"
                       style={inputStyle}
                     />
                   </div>
                 </div>
               </div>
 
-              {/* SECTION 3: REKENING HASIL, WALLET BMC/USDT & KONTAK DARURAT (Point 6) */}
+              {/* SECTION 3: REKENING HASIL (DROPDOWN) & KONTAK DARURAT */}
               <div>
                 <h3 style={{ fontSize: '1.05rem', fontWeight: '800', color: 'var(--text-main, #0f172a)', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <CreditCard size={18} color="#10b981" /> 3. Rekening Hasil & Kontak Darurat
                 </h3>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px' }}>
+                  {/* Dropdown Metode Pencairan */}
                   <div>
-                    <label style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted, #475569)' }}>Rekening Bank / E-Wallet (Rupiah)</label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.bankAccount}
-                      onChange={e => setFormData({ ...formData, bankAccount: e.target.value })}
-                      placeholder="Bank Mandiri / BCA / GoPay / DANA (a.n. Anda)"
+                    <label style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted, #475569)' }}>
+                      Pilihan Jalur Rekening Pencairan Hasil (Dropdown) *
+                    </label>
+                    <select
+                      value={formData.payoutChannel}
+                      onChange={e => setFormData({ ...formData, payoutChannel: e.target.value })}
+                      className="boomboom-form-input"
                       style={inputStyle}
-                    />
+                    >
+                      <option value="BANK">1. Transfer Rekening Bank (Rupiah)</option>
+                      <option value="EWALLET">2. Saldo Dompet Digital / E-Wallet (Rupiah)</option>
+                      <option value="BMC">3. Dompet Token BaMbooChain (BMC Wallet)</option>
+                      <option value="USDT">4. Dompet Kripto USDT (Polygon / BEP-20)</option>
+                    </select>
                   </div>
 
-                  <div>
-                    <label style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted, #475569)' }}>Nomor / Alamat Wallet BMC (BaMbooChain Token)</label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.walletBmc}
-                      onChange={e => setFormData({ ...formData, walletBmc: e.target.value })}
-                      placeholder="Alamat Wallet BMC (0x...)"
-                      style={inputStyle}
-                    />
-                  </div>
+                  {/* Jika Transfer Bank */}
+                  {formData.payoutChannel === 'BANK' && (
+                    <>
+                      <div>
+                        <label style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted, #475569)' }}>Nama Bank *</label>
+                        <select
+                          value={formData.payoutBank}
+                          onChange={e => setFormData({ ...formData, payoutBank: e.target.value })}
+                          className="boomboom-form-input"
+                          style={inputStyle}
+                        >
+                          <option value="Bank Mandiri">Bank Mandiri</option>
+                          <option value="Bank BCA">Bank Central Asia (BCA)</option>
+                          <option value="Bank BRI">Bank Rakyat Indonesia (BRI)</option>
+                          <option value="Bank BNI">Bank Negara Indonesia (BNI)</option>
+                          <option value="Bank BSI">Bank Syariah Indonesia (BSI)</option>
+                          <option value="Bank BJB">Bank Jabar Banten (BJB)</option>
+                          <option value="Bank CIMB Niaga">Bank CIMB Niaga</option>
+                          <option value="LAIN">Bank Lainnya</option>
+                        </select>
+                      </div>
 
-                  <div>
-                    <label style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted, #475569)' }}>Nomor / Alamat Wallet USDT (Polygon / BEP-20)</label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.walletUsdt}
-                      onChange={e => setFormData({ ...formData, walletUsdt: e.target.value })}
-                      placeholder="Alamat Wallet USDT (0x...)"
-                      style={inputStyle}
-                    />
-                  </div>
+                      {formData.payoutBank === 'LAIN' && (
+                        <div>
+                          <label style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted, #475569)' }}>Nama Bank Lainnya *</label>
+                          <input
+                            type="text"
+                            required
+                            value={formData.customBankName}
+                            onChange={e => setFormData({ ...formData, customBankName: e.target.value })}
+                            placeholder="Contoh: Bank Danamon"
+                            className="boomboom-form-input"
+                            style={inputStyle}
+                          />
+                        </div>
+                      )}
 
+                      <div>
+                        <label style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted, #475569)' }}>Nomor Rekening Bank *</label>
+                        <input
+                          type="text"
+                          required
+                          value={formData.payoutAccountNumber}
+                          onChange={e => setFormData({ ...formData, payoutAccountNumber: e.target.value })}
+                          placeholder="Contoh: 1300012345678"
+                          className="boomboom-form-input"
+                          style={inputStyle}
+                        />
+                      </div>
+
+                      <div>
+                        <label style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted, #475569)' }}>Nama Pemilik Rekening (a.n.) *</label>
+                        <input
+                          type="text"
+                          required
+                          value={formData.payoutAccountHolder}
+                          onChange={e => setFormData({ ...formData, payoutAccountHolder: e.target.value })}
+                          placeholder="Contoh: Asep Saepulloh"
+                          className="boomboom-form-input"
+                          style={inputStyle}
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {/* Jika E-Wallet */}
+                  {formData.payoutChannel === 'EWALLET' && (
+                    <>
+                      <div>
+                        <label style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted, #475569)' }}>Provider E-Wallet *</label>
+                        <select
+                          value={formData.payoutEwallet}
+                          onChange={e => setFormData({ ...formData, payoutEwallet: e.target.value })}
+                          className="boomboom-form-input"
+                          style={inputStyle}
+                        >
+                          <option value="DANA">DANA</option>
+                          <option value="GoPay">GoPay</option>
+                          <option value="OVO">OVO</option>
+                          <option value="ShopeePay">ShopeePay</option>
+                          <option value="LinkAja">LinkAja</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted, #475569)' }}>Nomor HP Terdaftar E-Wallet *</label>
+                        <input
+                          type="tel"
+                          required
+                          value={formData.payoutAccountNumber}
+                          onChange={e => setFormData({ ...formData, payoutAccountNumber: e.target.value })}
+                          placeholder="Contoh: 081234567890"
+                          className="boomboom-form-input"
+                          style={inputStyle}
+                        />
+                      </div>
+
+                      <div>
+                        <label style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted, #475569)' }}>Nama Akun E-Wallet (a.n.) *</label>
+                        <input
+                          type="text"
+                          required
+                          value={formData.payoutAccountHolder}
+                          onChange={e => setFormData({ ...formData, payoutAccountHolder: e.target.value })}
+                          placeholder="Contoh: Asep Saepulloh"
+                          className="boomboom-form-input"
+                          style={inputStyle}
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {/* Jika BMC Wallet */}
+                  {formData.payoutChannel === 'BMC' && (
+                    <div>
+                      <label style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted, #475569)' }}>Nomor / Alamat Wallet BMC *</label>
+                      <input
+                        type="text"
+                        required
+                        value={formData.walletBmc}
+                        onChange={e => setFormData({ ...formData, walletBmc: e.target.value })}
+                        placeholder="0x..."
+                        className="boomboom-form-input"
+                        style={inputStyle}
+                      />
+                    </div>
+                  )}
+
+                  {/* Jika USDT Wallet */}
+                  {formData.payoutChannel === 'USDT' && (
+                    <div>
+                      <label style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted, #475569)' }}>Nomor / Alamat Wallet USDT (Polygon/BEP-20) *</label>
+                      <input
+                        type="text"
+                        required
+                        value={formData.walletUsdt}
+                        onChange={e => setFormData({ ...formData, walletUsdt: e.target.value })}
+                        placeholder="0x..."
+                        className="boomboom-form-input"
+                        style={inputStyle}
+                      />
+                    </div>
+                  )}
+
+                  {/* Kontak Darurat */}
                   <div>
-                    <label style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted, #475569)' }}>Kontak Darurat (Keluarga / Kerabat)</label>
+                    <label style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted, #475569)' }}>Kontak Darurat (Keluarga / Kerabat) *</label>
                     <input
                       type="text"
                       required
                       value={formData.emergencyContact}
                       onChange={e => setFormData({ ...formData, emergencyContact: e.target.value })}
                       placeholder="Nama & No. HP Kontak Darurat"
+                      className="boomboom-form-input"
                       style={inputStyle}
                     />
                   </div>
                 </div>
+
+                {/* Dompet Tambahan BMC/USDT jika memilih Bank atau E-Wallet */}
+                {(formData.payoutChannel === 'BANK' || formData.payoutChannel === 'EWALLET') && (
+                  <div style={{ marginTop: '14px', padding: '14px', borderRadius: '14px', background: 'var(--bg-secondary, #f8fafc)', border: '1px solid var(--border-color, #e2e8f0)', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}>
+                    <div>
+                      <label style={{ fontSize: '0.78rem', fontWeight: '700', color: 'var(--text-muted, #475569)' }}>
+                        Nomor Wallet BMC (Opsional - Penerimaan Insentif / Reward Token)
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.walletBmc}
+                        onChange={e => setFormData({ ...formData, walletBmc: e.target.value })}
+                        placeholder="0x..."
+                        className="boomboom-form-input"
+                        style={inputStyle}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: '0.78rem', fontWeight: '700', color: 'var(--text-muted, #475569)' }}>
+                        Nomor Wallet USDT (Opsional - Jaringan Polygon / BEP-20)
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.walletUsdt}
+                        onChange={e => setFormData({ ...formData, walletUsdt: e.target.value })}
+                        placeholder="0x..."
+                        className="boomboom-form-input"
+                        style={inputStyle}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
 
               <button

@@ -1416,9 +1416,13 @@ const BoomBookPage = () => {
                       <span>{activeBooking.fareCalc.formatted.platformShare}</span>
                     </div>
 
-                    <div style={{ borderTop: '1px dashed var(--border-color, #cbd5e1)', paddingTop: '8px', marginTop: '4px', display: 'flex', justifyContent: 'space-between', fontSize: '1rem', fontWeight: '900', color: 'var(--primary, #047857)' }}>
-                      <span>TOTAL HAK PEMBAYARAN (IDR)</span>
-                      <span>{activeBooking.fareCalc.formatted.grossFare}</span>
+                    <div style={{ borderTop: '1px dashed var(--border-color, #cbd5e1)', paddingTop: '10px', marginTop: '6px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <div style={{ fontSize: '0.88rem', fontWeight: '800', color: 'var(--text-muted, #047857)', letterSpacing: '0.3px', lineHeight: 1.2 }}>
+                        TOTAL HAK PEMBAYARAN (IDR)
+                      </div>
+                      <div style={{ fontSize: '1.35rem', fontWeight: '900', color: 'var(--primary, #047857)', lineHeight: 1.2 }}>
+                        {activeBooking.fareCalc.formatted.grossFare}
+                      </div>
                     </div>
                   </div>
                 </div>

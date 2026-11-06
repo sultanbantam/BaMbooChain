@@ -9,7 +9,7 @@ import {
   openWhatsAppDispatch,
   updateDriverLiveLocationInFirestore
 } from '../../services/boomboom/boomboomPilotService';
-import { MessageSquare, PhoneCall, ExternalLink, Power, MapPin, ShieldCheck, ShoppingBag } from 'lucide-react';
+import { MessageSquare, PhoneCall, ExternalLink, Power, MapPin, ShieldCheck, ShoppingBag, Wallet } from 'lucide-react';
 import BoomBoomNavHeader from '../../components/boomboom/BoomBoomNavHeader';
 import MapViewComponent from '../../components/boomboom/MapViewComponent';
 import SosButton from '../../components/boomboom/SosButton';
@@ -26,6 +26,7 @@ const BoomDriverDashboardPage = () => {
   const [instantPairingLoading, setInstantPairingLoading] = useState(false);
   const [instantError, setInstantError] = useState('');
   const [instantSuccessMsg, setInstantSuccessMsg] = useState('');
+  const [payoutViewFilter, setPayoutViewFilter] = useState('ALL');
 
   // Cari profil driver milik user yang sedang login, atau gunakan driver utama Cibarani
   const currentDriverProfile = drivers.find(
@@ -269,55 +270,82 @@ const BoomDriverDashboardPage = () => {
                 </p>
               </div>
             </div>
-            <span style={{ fontSize: '0.75rem', fontWeight: '800', background: 'rgba(16, 185, 129, 0.12)', color: '#047857', padding: '5px 12px', borderRadius: '10px' }}>
-              ✓ Rekening Terverifikasi
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <select
+                value={payoutViewFilter}
+                onChange={e => setPayoutViewFilter(e.target.value)}
+                style={{
+                  padding: '7px 12px',
+                  borderRadius: '10px',
+                  border: '1.5px solid var(--border-color, #cbd5e1)',
+                  background: 'var(--bg-secondary, #f8fafc)',
+                  color: 'var(--text-main, #0f172a)',
+                  fontSize: '0.8rem',
+                  fontWeight: '800',
+                  cursor: 'pointer'
+                }}
+              >
+                <option value="ALL">Semua Saluran Rekening & Dompet</option>
+                <option value="BANK">1. Rekening Bank / E-Wallet (Rupiah)</option>
+                <option value="BMC">2. Dompet BMC (BaMbooChain Token)</option>
+                <option value="USDT">3. Dompet USDT (Polygon / BEP-20)</option>
+              </select>
+              <span style={{ fontSize: '0.75rem', fontWeight: '800', background: 'rgba(16, 185, 129, 0.12)', color: '#047857', padding: '5px 12px', borderRadius: '10px' }}>
+                ✓ Rekening Terverifikasi
+              </span>
+            </div>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '14px' }}>
             {/* Rekening Bank / E-Wallet */}
-            <div style={{ background: 'var(--bg-secondary, #f8fafc)', padding: '16px', borderRadius: '16px', border: '1px solid var(--border-color, #e2e8f0)' }}>
-              <div style={{ fontSize: '0.75rem', fontWeight: '800', color: '#047857', marginBottom: '4px' }}>
-                1. REKENING BANK / E-WALLET (RUPIAH)
+            {(payoutViewFilter === 'ALL' || payoutViewFilter === 'BANK') && (
+              <div style={{ background: 'var(--bg-secondary, #f8fafc)', padding: '16px', borderRadius: '16px', border: '1px solid var(--border-color, #e2e8f0)' }}>
+                <div style={{ fontSize: '0.75rem', fontWeight: '800', color: '#047857', marginBottom: '4px' }}>
+                  1. REKENING BANK / E-WALLET (RUPIAH)
+                </div>
+                <div style={{ fontSize: '0.92rem', fontWeight: '900', color: 'var(--text-main, #0f172a)', marginBottom: '4px' }}>
+                  {currentDriverProfile.bank_account || (typeof window !== 'undefined' && localStorage.getItem('boomboom_driver_bank_account')) || 'Bank Mandiri 130009827162 (a.n. ' + currentDriverProfile.name + ')'}
+                </div>
+                <div style={{ fontSize: '0.74rem', color: 'var(--text-muted, #64748b)' }}>
+                  Tujuan transfer otomatis 85% bagi hasil tarif Rupiah harian.
+                </div>
               </div>
-              <div style={{ fontSize: '0.92rem', fontWeight: '900', color: 'var(--text-main, #0f172a)', marginBottom: '4px' }}>
-                {currentDriverProfile.bank_account || (typeof window !== 'undefined' && localStorage.getItem('boomboom_driver_bank_account')) || 'Bank Mandiri 130009827162 (a.n. ' + currentDriverProfile.name + ')'}
-              </div>
-              <div style={{ fontSize: '0.74rem', color: 'var(--text-muted, #64748b)' }}>
-                Tujuan transfer otomatis 85% bagi hasil tarif Rupiah harian.
-              </div>
-            </div>
+            )}
 
             {/* Wallet BMC */}
-            <div style={{ background: 'var(--bg-secondary, #f8fafc)', padding: '16px', borderRadius: '16px', border: '1px solid var(--border-color, #e2e8f0)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                <div style={{ fontSize: '0.75rem', fontWeight: '800', color: '#059669' }}>
-                  2. NOMOR WALLET BMC (BaMbooChain)
+            {(payoutViewFilter === 'ALL' || payoutViewFilter === 'BMC') && (
+              <div style={{ background: 'var(--bg-secondary, #f8fafc)', padding: '16px', borderRadius: '16px', border: '1px solid var(--border-color, #e2e8f0)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                  <div style={{ fontSize: '0.75rem', fontWeight: '800', color: '#059669' }}>
+                    2. NOMOR WALLET BMC (BaMbooChain)
+                  </div>
+                  <span style={{ fontSize: '0.68rem', fontWeight: '800', background: 'rgba(16, 185, 129, 0.15)', color: '#047857', padding: '2px 6px', borderRadius: '6px' }}>
+                    Saldo: {user?.bmcBalance || 14.5} BMC
+                  </span>
                 </div>
-                <span style={{ fontSize: '0.68rem', fontWeight: '800', background: 'rgba(16, 185, 129, 0.15)', color: '#047857', padding: '2px 6px', borderRadius: '6px' }}>
-                  Saldo: {user?.bmcBalance || 14.5} BMC
-                </span>
+                <div style={{ fontSize: '0.86rem', fontWeight: '800', color: 'var(--text-main, #0f172a)', wordBreak: 'break-all', marginBottom: '4px' }}>
+                  {currentDriverProfile.wallet_bmc || (typeof window !== 'undefined' && localStorage.getItem('boomboom_driver_wallet_bmc')) || user?.walletAddress || '0xbmc71a9e8b2f4c0d1e5a8726b91cibarani'}
+                </div>
+                <div style={{ fontSize: '0.74rem', color: 'var(--text-muted, #64748b)' }}>
+                  Tampungan insentif & reward per km mobilitas hijau BaMbooChain.
+                </div>
               </div>
-              <div style={{ fontSize: '0.86rem', fontWeight: '800', color: 'var(--text-main, #0f172a)', wordBreak: 'break-all', marginBottom: '4px' }}>
-                {currentDriverProfile.wallet_bmc || (typeof window !== 'undefined' && localStorage.getItem('boomboom_driver_wallet_bmc')) || user?.walletAddress || '0xbmc71a9e8b2f4c0d1e5a8726b91cibarani'}
-              </div>
-              <div style={{ fontSize: '0.74rem', color: 'var(--text-muted, #64748b)' }}>
-                Tampungan insentif & reward per km mobilitas hijau BaMbooChain.
-              </div>
-            </div>
+            )}
 
             {/* Wallet USDT */}
-            <div style={{ background: 'var(--bg-secondary, #f8fafc)', padding: '16px', borderRadius: '16px', border: '1px solid var(--border-color, #e2e8f0)' }}>
-              <div style={{ fontSize: '0.75rem', fontWeight: '800', color: '#0284c7', marginBottom: '4px' }}>
-                3. NOMOR WALLET USDT (POLYGON / BEP-20)
+            {(payoutViewFilter === 'ALL' || payoutViewFilter === 'USDT') && (
+              <div style={{ background: 'var(--bg-secondary, #f8fafc)', padding: '16px', borderRadius: '16px', border: '1px solid var(--border-color, #e2e8f0)' }}>
+                <div style={{ fontSize: '0.75rem', fontWeight: '800', color: '#0284c7', marginBottom: '4px' }}>
+                  3. NOMOR WALLET USDT (POLYGON / BEP-20)
+                </div>
+                <div style={{ fontSize: '0.86rem', fontWeight: '800', color: 'var(--text-main, #0f172a)', wordBreak: 'break-all', marginBottom: '4px' }}>
+                  {currentDriverProfile.wallet_usdt || (typeof window !== 'undefined' && localStorage.getItem('boomboom_driver_wallet_usdt')) || user?.usdtWallet || '0x99b4f2c8d17a0e5b38291f0c2a7e4d82polygon'}
+                </div>
+                <div style={{ fontSize: '0.74rem', color: 'var(--text-muted, #64748b)' }}>
+                  Tampungan pembayaran kripto USDT Web3 dari penumpang.
+                </div>
               </div>
-              <div style={{ fontSize: '0.86rem', fontWeight: '800', color: 'var(--text-main, #0f172a)', wordBreak: 'break-all', marginBottom: '4px' }}>
-                {currentDriverProfile.wallet_usdt || (typeof window !== 'undefined' && localStorage.getItem('boomboom_driver_wallet_usdt')) || user?.usdtWallet || '0x99b4f2c8d17a0e5b38291f0c2a7e4d82polygon'}
-              </div>
-              <div style={{ fontSize: '0.74rem', color: 'var(--text-muted, #64748b)' }}>
-                Tampungan pembayaran kripto USDT Web3 dari penumpang.
-              </div>
-            </div>
+            )}
           </div>
         </div>
 
