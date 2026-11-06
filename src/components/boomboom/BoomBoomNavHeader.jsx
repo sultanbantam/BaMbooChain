@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Navigation, Car, Shield, Award, HelpCircle, UserCheck, Building2, History, Settings, Flame, Bell, X, CheckCircle2 } from 'lucide-react';
+import { Navigation, Car, Shield, Award, HelpCircle, UserCheck, Building2, History, Settings, Flame, Bell, X, CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useBoomBoomStore } from '../../services/boomboom/boomboomStore';
 import { subscribeFirestoreDrivers, subscribeAuditLogs } from '../../services/boomboom/boomboomPilotService';
 import { useAuth } from '../../context/AuthContext';
@@ -54,6 +54,93 @@ const BoomBoomNavHeader = () => {
     { path: '/boomboom/admin', label: 'Admin & Audit', icon: <Settings size={15} /> },
     { path: 'https://ngopi.top/contacts?join=BoomBoom', label: 'ngopi.top', isExternal: true, badge: 'Chat WA', icon: <span>☕</span> }
   ];
+
+  const navScrollRef = useRef(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+  const [isMouseDown, setIsMouseDown] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollStartX, setScrollStartX] = useState(0);
+  const [hasDragged, setHasDragged] = useState(false);
+
+  const checkScroll = () => {
+    if (!navScrollRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } = navScrollRef.current;
+    setCanScrollLeft(scrollLeft > 5);
+    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 5);
+  };
+
+  useEffect(() => {
+    checkScroll();
+    const el = navScrollRef.current;
+    if (el) {
+      el.addEventListener('scroll', checkScroll);
+      window.addEventListener('resize', checkScroll);
+      return () => {
+        el.removeEventListener('scroll', checkScroll);
+        window.removeEventListener('resize', checkScroll);
+      };
+    }
+  }, []);
+
+  // Auto scroll active item into view
+  useEffect(() => {
+    if (!navScrollRef.current) return;
+    const activeEl = navScrollRef.current.querySelector('[data-active="true"]');
+    if (activeEl) {
+      activeEl.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
+    setTimeout(checkScroll, 300);
+  }, [location.pathname]);
+
+  const scrollByAmount = (offset) => {
+    if (navScrollRef.current) {
+      navScrollRef.current.scrollBy({ left: offset, behavior: 'smooth' });
+    }
+  };
+
+  const handleMouseDown = (e) => {
+    if (!navScrollRef.current) return;
+    setIsMouseDown(true);
+    setHasDragged(false);
+    setStartX(e.pageX - navScrollRef.current.offsetLeft);
+    setScrollStartX(navScrollRef.current.scrollLeft);
+  };
+
+  const handleMouseLeave = () => {
+    setIsMouseDown(false);
+  };
+
+  const handleMouseUp = () => {
+    setIsMouseDown(false);
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isMouseDown || !navScrollRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - navScrollRef.current.offsetLeft;
+    const walk = (x - startX) * 1.5;
+    if (Math.abs(walk) > 4) {
+      setHasDragged(true);
+    }
+    navScrollRef.current.scrollLeft = scrollStartX - walk;
+  };
+
+  const handleClickCapture = (e) => {
+    if (hasDragged) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
+
+  const handleWheel = (e) => {
+    if (!navScrollRef.current) return;
+    if (navScrollRef.current.scrollWidth > navScrollRef.current.clientWidth) {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+        navScrollRef.current.scrollLeft += e.deltaY;
+      }
+    }
+  };
 
   const latestNotif = notifications && notifications.length > 0 ? notifications[0] : null;
 
@@ -177,19 +264,94 @@ const BoomBoomNavHeader = () => {
             </div>
           </div>
 
-          {/* Nav Items — horizontal scroll, hide scrollbar */}
-          <div style={{
-            display: 'flex',
-            gap: '6px',
-            overflowX: 'auto',
-            paddingBottom: '2px',
-            WebkitOverflowScrolling: 'touch',
-            scrollbarWidth: 'none',
-            msOverflowStyle: 'none',
-          }}>
-            <style>{`
-              .boom-nav-scroll::-webkit-scrollbar { display: none; }
-            `}</style>
+          {/* Nav Items Wrapper with Arrows & Drag-to-Scroll */}
+          <div style={{ position: 'relative', width: '100%', display: 'flex', alignItems: 'center' }}>
+            {/* Scroll Left Button */}
+            {canScrollLeft && (
+              <button
+                type="button"
+                onClick={() => scrollByAmount(-220)}
+                aria-label="Geser ke kiri"
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  zIndex: 25,
+                  background: 'linear-gradient(90deg, #064e3b 70%, transparent 100%)',
+                  border: 'none',
+                  color: '#ffffff',
+                  width: '42px',
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'flex-start',
+                  paddingLeft: '4px',
+                  cursor: 'pointer',
+                  borderRadius: '10px 0 0 10px'
+                }}
+              >
+                <div style={{
+                  background: 'rgba(255, 255, 255, 0.25)',
+                  backdropFilter: 'blur(4px)',
+                  borderRadius: '50%',
+                  width: '28px',
+                  height: '28px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                  transition: 'background 0.2s'
+                }}>
+                  <ChevronLeft size={18} />
+                </div>
+              </button>
+            )}
+
+            {/* Nav Items — horizontal scroll, draggable, wheel scrollable */}
+            <div
+              ref={navScrollRef}
+              className="boom-nav-scroll"
+              onMouseDown={handleMouseDown}
+              onMouseLeave={handleMouseLeave}
+              onMouseUp={handleMouseUp}
+              onMouseMove={handleMouseMove}
+              onClickCapture={handleClickCapture}
+              onWheel={handleWheel}
+              style={{
+                display: 'flex',
+                gap: '8px',
+                overflowX: 'auto',
+                overflowY: 'hidden',
+                paddingBottom: '6px',
+                paddingRight: '50px',
+                WebkitOverflowScrolling: 'touch',
+                cursor: isMouseDown ? 'grabbing' : 'grab',
+                userSelect: isMouseDown ? 'none' : 'auto',
+                width: '100%',
+                scrollBehavior: 'smooth'
+              }}
+            >
+              <style>{`
+                .boom-nav-scroll {
+                  scrollbar-width: thin;
+                  scrollbar-color: rgba(255, 255, 255, 0.35) transparent;
+                }
+                .boom-nav-scroll::-webkit-scrollbar {
+                  height: 5px;
+                }
+                .boom-nav-scroll::-webkit-scrollbar-track {
+                  background: rgba(0, 0, 0, 0.15);
+                  border-radius: 999px;
+                }
+                .boom-nav-scroll::-webkit-scrollbar-thumb {
+                  background: rgba(255, 255, 255, 0.35);
+                  border-radius: 999px;
+                }
+                .boom-nav-scroll::-webkit-scrollbar-thumb:hover {
+                  background: #f59f00;
+                }
+              `}</style>
             {navItems.map((item) => {
               const isActive = location.pathname === item.path;
               const commonStyle = {
@@ -223,6 +385,7 @@ const BoomBoomNavHeader = () => {
                     target="_blank"
                     rel="noopener noreferrer"
                     style={commonStyle}
+                    data-active={isActive}
                   >
                     {item.icon}
                     <span>{item.label}</span>
@@ -248,6 +411,7 @@ const BoomBoomNavHeader = () => {
                   key={item.path}
                   to={item.path}
                   style={commonStyle}
+                  data-active={isActive}
                 >
                   {item.icon}
                   <span>{item.label}</span>
@@ -267,6 +431,49 @@ const BoomBoomNavHeader = () => {
                 </Link>
               );
             })}
+            </div>
+
+            {/* Scroll Right Button */}
+            {canScrollRight && (
+              <button
+                type="button"
+                onClick={() => scrollByAmount(220)}
+                aria-label="Geser ke kanan"
+                style={{
+                  position: 'absolute',
+                  right: 0,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  zIndex: 25,
+                  background: 'linear-gradient(270deg, #059669 70%, transparent 100%)',
+                  border: 'none',
+                  color: '#ffffff',
+                  width: '42px',
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'flex-end',
+                  paddingRight: '4px',
+                  cursor: 'pointer',
+                  borderRadius: '0 10px 10px 0'
+                }}
+              >
+                <div style={{
+                  background: 'rgba(255, 255, 255, 0.25)',
+                  backdropFilter: 'blur(4px)',
+                  borderRadius: '50%',
+                  width: '28px',
+                  height: '28px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                  transition: 'background 0.2s'
+                }}>
+                  <ChevronRight size={18} />
+                </div>
+              </button>
+            )}
           </div>
         </div>
       </div>
