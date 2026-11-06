@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Globe, Bell, ChevronDown, ChevronUp, ChevronRight, Menu, X, Shield, Layout, 
   TreeDeciduous, Truck, Factory, Wallet, Leaf, ShoppingCart, Users, GraduationCap, 
@@ -76,6 +76,7 @@ const Navbar = () => {
   const bambooNusaFeatures = [
     { label: t('feature_overview'), path: '/bamboochain', icon: <Layout size={16} /> },
     { label: '🚀 BoomBoom Mobility', path: '/boomboom', icon: <Car size={16} /> },
+    { label: '🦇 Cibarani Guano', path: '/cibarani-guano', icon: <Leaf size={16} /> },
     { label: 'Mitra & Petani', path: '/bambunusa/farmers', icon: <Users size={16} /> },
     { label: t('feature_plantation'), path: '/bamboochain/plantation', icon: <TreeDeciduous size={16} /> },
     { label: t('feature_supply_chain'), path: '/bamboochain/supply-chain', icon: <Truck size={16} /> },
@@ -150,6 +151,7 @@ const Navbar = () => {
       bgLight: isDark ? 'rgba(132, 204, 22, 0.15)' : 'rgba(132, 204, 22, 0.08)',
       badge: language === 'en' ? '5 Features' : language === 'ja' ? '5機能' : '5 Fitur',
       items: [
+        { label: '🦇 Cibarani Guano (Biofertilizer)', path: '/cibarani-guano', icon: <Leaf size={18} />, desc: language === 'en' ? 'Biofertilizer, QR traceability & community benefit' : 'Pupuk guano, konservasi, QR & bagi manfaat adat' },
         { label: 'Mitra & Petani Binaan', path: '/bambunusa/farmers', icon: <Users size={18} />, desc: language === 'en' ? 'Archipelago farmer group network' : 'Database kelompok petani bambu se-nusantara' },
         { label: 'Daftar Jadi Petani', path: '/bambunusa/join-farmer', icon: <TreeDeciduous size={18} />, desc: language === 'en' ? 'Registration for partner farmers' : 'Pendaftaran kemitraan petani baru' },
         { label: t('feature_kodiba'), path: '/bamboochain/kodiba', icon: <Wallet size={18} />, desc: language === 'en' ? 'Digital bamboo profit-sharing cooperative' : 'Koperasi Digital Bambu bagi hasil petani' },
@@ -190,6 +192,7 @@ const Navbar = () => {
   const quickAccessItems = [
     { label: t('nav_home'), path: '/', icon: <Home size={15} /> },
     { label: '🚗 BoomBoom', path: '/boomboom', icon: <Car size={15} /> },
+    { label: '🦇 Cibarani Guano', path: '/cibarani-guano', icon: <Leaf size={15} /> },
     { label: '🏗️ BangunIn MBR', path: '/bangunin', icon: <Building2 size={15} /> },
     { label: '🌿 Tobat Ekologi', path: '/tobat-ekologi', icon: <TreeDeciduous size={15} /> },
     { label: '📊 WaniPiro?', path: '/wanipiro', icon: <TrendingUp size={15} /> },
@@ -527,6 +530,7 @@ const Navbar = () => {
           {/* Row 2: Top Menu Bar */}
           <div style={{ background: 'var(--bg-card)', height: '45px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '25px', padding: '0 32px', borderBottom: '1px solid var(--border-color)' }}>
             <Link to="/boomboom" style={{ fontSize: '0.85rem', color: '#f59f00', textDecoration: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>🚀 BoomBoom</Link>
+            <Link to="/cibarani-guano" style={{ fontSize: '0.85rem', color: '#047857', textDecoration: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>🦇 Cibarani Guano</Link>
             <Link to="/bangunin" style={{ fontSize: '0.85rem', color: '#005BAA', textDecoration: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>🏢 BangunIn MBR</Link>
             <Link to="/bambupedia" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('nav_bambupedia')}</Link>
             <Link to="/bamboochain/academy" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('feature_academy')}</Link>

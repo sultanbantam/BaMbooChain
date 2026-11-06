@@ -125,6 +125,8 @@ const BoomRewardsPage = lazyWithRetry(() => import('./pages/boomboom/BoomRewards
 const BoomSafetyPage = lazyWithRetry(() => import('./pages/boomboom/BoomSafetyPage'));
 const BoomHelpPage = lazyWithRetry(() => import('./pages/boomboom/BoomHelpPage'));
 const BoomAdminDashboardPage = lazyWithRetry(() => import('./pages/boomboom/BoomAdminDashboardPage'));
+const CibaraniGuanoPage = lazyWithRetry(() => import('./pages/guano/CibaraniGuanoPage'));
+const GuanoPublicTracePage = lazyWithRetry(() => import('./pages/guano/GuanoPublicTracePage'));
 
 const PageLoader = () => (
   <div style={{
@@ -412,6 +414,9 @@ function App() {
             <Route path="/boomboom/safety" element={<BoomSafetyPage />} />
             <Route path="/boomboom/help" element={<BoomHelpPage />} />
             <Route path="/boomboom/admin" element={<ProtectedRoute><BoomAdminDashboardPage /></ProtectedRoute>} />
+            <Route path="/cibarani-guano" element={<CibaraniGuanoPage />} />
+            <Route path="/bamboochain/cibarani-guano" element={<CibaraniGuanoPage />} />
+            <Route path="/cibarani-guano/trace/:token" element={<GuanoPublicTracePage />} />
             
             <Route path="/faq" element={<FAQPage />} />
           </Routes>
