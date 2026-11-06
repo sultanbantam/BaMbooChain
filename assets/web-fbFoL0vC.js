@@ -1,0 +1,1 @@
+import{t as e}from"./vendor-firebase-CF22ryAW.js";export{e as FirebaseAuthenticationWeb};

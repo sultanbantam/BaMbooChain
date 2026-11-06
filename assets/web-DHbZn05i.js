@@ -1,0 +1,1 @@
+import{l as e}from"./vendor-others-BJD_Y2Hg.js";export{e as AppWeb};
