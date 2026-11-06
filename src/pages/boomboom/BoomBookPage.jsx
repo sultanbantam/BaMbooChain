@@ -24,7 +24,7 @@ import BoomBoomNavHeader from '../../components/boomboom/BoomBoomNavHeader';
 import MapViewComponent from '../../components/boomboom/MapViewComponent';
 import SosButton from '../../components/boomboom/SosButton';
 import { useBoomBoomStore } from '../../services/boomboom/boomboomStore';
-import { PARTNER_ENTITY_TYPES, PILOT_ZONE_OPTIONS } from '../../services/boomboom/mockData';
+import { PARTNER_ENTITY_TYPES, PILOT_ZONE_OPTIONS, ROUTE_OPTIMIZATION_MODES } from '../../services/boomboom/mockData';
 import { calculateGreenScore } from '../../services/boomboom/rewardEngine';
 import { useAuth } from '../../context/AuthContext';
 import { 
@@ -82,7 +82,9 @@ const BoomBookPage = () => {
     pushNotification,
     submitTripRatingAndCsat,
     submitComplaint,
-    updatePilotRegionConfig
+    updatePilotRegionConfig,
+    setRouteOptimizationMode,
+    runFraudCheckOnBooking
   } = useBoomBoomStore();
 
   const [selectedPilotZoneId, setSelectedPilotZoneId] = useState('REG-JABODETABEK');
@@ -281,7 +283,12 @@ const BoomBookPage = () => {
     const activeCode = activeBooking.instantCode || regenerateInstantCode();
     startBookingFlow();
     try {
-      // 1. Buat sesi Payment Sandbox & Validasi Tarif Server-side (Tahap II)
+      // 0. Tahap IV Fraud & Anti-Abuse Check
+      if (runFraudCheckOnBooking) {
+        await runFraudCheckOnBooking(user?.uid || user?.id || 'GUEST-USER');
+      }
+
+      // 1. Buat sesi Payment Sandbox / Production & Validasi Tarif Server-side
       const tempTripId = `BOOM-${Date.now().toString().slice(-6)}`;
       const { paymentRecord } = await createPaymentSandboxSession({
         tripId: tempTripId,
@@ -1207,7 +1214,83 @@ const BoomBookPage = () => {
                       <div style={{ fontWeight: '800', color: 'var(--text-main, #0f172a)', fontSize: '0.9rem' }}>👥 BoomTogether</div>
                       <div style={{ fontSize: '0.72rem', fontWeight: '600', color: 'var(--text-muted, #64748b)' }}>Tumpangan Hemat</div>
                     </button>
+
+                    {featureFlags.FUTURE_BOOM_SEND && (
+                      <button
+                        onClick={() => setServiceType('BoomSend')}
+                        style={{
+                          padding: '12px',
+                          borderRadius: '16px',
+                          border: activeBooking.serviceType === 'BoomSend' ? '2px solid #10b981' : '1px solid var(--border-color, #cbd5e1)',
+                          background: activeBooking.serviceType === 'BoomSend' ? 'rgba(16, 185, 129, 0.15)' : 'var(--bg-secondary, #f8fafc)',
+                          textAlign: 'left',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <div style={{ fontWeight: '800', color: 'var(--text-main, #0f172a)', fontSize: '0.9rem' }}>📦 BoomSend</div>
+                        <div style={{ fontSize: '0.72rem', fontWeight: '600', color: 'var(--text-muted, #64748b)' }}>Kurir & Logistik Desa</div>
+                      </button>
+                    )}
+
+                    {featureFlags.FUTURE_BOOM_TOUR && (
+                      <button
+                        onClick={() => setServiceType('BoomTour')}
+                        style={{
+                          padding: '12px',
+                          borderRadius: '16px',
+                          border: activeBooking.serviceType === 'BoomTour' ? '2px solid #10b981' : '1px solid var(--border-color, #cbd5e1)',
+                          background: activeBooking.serviceType === 'BoomTour' ? 'rgba(16, 185, 129, 0.15)' : 'var(--bg-secondary, #f8fafc)',
+                          textAlign: 'left',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <div style={{ fontWeight: '800', color: 'var(--text-main, #0f172a)', fontSize: '0.9rem' }}>🎋 BoomTour</div>
+                        <div style={{ fontSize: '0.72rem', fontWeight: '600', color: 'var(--text-muted, #64748b)' }}>Ekowisata & Kebun Bambu</div>
+                      </button>
+                    )}
                   </div>
+
+                  {/* TAHAP IV: ROUTE OPTIMIZATION ENGINE SELECTOR */}
+                  {featureFlags.ENABLE_ROUTE_OPTIMIZATION && (
+                    <div style={{ marginTop: '14px' }}>
+                      <label style={{ fontSize: '0.72rem', fontWeight: '800', color: 'var(--text-muted, #64748b)', display: 'block', marginBottom: '6px' }}>
+                        OPTIMASI RUTE CERDAS (TAHAP IV ROUTE OPTIMIZATION)
+                      </label>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        {ROUTE_OPTIMIZATION_MODES.map((rm) => {
+                          const isSelected = (activeBooking.routeOptimizationMode || 'FASTEST') === rm.id;
+                          return (
+                            <button
+                              key={rm.id}
+                              type="button"
+                              onClick={() => setRouteOptimizationMode(rm.id)}
+                              style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                padding: '9px 12px',
+                                borderRadius: '12px',
+                                border: isSelected ? '1.5px solid #10b981' : '1px solid var(--border-color, #cbd5e1)',
+                                background: isSelected ? 'rgba(16, 185, 129, 0.12)' : 'var(--bg-secondary, #f8fafc)',
+                                cursor: 'pointer',
+                                textAlign: 'left'
+                              }}
+                            >
+                              <div>
+                                <div style={{ fontSize: '0.8rem', fontWeight: '800', color: 'var(--text-main, #0f172a)' }}>{rm.label}</div>
+                                <div style={{ fontSize: '0.68rem', color: 'var(--text-muted, #64748b)' }}>{rm.desc}</div>
+                              </div>
+                              {isSelected && (
+                                <span style={{ fontSize: '0.68rem', fontWeight: '900', color: '#047857', background: '#d1fae5', padding: '2px 8px', borderRadius: '999px' }}>
+                                  Aktif
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* EV TOGGLE */}

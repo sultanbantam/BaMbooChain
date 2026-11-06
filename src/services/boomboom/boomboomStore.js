@@ -6,6 +6,9 @@ import {
   MOCK_REWARDS, 
   MOCK_INCIDENTS,
   MOCK_COMPLAINTS,
+  MOCK_FRAUD_ALERTS,
+  MOCK_FINANCIAL_LEDGER,
+  ROUTE_OPTIMIZATION_MODES,
   INITIAL_PILOT_METRICS,
   INITIAL_FEATURE_FLAGS,
   INITIAL_OPERATING_REGIONS 
@@ -33,7 +36,10 @@ import {
   resolveComplaintInFirestore,
   resolveSosIncidentInFirestore,
   recordCancellationReasonInFirestore,
-  optInDriverKodibaMembershipInFirestore
+  optInDriverKodibaMembershipInFirestore,
+  evaluateTripFraudRisk,
+  recordImmutableFinancialLedgerInFirestore,
+  verifyOperatorStatusInFirestore
 } from './boomboomPilotService';
 
 // Helper sinkronisasi cepat koordinat dari teks
@@ -101,6 +107,8 @@ export const useBoomBoomStore = create((set, get) => ({
   rewards: [...MOCK_REWARDS],
   incidents: [...MOCK_INCIDENTS],
   complaints: [...MOCK_COMPLAINTS],
+  fraudAlerts: [...MOCK_FRAUD_ALERTS],
+  financialLedger: [...MOCK_FINANCIAL_LEDGER],
   pilotMetrics: { ...INITIAL_PILOT_METRICS },
   auditLogs: [...INITIAL_AUDIT_LOGS],
   notifications: [],
@@ -109,14 +117,15 @@ export const useBoomBoomStore = create((set, get) => ({
   activeBooking: {
     step: 'IDLE', // 'IDLE' | 'SEARCHING' | 'DRIVER_ASSIGNED' | 'DRIVER_ARRIVING' | 'DRIVER_ARRIVED' | 'ON_TRIP' | 'COMPLETED' | 'CANCELLED'
     instantCode: '482915',
-    pickupAddress: 'Sentra Bibit Bambu Cibarani',
-    pickupCoords: { lat: -6.6521, lng: 107.6932 },
-    destinationAddress: 'Pasar Desa Cibarani, Subang',
-    destinationCoords: { lat: -6.6850, lng: 107.7200 },
+    pickupAddress: 'Balaikota Tangerang Selatan, Jl. Benda Raya No. 1',
+    pickupCoords: { lat: -6.3198, lng: 106.7069 },
+    destinationAddress: 'Stasiun Sudimara Tangsel',
+    destinationCoords: { lat: -6.2966, lng: 106.7128 },
     serviceType: 'BoomRide',
+    routeOptimizationMode: 'FASTEST',
     isEvVehicle: false,
-    fareCalc: calculateFare({ serviceType: 'BoomRide', distanceKm: 4.5, durationMin: 12 }),
-    pilotGeofence: checkGeofencePilotZone({ lat: -6.6521, lng: 107.6932 }, INITIAL_OPERATING_REGIONS),
+    fareCalc: calculateFare({ serviceType: 'BoomRide', distanceKm: 3.4, durationMin: 10 }),
+    pilotGeofence: checkGeofencePilotZone({ lat: -6.3198, lng: 106.7069 }, INITIAL_OPERATING_REGIONS),
     assignedDriver: null,
     matchedCandidates: [],
     paymentSession: null,
@@ -628,6 +637,15 @@ export const useBoomBoomStore = create((set, get) => ({
       customBmcAmount: 2.5
     });
 
+    const activeRegionObj = activeBooking.pilotGeofence?.nearestRegion || get().regions[0];
+    recordImmutableFinancialLedgerInFirestore(newTrip, activeRegionObj).then((ledgerEntry) => {
+      if (ledgerEntry) {
+        set((state) => ({
+          financialLedger: [ledgerEntry, ...state.financialLedger]
+        }));
+      }
+    });
+
     set({
       trips: [newTrip, ...trips],
       rewards: [newReward, ...rewards],
@@ -1123,5 +1141,84 @@ export const useBoomBoomStore = create((set, get) => ({
       `Keanggotaan sukarela Koperasi Digital Bambu Anda telah aktif.`
     );
     return memberId;
+  },
+
+  // ============================================================================
+  // TAHAP IV — PRODUCTION SCALING: ROUTE OPTIMIZATION, FRAUD SHIELD & NATIONWIDE OPS
+  // ============================================================================
+  setRouteOptimizationMode: (modeId) => {
+    set((state) => {
+      const modeObj = ROUTE_OPTIMIZATION_MODES.find((m) => m.id === modeId) || ROUTE_OPTIMIZATION_MODES[0];
+      const baseDist = state.activeBooking.fareCalc.distanceKm || 4.0;
+      const adjDist = Number((baseDist * modeObj.distanceMultiplier).toFixed(1));
+      const adjDur = Math.max(3, Math.round((state.activeBooking.fareCalc.durationMin || 11) * modeObj.durationMultiplier));
+      const fareCalc = calculateFare({
+        serviceType: state.activeBooking.serviceType,
+        distanceKm: adjDist,
+        durationMin: adjDur,
+        customConfig: state.fareSettings[state.activeBooking.serviceType],
+        isEvVehicle: state.activeBooking.isEvVehicle
+      });
+      return {
+        activeBooking: {
+          ...state.activeBooking,
+          routeOptimizationMode: modeId,
+          fareCalc
+        }
+      };
+    });
+  },
+
+  verifyOperatorStatus: async (operatorId, newStatus = 'VERIFIED', verifierName = 'Central Admin BoomBoom') => {
+    await verifyOperatorStatusInFirestore(operatorId, newStatus, verifierName);
+    set((state) => ({
+      operators: state.operators.map((op) =>
+        op.operator_id === operatorId
+          ? {
+              ...op,
+              status: newStatus,
+              compliance_status: newStatus === 'VERIFIED' ? 'COMPLIANT_VERIFIED' : 'UNDER_REGULATORY_REVIEW'
+            }
+          : op
+      )
+    }));
+    get().addLocalAuditLog(
+      `OPERATOR_${newStatus}`,
+      operatorId,
+      `Verifikasi Mitra Operator Nasional ${operatorId} diubah menjadi ${newStatus}`,
+      verifierName
+    );
+  },
+
+  resolveFraudAlert: (alertId, nextStatus = 'RESOLVED') => {
+    set((state) => ({
+      fraudAlerts: state.fraudAlerts.map((al) =>
+        al.alert_id === alertId ? { ...al, status: nextStatus } : al
+      )
+    }));
+    get().addLocalAuditLog(
+      'FRAUD_ALERT_REVIEWED',
+      alertId,
+      `Peringatan keamanan #${alertId} ditandai ${nextStatus} oleh Central Admin.`,
+      'Fraud Shield Admin'
+    );
+  },
+
+  runFraudCheckOnBooking: async (passengerId = 'USR-PAS') => {
+    const { activeBooking } = get();
+    const res = await evaluateTripFraudRisk({
+      tripId: activeBooking.currentTripId,
+      distanceKm: activeBooking.fareCalc.distanceKm,
+      fare: activeBooking.fareCalc.grossFare,
+      passengerId,
+      driverUserId: activeBooking.assignedDriver?.user_id || 'USR-101',
+      regionId: activeBooking.pilotGeofence?.nearestRegion?.id || 'REG-JABODETABEK'
+    });
+    if (res.alerts && res.alerts.length > 0) {
+      set((state) => ({
+        fraudAlerts: [...res.alerts, ...state.fraudAlerts]
+      }));
+    }
+    return res;
   }
 }));

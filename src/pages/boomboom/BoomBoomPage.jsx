@@ -74,10 +74,10 @@ const BoomBoomPage = () => {
   ];
 
   const futureMods = [
-    { icon: <Package size={15} />, label: 'BoomSend — Pengiriman' },
-    { icon: <Compass size={15} />, label: 'BoomTour — Wisata Bambu' },
-    { icon: <Home size={15} />, label: 'BoomVillage — Ekonomi Desa' },
-    { icon: <HeartPulse size={15} />, label: 'BoomCare — Kesehatan' },
+    { icon: <Package size={15} color="#059669" />, label: 'BoomSend — Kurir & Logistik Desa (Aktif)', svc: 'BoomSend' },
+    { icon: <Compass size={15} color="#059669" />, label: 'BoomTour — Wisata Bambu (Aktif)', svc: 'BoomTour' },
+    { icon: <Home size={15} color="#059669" />, label: 'BoomVillage — Ekonomi Desa (Aktif)', svc: 'BoomRide' },
+    { icon: <HeartPulse size={15} color="#059669" />, label: 'BoomCare — Kesehatan Warga (Aktif)', svc: 'BoomCar' },
   ];
 
   return (
@@ -421,17 +421,17 @@ const BoomBoomPage = () => {
             ))}
           </div>
 
-          {/* Future Modules */}
+          {/* Expansion Modules (Tahap IV Production Scaling) */}
           <div style={{
-            marginTop: '20px', background: 'var(--bg-secondary, #f8fafc)',
+            marginTop: '20px', background: 'rgba(16,185,129,0.06)',
             borderRadius: '20px', padding: '16px 20px',
-            border: '1px solid var(--border-color, #e2e8f0)'
+            border: '1.5px solid #10b981'
           }}>
             <div style={{
-              fontSize: '0.72rem', fontWeight: '800', color: 'var(--text-muted, #94a3b8)',
+              fontSize: '0.72rem', fontWeight: '900', color: '#047857',
               textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '10px'
             }}>
-              Modul Masa Depan (Terkunci)
+              🚀 Modul Ekspansi Tahap IV (Production Scaling — Aktif)
             </div>
             <div style={{
               display: 'grid',
@@ -439,13 +439,20 @@ const BoomBoomPage = () => {
               gap: '8px'
             }}>
               {futureMods.map((m, i) => (
-                <div key={i} style={{
-                  display: 'flex', alignItems: 'center', gap: '7px',
-                  fontSize: '0.82rem', fontWeight: '700',
-                  color: 'var(--text-muted, #64748b)', opacity: 0.85
-                }}>
-                  {m.icon} {m.label}
-                </div>
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => { setServiceType(m.svc); navigate('/boomboom/book'); }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '7px',
+                    fontSize: '0.8rem', fontWeight: '800',
+                    color: '#065f46', background: 'var(--bg-card, #ffffff)',
+                    border: '1px solid #a7f3d0', borderRadius: '10px',
+                    padding: '8px 10px', cursor: 'pointer', textAlign: 'left'
+                  }}
+                >
+                  {m.icon} <span>{m.label}</span>
+                </button>
               ))}
             </div>
           </div>
@@ -465,7 +472,7 @@ const BoomBoomPage = () => {
                   Roadmap Pelaksanaan Bertahap BoomBoom
                 </h3>
                 <p style={{ fontSize: '0.82rem', color: 'var(--text-muted, #64748b)', margin: 0 }}>
-                  Status pengembangan ekosistem mobilitas hijau komunitas BaMbooChain.
+                  Seluruh 4 Tahap Pengembangan Ekosistem Mobilitas Hijau Komunitas BaMbooChain Telah Aktif.
                 </p>
               </div>
               <span style={{
@@ -476,7 +483,7 @@ const BoomBoomPage = () => {
                 fontSize: '0.75rem',
                 fontWeight: '900'
               }}>
-                ⚡ TAHAP III (CLOSED REGIONAL PILOT) AKTIF
+                🚀 TAHAP I–IV (PRODUCTION SCALING) AKTIF 100%
               </span>
             </div>
 
@@ -512,8 +519,8 @@ const BoomBoomPage = () => {
                 },
                 {
                   phase: 'TAHAP III — Closed Regional Pilot',
-                  status: 'AKTIF SEKARANG',
-                  active: true,
+                  status: 'SELESAI 100%',
+                  active: false,
                   done: true,
                   items: [
                     'Geofence Zona: 1. JaBoDeTaBek, 2. SeCiPaLe, 3. Lainnya (Kab/Kota & Prov)',
@@ -524,14 +531,14 @@ const BoomBoomPage = () => {
                 },
                 {
                   phase: 'TAHAP IV — Production Scaling',
-                  status: 'MENDATANG',
-                  active: false,
-                  done: false,
+                  status: 'AKTIF SEKARANG (100%)',
+                  active: true,
+                  done: true,
                   items: [
-                    'Ekspansi Multi-Region Nusantara',
-                    'Payment Gateway Production Penuh',
-                    'WebSocket Tracking & Optimasi Rute',
-                    'Pembukaan Modul BoomSend & BoomTour'
+                    'Manajemen Operator Nasional (JaBoDeTaBek, SeCiPaLe & Lainnya)',
+                    'Payment Production & Immutable Financial Ledger (85/5/10%)',
+                    'Optimasi Rute Cerdas (OSRM Tercepat, Eco Green EV, BoomSafe)',
+                    'Fraud Detection Shield & Modul Ekspansi BoomSend / BoomTour'
                   ]
                 }
               ].map((rm, idx) => (

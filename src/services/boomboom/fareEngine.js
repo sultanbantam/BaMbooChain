@@ -43,6 +43,26 @@ export const DEFAULT_FARE_SETTINGS = {
     operatorFeePct: 4,
     insuranceFee: 1000,
     surgeMultiplier: 1.0,
+  },
+  BoomSend: {
+    baseFare: 6000,
+    perKm: 2800,
+    perMinute: 180,
+    minimumFare: 10000,
+    platformFeePct: 10,
+    operatorFeePct: 5,
+    insuranceFee: 1500,
+    surgeMultiplier: 1.0,
+  },
+  BoomTour: {
+    baseFare: 20000,
+    perKm: 4500,
+    perMinute: 400,
+    minimumFare: 30000,
+    platformFeePct: 10,
+    operatorFeePct: 5,
+    insuranceFee: 2500,
+    surgeMultiplier: 1.0,
   }
 };
 

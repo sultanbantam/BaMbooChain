@@ -16,14 +16,46 @@
 export const INITIAL_FEATURE_FLAGS = {
   BOOMBOOM_PILOT_ENABLED: true,
   BOOMBOOM_PHASE_3_REGIONAL_PILOT: true,
+  BOOMBOOM_PHASE_4_PRODUCTION: true,
+  BOOMBOOM_PAYMENT_PRODUCTION: true,
+  ENABLE_WEBSOCKET_TRACKING: true,
+  ENABLE_ROUTE_OPTIMIZATION: true,
+  ENABLE_FRAUD_DETECTION: true,
   ENABLE_EV_REWARDS: true,
   ENABLE_COMMUNITY_CARPOOL: true,
   ENABLE_REALTIME_MAP: true,
-  FUTURE_BOOM_SEND: false,
-  FUTURE_BOOM_TOUR: false,
-  FUTURE_BOOM_VILLAGE: false,
-  FUTURE_BOOM_CARE: false
+  FUTURE_BOOM_SEND: true,
+  FUTURE_BOOM_TOUR: true,
+  FUTURE_BOOM_VILLAGE: true,
+  FUTURE_BOOM_CARE: true
 };
+
+export const ROUTE_OPTIMIZATION_MODES = [
+  {
+    id: 'FASTEST',
+    label: '⚡ Rute Tercepat (OSRM Optimal)',
+    desc: 'Jalur jalan raya tercepat dengan waktu tempuh minimum',
+    distanceMultiplier: 1.0,
+    durationMultiplier: 1.0,
+    co2BonusPct: 0
+  },
+  {
+    id: 'ECO_GREEN',
+    label: '🌿 Rute Hijau & Hemat EV (Eco-Route)',
+    desc: 'Minim tanjakan curam & macet, hemat baterai EV +15% & ekstra skor hijau',
+    distanceMultiplier: 0.96,
+    durationMultiplier: 1.04,
+    co2BonusPct: 18
+  },
+  {
+    id: 'COMMUNITY_SAFE',
+    label: '🛡️ Rute Pos Komunitas & BoomSafe',
+    desc: 'Melewati koridor pos pantau BUMDes/Yayasan/Mitra dengan pencahayaan penuh',
+    distanceMultiplier: 1.03,
+    durationMultiplier: 1.05,
+    co2BonusPct: 5
+  }
+];
 
 export const PARTNER_ENTITY_TYPES = [
   { value: 'BUMDes', label: 'BUMDes (Badan Usaha Milik Desa)' },
@@ -498,3 +530,63 @@ export const INITIAL_PILOT_METRICS = {
     { tag: 'Kendaraan Bersih / EV Ramah Lingkungan', count: 640 }
   ]
 };
+
+/**
+ * TAHAP IV — PRODUCTION SCALING: FRAUD DETECTION & IMMUTABLE FINANCIAL LEDGER
+ */
+export const MOCK_FRAUD_ALERTS = [
+  {
+    alert_id: 'FRD-401',
+    trip_id: 'TRIP-8891',
+    rule_triggered: 'GPS_VELOCITY_ANOMALY',
+    severity: 'MEDIUM',
+    description: 'Lonjakan koordinat GPS >125 km/jam terdeteksi selama 8 detik; otomatis dikoreksi oleh filter Kalman OSRM.',
+    actor_name: 'Sistem Anti-Spoofing GPS',
+    region_id: 'REG-JABODETABEK',
+    status: 'MITIGATED',
+    created_at: '2026-10-03T11:15:00Z'
+  },
+  {
+    alert_id: 'FRD-402',
+    trip_id: 'TRIP-8912',
+    rule_triggered: 'SELF_BOOKING_GUARD',
+    severity: 'HIGH',
+    description: 'Percobaan pemesanan dengan akun perangkat yang sama antara pemesan dan pengemudi dicegah otomatis demi menjaga validitas klaim reward BMC.',
+    actor_name: 'Fraud Shield Engine',
+    region_id: 'REG-SECIPALE',
+    status: 'BLOCKED',
+    created_at: '2026-10-04T09:42:00Z'
+  }
+];
+
+export const MOCK_FINANCIAL_LEDGER = [
+  {
+    ledger_id: 'LDG-9001',
+    trip_id: 'TRIP-9001',
+    region_id: 'REG-JABODETABEK',
+    partner_type: 'Yayasan',
+    partner_name: 'Yayasan Bambu Indonesia & Mitra JaBoDeTaBek',
+    gross_fare_idr: 15500,
+    driver_share_idr: 13175,
+    operator_share_idr: 775,
+    platform_reserve_idr: 1550,
+    payment_mode: 'PRODUCTION_QRIS_SETTLED',
+    hash_signature: '0x8f92c1a4e7b03d19f4421a9b',
+    timestamp: '2026-09-28T14:32:05Z'
+  },
+  {
+    ledger_id: 'LDG-9002',
+    trip_id: 'TRIP-9002',
+    region_id: 'REG-SECIPALE',
+    partner_type: 'BUMDes',
+    partner_name: 'Konsorsium BUMDes & Organisasi Bambu SeCiPaLe',
+    gross_fare_idr: 28000,
+    driver_share_idr: 23800,
+    operator_share_idr: 1400,
+    platform_reserve_idr: 2800,
+    payment_mode: 'PRODUCTION_QRIS_SETTLED',
+    hash_signature: '0x3a71d9e0b5c82f14a6039c1e',
+    timestamp: '2026-09-30T09:28:10Z'
+  }
+];
+

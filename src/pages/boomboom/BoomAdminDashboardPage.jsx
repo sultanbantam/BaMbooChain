@@ -30,10 +30,14 @@ const BoomAdminDashboardPage = () => {
     regions,
     togglePilotRegionStatus,
     updatePilotRegionConfig,
-    auditLogs
+    auditLogs,
+    fraudAlerts,
+    financialLedger,
+    verifyOperatorStatus,
+    resolveFraudAlert
   } = useBoomBoomStore();
 
-  const [activeTab, setActiveTab] = useState('PHASE3_KPI'); // 'PHASE3_KPI' | 'AUDIT' | 'FLAGS' | 'FARES'
+  const [activeTab, setActiveTab] = useState('PHASE4_PROD'); // 'PHASE4_PROD' | 'PHASE3_KPI' | 'AUDIT' | 'FLAGS' | 'FARES'
   const [editingFare, setEditingFare] = useState({ ...fareSettings.BoomRide });
   const [saveSuccess, setSaveSuccess] = useState(false);
 
@@ -65,19 +69,34 @@ const BoomAdminDashboardPage = () => {
         }}>
           <div>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(16, 185, 129, 0.2)', padding: '4px 12px', borderRadius: '14px', fontSize: '0.8rem', fontWeight: '800', color: '#34d399', marginBottom: '8px' }}>
-              <Settings size={16} /> CENTRAL ADMIN & EVALUASI TELEMETRY (TAHAP III CLOSED REGIONAL PILOT)
+              <Settings size={16} /> CENTRAL ADMIN & PRODUCTION SCALING (TAHAP I–IV LENGKAP)
             </div>
             <h1 style={{ fontSize: '1.8rem', fontWeight: '900', margin: '0 0 4px', color: '#ffffff' }}>
-              Pusat Kendali, Evaluasi 7 KPI Pilot & Audit Trail BoomBoom
+              Pusat Kendali Production Scaling, Ledger Keuangan, Fraud Shield & Operator Nasional
             </h1>
             <div style={{ fontSize: '0.9rem', color: '#94a3b8' }}>
-              Pantau 7 metrik wajib Tahap III (Completion Rate, Response Time, Cancellation, Complaints, Safety, Driver Earnings, User Satisfaction) & Geofence Wilayah.
+              Kelola ekspansi multi-region (JaBoDeTaBek, SeCiPaLe, Lainnya), verifikasi operator (BUMDes/Yayasan/Perusahaan/Organisasi/Lain-lain), Immutable Financial Ledger, Fraud Detection & 7 KPI Pilot.
             </div>
           </div>
         </div>
 
         {/* TABS SELECTOR */}
         <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
+          <button
+            onClick={() => setActiveTab('PHASE4_PROD')}
+            style={{
+              padding: '10px 20px',
+              borderRadius: '14px',
+              fontWeight: '800',
+              border: '1px solid var(--border-color, #cbd5e1)',
+              cursor: 'pointer',
+              background: activeTab === 'PHASE4_PROD' ? '#047857' : 'var(--bg-card, #ffffff)',
+              color: activeTab === 'PHASE4_PROD' ? '#ffffff' : 'var(--text-main, #475569)'
+            }}
+          >
+            🚀 Tahap IV: Production Scaling (Ledger, Fraud & Operator)
+          </button>
+
           <button
             onClick={() => setActiveTab('PHASE3_KPI')}
             style={{
@@ -138,6 +157,244 @@ const BoomAdminDashboardPage = () => {
             💰 Konfigurasi Fare Engine
           </button>
         </div>
+
+        {/* TAB PHASE 4: PRODUCTION SCALING (IMMUTABLE LEDGER, FRAUD DETECTION & NATIONWIDE OPERATOR MANAGEMENT) */}
+        {activeTab === 'PHASE4_PROD' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            {/* 1. IMMUTABLE FINANCIAL LEDGER (Section 23 Finance & Transparency) */}
+            <div style={{
+              background: 'var(--bg-card, #ffffff)',
+              borderRadius: '24px',
+              padding: '24px',
+              border: '1px solid var(--border-color, #cbd5e1)',
+              boxShadow: '0 8px 25px rgba(0,0,0,0.04)'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+                <div>
+                  <h3 style={{ fontSize: '1.2rem', fontWeight: '800', margin: '0 0 4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <ShieldCheck size={20} color="#059669" /> Buku Besar Keuangan Immutable (`boomboom_financial_ledger`)
+                  </h3>
+                  <div style={{ fontSize: '0.82rem', color: 'var(--text-muted, #64748b)' }}>
+                    Pencatatan bagi hasil transparan setiap trip dengan tanda tangan kriptografis: <strong>85% Hak Pengemudi</strong> • <strong>5% Mitra Wilayah</strong> • <strong>10% Cadangan Platform & Asuransi</strong>.
+                  </div>
+                </div>
+                <span style={{ background: '#d1fae5', color: '#047857', fontWeight: '900', fontSize: '0.75rem', padding: '6px 12px', borderRadius: '999px' }}>
+                  ✓ IMMUTABLE LOGICAL LEDGER AKTIF ({financialLedger?.length || 0} Entri)
+                </span>
+              </div>
+
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
+                  <thead>
+                    <tr style={{ background: 'var(--bg-secondary, #f8fafc)', textAlign: 'left', borderBottom: '2px solid var(--border-color, #cbd5e1)' }}>
+                      <th style={{ padding: '10px 12px' }}>ID Ledger & Trip</th>
+                      <th style={{ padding: '10px 12px' }}>Zona & Mitra Pengelola</th>
+                      <th style={{ padding: '10px 12px' }}>Tarif Kotor</th>
+                      <th style={{ padding: '10px 12px', color: '#047857' }}>Hak Driver (85%)</th>
+                      <th style={{ padding: '10px 12px', color: '#b45309' }}>Mitra (5%)</th>
+                      <th style={{ padding: '10px 12px', color: '#0369a1' }}>Platform (10%)</th>
+                      <th style={{ padding: '10px 12px' }}>Hash Signature</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(financialLedger || []).map((row) => (
+                      <tr key={row.ledger_id} style={{ borderBottom: '1px solid var(--border-color, #e2e8f0)' }}>
+                        <td style={{ padding: '10px 12px', fontWeight: '800' }}>
+                          <div>{row.ledger_id}</div>
+                          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted, #64748b)' }}>Trip: {row.trip_id} ({row.service_type})</div>
+                        </td>
+                        <td style={{ padding: '10px 12px' }}>
+                          <div style={{ fontWeight: '700' }}>{row.region_id}</div>
+                          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted, #64748b)' }}>{row.operator_name}</div>
+                        </td>
+                        <td style={{ padding: '10px 12px', fontWeight: '800' }}>
+                          Rp {(row.gross_fare_idr || 0).toLocaleString('id-ID')}
+                        </td>
+                        <td style={{ padding: '10px 12px', fontWeight: '800', color: '#047857' }}>
+                          Rp {(row.driver_share_idr || 0).toLocaleString('id-ID')}
+                        </td>
+                        <td style={{ padding: '10px 12px', fontWeight: '800', color: '#b45309' }}>
+                          Rp {(row.operator_share_idr || 0).toLocaleString('id-ID')}
+                        </td>
+                        <td style={{ padding: '10px 12px', fontWeight: '800', color: '#0369a1' }}>
+                          Rp {(row.platform_reserve_idr || 0).toLocaleString('id-ID')}
+                        </td>
+                        <td style={{ padding: '10px 12px' }}>
+                          <code style={{ background: '#0f172a', color: '#34d399', padding: '3px 7px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: '700' }}>
+                            {row.hash_signature}
+                          </code>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* 2. FRAUD DETECTION & ANTI-ABUSE SHIELD (Section 24 Security & Privacy) */}
+            <div style={{
+              background: 'var(--bg-card, #ffffff)',
+              borderRadius: '24px',
+              padding: '24px',
+              border: '1px solid var(--border-color, #cbd5e1)',
+              boxShadow: '0 8px 25px rgba(0,0,0,0.04)'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+                <div>
+                  <h3 style={{ fontSize: '1.15rem', fontWeight: '800', margin: '0 0 4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    🛡️ Fraud Detection & Anti-Abuse Shield (`boomboom_fraud_alerts`)
+                  </h3>
+                  <div style={{ fontSize: '0.82rem', color: 'var(--text-muted, #64748b)' }}>
+                    Proteksi otomatis terhadap order fiktif (Self-Booking Guard), anomali kecepatan GPS (Fake GPS), dan lonjakan tarif tidak wajar.
+                  </div>
+                </div>
+                <span style={{ background: 'rgba(16,185,129,0.12)', color: '#047857', fontWeight: '900', fontSize: '0.75rem', padding: '5px 12px', borderRadius: '999px' }}>
+                  Engine Proteksi: REAL-TIME ACTIVE
+                </span>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {(fraudAlerts || []).map((al) => (
+                  <div key={al.alert_id} style={{
+                    background: 'var(--bg-secondary, #f8fafc)',
+                    borderRadius: '14px',
+                    padding: '14px 16px',
+                    border: al.status === 'RESOLVED' ? '1px solid var(--border-color, #cbd5e1)' : '1.5px solid #f59f00',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    gap: '12px',
+                    flexWrap: 'wrap'
+                  }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' }}>
+                        <span style={{
+                          fontSize: '0.7rem',
+                          fontWeight: '900',
+                          background: al.severity === 'HIGH' ? '#dc2626' : '#d97706',
+                          color: '#ffffff',
+                          padding: '2px 8px',
+                          borderRadius: '6px'
+                        }}>
+                          {al.rule} ({al.severity})
+                        </span>
+                        <span style={{ fontSize: '0.76rem', fontWeight: '800' }}>
+                          ID: {al.alert_id} • Zona: {al.region_id}
+                        </span>
+                        <span style={{
+                          fontSize: '0.7rem',
+                          fontWeight: '800',
+                          color: al.status === 'RESOLVED' ? '#059669' : '#b45309'
+                        }}>
+                          [{al.status}]
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '0.82rem', color: 'var(--text-main, #334155)' }}>
+                        {al.description}
+                      </div>
+                    </div>
+
+                    {al.status !== 'RESOLVED' && (
+                      <button
+                        onClick={() => resolveFraudAlert(al.alert_id, 'Diverifikasi & diselesaikan oleh Central Admin')}
+                        style={{
+                          background: '#059669',
+                          color: '#ffffff',
+                          border: 'none',
+                          padding: '7px 14px',
+                          borderRadius: '10px',
+                          fontSize: '0.75rem',
+                          fontWeight: '800',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        ✓ Tandai Selesai
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 3. NATIONWIDE OPERATOR MANAGEMENT (Multi-Region Operator Verification) */}
+            <div style={{
+              background: 'var(--bg-card, #ffffff)',
+              borderRadius: '24px',
+              padding: '24px',
+              border: '1px solid var(--border-color, #cbd5e1)',
+              boxShadow: '0 8px 25px rgba(0,0,0,0.04)'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+                <div>
+                  <h3 style={{ fontSize: '1.15rem', fontWeight: '800', margin: '0 0 4px' }}>
+                    🏛️ Manajemen & Verifikasi Mitra Operator Nasional (Nationwide Operator Management)
+                  </h3>
+                  <div style={{ fontSize: '0.82rem', color: 'var(--text-muted, #64748b)' }}>
+                    Otorisasi pusat untuk mitra pengelola wilayah (BUMDes, Yayasan, Perusahaan, Organisasi & Lain-lain) di seluruh zona (1. JaBoDeTaBek, 2. SeCiPaLe, 3. Lainnya).
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '14px' }}>
+                {(operators || []).map((op) => (
+                  <div key={op.id} style={{
+                    background: 'var(--bg-secondary, #f8fafc)',
+                    borderRadius: '16px',
+                    padding: '16px',
+                    border: op.status === 'VERIFIED' ? '1.5px solid #10b981' : '1px solid var(--border-color, #cbd5e1)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    gap: '10px'
+                  }}>
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                        <span style={{ fontSize: '0.7rem', fontWeight: '900', background: '#064e3b', color: '#a7f3d0', padding: '3px 8px', borderRadius: '6px' }}>
+                          {op.type === 'Lain-lain' && op.customEntityType ? `Lain-lain: ${op.customEntityType}` : op.type}
+                        </span>
+                        <span style={{ fontSize: '0.72rem', fontWeight: '900', color: op.status === 'VERIFIED' ? '#059669' : '#d97706' }}>
+                          {op.status}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '0.95rem', fontWeight: '900', color: 'var(--text-main, #0f172a)' }}>
+                        {op.name}
+                      </div>
+                      <div style={{ fontSize: '0.78rem', color: 'var(--text-muted, #64748b)', marginTop: '2px' }}>
+                        📍 Zona: <strong>{op.region}</strong> • PIC: {op.picName} ({op.phone})
+                      </div>
+                      {op.otherDetails && (
+                        <div style={{ fontSize: '0.74rem', color: 'var(--text-muted, #475569)', marginTop: '4px', fontStyle: 'italic' }}>
+                          "{op.otherDetails}"
+                        </div>
+                      )}
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: '1px dashed var(--border-color, #cbd5e1)' }}>
+                      <span style={{ fontSize: '0.74rem', fontWeight: '800', color: '#047857' }}>
+                        Bagi Hasil: Rp {(op.revenueShareEarned || 0).toLocaleString('id-ID')}
+                      </span>
+                      <button
+                        onClick={() => verifyOperatorStatus(op.id, op.status === 'VERIFIED' ? 'UNDER_REVIEW' : 'VERIFIED')}
+                        style={{
+                          background: op.status === 'VERIFIED' ? '#e2e8f0' : '#10b981',
+                          color: op.status === 'VERIFIED' ? '#334155' : '#ffffff',
+                          border: 'none',
+                          padding: '6px 12px',
+                          borderRadius: '8px',
+                          fontSize: '0.74rem',
+                          fontWeight: '800',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {op.status === 'VERIFIED' ? 'Set Evaluasi Ulang' : '✓ Verifikasi Mitra'}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* TAB 0: EVALUASI 7 METRIK WAJIB TAHAP III (CLOSED REGIONAL PILOT) */}
         {activeTab === 'PHASE3_KPI' && (
