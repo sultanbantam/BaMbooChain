@@ -84,16 +84,43 @@ const buildFirebaseUserProfile = (fbUser) => {
 
 export const isUserAdminAccount = (u) => {
   if (!u) return false;
+  const username = (u.username || '').toLowerCase();
+  const name = (u.name || u.displayName || u.fullName || '').toLowerCase();
+  const email = (u.email || '').toLowerCase();
+  const role = (u.role || '').toLowerCase();
+
   return Boolean(
-    u.role === 'admin_yayasan' ||
-    u.role === 'admin' ||
-    u.role === 'superadmin' ||
+    role === 'admin_yayasan' ||
+    role === 'admin' ||
+    role === 'superadmin' ||
+    role === 'owner' ||
     u.isAdmin === true ||
-    u.username === 'admin_yayasan' ||
-    u.username === 'sultanbantam' ||
-    u.username === 'albantani' ||
-    u.email === 'sultanbantam@gmail.com' ||
-    (u.name && u.name.toLowerCase().includes('sultan'))
+    username === 'admin_yayasan' ||
+    username === 'sultanbantam' ||
+    username === 'albantani' ||
+    username.includes('admin') ||
+    username.includes('sultan') ||
+    name.includes('sultan') ||
+    name.includes('albantani') ||
+    email.includes('sultanbantam') ||
+    email.includes('admin') ||
+    email === 'sultanbantam@gmail.com'
+  );
+};
+
+export const isUserKycVerified = (u) => {
+  if (!u) return false;
+  if (isUserAdminAccount(u)) return true;
+  const status = (u.kycStatus || u.status || '').toLowerCase();
+  return Boolean(
+    status === 'verified' ||
+    status === 'approved' ||
+    status === 'completed' ||
+    status === 'sukses' ||
+    u.kycVerified === true ||
+    u.isKycVerified === true ||
+    (u.kycData && (u.kycData.status === 'verified' || u.kycData.verified === true)) ||
+    Boolean(u.kycData && u.kycData.nik)
   );
 };
 
@@ -534,6 +561,16 @@ export const AuthProvider = ({ children }) => {
       const userDoc = await getDoc(doc(db, "users", fbUser.uid));
       if (userDoc.exists()) {
         const fullData = { id: userDoc.id, ...userDoc.data() };
+        if (isUserAdminAccount(fullData)) {
+          fullData.isAdmin = true;
+          fullData.role = fullData.role || 'admin_yayasan';
+          fullData.kycStatus = 'verified';
+          try {
+            await updateDoc(doc(db, "users", fbUser.uid), { kycStatus: 'verified', isAdmin: true, role: 'admin_yayasan' });
+          } catch (e) {
+            console.warn("Could not auto-verify admin KYC in Firestore:", e);
+          }
+        }
         setUser(fullData);
         setIsAuthenticated(true);
         closeModal();

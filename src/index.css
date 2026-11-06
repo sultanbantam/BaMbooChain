@@ -749,11 +749,11 @@ section {
   border: 1px solid #0ea5e9 !important;
 }
 
-/* Guano Top Warning Banner */
+/* Guano Top Warning Banner - Light Mode (High Contrast WCAG AAA) */
 .guano-top-warning-banner {
-  background: linear-gradient(90deg, #fef3c7 0%, #fde68a 100%) !important;
+  background: #fef3c7 !important;
   color: #78350f !important;
-  border: 1.5px solid #f59e0b !important;
+  border: 1.5px solid #d97706 !important;
   border-radius: 16px;
   padding: 12px 18px;
   margin-bottom: 18px;
@@ -764,19 +764,25 @@ section {
   gap: 12px;
   font-size: 0.82rem;
   font-weight: 700;
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.12);
+  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.12);
+}
+.guano-top-warning-banner,
+.guano-top-warning-banner span,
+.guano-top-warning-banner div {
+  color: #78350f !important;
 }
 .guano-top-warning-banner strong {
-  color: #78350f !important;
+  color: #451a03 !important;
 }
 .guano-top-warning-banner code {
-  background: rgba(120, 53, 15, 0.12) !important;
+  background: #fde68a !important;
   color: #78350f !important;
+  border: 1px solid #f59e0b !important;
   padding: 2px 6px;
   border-radius: 4px;
 }
 .guano-banner-btn {
-  background: #78350f !important;
+  background: #b45309 !important;
   color: #ffffff !important;
   padding: 8px 14px;
   border-radius: 10px;
@@ -806,28 +812,31 @@ section {
   color: #94a3b8 !important;
 }
 
-/* Dark Mode Banner */
+/* Dark Mode Banner - Solid Charcoal with Bright Amber/Yellow Text (Contrast > 12:1) */
 [data-theme="dark"] .guano-top-warning-banner {
-  background: linear-gradient(90deg, rgba(245, 158, 11, 0.18) 0%, rgba(217, 119, 6, 0.25) 100%) !important;
-  color: #fde68a !important;
-  border: 1.5px solid rgba(245, 158, 11, 0.55) !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  background: #1c1917 !important;
+  color: #fef08a !important;
+  border: 1.5px solid #f59e0b !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45) !important;
+}
+[data-theme="dark"] .guano-top-warning-banner,
+[data-theme="dark"] .guano-top-warning-banner span,
+[data-theme="dark"] .guano-top-warning-banner div {
+  color: #fef08a !important;
 }
 [data-theme="dark"] .guano-top-warning-banner strong {
   color: #ffffff !important;
 }
-[data-theme="dark"] .guano-top-warning-banner span {
-  color: #fde68a !important;
-}
 [data-theme="dark"] .guano-top-warning-banner code {
-  background: rgba(0, 0, 0, 0.45) !important;
+  background: #292524 !important;
   color: #fef08a !important;
-  border: 1px solid rgba(245, 158, 11, 0.3) !important;
+  border: 1px solid #78350f !important;
 }
 [data-theme="dark"] .guano-banner-btn {
   background: #f59e0b !important;
   color: #0f172a !important;
-  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3) !important;
+  font-weight: 900 !important;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35) !important;
 }
 
 /* Universal Dark Mode High-Contrast Badges & Chips */

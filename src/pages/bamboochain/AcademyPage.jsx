@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { BookOpen, GraduationCap, Award, PlayCircle, Clock, ShieldCheck, DownloadCloud, Lock, User, FileText, X, Sparkles, Calendar, ChevronLeft, ChevronRight, Heart, Share2, Send, MessageSquare, Gift, UploadCloud, Edit3, Trash2, Search } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth, isUserAdminAccount, isUserKycVerified } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { db, storage } from '../../firebase/config';
 import { ref, uploadString, getDownloadURL } from 'firebase/storage';
@@ -134,24 +134,8 @@ const AcademyPage = () => {
   const navigate = useNavigate();
   const { user, setIsAuthModalOpen, setAuthModalInitialTab, submitArticle, updateArticle, giftBmc } = useAuth();
 
-  const isUserAdmin = Boolean(
-    user?.role === 'admin' ||
-    user?.role === 'admin_yayasan' ||
-    user?.role === 'superadmin' ||
-    user?.isAdmin === true ||
-    user?.username === 'admin_yayasan' ||
-    user?.username === 'sultanbantam' ||
-    user?.username === 'albantani' ||
-    user?.email === 'sultanbantam@gmail.com' ||
-    (user?.name && user.name.toLowerCase().includes('sultan'))
-  );
-
-  const isKycVerifiedOrAdmin = Boolean(
-    isUserAdmin ||
-    user?.kycStatus === 'verified' ||
-    user?.kycStatus === 'VERIFIED' ||
-    user?.kycVerified === true
-  );
+  const isUserAdmin = Boolean(isUserAdminAccount(user));
+  const isKycVerifiedOrAdmin = Boolean(isUserAdmin || isUserKycVerified(user));
   const { data: articles = [] } = useArticles();
   const [searchQuery, setSearchQuery] = useState("");
   const [isGlobalMode, setIsGlobalMode] = useState(false);

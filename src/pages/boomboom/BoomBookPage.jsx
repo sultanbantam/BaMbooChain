@@ -54,6 +54,7 @@ const BoomBookPage = () => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const { user, spendBmc } = useAuth();
+  const { usdtRate, bmcRate, isLive } = useLiveUsdtRate();
   const [isCopied, setIsCopied] = useState(false);
   const [useLivePilot, setUseLivePilot] = useState(true);
   const [pilotTripId, setPilotTripId] = useState(null);
@@ -283,7 +284,8 @@ const BoomBookPage = () => {
     const activeCode = activeBooking.instantCode || regenerateInstantCode();
     
     // Validasi saldo jika pembayaran menggunakan BMC Token
-    const bmcRequired = Number((activeBooking.fareCalc.grossFare / 16000).toFixed(2));
+    const rateToUse = selectedPayment === 'BMC' ? bmcRate : usdtRate;
+    const bmcRequired = Number((activeBooking.fareCalc.grossFare / rateToUse).toFixed(2));
     if (selectedPayment === 'BMC') {
       if (!user) {
         alert('Silakan login terlebih dahulu untuk menggunakan pembayaran saldo BMC Token.');
@@ -1491,8 +1493,8 @@ const BoomBookPage = () => {
                     }}
                   >
                     <option value="QRIS / Rupiah">QRIS Instant (Semua E-Wallet / Bank)</option>
-                    <option value="USDT">USDT (Tether USD - Web3 / Kurs Rp 16.000)</option>
-                    <option value="BMC">BMC (BaMbooChain Token Wallet - Kurs 1 BMC = 1 USDT)</option>
+                    <option value="USDT">USDT (Tether USD - Web3 / Kurs Pasar Real-Time)</option>
+                    <option value="BMC">BMC (BaMbooChain Token - Paritas 1 BMC = 1 USDT)</option>
                     <option value="Bank Transfer">Virtual Account / Transfer Bank Mandiri / BCA / BRI</option>
                     <option value="Tunai / Cash">Tunai Langsung Ke Pengemudi (Cash)</option>
                   </select>
@@ -1511,14 +1513,14 @@ const BoomBookPage = () => {
                           Konversi {selectedPayment}:
                         </span>
                         <span style={{ fontSize: '1rem', fontWeight: '900', color: selectedPayment === 'BMC' ? '#065f46' : '#0369a1' }}>
-                          {(activeBooking.fareCalc.grossFare / 16000).toFixed(2)} {selectedPayment}
+                          {(activeBooking.fareCalc.grossFare / (selectedPayment === 'BMC' ? bmcRate : usdtRate)).toFixed(2)} {selectedPayment}
                         </span>
                       </div>
                       <div style={{ fontSize: '0.72rem', color: 'var(--text-muted, #64748b)' }}>
-                        Kurs Acuan: 1 {selectedPayment} = Rp 16.000 (Setara Rp {activeBooking.fareCalc.grossFare.toLocaleString('id-ID')})
+                        Kurs Acuan Standar: 1 USDT = 1 BMC = Rp {usdtRate.toLocaleString('id-ID')} {isLive ? '(Harga Pasar Dinamis)' : '(Acuan Standar)'}
                         {selectedPayment === 'BMC' && (
-                          <span style={{ display: 'block', marginTop: '2px', color: (user?.bmcBalance || 0) >= (activeBooking.fareCalc.grossFare / 16000) ? '#059669' : '#dc2626', fontWeight: '700' }}>
-                            Saldo BMC Anda: {user?.bmcBalance || 0} BMC {(user?.bmcBalance || 0) >= (activeBooking.fareCalc.grossFare / 16000) ? '✓ Saldo Mencukupi' : '⚠️ Saldo Tidak Cukup'}
+                          <span style={{ display: 'block', marginTop: '2px', color: (user?.bmcBalance || 0) >= (activeBooking.fareCalc.grossFare / bmcRate) ? '#059669' : '#dc2626', fontWeight: '700' }}>
+                            Saldo BMC Anda: {user?.bmcBalance || 0} BMC {(user?.bmcBalance || 0) >= (activeBooking.fareCalc.grossFare / bmcRate) ? '✓ Saldo Mencukupi' : '⚠️ Saldo Tidak Cukup'}
                           </span>
                         )}
                       </div>

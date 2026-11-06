@@ -210,7 +210,7 @@ const MarketplacePage = () => {
   
   // eslint-disable-next-line no-unused-vars
   const [lastSync, setLastSync] = useState(new Date());
-  const [usdtPrice, setUsdtPrice] = useState(17352); // Fallback if API fails
+  const [usdtPrice, setUsdtPrice] = useState(18099); // Fallback if API fails
   const [bursaSearch, setBursaSearch] = useState('');
   const [isAiSearching, setIsAiSearching] = useState(false);
 

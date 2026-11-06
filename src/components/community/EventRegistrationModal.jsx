@@ -92,7 +92,7 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
   const finalCostNum = Math.max(0, costAfterDiscount - bmcDeductionAmount);
   
   // Full BMC ticket cost
-  let eventCostBmc = eventData?.ticketBmc ? parseInt(String(eventData.ticketBmc).replace(/\D/g, ''), 10) : (Math.round(baseCostNum / 16000));
+  let eventCostBmc = eventData?.ticketBmc ? parseInt(String(eventData.ticketBmc).replace(/\D/g, ''), 10) : (Math.round(baseCostNum / 18099));
   if (isKodibaMember) eventCostBmc = Math.max(1, Math.round(eventCostBmc * 0.8));
 
   const formatRupiah = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);

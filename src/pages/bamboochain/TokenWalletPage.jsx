@@ -629,7 +629,7 @@ const BuyBMC = ({ setActiveTab }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
   
-  const [marketPrice, setMarketPrice] = useState(17352); // Fallback if API fails
+  const [marketPrice, setMarketPrice] = useState(18099); // Fallback if API fails
 
   useEffect(() => {
     const fetchPrice = async () => {
