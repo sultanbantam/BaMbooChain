@@ -96,7 +96,7 @@ const BoomOperatorDashboardPage = () => {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
               <span style={{ fontSize: '0.75rem', fontWeight: '900', background: '#f59f00', color: '#000000', padding: '4px 10px', borderRadius: '12px' }}>
-                MITRA OPERASIONAL WILAYAH (TAHAP III PILOT)
+                MITRA OPERASIONAL WILAYAH
               </span>
               <span style={{ fontSize: '0.75rem', fontWeight: '800', background: 'rgba(255,255,255,0.18)', color: '#ecfdf5', padding: '4px 10px', borderRadius: '12px' }}>
                 {operatorInfo.type} • {operatorInfo.project_id || 'PRJ-CIBARANI-01'}
@@ -211,7 +211,7 @@ const BoomOperatorDashboardPage = () => {
             { id: 'DRIVERS', label: `Manajemen Pengemudi (${drivers.length})` },
             { id: 'INCIDENTS', label: `Insiden Keselamatan & SOS (${incidents.length})` },
             { id: 'COMPLAINTS', label: `Keluhan & Kepuasan Warga (${complaints.length})` },
-            { id: 'COMPLIANCE', label: `Kepatuhan Regulasi & Zona Pilot (Tahap III)` }
+            { id: 'COMPLIANCE', label: `Kepatuhan Regulasi & Zona Pilot` }
           ].map((tab) => (
             <button
               key={tab.id}
@@ -371,7 +371,7 @@ const BoomOperatorDashboardPage = () => {
             border: '1px solid var(--border-color, #cbd5e1)'
           }}>
             <h3 style={{ fontSize: '1.2rem', fontWeight: '800', margin: '0 0 16px', color: 'var(--text-main, #0f172a)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <AlertTriangle size={20} color="#ef4444" /> Pemantauan & Tindak Lanjut Insiden Keselamatan (Metrik Safety Pilot Tahap III)
+              <AlertTriangle size={20} color="#ef4444" /> Pemantauan & Tindak Lanjut Insiden Keselamatan
             </h3>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -467,7 +467,7 @@ const BoomOperatorDashboardPage = () => {
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '10px' }}>
               <h3 style={{ fontSize: '1.2rem', fontWeight: '800', margin: 0, color: 'var(--text-main, #0f172a)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <MessageSquare size={20} color="#059669" /> Tiket Keluhan Warga & Evaluasi Kepuasan (CSAT Tahap III)
+                <MessageSquare size={20} color="#059669" /> Tiket Keluhan Warga & Evaluasi Kepuasan (CSAT)
               </h3>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#fef3c7', color: '#b45309', padding: '6px 12px', borderRadius: '999px', fontSize: '0.78rem', fontWeight: '900' }}>
                 <Star size={15} fill="#f59f00" color="#f59f00" /> Skor CSAT Wilayah: {pilotMetrics.user_satisfaction_csat_pct}% (★{pilotMetrics.avg_star_rating}/5)

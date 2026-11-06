@@ -52,7 +52,7 @@ const BoomBoomPage = () => {
 
   const services = [
     {
-      type: 'BoomRide', label: 'BoomRide', sub: 'Ojek Motor Desa',
+      type: 'BoomRide', label: 'BoomRide', sub: 'Ojek Motor Asik',
       icon: <Bike size={24} />, bg: '#d1fae5', color: '#059669', accent: '#10b981',
       btnBg: 'rgba(16,185,129,0.15)', btnColor: '#047857', btnText: 'Pesan BoomRide'
     },
@@ -285,7 +285,7 @@ const BoomBoomPage = () => {
                         <div>
                           <div style={{ fontWeight: '800', fontSize: '0.85rem', color: 'var(--text-main, #0f172a)' }}>{svc}</div>
                           <div style={{ fontSize: '0.68rem', fontWeight: '600', color: 'var(--text-muted, #64748b)' }}>
-                            {i === 0 ? 'Motor Desa' : 'Mobil Nyaman'}
+                            {i === 0 ? 'Motor Asik' : 'Mobil Nyaman'}
                           </div>
                         </div>
                       </button>
@@ -376,31 +376,33 @@ const BoomBoomPage = () => {
 
           <div style={{
             display: 'grid',
-            gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(auto-fit, minmax(220px, 1fr))',
-            gap: '14px'
+            gridTemplateColumns: isMobile ? 'repeat(auto-fit, minmax(160px, 1fr))' : 'repeat(auto-fit, minmax(220px, 1fr))',
+            gap: isMobile ? '10px' : '14px'
           }}>
             {services.map((svc) => (
               <div key={svc.type} style={{
                 background: 'var(--bg-card, #ffffff)',
-                borderRadius: '20px', padding: isMobile ? '16px' : '22px',
+                borderRadius: '20px', padding: isMobile ? '14px 12px' : '22px',
                 boxShadow: '0 4px 16px rgba(0,0,0,0.04)',
                 border: `1.5px solid ${svc.accent}`,
                 display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-                gap: '12px'
+                gap: '10px',
+                minHeight: isMobile ? '160px' : 'auto',
+                boxSizing: 'border-box'
               }}>
                 <div>
                   <div style={{
-                    width: '42px', height: '42px', borderRadius: '14px',
+                    width: '38px', height: '38px', borderRadius: '12px',
                     background: svc.bg, color: svc.color,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    marginBottom: '10px'
+                    marginBottom: '8px'
                   }}>
                     {svc.icon}
                   </div>
-                  <h3 style={{ fontSize: '1rem', fontWeight: '800', margin: '0 0 4px', color: 'var(--text-main, #0f172a)' }}>
+                  <h3 style={{ fontSize: '0.95rem', fontWeight: '800', margin: '0 0 3px', color: 'var(--text-main, #0f172a)', wordBreak: 'break-word' }}>
                     {svc.label}
                   </h3>
-                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted, #64748b)', lineHeight: '1.5', margin: 0 }}>
+                  <p style={{ fontSize: '0.78rem', color: 'var(--text-muted, #64748b)', lineHeight: '1.45', margin: 0, wordBreak: 'break-word' }}>
                     {svc.sub}
                   </p>
                 </div>
@@ -409,10 +411,11 @@ const BoomBoomPage = () => {
                   onClick={() => { setServiceType(svc.type); navigate('/boomboom/book'); }}
                   style={{
                     background: svc.btnBg, color: svc.btnColor,
-                    border: 'none', padding: '9px 12px', borderRadius: '10px',
-                    fontWeight: '800', fontSize: '0.78rem', cursor: 'pointer',
+                    border: 'none', padding: '9px 10px', borderRadius: '10px',
+                    fontWeight: '800', fontSize: isMobile ? '0.74rem' : '0.78rem', cursor: 'pointer',
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    transition: 'all 0.15s', width: '100%'
+                    transition: 'all 0.15s', width: '100%',
+                    whiteSpace: 'nowrap'
                   }}>
                   <span>{svc.btnText}</span>
                   <ChevronRight size={14} />

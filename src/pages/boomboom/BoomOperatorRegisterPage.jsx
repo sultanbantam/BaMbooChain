@@ -21,6 +21,7 @@ const BoomOperatorRegisterPage = () => {
     customProvince: '',
     projectId: 'PRJ-JABODETABEK-01',
     legalEntity: '',
+    ngopiUsername: user?.ngopiUsername || '',
     contactPerson: user?.displayName || '',
     phone: user?.phoneNumber || '',
     email: user?.email || ''
@@ -305,6 +306,23 @@ const BoomOperatorRegisterPage = () => {
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px', marginTop: '14px' }}>
+                  <div>
+                    <label style={{ fontSize: '0.8rem', fontWeight: '800', color: '#059669', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span>☕</span> Akun ngopi.top Mitra (Wajib Buat Akun di ngopi.top) *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.ngopiUsername}
+                      onChange={e => setFormData({ ...formData, ngopiUsername: e.target.value })}
+                      placeholder="Contoh: @bumdes_cibarani atau @yayasan_bambu"
+                      style={inputStyle}
+                    />
+                    <div style={{ fontSize: '0.7rem', color: '#059669', marginTop: '4px', fontWeight: '600' }}>
+                      Mitra pengelola wajib memiliki akun ngopi.top untuk koordinasi dispatch dan verifikasi pengemudi.
+                    </div>
+                  </div>
+
                   <div>
                     <label style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted, #475569)' }}>Legalitas / No. SK / Akta / NIB</label>
                     <input

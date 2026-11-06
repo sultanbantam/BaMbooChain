@@ -831,22 +831,22 @@ const BoomAdminDashboardPage = () => {
               </div>
             </div>
 
-            {/* PENGATURAN KHUSUS SISTEM BOOM-INSTAN (ALA GOJEK INSTAN) */}
+            {/* PENGATURAN KHUSUS SISTEM BOOM LANGSUNG */}
             <div style={{
               marginTop: '24px',
               paddingTop: '20px',
               borderTop: '2px dashed var(--border-color, #cbd5e1)'
             }}>
               <h3 style={{ fontSize: '1.15rem', fontWeight: '800', margin: '0 0 8px', color: 'var(--text-main, #0f172a)' }}>
-                ⚡ Pengaturan Sistem BoomInstan (Mode Kode Pemesan ke Driver)
+                ⚡ Pengaturan Sistem Boom Langsung (Mode Kode Pemesan ke Driver)
               </h3>
               <p style={{ fontSize: '0.82rem', color: 'var(--text-muted, #64748b)', margin: '0 0 16px' }}>
-                Konfigurasi fitur pencocokan instan di tempat (seperti Gojek Instan) di mana pengemudi cukup memasukkan kode 6-digit dari layar pemesan.
+                Konfigurasi fitur pencocokan langsung di mana pengemudi cukup memasukkan kode 6-digit dari layar pemesan untuk langsung memulai perjalanan.
               </p>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted, #475569)' }}>Jumlah Digit Kode Instan</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted, #475569)' }}>Jumlah Digit Kode Langsung</label>
                   <input
                     type="number"
                     min={4}

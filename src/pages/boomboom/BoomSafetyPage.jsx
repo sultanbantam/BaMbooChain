@@ -17,12 +17,27 @@ const useIsMobile = () => {
 const BoomSafetyPage = () => {
   const { drivers } = useBoomBoomStore();
   const isMobile = useIsMobile();
-  const [trustedContact, setTrustedContact] = useState('Mang Deden (+62 812-9900-1122)');
+  const [trustedContact, setTrustedContact] = useState(() => {
+    return localStorage.getItem('boomboom_emergency_contact') || 'Mang Deden (+62 812-9900-1122)';
+  });
   const [shareSuccess, setShareSuccess] = useState(false);
 
+  const handleUpdateContact = (val) => {
+    setTrustedContact(val);
+    try {
+      localStorage.setItem('boomboom_emergency_contact', val);
+    } catch (e) {
+      console.warn('LocalStorage save error:', e);
+    }
+  };
+
   const handleShareTrip = () => {
+    const trackingUrl = typeof window !== 'undefined' ? `${window.location.origin}/#/boomboom/trips` : 'https://www.bamboochain.id/#/boomboom/trips';
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(trackingUrl);
+    }
     setShareSuccess(true);
-    setTimeout(() => setShareSuccess(false), 3000);
+    setTimeout(() => setShareSuccess(false), 3500);
   };
 
   const features = [
@@ -30,28 +45,36 @@ const BoomSafetyPage = () => {
       icon: <Share2 size={22} />,
       iconBg: '#d1fae5', iconColor: '#059669',
       title: 'Bagikan Lokasi Real-Time',
-      desc: 'Kirimkan tautan pelacakan kepada keluarga atau kontak tepercaya selama perjalanan berlangsung.',
+      desc: 'Salin tautan pelacakan langsung ke clipboard untuk dibagikan ke WhatsApp, SMS, atau ngopi.top keluarga/kontak darurat.',
       action: (
-        <button
-          onClick={handleShareTrip}
-          style={{
-            width: '100%', padding: '11px 14px', borderRadius: '12px', border: 'none',
-            background: shareSuccess ? '#059669' : '#10b981', color: '#ffffff',
-            fontWeight: '800', fontSize: '0.85rem', cursor: 'pointer', transition: 'background 0.2s'
-          }}>
-          {shareSuccess ? '✓ Tautan Terkirim!' : 'Salin Tautan Tracking'}
-        </button>
+        <div>
+          <button
+            onClick={handleShareTrip}
+            style={{
+              width: '100%', padding: '11px 14px', borderRadius: '12px', border: 'none',
+              background: shareSuccess ? '#059669' : '#10b981', color: '#ffffff',
+              fontWeight: '800', fontSize: '0.85rem', cursor: 'pointer', transition: 'background 0.2s'
+            }}>
+            {shareSuccess ? '✓ Tautan Tersalin ke Clipboard!' : 'Salin Tautan Tracking'}
+          </button>
+          {shareSuccess && (
+            <div style={{ fontSize: '0.72rem', color: '#059669', fontWeight: '700', marginTop: '6px', textAlign: 'center' }}>
+              Tautan tersalin! Kirimkan ke kontak darurat atau keluarga untuk melacak perjalanan Anda secara real-time.
+            </div>
+          )}
+        </div>
       )
     },
     {
       icon: <PhoneCall size={22} />,
       iconBg: '#fef3c7', iconColor: '#b45309',
       title: 'Kontak Darurat Tepercaya',
-      desc: 'Atur kontak yang menerima notifikasi otomatis saat sinyal SOS dipicu.',
+      desc: 'Terintegrasi otomatis dengan data Kontak Darurat (Keluarga / Kerabat) pada pendaftaran pengemudi & profil.',
       action: (
         <input
           type="text" value={trustedContact}
-          onChange={e => setTrustedContact(e.target.value)}
+          onChange={e => handleUpdateContact(e.target.value)}
+          placeholder="Contoh: Keluarga / Kerabat (+62 812-xxxx-xxxx)"
           style={{
             width: '100%', padding: '10px 12px', borderRadius: '12px',
             border: '1.5px solid var(--border-color, #e2e8f0)',
@@ -67,7 +90,7 @@ const BoomSafetyPage = () => {
       icon: <ShieldCheck size={22} />,
       iconBg: '#cff4fc', iconColor: '#0891b2',
       title: 'Pengemudi 100% Terverifikasi',
-      desc: `Semua ${drivers.length} mitra pengemudi melewati verifikasi KTP, SIM, dan konfirmasi BUMDes setempat.`,
+      desc: `Semua ${drivers.length} mitra pengemudi melewati verifikasi KTP, SIM, dan konfirmasi MITRA setempat.`,
       action: (
         <div style={{
           background: 'rgba(8,145,178,0.1)', color: '#0891b2',
@@ -104,8 +127,15 @@ const BoomSafetyPage = () => {
           <h1 style={{ fontSize: isMobile ? '1.5rem' : '2rem', fontWeight: '900', margin: '0 0 8px', lineHeight: 1.15 }}>
             Keamanan Anda, Prioritas Utama
           </h1>
-          <p style={{ fontSize: '0.87rem', color: '#ecfdf5', margin: '0 0 18px', lineHeight: 1.6, maxWidth: '480px' }}>
-            Fitur keselamatan tingkat tinggi terintegrasi dengan jaringan kontak darurat dan operator lokal BUMDes.
+          <p style={{
+            fontSize: '0.87rem',
+            color: '#ecfdf5',
+            margin: '0 0 18px',
+            lineHeight: 1.6,
+            maxWidth: isMobile ? '480px' : 'none',
+            whiteSpace: isMobile ? 'normal' : 'nowrap'
+          }}>
+            Fitur keselamatan tingkat tinggi terintegrasi dengan jaringan kontak darurat dan operator lokal MITRA.
           </p>
           <SosButton />
         </div>

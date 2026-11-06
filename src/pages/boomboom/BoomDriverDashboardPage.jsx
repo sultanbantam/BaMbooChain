@@ -56,6 +56,7 @@ const BoomDriverDashboardPage = () => {
 
   const [activeJob, setActiveJob] = useState(null);
   const [jobStep, setJobStep] = useState('ASSIGNED'); // ASSIGNED | ARRIVED | ON_TRIP
+  const [showBmcCalcModal, setShowBmcCalcModal] = useState(false);
 
   // Tahap II Live GPS Heartbeat saat pengemudi ONLINE (SIAP NARIK)
   useEffect(() => {
@@ -139,10 +140,10 @@ const BoomDriverDashboardPage = () => {
       setActiveJob(matchedJob);
       setJobStep('ON_TRIP');
       setIncomingOrder(null);
-      setInstantSuccessMsg(`Berhasil! Kode Instan [${matchedJob.instantCode}] milik ${matchedJob.passengerName} terhubung. Perjalanan dimulai!`);
+      setInstantSuccessMsg(`Berhasil! Kode Langsung [${matchedJob.instantCode}] milik ${matchedJob.passengerName} terhubung. Perjalanan dimulai!`);
       setInstantCodeInput('');
     } catch (err) {
-      setInstantError(err.message || 'Kode Instan tidak ditemukan.');
+      setInstantError(err.message || 'Kode Langsung tidak ditemukan.');
     } finally {
       setInstantPairingLoading(false);
     }
@@ -305,10 +306,10 @@ const BoomDriverDashboardPage = () => {
                   padding: '4px 10px',
                   borderRadius: '10px'
                 }}>
-                  ⚡ FITUR BOOM-INSTAN (ON-SPOT PAIRING)
+                  ⚡ SISTEM BOOM LANGSUNG
                 </span>
                 <h2 style={{ fontSize: '1.15rem', fontWeight: '900', margin: 0, color: 'var(--text-main, #0f172a)' }}>
-                  Masukkan Kode Instan dari Pemesan
+                  Masukkan Kode Langsung dari Pemesan
                 </h2>
               </div>
               <button
@@ -330,7 +331,7 @@ const BoomDriverDashboardPage = () => {
             </div>
 
             <p style={{ fontSize: '0.85rem', color: 'var(--text-muted, #64748b)', margin: '0 0 16px', lineHeight: 1.5 }}>
-              Seperti sistem <strong>Gojek Instan</strong>: jika penumpang sudah berada di depan Anda, minta <strong>6-Digit Kode BoomInstan</strong> dari layar HP pemesan, masukkan di bawah ini, dan perjalanan langsung dimulai tanpa perlu menunggu antrean radar!
+              Jika penumpang sudah berada di depan Anda, minta <strong>6-Digit Kode Boom Langsung</strong> dari layar HP pemesan, masukkan di bawah ini, dan perjalanan langsung dimulai!
             </p>
 
             <form onSubmit={handlePairByInstantCode} style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
@@ -360,12 +361,14 @@ const BoomDriverDashboardPage = () => {
                   background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                   color: '#ffffff',
                   border: 'none',
-                  padding: '14px 24px',
+                  padding: '14px 20px',
                   borderRadius: '16px',
                   fontWeight: '900',
-                  fontSize: '0.95rem',
+                  fontSize: '0.92rem',
                   cursor: instantPairingLoading || !instantCodeInput.trim() ? 'not-allowed' : 'pointer',
-                  boxShadow: '0 6px 18px rgba(16, 185, 129, 0.35)'
+                  boxShadow: '0 6px 18px rgba(16, 185, 129, 0.35)',
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0
                 }}
               >
                 {instantPairingLoading ? 'Mencocokkan Kode...' : '🔑 HUBUNGKAN KODE & MULAI JALAN'}
@@ -399,7 +402,7 @@ const BoomDriverDashboardPage = () => {
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
               <span style={{ fontSize: '0.8rem', fontWeight: '900', color: '#92400e', background: '#fef08a', padding: '4px 12px', borderRadius: '12px' }}>
-                ⚡ ORDER MASUK (MATCHING ENGINE TAHAP II)
+                ⚡ ORDER MASUK
               </span>
               <span style={{ fontSize: '0.85rem', fontWeight: '800', color: '#047857' }}>
                 Pendapatan Bersih (85%): Rp {incomingOrder.driverEarnings.toLocaleString('id-ID')}
@@ -516,7 +519,7 @@ const BoomDriverDashboardPage = () => {
             <div style={{ marginTop: '20px', background: '#f0fdf4', borderRadius: '24px', padding: '22px', border: '2px solid #10b981', boxShadow: '0 8px 20px rgba(16, 185, 129, 0.15)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
                 <span style={{ fontSize: '0.78rem', fontWeight: '800', background: '#10b981', color: '#ffffff', padding: '3px 10px', borderRadius: '10px' }}>
-                  TRIP AKTIF TAHAP II #{activeJob.trip_id || activeJob.id}
+                  TRIP AKTIF #{activeJob.trip_id || activeJob.id}
                 </span>
                 <span style={{ fontSize: '0.85rem', fontWeight: '900', color: '#047857' }}>
                   Pendapatan Driver: Rp {activeJob.driverEarnings.toLocaleString('id-ID')}
@@ -680,28 +683,28 @@ const BoomDriverDashboardPage = () => {
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', gap: '8px', flexWrap: 'wrap' }}>
                 <span style={{ fontSize: '0.72rem', fontWeight: '900', color: '#059669', background: '#d1fae5', padding: '4px 10px', borderRadius: '999px', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                  <ShieldCheck size={14} /> INTEGRASI KODIBA (TAHAP III)
+                  <ShieldCheck size={14} /> INTEGRASI KODIBA
                 </span>
                 <span style={{
                   fontSize: '0.7rem',
                   fontWeight: '800',
                   color: currentDriverProfile.kodiba_member ? '#047857' : '#d97706'
                 }}>
-                  {currentDriverProfile.kodiba_member ? `✓ Anggota Aktif (${currentDriverProfile.kodiba_member_id || 'KODIBA-2026-0014'})` : 'Opsional / Sukarela'}
+                  {currentDriverProfile.kodiba_member ? `✓ Anggota Aktif (${currentDriverProfile.kodiba_member_id || 'KODIBA 10011126'})` : 'Opsional / Sukarela'}
                 </span>
               </div>
               <h4 style={{ fontSize: '1.05rem', fontWeight: '800', margin: '0 0 6px', color: 'var(--text-main, #0f172a)' }}>
                 Koperasi Digital Bambu (KODIBA)
               </h4>
               <p style={{ fontSize: '0.8rem', color: 'var(--text-muted, #64748b)', lineHeight: 1.5, margin: '0 0 14px' }}>
-                Sesuai Tata Kelola Tahap III, keanggotaan KODIBA bersifat <strong>sukarela & transparan</strong> (tanpa potongan otomatis dari tarif perjalanan). Anggota berhak mengakses program pembiayaan konversi motor listrik (EV), tabungan SHU, dan pelatihan keselamatan komunitas.
+                Keanggotaan KODIBA bersifat <strong>sukarela & transparan</strong> (tanpa potongan otomatis dari tarif perjalanan). Anggota berhak mengakses program pembiayaan konversi motor listrik (EV), tabungan SHU, dan pelatihan keselamatan komunitas.
               </p>
             </div>
 
             {currentDriverProfile.kodiba_member ? (
               <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
                 <div style={{ flex: 1, background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '10px 14px', borderRadius: '12px', fontSize: '0.78rem', fontWeight: '800', color: '#047857' }}>
-                  ID Koperasi: <code>{currentDriverProfile.kodiba_member_id || 'KODIBA-2026-0014'}</code>
+                  ID Koperasi: <code>{currentDriverProfile.kodiba_member_id || 'KODIBA 10011126'}</code>
                 </div>
                 <button
                   type="button"
@@ -760,7 +763,7 @@ const BoomDriverDashboardPage = () => {
                   Tukar BMC / Rupiah
                 </span>
               </div>
-              <h4 style={{ fontSize: '1.05rem', fontWeight: '800', margin: '0 0 6px', color: 'var(--text-main, #0f172a)' }}>
+              <h4 style={{ fontSize: '1.05rem', fontWeight: '800', margin: '0 0 6px', color: 'var(--text-main, #0f172a)', whiteSpace: 'nowrap' }}>
                 Perlengkapan Mitra & Produk Lokal BaMbooChain
               </h4>
               <p style={{ fontSize: '0.8rem', color: 'var(--text-muted, #64748b)', lineHeight: 1.5, margin: '0 0 14px' }}>
@@ -781,14 +784,15 @@ const BoomDriverDashboardPage = () => {
                   borderRadius: '12px',
                   fontWeight: '900',
                   fontSize: '0.82rem',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap'
                 }}
               >
                 🛒 Kunjungi Marketplace BaMbooChain
               </button>
               <button
                 type="button"
-                onClick={() => navigate('/boomboom/rewards')}
+                onClick={() => setShowBmcCalcModal(true)}
                 style={{
                   background: 'var(--bg-secondary, #f1f5f9)',
                   color: 'var(--text-main, #334155)',
@@ -797,7 +801,8 @@ const BoomDriverDashboardPage = () => {
                   borderRadius: '12px',
                   fontWeight: '800',
                   fontSize: '0.8rem',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap'
                 }}
               >
                 Cek Saldo BMC
@@ -805,6 +810,106 @@ const BoomDriverDashboardPage = () => {
             </div>
           </div>
         </div>
+
+        {/* MODAL PENJELASAN PERHITUNGAN REWARD & SALDO BMC */}
+        {showBmcCalcModal && (
+          <div style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.6)',
+            backdropFilter: 'blur(5px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '16px'
+          }}>
+            <div style={{
+              background: 'var(--bg-card, #ffffff)',
+              borderRadius: '24px',
+              padding: '26px',
+              maxWidth: '500px',
+              width: '100%',
+              border: '2px solid #10b981',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.2)'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: '900', color: '#047857', margin: 0 }}>
+                  💎 Transparansi Perhitungan Saldo & Reward BMC
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setShowBmcCalcModal(false)}
+                  style={{ background: 'none', border: 'none', fontSize: '1.3rem', cursor: 'pointer', color: 'var(--text-muted)' }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div style={{ fontSize: '0.83rem', color: 'var(--text-main, #0f172a)', lineHeight: 1.6, marginBottom: '16px' }}>
+                <p style={{ margin: '0 0 10px' }}>
+                  Reward BMC diberikan secara transparan kepada mitra pengemudi dan pemesan yang telah diverifikasi di backend BaMbooChain:
+                </p>
+                <div style={{ background: 'var(--bg-secondary, #f8fafc)', padding: '12px 14px', borderRadius: '14px', border: '1px solid var(--border-color, #e2e8f0)', marginBottom: '10px' }}>
+                  <div style={{ fontWeight: '800', color: '#047857', marginBottom: '4px' }}>🛵 Reward Mitra Pengemudi:</div>
+                  <div>• <strong>1.0 BMC</strong> per perjalanan selesai</div>
+                  <div>• <strong>+0.25 BMC / km</strong> jarak tempuh nyata</div>
+                  <div>• <strong>+0.50 BMC</strong> bonus armada ramah lingkungan (Motor Listrik / EV)</div>
+                  <div>• <strong>+0.25 BMC</strong> rating bintang 5 dari pemesan</div>
+                </div>
+
+                <div style={{ background: 'var(--bg-secondary, #f8fafc)', padding: '12px 14px', borderRadius: '14px', border: '1px solid var(--border-color, #e2e8f0)' }}>
+                  <div style={{ fontWeight: '800', color: '#b45309', marginBottom: '4px' }}>👤 Reward Pemesan (Penumpang):</div>
+                  <div>• <strong>0.50 BMC</strong> bonus loyalitas dasar</div>
+                  <div>• <strong>+0.10 BMC / km</strong> cashback mobilitas hijau</div>
+                  <div>• <strong>+0.25 BMC</strong> bonus perjalanan EV</div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowBmcCalcModal(false);
+                    navigate('/bamboochain/token-wallet');
+                  }}
+                  style={{
+                    flex: 1,
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    color: '#ffffff',
+                    border: 'none',
+                    padding: '12px',
+                    borderRadius: '14px',
+                    fontWeight: '800',
+                    fontSize: '0.85rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Buka Token Wallet (Saldo Riil)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowBmcCalcModal(false);
+                    navigate('/boomboom/rewards');
+                  }}
+                  style={{
+                    background: 'var(--bg-secondary, #f1f5f9)',
+                    color: 'var(--text-main, #334155)',
+                    border: '1px solid var(--border-color, #cbd5e1)',
+                    padding: '12px 16px',
+                    borderRadius: '14px',
+                    fontWeight: '800',
+                    fontSize: '0.85rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Hub Reward
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
       </div>
     </div>

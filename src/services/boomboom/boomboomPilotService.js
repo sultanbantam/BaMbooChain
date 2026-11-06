@@ -76,8 +76,8 @@ export const generateNgopiMessage = (trip) => {
   const tripId = trip.trip_id || trip.id || 'TRIP-DEMO';
   const instantCode = trip.instant_code || trip.instantCode || '';
   const passenger = trip.passenger_name || 'Pengguna BaMbooChain';
-  const pickup = trip.pickup_address || 'Sentra Bibit Bambu Cibarani';
-  const dest = trip.destination_address || 'Pasar Desa Cibarani, Subang';
+  const pickup = trip.pickup_address || 'Titik Penjemputan Penumpang';
+  const dest = trip.destination_address || 'Titik Tujuan Penumpang';
   const service = trip.service_type || 'BoomRide';
   const fare = trip.fare || trip.grossFare || 18650;
   const distance = trip.distance_km || 4.5;
@@ -85,9 +85,9 @@ export const generateNgopiMessage = (trip) => {
   const paymentMethod = trip.payment_method || 'QRIS / Tunai';
 
   return [
-    `🛵 *ORDER BOOMBOOM MASUK (PILOT TAHAP II)*`,
+    `🛵 *ORDER BOOMBOOM MASUK*`,
     `📋 No. Trip: #${tripId}`,
-    ...(instantCode ? [`🔑 *KODE BOOM-INSTAN: ${instantCode}* (Masukkan di Dasbor Driver)`] : []),
+    ...(instantCode ? [`🔑 *KODE BOOM LANGSUNG: ${instantCode}* (Masukkan di Dasbor Driver)`] : []),
     `⚡ Layanan: ${service}`,
     `👤 Penumpang: ${passenger}`,
     `📍 Titik Jemput: ${pickup}`,
@@ -108,13 +108,21 @@ export const openNgopiChat = (trip) => {
   if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(text).catch(() => {});
   }
-  const customUrl = trip?.driver_ngopi_chat_url || `https://ngopi.top/contacts?join=BoomBoom`;
+  let customUrl = trip?.driver_ngopi_chat_url;
+  if (!customUrl && trip?.driver_ngopi_username) {
+    const cleanUser = trip.driver_ngopi_username.replace('@', '').trim();
+    customUrl = `https://ngopi.top/@${cleanUser}`;
+  }
+  if (!customUrl) {
+    customUrl = `https://ngopi.top/contacts?join=BoomBoom`;
+  }
   window.open(customUrl, '_blank', 'noopener,noreferrer');
 };
 
 export const openWhatsAppDispatch = (trip, targetPhone = '') => {
   const message = generateNgopiMessage(trip);
-  const cleanPhone = (targetPhone || '').replace(/[^0-9]/g, '');
+  const phoneToUse = targetPhone || trip?.driver_phone || '';
+  const cleanPhone = phoneToUse.replace(/[^0-9]/g, '');
   const waUrl = cleanPhone 
     ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`
     : `https://wa.me/?text=${encodeURIComponent(message)}`;
@@ -491,12 +499,12 @@ export const createPilotTripOrder = async (bookingData, userProfile = null) => {
     trip_id: tripId,
     instant_code: String(instantCode).replace(/[^0-9]/g, ''),
     passenger_id: userProfile?.uid || userProfile?.id || 'GUEST-USER',
-    passenger_name: userProfile?.displayName || userProfile?.name || 'Warga Cibarani',
+    passenger_name: userProfile?.displayName || userProfile?.name || 'Penumpang BoomBoom',
     passenger_phone: userProfile?.phoneNumber || userProfile?.phone || '',
-    pickup_address: bookingData.pickupAddress || 'Sentra Bibit Bambu Cibarani',
-    pickup_coords: bookingData.pickupCoords || { lat: -6.6521, lng: 107.6932 },
-    destination_address: bookingData.destinationAddress || 'Pasar Desa Cibarani, Subang',
-    destination_coords: bookingData.destinationCoords || { lat: -6.6850, lng: 107.7200 },
+    pickup_address: bookingData.pickupAddress || 'Titik Penjemputan Penumpang',
+    pickup_coords: bookingData.pickupCoords || { lat: -6.3198, lng: 106.7069 },
+    destination_address: bookingData.destinationAddress || 'Titik Tujuan Penumpang',
+    destination_coords: bookingData.destinationCoords || { lat: -6.2966, lng: 106.7128 },
     service_type: bookingData.serviceType || 'BoomRide',
     is_ev: Boolean(bookingData.isEvVehicle),
     distance_km: validatedFare.distanceKm,
@@ -508,7 +516,7 @@ export const createPilotTripOrder = async (bookingData, userProfile = null) => {
     payment_id: bookingData.paymentId || null,
     matched_driver_id: bookingData.matchedDriver?.driver_id || null,
     matched_driver_name: bookingData.matchedDriver?.name || null,
-    pilot_region: bookingData.pilotRegion || 'Subang - Cibarani',
+    pilot_region: bookingData.pilotRegion || 'Wilayah Perjalanan Aktif',
     pilot_phase: 'PHASE_2_BACKEND_PILOT',
     status: 'REQUESTED',
     created_at: new Date().toISOString(),

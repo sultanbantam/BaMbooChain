@@ -14,6 +14,59 @@ export const REWARD_CONFIG = {
 };
 
 /**
+ * STRUKTUR PERHITUNGAN REWARD DUA PIHAK (DRIVER & PEMESAN)
+ * Transparan, server-configurable, dan terhubung dengan Tokenomics BaMbooChain
+ */
+
+/**
+ * 1. Perhitungan Reward Pengemudi (Driver):
+ * - Reward Dasar Perjalanan Selesai: 1.0 BMC
+ * - Reward Jarak: +0.25 BMC per KM
+ * - Bonus Armada EV (Motor Listrik): +0.50 BMC
+ * - Bonus Rating Bintang 5: +0.25 BMC
+ */
+export function calculateDriverReward({ distanceKm = 1, isEv = false, rating = 5 } = {}) {
+  const baseReward = 1.0;
+  const distanceReward = Number((distanceKm * 0.25).toFixed(2));
+  const evBonus = isEv ? 0.50 : 0.0;
+  const ratingBonus = Number(rating) >= 5 ? 0.25 : 0.0;
+  const totalBmc = Number((baseReward + distanceReward + evBonus + ratingBonus).toFixed(2));
+
+  return {
+    baseReward,
+    distanceReward,
+    evBonus,
+    ratingBonus,
+    totalBmc,
+    reason: `Reward Mitra Driver (Trip selesai: ${distanceKm} km${isEv ? ' + EV' : ''}${ratingBonus > 0 ? ' + Bintang 5' : ''})`
+  };
+}
+
+/**
+ * 2. Perhitungan Reward Pemesan (Penumpang):
+ * - Reward Dasar Penggunaan: 0.50 BMC
+ * - Loyalty Cashback: +0.10 BMC per KM
+ * - Bonus Green Mobility (Pilihan EV): +0.25 BMC
+ * - Bonus Shared Ride (BoomTogether): +0.50 BMC
+ */
+export function calculatePassengerReward({ distanceKm = 1, fare = 0, isEv = false, isShared = false } = {}) {
+  const baseReward = 0.50;
+  const loyaltyReward = Number((distanceKm * 0.10).toFixed(2));
+  const evBonus = isEv ? 0.25 : 0.0;
+  const sharedBonus = isShared ? 0.50 : 0.0;
+  const totalBmc = Number((baseReward + loyaltyReward + evBonus + sharedBonus).toFixed(2));
+
+  return {
+    baseReward,
+    loyaltyReward,
+    evBonus,
+    sharedBonus,
+    totalBmc,
+    reason: `Cashback Loyalitas Pemesan (${distanceKm} km${isEv ? ' + EV' : ''}${isShared ? ' + Bareng' : ''})`
+  };
+}
+
+/**
  * Calculates Green Trip Score and Estimated Mobility Impact ("Estimasi Dampak Mobilitas")
  * 
  * Note: As specified in guidelines section 13:

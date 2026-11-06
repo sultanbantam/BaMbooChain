@@ -293,74 +293,84 @@ const MapViewComponent = ({
       {/* Leaflet Map DOM Element */}
       <div ref={mapContainerRef} style={{ width: '100%', height: '100%', zIndex: 1 }} />
 
-      {/* Top Left: Floating Status & Distance Badge */}
+      {/* Top Floating Control Bar — prevents any overlap on mobile/desktop */}
       <div style={{
         position: 'absolute',
-        top: '12px',
-        left: '12px',
-        background: 'rgba(15, 23, 42, 0.9)',
-        backdropFilter: 'blur(8px)',
-        color: '#ffffff',
-        padding: '6px 12px',
-        borderRadius: '14px',
-        fontSize: '0.73rem',
-        fontWeight: '800',
+        top: '10px',
+        left: '10px',
+        right: '10px',
         display: 'flex',
+        justifyContent: 'space-between',
         alignItems: 'center',
+        flexWrap: 'wrap',
         gap: '6px',
         zIndex: 500,
-        boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-        border: '1px solid rgba(52,211,153,0.4)'
+        pointerEvents: 'none'
       }}>
-        <Navigation size={13} color="#34d399" />
-        <span>Rute Nyata: {activeBooking.fareCalc?.distanceKm || 4.5} km (~{activeBooking.fareCalc?.durationMin || 12} mnt)</span>
-      </div>
+        {/* Distance Badge */}
+        <div style={{
+          background: 'rgba(15, 23, 42, 0.92)',
+          backdropFilter: 'blur(8px)',
+          color: '#ffffff',
+          padding: '6px 10px',
+          borderRadius: '12px',
+          fontSize: '0.72rem',
+          fontWeight: '800',
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '6px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+          border: '1px solid rgba(52,211,153,0.4)',
+          pointerEvents: 'auto',
+          whiteSpace: 'nowrap'
+        }}>
+          <Navigation size={13} color="#34d399" />
+          <span>Rute Nyata: {activeBooking.fareCalc?.distanceKm || 4.5} km (~{activeBooking.fareCalc?.durationMin || 12} mnt)</span>
+        </div>
 
-      {/* Top Right: Toggle Klik Peta (Set Jemput vs Set Tujuan) */}
-      <div style={{
-        position: 'absolute',
-        top: '12px',
-        right: '12px',
-        display: 'flex',
-        gap: '4px',
-        background: 'rgba(15, 23, 42, 0.88)',
-        padding: '4px',
-        borderRadius: '12px',
-        zIndex: 500,
-        border: '1px solid rgba(255,255,255,0.15)'
-      }}>
-        <button
-          type="button"
-          onClick={() => setClickPinMode('PICKUP')}
-          style={{
-            background: clickPinMode === 'PICKUP' ? '#10b981' : 'transparent',
-            color: '#ffffff',
-            border: 'none',
-            borderRadius: '8px',
-            padding: '4px 8px',
-            fontSize: '0.68rem',
-            fontWeight: '800',
-            cursor: 'pointer'
-          }}
-        >
-          📍 Klik=Jemput
-        </button>
-        <button
-          type="button"
-          onClick={() => setClickPinMode('DEST')}
-          style={{
-            background: clickPinMode === 'DEST' ? '#ef4444' : 'transparent',
-            color: '#ffffff',
-            border: 'none',
-            borderRadius: '8px',
-            padding: '4px 8px',
-            fontSize: '0.68rem',
-            fontWeight: '800',
-            cursor: 'pointer'
-          }}
-        >
-          🏁 Klik=Tujuan
-        </button>
+        {/* Toggle Klik Peta */}
+        <div style={{
+          display: 'inline-flex',
+          gap: '4px',
+          background: 'rgba(15, 23, 42, 0.92)',
+          padding: '3px 4px',
+          borderRadius: '12px',
+          border: '1px solid rgba(255,255,255,0.15)',
+          pointerEvents: 'auto'
+        }}>
+          <button
+            type="button"
+            onClick={() => setClickPinMode('PICKUP')}
+            style={{
+              background: clickPinMode === 'PICKUP' ? '#10b981' : 'transparent',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '4px 8px',
+              fontSize: '0.68rem',
+              fontWeight: '800',
+              cursor: 'pointer'
+            }}
+          >
+            📍 Klik=Jemput
+          </button>
+          <button
+            type="button"
+            onClick={() => setClickPinMode('DEST')}
+            style={{
+              background: clickPinMode === 'DEST' ? '#ef4444' : 'transparent',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '4px 8px',
+              fontSize: '0.68rem',
+              fontWeight: '800',
+              cursor: 'pointer'
+            }}
+          >
+            🏁 Klik=Tujuan
+          </button>
+        </div>
       </div>
 
       {/* Bottom Right: Floating Controls for Auto-Fitting Route */}

@@ -718,6 +718,12 @@ export const useBoomBoomStore = create((set, get) => ({
         ? '2. SeCiPaLe (Serang, Cilegon, Pandeglang, Lebak)'
         : `3. Lainnya: ${driverFormData.customRegencyCity || 'Kab/Kota'}, ${driverFormData.customProvince || 'Provinsi'}`;
 
+    const now = new Date();
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const yy = String(now.getFullYear()).slice(-2);
+    const count = 1001 + (get().drivers.length || 0);
+    const autoKodibaId = `KODIBA ${count}${mm}${yy}`;
+
     const newDriver = {
       driver_id: `DRV-${Date.now().toString().slice(-4)}`,
       user_id: userProfile?.uid || userProfile?.id || 'USR-CURRENT',
@@ -728,6 +734,8 @@ export const useBoomBoomStore = create((set, get) => ({
       ngopi_chat_url: ngopiChatUrl,
       identity_number: driverFormData.identityNumber || '',
       status: 'SUBMITTED', // 'SUBMITTED' -> 'UNDER_REVIEW' -> 'VERIFIED'
+      kodiba_member: true,
+      kodiba_member_id: autoKodibaId,
       isOnline: false,
       vehicle_type: driverFormData.vehicleType,
       vehicle_brand: driverFormData.vehicleBrand,

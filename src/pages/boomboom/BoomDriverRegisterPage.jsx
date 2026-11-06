@@ -22,7 +22,7 @@ const BoomDriverRegisterPage = () => {
     fullName: user?.displayName || '',
     phone: user?.phoneNumber || '',
     email: user?.email || '',
-    ngopiUsername: '@majelisngopi',
+    ngopiUsername: user?.ngopiUsername || '@majelisngopi',
     identityNumber: '',
     licenseNumber: '',
     vehicleType: 'BoomRide',
@@ -36,7 +36,7 @@ const BoomDriverRegisterPage = () => {
     customPartnerType: '',
     otherPartnerDetails: '',
     bankAccount: '',
-    emergencyContact: '',
+    emergencyContact: typeof window !== 'undefined' ? (localStorage.getItem('boomboom_emergency_contact') || '') : '',
     profilePhotoUrl: user?.photoURL || '',
     vehiclePhotoUrl: ''
   });
@@ -47,7 +47,8 @@ const BoomDriverRegisterPage = () => {
         ...prev,
         fullName: prev.fullName || user.displayName || '',
         email: prev.email || user.email || '',
-        phone: prev.phone || user.phoneNumber || ''
+        phone: prev.phone || user.phoneNumber || '',
+        ngopiUsername: prev.ngopiUsername || user.ngopiUsername || '@majelisngopi'
       }));
     }
   }, [user]);
@@ -56,6 +57,13 @@ const BoomDriverRegisterPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (formData.emergencyContact) {
+      try {
+        localStorage.setItem('boomboom_emergency_contact', formData.emergencyContact);
+      } catch (err) {
+        console.warn('Gagal menyimpan kontak darurat:', err);
+      }
+    }
     const newDriver = registerDriver(formData, user);
     setSubmittedDriver(newDriver);
   };
@@ -93,7 +101,7 @@ const BoomDriverRegisterPage = () => {
           boxShadow: '0 6px 18px rgba(16, 185, 129, 0.15)'
         }}>
           <div>
-            <div style={{ fontWeight: '900', color: '#065f46', fontSize: '1.05rem', marginBottom: '4px' }}>
+            <div style={{ fontWeight: '900', color: '#065f46', fontSize: '1.05rem', marginBottom: '4px', whiteSpace: 'nowrap' }}>
               Sudah Terdaftar Sebagai Mitra Pengemudi?
             </div>
             <div style={{ fontSize: '0.85rem', color: '#047857' }}>
@@ -111,7 +119,8 @@ const BoomDriverRegisterPage = () => {
               fontWeight: '900',
               fontSize: '0.9rem',
               cursor: 'pointer',
-              boxShadow: '0 4px 12px rgba(16, 185, 129, 0.35)'
+              boxShadow: '0 4px 12px rgba(16, 185, 129, 0.35)',
+              whiteSpace: 'nowrap'
             }}
           >
             Buka Dasbor Pengemudi (Online) ➔
@@ -130,7 +139,7 @@ const BoomDriverRegisterPage = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
             <UserCheck size={28} color="#a7f3d0" />
             <h1 style={{ fontSize: '1.8rem', fontWeight: '900', margin: 0, color: '#ffffff' }}>
-              Jadi Pengemudi BoomBoom (Tahap II Terverifikasi)
+              Jadi Pengemudi BoomBoom
             </h1>
           </div>
           <p style={{ fontSize: '0.95rem', color: '#ecfdf5', margin: 0, maxWidth: '650px' }}>

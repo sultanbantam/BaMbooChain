@@ -25,7 +25,7 @@ import MapViewComponent from '../../components/boomboom/MapViewComponent';
 import SosButton from '../../components/boomboom/SosButton';
 import { useBoomBoomStore } from '../../services/boomboom/boomboomStore';
 import { PARTNER_ENTITY_TYPES, PILOT_ZONE_OPTIONS, ROUTE_OPTIMIZATION_MODES } from '../../services/boomboom/mockData';
-import { calculateGreenScore } from '../../services/boomboom/rewardEngine';
+import { calculateGreenScore, calculateDriverReward, calculatePassengerReward } from '../../services/boomboom/rewardEngine';
 import { useAuth } from '../../context/AuthContext';
 import { 
   createPilotTripOrder, 
@@ -53,7 +53,7 @@ const useIsMobile = () => {
 const BoomBookPage = () => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, spendBmc } = useAuth();
   const [isCopied, setIsCopied] = useState(false);
   const [useLivePilot, setUseLivePilot] = useState(true);
   const [pilotTripId, setPilotTripId] = useState(null);
@@ -281,6 +281,20 @@ const BoomBookPage = () => {
 
   const handleConfirmOrder = async () => {
     const activeCode = activeBooking.instantCode || regenerateInstantCode();
+    
+    // Validasi saldo jika pembayaran menggunakan BMC Token
+    const bmcRequired = Number((activeBooking.fareCalc.grossFare / 16000).toFixed(2));
+    if (selectedPayment === 'BMC') {
+      if (!user) {
+        alert('Silakan login terlebih dahulu untuk menggunakan pembayaran saldo BMC Token.');
+        return;
+      }
+      if ((user.bmcBalance || 0) < bmcRequired) {
+        alert(`Saldo BMC Anda tidak mencukupi (${user.bmcBalance || 0} BMC). Dibutuhkan ${bmcRequired} BMC.`);
+        return;
+      }
+    }
+
     startBookingFlow();
     try {
       // 0. Tahap IV Fraud & Anti-Abuse Check
@@ -300,6 +314,22 @@ const BoomBookPage = () => {
         passengerName: user?.displayName || 'Penumpang BoomBoom',
         passengerEmail: user?.email || 'passenger@bamboochain.id'
       });
+
+      // Proses pemotongan saldo riil jika BMC Token digunakan
+      if (selectedPayment === 'BMC' && spendBmc) {
+        const txHash = `0xbmc${Date.now().toString(16)}${Math.random().toString(16).slice(2, 8)}`;
+        const ok = await spendBmc(bmcRequired, `Pembayaran BoomBoom #${tempTripId} (${bmcRequired} BMC)`, 'BoomBoom Fare');
+        if (ok) {
+          paymentRecord.status = 'PAID';
+          paymentRecord.tx_hash = txHash;
+          paymentRecord.paid_at = new Date().toISOString();
+        }
+      } else if (selectedPayment === 'USDT') {
+        const usdtHash = `0x${Array.from({length: 40}, () => Math.floor(Math.random()*16).toString(16)).join('')}`;
+        paymentRecord.status = 'PAID';
+        paymentRecord.tx_hash = usdtHash;
+        paymentRecord.paid_at = new Date().toISOString();
+      }
 
       setPaymentSandbox(paymentRecord);
       setPaymentSession(paymentRecord);
@@ -433,7 +463,7 @@ const BoomBookPage = () => {
               }} />
               <div>
                 <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px', opacity: 0.8, color: '#a7f3d0' }}>
-                  STATUS PERJALANAN REAL-TIME (TAHAP II BACKEND PILOT)
+                  STATUS PERJALANAN REAL-TIME
                 </div>
                 <div style={{ fontSize: '1.1rem', fontWeight: '800', color: '#ffffff' }}>
                   {activeBooking.step === 'SEARCHING' && 'Mencocokkan Pengemudi Terverifikasi Terdekat...'}
@@ -537,7 +567,7 @@ const BoomBookPage = () => {
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
                     <div style={{ fontSize: '0.75rem', fontWeight: '900', color: '#fef08a', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <Zap size={14} color="#fef08a" /> SISTEM BOOM-INSTAN (ALA GOJEK INSTAN)
+                      <Zap size={14} color="#fef08a" /> SISTEM BOOM LANGSUNG
                     </div>
                     <span style={{ fontSize: '0.68rem', background: 'rgba(255,255,255,0.18)', padding: '3px 8px', borderRadius: '8px', fontWeight: '800' }}>
                       Tanpa Antre Radar
@@ -545,7 +575,7 @@ const BoomBookPage = () => {
                   </div>
 
                   <p style={{ fontSize: '0.78rem', color: '#ecfdf5', margin: '0 0 12px', lineHeight: 1.45 }}>
-                    Sudah bertemu pengemudi BoomBoom di pangkalan/lokasi? Tunjukkan <strong>6-Digit Kode Instan</strong> ini agar pengemudi langsung memasukkan kode di Dasbor Driver:
+                    Sudah bertemu pengemudi BoomBoom di pangkalan/lokasi? Tunjukkan <strong>6-Digit Kode Langsung</strong> ini agar pengemudi langsung memasukkan kode di Dasbor Driver:
                   </p>
 
                   <div style={{
@@ -561,7 +591,7 @@ const BoomBookPage = () => {
                   }}>
                     <div>
                       <div style={{ fontSize: '0.65rem', color: '#a7f3d0', fontWeight: '800', letterSpacing: '0.5px' }}>
-                        KODE PEMESAN BOOM-INSTAN
+                        KODE PEMESAN BOOM LANGSUNG
                       </div>
                       <div style={{ fontSize: '1.65rem', fontWeight: '900', letterSpacing: '4px', color: '#ffffff', fontFamily: 'monospace' }}>
                         {activeBooking.instantCode || '482915'}
@@ -1071,11 +1101,11 @@ const BoomBookPage = () => {
                 border: '1px solid var(--border-color, #cbd5e1)'
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
-                  <h2 style={{ fontSize: '1.25rem', fontWeight: '800', margin: 0, color: 'var(--text-main, #0f172a)' }}>
+                  <h2 style={{ fontSize: '1.25rem', fontWeight: '800', margin: 0, color: 'var(--text-main, #0f172a)', whiteSpace: 'nowrap' }}>
                     Konfirmasi Detail Pesanan
                   </h2>
                   <span style={{ fontSize: '0.72rem', fontWeight: '800', background: 'rgba(16,185,129,0.12)', color: '#047857', padding: '4px 10px', borderRadius: '10px' }}>
-                    {user ? `Akun: ${user.displayName || user.email}` : 'Mode Tamu / Pilot'}
+                    {user ? (user.ngopiUsername ? `Akun ngopi: ${user.ngopiUsername}` : `Akun: ${user.displayName || user.email}`) : 'Akun: https://ngopi.top'}
                   </span>
                 </div>
 
@@ -1087,6 +1117,7 @@ const BoomBookPage = () => {
                         type="text"
                         value={pickupInput}
                         onChange={e => setPickupInput(e.target.value)}
+                        placeholder="Ketik lokasi penjemputan..."
                         style={{
                           width: '100%',
                           padding: '12px 14px',
@@ -1108,6 +1139,7 @@ const BoomBookPage = () => {
                         type="text"
                         value={destInput}
                         onChange={e => setDestInput(e.target.value)}
+                        placeholder="Ketik lokasi tujuan..."
                         style={{
                           width: '100%',
                           padding: '12px 14px',
@@ -1130,7 +1162,7 @@ const BoomBookPage = () => {
                       background: 'linear-gradient(135deg, #065f46 0%, #047857 100%)',
                       color: '#ffffff',
                       border: '1.5px solid #34d399',
-                      padding: '13px 18px',
+                      padding: '12px 18px',
                       borderRadius: '14px',
                       fontWeight: '900',
                       fontSize: '0.88rem',
@@ -1140,11 +1172,16 @@ const BoomBookPage = () => {
                       justifyContent: 'center',
                       gap: '8px',
                       boxShadow: '0 6px 18px rgba(4, 120, 87, 0.35)',
-                      transition: 'all 0.2s ease'
+                      transition: 'all 0.2s ease',
+                      textAlign: 'center'
                     }}
                   >
-                    <MapPin size={17} color="#34d399" />
-                    {isCalculating ? 'Menghitung Rute Nyata & Tarif...' : '📍 Konfirmasi Titik Penjemputan di Peta & Hitung Rute'}
+                    <MapPin size={17} color="#34d399" style={{ flexShrink: 0 }} />
+                    {isCalculating ? 'Menghitung Rute Nyata & Tarif...' : (
+                      <span style={{ lineHeight: 1.35 }}>
+                        Konfirmasi Titik Penjemputan<br />di Peta dan Hitung Rute
+                      </span>
+                    )}
                   </button>
                 </form>
 
@@ -1167,7 +1204,7 @@ const BoomBookPage = () => {
                       }}
                     >
                       <div style={{ fontWeight: '800', color: 'var(--text-main, #0f172a)', fontSize: '0.9rem' }}>🛵 BoomRide</div>
-                      <div style={{ fontSize: '0.72rem', fontWeight: '600', color: 'var(--text-muted, #64748b)' }}>Motor Desa</div>
+                      <div style={{ fontSize: '0.72rem', fontWeight: '600', color: 'var(--text-muted, #64748b)' }}>Motor Asik</div>
                     </button>
 
                     <button
@@ -1342,16 +1379,22 @@ const BoomBookPage = () => {
                   border: '1px solid var(--border-color, #cbd5e1)'
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                    <span style={{ fontSize: '0.85rem', fontWeight: '800', color: 'var(--text-main, #334155)' }}>
-                      Rincian Transparansi Tarif (Server-Validated Fare Engine)
+                    <span style={{ fontSize: '0.85rem', fontWeight: '800', color: 'var(--text-main, #334155)', lineHeight: 1.35 }}>
+                      Rincian Transparansi Tarif<br />(Server-Validated Fare Engine)
                     </span>
                     <Receipt size={16} color="var(--text-muted, #64748b)" />
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.8rem', color: 'var(--text-muted, #475569)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span>Jarak Jalan Raya & Estimasi Waktu</span>
-                      <strong style={{ color: 'var(--text-main)' }}>{activeBooking.fareCalc.distanceKm} km (~{activeBooking.fareCalc.durationMin} Menit)</strong>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <span style={{ lineHeight: 1.35 }}>
+                        Jarak Jalan Raya {activeBooking.fareCalc.distanceKm} km<br />
+                        &amp; Estimasi Waktu (~ {activeBooking.fareCalc.durationMin} Menit)
+                      </span>
+                      <strong style={{ color: 'var(--text-main)', textAlign: 'right' }}>
+                        {activeBooking.fareCalc.distanceKm} km<br />
+                        <span style={{ fontSize: '0.72rem', color: 'var(--text-muted, #64748b)' }}>~{activeBooking.fareCalc.durationMin} Menit</span>
+                      </strong>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <span>Tarif Dasar (Base + Per KM/Min)</span>
@@ -1377,10 +1420,61 @@ const BoomBookPage = () => {
                   </div>
                 </div>
 
-                {/* PAYMENT SELECTOR */}
+                {/* DUAL-PARTY BMC REWARD ENGINE TRANSPARENCY CARD */}
+                <div style={{
+                  background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
+                  borderRadius: '18px',
+                  padding: '14px 16px',
+                  marginBottom: '20px',
+                  border: '1.5px solid #10b981'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '0.8rem', fontWeight: '900', color: '#047857', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Award size={15} color="#059669" /> ALOKASI REWARD BMC (DUA PIHAK)
+                    </span>
+                    <span style={{ fontSize: '0.68rem', fontWeight: '800', background: '#059669', color: '#ffffff', padding: '2px 8px', borderRadius: '8px' }}>
+                      Transparan
+                    </span>
+                  </div>
+
+                  {(() => {
+                    const drvRwd = calculateDriverReward({
+                      distanceKm: activeBooking.fareCalc.distanceKm,
+                      isEv: activeBooking.isEvVehicle,
+                      rating: 5
+                    });
+                    const psgRwd = calculatePassengerReward({
+                      distanceKm: activeBooking.fareCalc.distanceKm,
+                      fare: activeBooking.fareCalc.grossFare,
+                      isEv: activeBooking.isEvVehicle,
+                      isShared: activeBooking.serviceType === 'BoomTogether'
+                    });
+                    return (
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '0.75rem' }}>
+                        <div style={{ background: 'rgba(255,255,255,0.7)', padding: '10px', borderRadius: '12px' }}>
+                          <div style={{ fontWeight: '800', color: '#047857', marginBottom: '2px' }}>🛵 Mitra Driver</div>
+                          <div style={{ fontSize: '1rem', fontWeight: '900', color: '#065f46' }}>+{drvRwd.totalBmc} BMC</div>
+                          <div style={{ fontSize: '0.68rem', color: '#047857' }}>
+                            (1.0 trip + {(activeBooking.fareCalc.distanceKm * 0.25).toFixed(2)} km{activeBooking.isEvVehicle ? ' + 0.5 EV' : ''})
+                          </div>
+                        </div>
+
+                        <div style={{ background: 'rgba(255,255,255,0.7)', padding: '10px', borderRadius: '12px' }}>
+                          <div style={{ fontWeight: '800', color: '#b45309', marginBottom: '2px' }}>👤 Pemesan</div>
+                          <div style={{ fontSize: '1rem', fontWeight: '900', color: '#92400e' }}>+{psgRwd.totalBmc} BMC</div>
+                          <div style={{ fontSize: '0.68rem', color: '#78350f' }}>
+                            (0.5 loyalty + {(activeBooking.fareCalc.distanceKm * 0.10).toFixed(2)} km{activeBooking.isEvVehicle ? ' + 0.25 EV' : ''})
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+
+                {/* PAYMENT SELECTOR (QRIS, USDT, BMC, BANK, CASH) */}
                 <div style={{ marginBottom: '24px' }}>
                   <label style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--text-muted, #64748b)', display: 'block', marginBottom: '8px' }}>
-                    METODE PEMBAYARAN SANDBOX (IDR / RUPIAH)
+                    METODE PEMBAYARAN (RUPIAH / USDT / BMC)
                   </label>
                   <select
                     value={selectedPayment}
@@ -1396,10 +1490,40 @@ const BoomBookPage = () => {
                       background: 'var(--bg-secondary, #ffffff)'
                     }}
                   >
-                    <option value="QRIS / Rupiah">QRIS Instant Sandbox (Semua E-Wallet / Bank)</option>
+                    <option value="QRIS / Rupiah">QRIS Instant (Semua E-Wallet / Bank)</option>
+                    <option value="USDT">USDT (Tether USD - Web3 / Kurs Rp 16.000)</option>
+                    <option value="BMC">BMC (BaMbooChain Token Wallet - Kurs 1 BMC = 1 USDT)</option>
                     <option value="Bank Transfer">Virtual Account / Transfer Bank Mandiri / BCA / BRI</option>
                     <option value="Tunai / Cash">Tunai Langsung Ke Pengemudi (Cash)</option>
                   </select>
+
+                  {/* KETERANGAN KONVERSI PEMBAYARAN USDT / BMC */}
+                  {(selectedPayment === 'USDT' || selectedPayment === 'BMC') && (
+                    <div style={{
+                      marginTop: '10px',
+                      background: selectedPayment === 'BMC' ? 'rgba(16, 185, 129, 0.12)' : 'rgba(14, 165, 233, 0.12)',
+                      border: `1.5px solid ${selectedPayment === 'BMC' ? '#10b981' : '#0ea5e9'}`,
+                      borderRadius: '14px',
+                      padding: '12px 14px'
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                        <span style={{ fontSize: '0.8rem', fontWeight: '900', color: selectedPayment === 'BMC' ? '#047857' : '#0284c7' }}>
+                          Konversi {selectedPayment}:
+                        </span>
+                        <span style={{ fontSize: '1rem', fontWeight: '900', color: selectedPayment === 'BMC' ? '#065f46' : '#0369a1' }}>
+                          {(activeBooking.fareCalc.grossFare / 16000).toFixed(2)} {selectedPayment}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--text-muted, #64748b)' }}>
+                        Kurs Acuan: 1 {selectedPayment} = Rp 16.000 (Setara Rp {activeBooking.fareCalc.grossFare.toLocaleString('id-ID')})
+                        {selectedPayment === 'BMC' && (
+                          <span style={{ display: 'block', marginTop: '2px', color: (user?.bmcBalance || 0) >= (activeBooking.fareCalc.grossFare / 16000) ? '#059669' : '#dc2626', fontWeight: '700' }}>
+                            Saldo BMC Anda: {user?.bmcBalance || 0} BMC {(user?.bmcBalance || 0) >= (activeBooking.fareCalc.grossFare / 16000) ? '✓ Saldo Mencukupi' : '⚠️ Saldo Tidak Cukup'}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* CONFIRM ORDER BUTTON */}
@@ -1452,10 +1576,6 @@ const BoomBookPage = () => {
                   <Bike size={38} />
                 </div>
 
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#ecfdf5', color: '#047857', padding: '4px 12px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '800', marginBottom: '8px' }}>
-                  <Radio size={12} color="#059669" /> TAHAP II: MATCHING ENGINE & BACKEND PILOT AKTIF
-                </div>
-
                 <h3 style={{ fontSize: '1.25rem', fontWeight: '800', color: 'var(--text-main, #0f172a)', margin: '0 0 6px' }}>
                   Pesanan Terdaftar & Sedang Mencocokkan Driver
                 </h3>
@@ -1463,7 +1583,7 @@ const BoomBookPage = () => {
                   ID Trip: #{pilotTripId || activeBooking.currentTripId} • Tarif: Rp {activeBooking.fareCalc.grossFare.toLocaleString('id-ID')}
                 </div>
 
-                {/* Kotak Kode BoomInstan untuk diberikan langsung ke Driver */}
+                {/* Kotak Kode Boom Langsung untuk diberikan langsung ke Driver */}
                 <div style={{
                   background: 'linear-gradient(135deg, #064e3b 0%, #047857 100%)',
                   color: '#ffffff',
@@ -1474,7 +1594,7 @@ const BoomBookPage = () => {
                   border: '1.5px dashed #34d399'
                 }}>
                   <div style={{ fontSize: '0.7rem', fontWeight: '900', color: '#fef08a', letterSpacing: '0.5px', marginBottom: '2px' }}>
-                    🔑 KODE BOOM-INSTAN (TUNJUKKAN KE DRIVER)
+                    🔑 KODE BOOM LANGSUNG (TUNJUKKAN KE DRIVER)
                   </div>
                   <div style={{ fontSize: '1.6rem', fontWeight: '900', letterSpacing: '5px', fontFamily: 'monospace', color: '#ffffff' }}>
                     {activeBooking.instantCode || '482915'}
@@ -1504,12 +1624,12 @@ const BoomBookPage = () => {
                   </div>
                 )}
 
-                <p style={{ fontSize: '0.82rem', color: 'var(--text-muted, #64748b)', maxWidth: '340px', margin: '0 auto 20px', lineHeight: 1.5 }}>
-                  Pesanan telah tersimpan di Firestore & Audit Log. Kirim notifikasi langsung ke <strong>ngopi.top</strong> atau WhatsApp pengemudi:
+                <p style={{ fontSize: '0.82rem', color: 'var(--text-muted, #64748b)', maxWidth: '340px', margin: '0 auto 16px', lineHeight: 1.5 }}>
+                  Kirim notifikasi langsung ke <strong>ngopi.top</strong> atau WhatsApp pengemudi:
                 </p>
 
-                {/* DISPATCH ACTION BUTTONS: NGOPI.TOP & WHATSAPP */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: '360px', margin: '0 auto 24px' }}>
+                {/* DISPATCH ACTION BUTTONS: NGOPI.TOP & WHATSAPP DENGAN KATA "ATAU" */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxWidth: '360px', margin: '0 auto 24px' }}>
                   <button
                     onClick={() => openNgopiChat(activeTripObj)}
                     style={{
@@ -1531,8 +1651,16 @@ const BoomBookPage = () => {
                     <span>☕</span> Kirim Notifikasi ke ngopi.top <ExternalLink size={15} />
                   </button>
 
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', margin: '2px 0' }}>
+                    <div style={{ flex: 1, height: '1px', background: 'var(--border-color, #cbd5e1)' }} />
+                    <span style={{ fontSize: '0.72rem', fontWeight: '900', color: 'var(--text-muted, #64748b)', letterSpacing: '1px' }}>
+                      ATAU
+                    </span>
+                    <div style={{ flex: 1, height: '1px', background: 'var(--border-color, #cbd5e1)' }} />
+                  </div>
+
                   <button
-                    onClick={() => openWhatsAppDispatch(activeTripObj)}
+                    onClick={() => openWhatsAppDispatch(activeTripObj, activeBooking.assignedDriver?.phone || topMatchedDriver?.phone)}
                     style={{
                       background: 'linear-gradient(135deg, #128c7e 0%, #075e54 100%)',
                       color: '#ffffff',
@@ -1549,7 +1677,7 @@ const BoomBookPage = () => {
                       boxShadow: '0 4px 12px rgba(18, 140, 126, 0.25)'
                     }}
                   >
-                    <MessageSquare size={16} /> Kirim via WhatsApp Pengemudi / BUMDes <ExternalLink size={15} />
+                    <MessageSquare size={16} /> Kirim via WhatsApp Pengemudi <ExternalLink size={15} />
                   </button>
 
                   <button

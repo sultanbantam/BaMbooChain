@@ -57,9 +57,32 @@ const BoomRewardsPage = () => {
           <h1 style={{ fontSize: isMobile ? '1.5rem' : '1.9rem', fontWeight: '900', margin: '0 0 6px', color: '#ffffff', lineHeight: 1.15 }}>
             BMC Token Reward Hub
           </h1>
-          <p style={{ fontSize: '0.87rem', color: '#fef3c7', margin: '0 0 18px', lineHeight: 1.6, maxWidth: '520px' }}>
+          <p style={{ fontSize: '0.87rem', color: '#fef3c7', margin: '0 0 14px', lineHeight: 1.6, maxWidth: '520px' }}>
             Kumpulkan insentif BMC setiap kali Anda menggunakan mobilitas hijau, berbagi tumpangan, atau berkontribusi dalam komunitas.
           </p>
+
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
+            <a
+              href="#/bamboochain/token-wallet"
+              style={{
+                background: '#ffffff',
+                color: '#78350f',
+                padding: '8px 14px',
+                borderRadius: '12px',
+                fontSize: '0.78rem',
+                fontWeight: '900',
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              💰 Cek Saldo Token Wallet BMC ➔
+            </a>
+            <span style={{ fontSize: '0.74rem', background: 'rgba(255,255,255,0.2)', color: '#ffffff', padding: '6px 12px', borderRadius: '12px', fontWeight: '800' }}>
+              Saldo Akun Anda: {user?.bmcBalance || 0} BMC
+            </span>
+          </div>
 
           {/* Stats Row */}
           <div style={{

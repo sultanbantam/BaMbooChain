@@ -143,7 +143,7 @@ const BoomBoomNavHeader = () => {
               {!isMobile && (
                 <div>
                   <div style={{ fontSize: '0.85rem', fontWeight: '700', color: '#a7f3d0' }}>
-                    Green Community Mobility • Tahap II Backend Pilot
+                    Green Community Mobility
                   </div>
                   <div style={{ fontSize: '0.72rem', opacity: 0.85, color: '#ecfdf5' }}>
                     {user ? `Terautentikasi: ${user.displayName || user.email || 'Anggota BaMbooChain'}` : '"Dari Desa, Menghubungkan Nusantara."'}
@@ -174,27 +174,6 @@ const BoomBoomNavHeader = () => {
               >
                 ☕ ngopi.top
               </a>
-              <span style={{
-                background: featureFlags.BOOMBOOM_PILOT_ENABLED ? 'rgba(52, 211, 153, 0.2)' : 'rgba(239, 68, 68, 0.2)',
-                border: `1px solid ${featureFlags.BOOMBOOM_PILOT_ENABLED ? '#34d399' : '#f87171'}`,
-                color: featureFlags.BOOMBOOM_PILOT_ENABLED ? '#34d399' : '#f87171',
-                padding: isMobile ? '3px 8px' : '4px 10px',
-                borderRadius: '20px',
-                fontSize: isMobile ? '0.65rem' : '0.72rem',
-                fontWeight: '700',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                flexShrink: 0,
-                whiteSpace: 'nowrap'
-              }}>
-                <span style={{
-                  width: '6px', height: '6px', borderRadius: '50%',
-                  background: featureFlags.BOOMBOOM_PILOT_ENABLED ? '#34d399' : '#f87171',
-                  flexShrink: 0
-                }} />
-                {featureFlags.BOOMBOOM_PILOT_ENABLED ? (isMobile ? 'Tahap II' : 'Tahap II: Backend Pilot') : 'Inactive'}
-              </span>
             </div>
           </div>
 
