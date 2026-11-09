@@ -1,1 +1,0 @@
-import{c as e}from"./vendor-others-C656Szii.js";export{e as SplashScreenWeb};
