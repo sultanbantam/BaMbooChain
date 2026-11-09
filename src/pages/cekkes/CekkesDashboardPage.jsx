@@ -40,6 +40,17 @@ const CekkesDashboardPage = () => {
   const [newPlanFreq, setNewPlanFreq] = useState('Harian');
   const [newPlanNotes, setNewPlanNotes] = useState('');
 
+  // Window width for mobile responsiveness
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const isMobile = windowWidth <= 768;
+
   useEffect(() => {
     const unsubscribe = cekkesStore.subscribe(newState => {
       setStoreState({ ...newState });
@@ -143,12 +154,16 @@ const CekkesDashboardPage = () => {
         stats={stats}
       />
 
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        {/* Top Metric Cards */}
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: isMobile ? '12px 14px' : '24px 20px', display: 'flex', flexDirection: 'column', gap: isMobile ? '14px' : '20px' }}>
+        {/* Top Metric Cards - Horizontal Swipeable on Mobile */}
         <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-          gap: '12px'
+          display: isMobile ? 'flex' : 'grid',
+          gridTemplateColumns: !isMobile ? 'repeat(auto-fit, minmax(160px, 1fr))' : undefined,
+          overflowX: isMobile ? 'auto' : undefined,
+          gap: isMobile ? '8px' : '12px',
+          paddingBottom: isMobile ? '4px' : '0',
+          scrollbarWidth: 'none',
+          WebkitOverflowScrolling: 'touch'
         }}>
           {[
             { label: 'Total Profil', val: stats.total, unit: 'subjek', color: '#ffffff', bg: '#161b26', border: 'rgba(255,255,255,0.08)' },
@@ -161,18 +176,19 @@ const CekkesDashboardPage = () => {
             <div key={i} style={{
               background: m.bg,
               border: `1px solid ${m.border}`,
-              borderRadius: '16px',
-              padding: '14px 16px',
+              borderRadius: isMobile ? '12px' : '16px',
+              padding: isMobile ? '10px 14px' : '14px 16px',
               display: 'flex',
               flexDirection: 'column',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)'
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+              flex: isMobile ? '0 0 125px' : undefined
             }}>
-              <span style={{ fontSize: '0.7rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.4px', color: '#94a3b8' }}>
+              <span style={{ fontSize: isMobile ? '0.64rem' : '0.7rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.4px', color: '#94a3b8', whiteSpace: 'nowrap' }}>
                 {m.label}
               </span>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '4px' }}>
-                <span style={{ fontSize: '1.6rem', fontWeight: '900', color: m.color }}>{m.val}</span>
-                <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{m.unit}</span>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginTop: '3px' }}>
+                <span style={{ fontSize: isMobile ? '1.35rem' : '1.6rem', fontWeight: '900', color: m.color }}>{m.val}</span>
+                <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>{m.unit}</span>
               </div>
             </div>
           ))}
@@ -182,38 +198,37 @@ const CekkesDashboardPage = () => {
         <div style={{
           background: 'linear-gradient(135deg, rgba(6, 78, 59, 0.4) 0%, rgba(15, 23, 42, 0.8) 100%)',
           border: '1px solid rgba(16, 185, 129, 0.35)',
-          borderRadius: '16px',
-          padding: '16px 20px',
+          borderRadius: isMobile ? '12px' : '16px',
+          padding: isMobile ? '12px 14px' : '16px 20px',
           display: 'flex',
-          flexDirection: 'row',
-          flexWrap: 'wrap',
-          alignItems: 'center',
+          flexDirection: isMobile ? 'column' : 'row',
+          alignItems: isMobile ? 'flex-start' : 'center',
           justifyContent: 'space-between',
-          gap: '14px'
+          gap: isMobile ? '10px' : '14px'
         }}>
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', maxWidth: '780px' }}>
-            <div style={{ background: 'rgba(16, 185, 129, 0.2)', padding: '8px', borderRadius: '10px', color: '#34d399', flexShrink: 0 }}>
-              <ShieldCheck size={22} />
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', maxWidth: '780px' }}>
+            <div style={{ background: 'rgba(16, 185, 129, 0.2)', padding: '6px', borderRadius: '8px', color: '#34d399', flexShrink: 0 }}>
+              <ShieldCheck size={isMobile ? 18 : 22} />
             </div>
             <div>
-              <h3 style={{ margin: 0, fontSize: '0.92rem', fontWeight: '800', color: '#ffffff' }}>
+              <h3 style={{ margin: 0, fontSize: isMobile ? '0.84rem' : '0.92rem', fontWeight: '800', color: '#ffffff' }}>
                 Prinsip Sains & Kepatuhan UU No. 27/2022 (UU PDP)
               </h3>
-              <p style={{ margin: '4px 0 0', fontSize: '0.78rem', color: '#cbd5e1', lineHeight: 1.5 }}>
-                ceKKes memisahkan identifikasi subjek dari pemeriksaan kesehatan. Sistem <strong>tidak melakukan diagnosis medis/klinis otomatis</strong> dan tidak mengumpulkan biometrik mentah (sidik jari/retina) tanpa izin eksplisit.
+              <p style={{ margin: '2px 0 0', fontSize: isMobile ? '0.72rem' : '0.78rem', color: '#cbd5e1', lineHeight: 1.4 }}>
+                ceKKes memisahkan identifikasi subjek dari observasi biologis. Sistem <strong>tidak melakukan diagnosis klinis otomatis</strong>.
               </p>
             </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', width: isMobile ? '100%' : 'auto', justifyContent: isMobile ? 'flex-end' : 'flex-start', flexWrap: 'wrap' }}>
             <button
               onClick={() => setIsBiometricModalOpen(true)}
               style={{
-                padding: '8px 14px',
-                borderRadius: '10px',
+                padding: isMobile ? '6px 12px' : '8px 14px',
+                borderRadius: '8px',
                 background: 'linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%)',
                 border: '1px solid rgba(255,255,255,0.2)',
                 color: '#ffffff',
-                fontSize: '0.78rem',
+                fontSize: isMobile ? '0.74rem' : '0.78rem',
                 fontWeight: '700',
                 cursor: 'pointer'
               }}
@@ -223,12 +238,12 @@ const CekkesDashboardPage = () => {
             <button
               onClick={() => setActiveTab('audit')}
               style={{
-                padding: '8px 14px',
-                borderRadius: '10px',
+                padding: isMobile ? '6px 12px' : '8px 14px',
+                borderRadius: '8px',
                 background: '#1e293b',
                 border: '1px solid #334155',
                 color: '#e2e8f0',
-                fontSize: '0.78rem',
+                fontSize: isMobile ? '0.74rem' : '0.78rem',
                 fontWeight: '600',
                 cursor: 'pointer'
               }}
@@ -238,20 +253,20 @@ const CekkesDashboardPage = () => {
             <button
               onClick={() => setIsAiModalOpen(true)}
               style={{
-                padding: '8px 16px',
-                borderRadius: '10px',
+                padding: isMobile ? '6px 12px' : '8px 14px',
+                borderRadius: '8px',
                 background: 'rgba(16, 185, 129, 0.2)',
                 border: '1px solid rgba(16, 185, 129, 0.4)',
                 color: '#34d399',
-                fontSize: '0.78rem',
+                fontSize: isMobile ? '0.74rem' : '0.78rem',
                 fontWeight: '800',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px'
+                gap: '5px'
               }}
             >
-              <Sparkles size={14} /> Asisten AI
+              <Sparkles size={13} /> Asisten AI
             </button>
           </div>
         </div>
@@ -329,8 +344,8 @@ const CekkesDashboardPage = () => {
             ) : (
               <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-                gap: '16px'
+                gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(320px, 1fr))',
+                gap: isMobile ? '12px' : '16px'
               }}>
                 {filteredSubjects.map(sub => {
                   const isAttention = sub.status === 'Perlu Tindak Lanjut';

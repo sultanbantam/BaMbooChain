@@ -13,18 +13,22 @@ import {
   Dog,
   Sparkles,
   RefreshCw,
-  Sliders
+  Image as ImageIcon
 } from 'lucide-react';
 
 const CekkesBiometricModal = ({ isOpen, onClose }) => {
   const [activeTab, setActiveTab] = useState('animal_eye'); // 'animal_eye' | 'retina' | 'fingerprint' | 'voice'
   
-  // Camera state (Retina/Iris simulation & Animal Eye Scanner)
+  // Camera & Photo State
   const videoRef = useRef(null);
   const streamRef = useRef(null);
+  const fileInputRef = useRef(null);
+
   const [isCameraActive, setIsCameraActive] = useState(false);
+  const [isCameraStarting, setIsCameraStarting] = useState(false);
   const [cameraError, setCameraError] = useState('');
   const [irisDetected, setIrisDetected] = useState(false);
+  const [capturedPhoto, setCapturedPhoto] = useState(null);
 
   // Animal Eye Biometrics State
   const [animalScanning, setAnimalScanning] = useState(false);
@@ -39,6 +43,17 @@ const CekkesBiometricModal = ({ isOpen, onClose }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [audioSampleReady, setAudioSampleReady] = useState(false);
   const [audioWave, setAudioWave] = useState([30, 50, 80, 45, 90, 60, 40, 70, 85, 30]);
+
+  // Window width for mobile responsiveness
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const isMobile = windowWidth <= 768;
 
   // Safe camera stopper
   const stopCamera = useCallback(() => {
@@ -60,6 +75,7 @@ const CekkesBiometricModal = ({ isOpen, onClose }) => {
       console.warn('Error stopping camera:', err);
     }
     setIsCameraActive(false);
+    setIsCameraStarting(false);
     setIrisDetected(false);
   }, []);
 
@@ -70,27 +86,78 @@ const CekkesBiometricModal = ({ isOpen, onClose }) => {
     };
   }, [stopCamera]);
 
+  // Ensure video element plays stream as soon as isCameraActive is set
+  useEffect(() => {
+    if (isCameraActive && videoRef.current && streamRef.current) {
+      videoRef.current.srcObject = streamRef.current;
+      videoRef.current.setAttribute('playsinline', 'true');
+      videoRef.current.setAttribute('autoplay', 'true');
+      videoRef.current.muted = true;
+      videoRef.current.play().catch(e => console.warn('Video play in effect error:', e));
+    }
+  }, [isCameraActive]);
+
   const startCamera = async () => {
     setCameraError('');
     setIrisDetected(false);
+    setIsCameraStarting(true);
+    setCapturedPhoto(null);
+
     try {
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-          video: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 } } 
-        });
-        streamRef.current = stream;
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          videoRef.current.play().catch(e => console.warn('Video play error:', e));
-          setIsCameraActive(true);
-          setTimeout(() => setIrisDetected(true), 1800);
-        }
-      } else {
-        setCameraError('Perangkat browser tidak mendukung API akses kamera mediaDevices.');
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Browser ini tidak mendukung navigator.mediaDevices. Silakan gunakan tombol "Jepret Foto Kamera Bawaan".');
       }
+
+      let stream = null;
+      // 1. Coba kamera belakang (environment) terlebih dahulu
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } } 
+        });
+      } catch (err1) {
+        console.warn('Rear camera constraint failed, fallback to any camera:', err1);
+        // 2. Fallback ke kamera apa pun yang tersedia
+        stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      }
+
+      streamRef.current = stream;
+      setIsCameraActive(true);
+      setIsCameraStarting(false);
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.setAttribute('playsinline', 'true');
+        videoRef.current.setAttribute('autoplay', 'true');
+        videoRef.current.muted = true;
+        try {
+          await videoRef.current.play();
+        } catch (playErr) {
+          console.warn('Video play promise caught:', playErr);
+        }
+      }
+      setTimeout(() => setIrisDetected(true), 1500);
     } catch (err) {
-      console.warn('Camera access denied or unavailable:', err);
-      setCameraError('Izin kamera ditolak atau sedang digunakan aplikasi lain: ' + err.message);
+      console.error('Camera access error:', err);
+      setIsCameraStarting(false);
+      setIsCameraActive(false);
+      setCameraError(
+        'Kamera live tidak dapat dibuka (' + (err.message || 'Izin kamera ditolak') + 
+        '). Silakan gunakan tombol "📸 Jepret Foto Kamera HP" di bawah untuk memotret langsung lewat aplikasi kamera ponsel.'
+      );
+    }
+  };
+
+  const handlePhotoCapture = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setCapturedPhoto(event.target.result);
+        stopCamera();
+        // Jalankan AI Ocular langsung pada foto yang baru dijepret
+        runAnimalOcularAi();
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -107,12 +174,12 @@ const CekkesBiometricModal = ({ isOpen, onClose }) => {
         rightEyeQuality: '96% (Fokus Tajam)',
         famachaScore: isGoatOrCow ? 2 : null,
         famachaLabel: isGoatOrCow ? 'Skor 2 (Optimal / Merah Muda Segar - Bebas Anemia Cacing)' : 'N/A (Khusus Ruminansia)',
-        scleraCondition: 'Normal / Non-Ikterik (Tidak ada semburat kuning, hepar sehat)',
-        corneaClarity: '99% Transparan (Bebas katarak, ulkus, atau konjungtivitis)',
+        scleraCondition: 'Normal / Non-Ikterik (Tidak ada rona kuning, organ hepar sehat)',
+        corneaClarity: '99% Transparan (Bebas katarak, ulkus kornea, atau Pinkeye)',
         pupilReflex: 'Simetris (Isokor - Respon cahaya normal)',
         notes: `Data biometrik kedua mata terenkripsi SHA-256 dan siap diasosiasikan ke Buku Kesehatan Digital satwa tanpa ear-tag.`
       });
-    }, 2200);
+    }, 2000);
   };
 
   const testFingerprintSensor = async () => {
@@ -166,7 +233,7 @@ const CekkesBiometricModal = ({ isOpen, onClose }) => {
     }
   };
 
-  // If not open, return null safely AFTER all hooks & functions are defined
+  // If modal not open, return null safely
   if (!isOpen) return null;
 
   return (
@@ -176,31 +243,41 @@ const CekkesBiometricModal = ({ isOpen, onClose }) => {
       left: 0,
       width: '100%',
       height: '100%',
-      background: 'rgba(0, 0, 0, 0.85)',
+      background: 'rgba(0, 0, 0, 0.88)',
       backdropFilter: 'blur(8px)',
       zIndex: 20000,
       display: 'flex',
-      alignItems: 'center',
+      alignItems: isMobile ? 'flex-end' : 'center',
       justifyContent: 'center',
-      padding: '20px',
+      padding: isMobile ? '0' : '20px',
       boxSizing: 'border-box'
     }}>
       <div style={{
         background: '#161b26',
         border: '1px solid rgba(16, 185, 129, 0.4)',
-        borderRadius: '20px',
+        borderRadius: isMobile ? '20px 20px 0 0' : '20px',
         width: '100%',
         maxWidth: '820px',
-        maxHeight: '92vh',
+        maxHeight: isMobile ? '92vh' : '92vh',
         display: 'flex',
         flexDirection: 'column',
-        boxShadow: '0 25px 60px rgba(0, 0, 0, 0.6)',
+        boxShadow: '0 25px 60px rgba(0, 0, 0, 0.7)',
         overflow: 'hidden',
         color: '#ffffff'
       }}>
-        {/* Header */}
+        {/* Hidden Native File/Camera Input */}
+        <input 
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          style={{ display: 'none' }}
+          onChange={handlePhotoCapture}
+        />
+
+        {/* Modal Header */}
         <div style={{
-          padding: '16px 22px',
+          padding: isMobile ? '12px 16px' : '16px 22px',
           borderBottom: '1px solid #232936',
           background: '#0d111a',
           display: 'flex',
@@ -208,15 +285,15 @@ const CekkesBiometricModal = ({ isOpen, onClose }) => {
           justifyContent: 'space-between'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ background: 'rgba(59, 130, 246, 0.2)', padding: '8px', borderRadius: '10px', color: '#60a5fa' }}>
-              <Eye size={20} />
+            <div style={{ background: 'rgba(16, 185, 129, 0.2)', padding: '7px', borderRadius: '10px', color: '#34d399' }}>
+              <Eye size={18} />
             </div>
             <div>
-              <h2 style={{ margin: 0, fontSize: '1.05rem', fontWeight: '800', color: '#ffffff' }}>
-                Laboratorium Biometrik & Sensor (Mata Satwa, Retina, Sidik Jari, Suara)
+              <h2 style={{ margin: 0, fontSize: isMobile ? '0.95rem' : '1.05rem', fontWeight: '800', color: '#ffffff' }}>
+                {isMobile ? '🔬 Lab Biometrik & Sensor Satwa' : 'Laboratorium Biometrik & Sensor (Mata Satwa, Retina, Sidik Jari, Suara)'}
               </h2>
-              <p style={{ margin: 0, fontSize: '0.74rem', color: '#94a3b8' }}>
-                Standar ilmiah, pengenalan kamera HP, protokol FAMACHA, dan kepatuhan UU PDP
+              <p style={{ margin: 0, fontSize: '0.72rem', color: '#94a3b8' }}>
+                Standar Ilmiah Kamera HP, FAMACHA & Kepatuhan UU PDP
               </p>
             </div>
           </div>
@@ -228,20 +305,22 @@ const CekkesBiometricModal = ({ isOpen, onClose }) => {
           </button>
         </div>
 
-        {/* Biometric Tabs */}
+        {/* Biometric Tabs - Horizontal Pill Bar on Mobile */}
         <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))',
+          display: 'flex',
+          overflowX: 'auto',
           gap: '8px',
-          padding: '12px 20px',
+          padding: isMobile ? '10px 14px' : '12px 20px',
           background: '#0d111a',
-          borderBottom: '1px solid #232936'
+          borderBottom: '1px solid #232936',
+          scrollbarWidth: 'none',
+          WebkitOverflowScrolling: 'touch'
         }}>
           {[
-            { id: 'animal_eye', label: '🐾 Mata Satwa (AI Hewan)', icon: <Dog size={16} />, color: '#10b981' },
-            { id: 'retina', label: '👁️ Retina & Iris (Manusia)', icon: <Eye size={16} />, color: '#2dd4bf' },
-            { id: 'fingerprint', label: '👆 Sidik Jari (WebAuthn)', icon: <Fingerprint size={16} />, color: '#38bdf8' },
-            { id: 'voice', label: '🎙️ Suara (Bioakustik)', icon: <Mic size={16} />, color: '#f59e0b' },
+            { id: 'animal_eye', label: '🐾 Mata Satwa (AI Hewan)', icon: <Dog size={15} />, color: '#10b981' },
+            { id: 'retina', label: '👁️ Retina (Manusia)', icon: <Eye size={15} />, color: '#2dd4bf' },
+            { id: 'fingerprint', label: '👆 Sidik Jari', icon: <Fingerprint size={15} />, color: '#38bdf8' },
+            { id: 'voice', label: '🎙️ Suara', icon: <Mic size={15} />, color: '#f59e0b' },
           ].map(t => {
             const isSel = activeTab === t.id;
             return (
@@ -250,18 +329,19 @@ const CekkesBiometricModal = ({ isOpen, onClose }) => {
                 type="button"
                 onClick={() => { stopCamera(); setActiveTab(t.id); }}
                 style={{
-                  display: 'flex',
+                  display: 'inline-flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
                   gap: '6px',
-                  padding: '9px 10px',
+                  padding: isMobile ? '7px 12px' : '9px 14px',
                   borderRadius: '10px',
                   border: isSel ? `1px solid ${t.color}` : '1px solid #232936',
-                  background: isSel ? 'rgba(16, 185, 129, 0.15)' : 'rgba(22, 27, 38, 0.6)',
+                  background: isSel ? 'rgba(16, 185, 129, 0.2)' : 'rgba(22, 27, 38, 0.7)',
                   color: isSel ? t.color : '#94a3b8',
                   fontSize: '0.78rem',
                   fontWeight: '700',
                   cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0,
                   transition: 'all 0.2s'
                 }}
               >
@@ -273,344 +353,256 @@ const CekkesBiometricModal = ({ isOpen, onClose }) => {
         </div>
 
         {/* Tab Body */}
-        <div style={{ padding: '20px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div style={{ padding: isMobile ? '14px' : '20px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '14px' }}>
           
           {/* TAB: MATA SATWA (ANIMAL DUAL-EYE BIOMETRICS) */}
           {activeTab === 'animal_eye' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div style={{ background: '#0d111a', border: '1px solid #232936', borderRadius: '14px', padding: '16px' }}>
-                <h4 style={{ margin: '0 0 8px', fontSize: '0.88rem', fontWeight: '800', color: '#10b981', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Dog size={16} /> Cara Membangun Database & Data Kesehatan Hewan Cukup Memotret Kedua Matanya
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ background: '#0d111a', border: '1px solid #232936', borderRadius: '12px', padding: isMobile ? '12px' : '14px' }}>
+                <h4 style={{ margin: '0 0 6px', fontSize: '0.84rem', fontWeight: '800', color: '#10b981', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Dog size={16} /> Cara Membangun Database Satwa Cukup Memotret Kedua Matanya
                 </h4>
-                <div style={{ fontSize: '0.8rem', color: '#cbd5e1', lineHeight: 1.6, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ fontSize: '0.76rem', color: '#cbd5e1', lineHeight: 1.5, display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <p style={{ margin: 0 }}>
-                    <strong style={{ color: '#ffffff' }}>1. Identitas Unik Tanpa Menusuk Telinga (Ear-Tag Replacement):</strong> Pola trabekular iris dan kapiler sklera pada kedua mata hewan (kambing, sapi, kucing, anjing) bersifat <em>unik permanen seumur hidup</em>, persis sidik jari manusia. Citra kedua mata diubah menjadi <strong>Biometric Hash ID</strong> yang disimpan di database/blockchain.
+                    • <strong>Identitas Unik Pengganti Ear-Tag:</strong> Pola trabekular iris dan sklera kedua mata hewan bersifat permanen seumur hidup. AI mengekstrak pola ini menjadi <strong>Biometric Hash ID</strong> tanpa melukai telinga hewan.
                   </p>
                   <p style={{ margin: 0 }}>
-                    <strong style={{ color: '#ffffff' }}>2. Deteksi Anemia Skala FAMACHA:</strong> AI membaca warna selaput lendir kelopak mata bawah (konjungtiva palpebra). Skor 1 (Merah optimal) s/d Skor 5 (Putih pucat akibat cacing <em>Haemonchus contortus</em>). Peternak tahu kapan hewan wajib diberi obat cacing tanpa tes darah mahal.
+                    • <strong>Skala FAMACHA (Anemia & Cacing):</strong> AI memeriksa warna kelopak mata bawah. Skor 1–2 (Sehat / Merah Muda), Skor 4–5 (Pucat Anemia akibat cacing <em>Haemonchus</em>).
                   </p>
                   <p style={{ margin: 0 }}>
-                    <strong style={{ color: '#ffffff' }}>3. Deteksi Penyakit Hati & Infeksi:</strong> Sklera kuning mengindikasikan <em>ikterus/jaundice</em> (parasit darah seperti Babesiosis atau hepatitis hewan). Selaput putih/kebiruan pada kornea mendeteksi katarak atau <em>Pinkeye</em> (bovine keratoconjunctivitis).
-                  </p>
-                  <p style={{ margin: 0 }}>
-                    <strong style={{ color: '#ffffff' }}>4. Kamera HP Biasa vs Alat Optik:</strong> Kamera HP biasa dengan lampu flash/makro berjarak 10–15 cm <em>sudah sangat memadai</em> untuk memotret iris, kornea, dan konjungtiva luar. Untuk pembuluh darah retina di dalam bola mata, dapat dipasang klip adaptor lensa fundus 20D sederhana di depan lensa kamera ponsel.
+                    • <strong>Kamera HP Biasa:</strong> Bisa menggunakan kamera bawaan ponsel (jarak 10–15 cm).
                   </p>
                 </div>
               </div>
 
-              {/* Species Selector & Camera Viewfinder */}
-              <div style={{ background: '#0d111a', border: '1px solid #232936', borderRadius: '14px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
-                  <span style={{ fontSize: '0.82rem', fontWeight: '700', color: '#94a3b8' }}>Pilih Spesies Satwa:</span>
-                  <div style={{ display: 'flex', gap: '6px' }}>
-                    {[
-                      { id: 'kambing', label: '🐐 Kambing/Domba' },
-                      { id: 'kucing', label: '🐱 Kucing' },
-                      { id: 'sapi', label: '🐄 Sapi Ternak' },
-                      { id: 'anjing', label: '🐕 Anjing' },
-                    ].map(s => (
-                      <button
-                        key={s.id}
-                        type="button"
-                        onClick={() => setAnimalSpecies(s.id)}
-                        style={{
-                          padding: '5px 10px',
-                          borderRadius: '8px',
-                          border: animalSpecies === s.id ? '1px solid #10b981' : '1px solid #232936',
-                          background: animalSpecies === s.id ? 'rgba(16, 185, 129, 0.2)' : 'transparent',
-                          color: animalSpecies === s.id ? '#10b981' : '#94a3b8',
-                          fontSize: '0.75rem',
-                          fontWeight: '700',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        {s.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Viewfinder Reticle for Dual-Eyes */}
-                <div style={{
-                  width: '100%',
-                  height: '240px',
-                  background: '#000000',
-                  borderRadius: '12px',
-                  border: '2px dashed #232936',
-                  overflow: 'hidden',
-                  position: 'relative',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  {isCameraActive ? (
-                    <>
-                      <video ref={videoRef} playsInline autoPlay muted style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      
-                      {/* Dual Eyes Target Reticle */}
-                      <div style={{ position: 'absolute', display: 'flex', gap: '60px', alignItems: 'center' }}>
-                        {/* Mata Kiri (OS) */}
-                        <div style={{
-                          width: '90px',
-                          height: '90px',
-                          borderRadius: '50%',
-                          border: '2px solid #10b981',
-                          boxShadow: '0 0 15px rgba(16, 185, 129, 0.5)',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          justifyContent: 'center'
-                        }}>
-                          <div style={{ width: '22px', height: '22px', borderRadius: '50%', border: '1px solid #34d399' }} />
-                          <span style={{ fontSize: '0.62rem', fontWeight: '800', color: '#10b981', marginTop: '4px' }}>MATA KIRI (OS)</span>
-                        </div>
-
-                        {/* Mata Kanan (OD) */}
-                        <div style={{
-                          width: '90px',
-                          height: '90px',
-                          borderRadius: '50%',
-                          border: '2px solid #10b981',
-                          boxShadow: '0 0 15px rgba(16, 185, 129, 0.5)',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          justifyContent: 'center'
-                        }}>
-                          <div style={{ width: '22px', height: '22px', borderRadius: '50%', border: '1px solid #34d399' }} />
-                          <span style={{ fontSize: '0.62rem', fontWeight: '800', color: '#10b981', marginTop: '4px' }}>MATA KANAN (OD)</span>
-                        </div>
-                      </div>
-
-                      <span style={{
-                        position: 'absolute',
-                        bottom: '10px',
-                        fontSize: '0.72rem',
-                        padding: '4px 12px',
-                        borderRadius: '999px',
-                        background: 'rgba(0,0,0,0.7)',
-                        color: '#34d399',
-                        fontWeight: '700'
-                      }}>
-                        Arahkan kamera 10–15 cm tegak lurus sejajar kedua mata satwa
-                      </span>
-                    </>
-                  ) : (
-                    <div style={{ textAlign: 'center', padding: '20px', color: '#64748b' }}>
-                      <Camera size={38} color="#64748b" style={{ margin: '0 auto 8px' }} />
-                      <p style={{ margin: 0, fontSize: '0.8rem', color: '#ffffff', fontWeight: '700' }}>Kamera HP Belum Aktif</p>
-                      <span style={{ fontSize: '0.72rem' }}>Klik "Aktifkan Kamera HP" untuk membuka sensor video perangkat</span>
-                    </div>
-                  )}
-                </div>
-
-                {cameraError && (
-                  <div style={{ color: '#f87171', fontSize: '0.75rem', textAlign: 'center' }}>{cameraError}</div>
-                )}
-
-                {/* Actions */}
-                <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                  {!isCameraActive ? (
+              {/* Species Selector */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                <span style={{ fontSize: '0.78rem', fontWeight: '700', color: '#94a3b8' }}>Pilih Spesies:</span>
+                <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', scrollbarWidth: 'none' }}>
+                  {[
+                    { id: 'kambing', label: '🐐 Kambing/Domba' },
+                    { id: 'kucing', label: '🐱 Kucing' },
+                    { id: 'sapi', label: '🐄 Sapi Ternak' },
+                    { id: 'anjing', label: '🐕 Anjing' },
+                  ].map(s => (
                     <button
+                      key={s.id}
                       type="button"
-                      onClick={startCamera}
+                      onClick={() => setAnimalSpecies(s.id)}
                       style={{
-                        padding: '10px 20px',
-                        background: '#10b981',
-                        border: 'none',
-                        borderRadius: '10px',
-                        color: '#022c22',
-                        fontSize: '0.82rem',
-                        fontWeight: '800',
+                        padding: '4px 8px',
+                        borderRadius: '6px',
+                        border: animalSpecies === s.id ? '1px solid #10b981' : '1px solid #232936',
+                        background: animalSpecies === s.id ? 'rgba(16, 185, 129, 0.25)' : 'transparent',
+                        color: animalSpecies === s.id ? '#10b981' : '#94a3b8',
+                        fontSize: '0.72rem',
+                        fontWeight: '700',
                         cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px'
+                        whiteSpace: 'nowrap'
                       }}
                     >
-                      <Camera size={16} /> Aktifkan Kamera HP
+                      {s.label}
                     </button>
-                  ) : (
-                    <>
-                      <button
-                        type="button"
-                        onClick={runAnimalOcularAi}
-                        disabled={animalScanning}
-                        style={{
-                          padding: '10px 22px',
-                          background: animalScanning ? '#334155' : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                          border: 'none',
-                          borderRadius: '10px',
-                          color: '#ffffff',
-                          fontSize: '0.82rem',
-                          fontWeight: '800',
-                          cursor: animalScanning ? 'not-allowed' : 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '6px'
-                        }}
-                      >
-                        <Sparkles size={16} /> {animalScanning ? 'Menganalisis Biometrik Kedua Mata...' : 'Pindai Kedua Mata & Ekstrak Data'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={stopCamera}
-                        style={{
-                          padding: '10px 16px',
-                          background: '#e03131',
-                          border: 'none',
-                          borderRadius: '10px',
-                          color: '#ffffff',
-                          fontSize: '0.82rem',
-                          fontWeight: '800',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '6px'
-                        }}
-                      >
-                        <StopCircle size={16} /> Matikan Kamera
-                      </button>
-                    </>
-                  )}
+                  ))}
                 </div>
+              </div>
 
-                {/* Result Card */}
-                {animalScanResult && (
-                  <div style={{
-                    marginTop: '8px',
-                    padding: '16px',
-                    background: 'rgba(16, 185, 129, 0.08)',
-                    border: '1px solid #10b981',
-                    borderRadius: '12px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '10px'
-                  }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '0.85rem', fontWeight: '800', color: '#10b981', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <CheckCircle2 size={16} /> Hasil Ekstraksi Biometrik & Kesehatan Mata
-                      </span>
-                      <span style={{ fontSize: '0.72rem', background: '#0d111a', padding: '3px 8px', borderRadius: '6px', color: '#cbd5e1' }}>
-                        ID: <strong style={{ color: '#34d399' }}>{animalScanResult.idHash}</strong>
-                      </span>
-                    </div>
+              {/* Viewfinder Reticle for Dual-Eyes */}
+              <div style={{
+                width: '100%',
+                height: isMobile ? '200px' : '230px',
+                background: '#000000',
+                borderRadius: '12px',
+                border: '2px dashed #232936',
+                overflow: 'hidden',
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                {/* VIDEO ALWAYS PRESENT IN DOM TO PREVENT NULL REFS */}
+                <video 
+                  ref={videoRef} 
+                  playsInline 
+                  autoPlay 
+                  muted 
+                  style={{ 
+                    width: '100%', 
+                    height: '100%', 
+                    objectFit: 'cover',
+                    display: isCameraActive ? 'block' : 'none' 
+                  }} 
+                />
 
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px', fontSize: '0.78rem' }}>
-                      <div style={{ background: '#0d111a', padding: '10px', borderRadius: '8px', border: '1px solid #232936' }}>
-                        <div style={{ color: '#94a3b8', fontSize: '0.7rem' }}>Status Anemia (FAMACHA):</div>
-                        <div style={{ color: '#34d399', fontWeight: '700', marginTop: '2px' }}>{animalScanResult.famachaLabel}</div>
-                      </div>
-                      <div style={{ background: '#0d111a', padding: '10px', borderRadius: '8px', border: '1px solid #232936' }}>
-                        <div style={{ color: '#94a3b8', fontSize: '0.7rem' }}>Kondisi Sklera (Hati/Ikterus):</div>
-                        <div style={{ color: '#ffffff', fontWeight: '700', marginTop: '2px' }}>{animalScanResult.scleraCondition}</div>
-                      </div>
-                      <div style={{ background: '#0d111a', padding: '10px', borderRadius: '8px', border: '1px solid #232936' }}>
-                        <div style={{ color: '#94a3b8', fontSize: '0.7rem' }}>Kejernihan Kornea:</div>
-                        <div style={{ color: '#38bdf8', fontWeight: '700', marginTop: '2px' }}>{animalScanResult.corneaClarity}</div>
-                      </div>
-                      <div style={{ background: '#0d111a', padding: '10px', borderRadius: '8px', border: '1px solid #232936' }}>
-                        <div style={{ color: '#94a3b8', fontSize: '0.7rem' }}>Refleks Cahaya Pupil (PLR):</div>
-                        <div style={{ color: '#ffffff', fontWeight: '700', marginTop: '2px' }}>{animalScanResult.pupilReflex}</div>
-                      </div>
-                    </div>
+                {/* SHOW CAPTURED PHOTO IF TAKEN */}
+                {capturedPhoto && !isCameraActive && (
+                  <img 
+                    src={capturedPhoto} 
+                    alt="Foto Mata Satwa" 
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                  />
+                )}
 
-                    <p style={{ margin: 0, fontSize: '0.74rem', color: '#cbd5e1', lineHeight: 1.5, background: '#0d111a', padding: '8px 12px', borderRadius: '8px' }}>
-                      💡 {animalScanResult.notes}
-                    </p>
+                {/* SHOW PLACEHOLDER WHEN NEITHER VIDEO NOR PHOTO */}
+                {!isCameraActive && !capturedPhoto && (
+                  <div style={{ textAlign: 'center', padding: '16px', color: '#64748b' }}>
+                    <Camera size={34} color="#64748b" style={{ margin: '0 auto 6px' }} />
+                    <p style={{ margin: 0, fontSize: '0.8rem', color: '#ffffff', fontWeight: '700' }}>Kamera Belum Aktif</p>
+                    <span style={{ fontSize: '0.72rem' }}>Pilih salah satu tombol di bawah untuk membuka kamera atau menjepret foto</span>
                   </div>
                 )}
-              </div>
-            </div>
-          )}
 
-          {/* TAB: RETINA & IRIS (MANUSIA) */}
-          {activeTab === 'retina' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div style={{ background: '#0d111a', border: '1px solid #232936', borderRadius: '14px', padding: '16px' }}>
-                <h4 style={{ margin: '0 0 6px', fontSize: '0.85rem', fontWeight: '800', color: '#2dd4bf', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Eye size={16} /> Apakah Bisa Memakai Kamera Biasa / HP untuk Manusia?
-                </h4>
-                <div style={{ fontSize: '0.8rem', color: '#cbd5e1', lineHeight: 1.6, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <p style={{ margin: 0 }}>
-                    <strong style={{ color: '#ffffff' }}>1. Retina (Dinding Belakang Mata):</strong> <span style={{ color: '#f87171', fontWeight: 'bold' }}>TIDAK BISA menggunakan kamera HP polos tanpa adaptor.</span> Retina berada di rongga dalam bola mata di balik pupil. Memerlukan perangkat medis optik bernama <strong>Fundus Camera / Oftalmoskopi</strong> dengan pencahayaan koaksial. Menjanjikan "scan retina dengan kamera ponsel tanpa optik khusus" adalah pelanggaran etika sains medis dan kebijakan Google Play.
-                  </p>
-                  <p style={{ margin: 0 }}>
-                    <strong style={{ color: '#ffffff' }}>2. Iris (Selaput Pelangi Depan):</strong> <span style={{ color: '#34d399', fontWeight: 'bold' }}>Bisa menggunakan kamera</span> dengan pencahayaan inframerah dekat (*Near-Infrared / NIR*) atau kamera resolusi tinggi agar pola pigmen iris terbaca jelas tanpa membuat pupil mata menyempit.
-                  </p>
-                </div>
-              </div>
-
-              {/* Camera Simulator */}
-              <div style={{ background: '#0d111a', border: '1px solid #232936', borderRadius: '14px', padding: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
-                <div style={{ width: '100%', maxWidth: '420px', height: '240px', background: '#000000', borderRadius: '12px', border: '2px dashed #232936', overflow: 'hidden', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {isCameraActive ? (
-                    <>
-                      <video ref={videoRef} playsInline autoPlay muted style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                {/* Dual Eyes Target Reticle (Always overlaid when video or photo is visible) */}
+                {(isCameraActive || capturedPhoto) && (
+                  <>
+                    <div style={{ position: 'absolute', display: 'flex', gap: isMobile ? '28px' : '50px', alignItems: 'center' }}>
+                      {/* Mata Kiri (OS) */}
                       <div style={{
-                        position: 'absolute',
-                        width: '120px',
-                        height: '120px',
-                        border: irisDetected ? '2px solid #34d399' : '2px dashed #60a5fa',
+                        width: isMobile ? '75px' : '85px',
+                        height: isMobile ? '75px' : '85px',
                         borderRadius: '50%',
-                        boxShadow: irisDetected ? '0 0 20px rgba(52, 211, 153, 0.6)' : 'none',
-                        transition: 'all 0.3s'
+                        border: '2px solid #10b981',
+                        boxShadow: '0 0 15px rgba(16, 185, 129, 0.5)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: 'rgba(0,0,0,0.2)'
                       }}>
-                        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '30px', height: '30px', border: '1px solid rgba(255,255,255,0.4)', borderRadius: '50%' }} />
+                        <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: '1px solid #34d399' }} />
+                        <span style={{ fontSize: '0.58rem', fontWeight: '800', color: '#10b981', marginTop: '3px' }}>MATA KIRI</span>
                       </div>
-                      <span style={{
-                        position: 'absolute',
-                        bottom: '10px',
-                        fontSize: '0.72rem',
-                        padding: '3px 10px',
-                        borderRadius: '999px',
-                        background: irisDetected ? 'rgba(16, 185, 129, 0.85)' : 'rgba(0,0,0,0.6)',
-                        color: '#ffffff',
-                        fontWeight: '700'
+
+                      {/* Mata Kanan (OD) */}
+                      <div style={{
+                        width: isMobile ? '75px' : '85px',
+                        height: isMobile ? '75px' : '85px',
+                        borderRadius: '50%',
+                        border: '2px solid #10b981',
+                        boxShadow: '0 0 15px rgba(16, 185, 129, 0.5)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: 'rgba(0,0,0,0.2)'
                       }}>
-                        {irisDetected ? '✓ Fokus Iris Terdeteksi (Simulasi Optik)' : 'Mengarahkan Fokus Mata ke Lingkaran...'}
-                      </span>
-                    </>
-                  ) : (
-                    <div style={{ textAlign: 'center', padding: '20px', color: '#64748b' }}>
-                      <Camera size={38} color="#64748b" style={{ margin: '0 auto 8px' }} />
-                      <p style={{ margin: 0, fontSize: '0.8rem' }}>Kamera sedang tidak aktif</p>
-                      <span style={{ fontSize: '0.72rem' }}>Klik tombol di bawah untuk menguji akses kamera perangkat</span>
+                        <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: '1px solid #34d399' }} />
+                        <span style={{ fontSize: '0.58rem', fontWeight: '800', color: '#10b981', marginTop: '3px' }}>MATA KANAN</span>
+                      </div>
                     </div>
-                  )}
-                </div>
 
-                {cameraError && (
-                  <div style={{ color: '#f87171', fontSize: '0.75rem', textAlign: 'center' }}>{cameraError}</div>
+                    <span style={{
+                      position: 'absolute',
+                      bottom: '8px',
+                      fontSize: '0.68rem',
+                      padding: '3px 10px',
+                      borderRadius: '999px',
+                      background: 'rgba(0,0,0,0.75)',
+                      color: '#34d399',
+                      fontWeight: '700'
+                    }}>
+                      {capturedPhoto ? '✓ Foto Berhasil Ditangkap' : 'Arahkan 10–15 cm sejajar kedua mata satwa'}
+                    </span>
+                  </>
                 )}
+              </div>
 
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  {!isCameraActive ? (
+              {cameraError && (
+                <div style={{ 
+                  color: '#f87171', 
+                  fontSize: '0.74rem', 
+                  textAlign: 'center', 
+                  background: 'rgba(239, 68, 68, 0.1)', 
+                  border: '1px solid rgba(239, 68, 68, 0.3)', 
+                  padding: '8px 12px', 
+                  borderRadius: '8px',
+                  lineHeight: 1.4
+                }}>
+                  {cameraError}
+                </div>
+              )}
+
+              {/* Actions Controls: Live Video Stream & Native Phone Camera Capture */}
+              <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                {!isCameraActive && !capturedPhoto && (
+                  <>
                     <button
                       type="button"
-                      onClick={startCamera}
+                      onClick={() => fileInputRef.current && fileInputRef.current.click()}
                       style={{
-                        padding: '9px 18px',
-                        background: '#10b981',
+                        flex: isMobile ? '1 1 100%' : 'initial',
+                        padding: '10px 18px',
+                        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                         border: 'none',
                         borderRadius: '10px',
-                        color: '#022c22',
+                        color: '#ffffff',
                         fontSize: '0.82rem',
                         fontWeight: '800',
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                        boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
+                      }}
+                    >
+                      <Camera size={16} /> 📸 Jepret Foto Mata Satwa (Kamera HP)
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={startCamera}
+                      disabled={isCameraStarting}
+                      style={{
+                        flex: isMobile ? '1 1 100%' : 'initial',
+                        padding: '9px 16px',
+                        background: 'rgba(30, 41, 59, 0.8)',
+                        border: '1px solid #334155',
+                        borderRadius: '10px',
+                        color: '#cbd5e1',
+                        fontSize: '0.78rem',
+                        fontWeight: '700',
+                        cursor: isCameraStarting ? 'not-allowed' : 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
                         gap: '6px'
                       }}
                     >
-                      <Camera size={16} /> Aktifkan Kamera Perangkat
+                      <Sparkles size={14} color="#34d399" /> {isCameraStarting ? 'Menghubungkan...' : '🎥 Buka Video Kamera Live'}
                     </button>
-                  ) : (
+                  </>
+                )}
+
+                {isCameraActive && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={runAnimalOcularAi}
+                      disabled={animalScanning}
+                      style={{
+                        flex: isMobile ? '1' : 'initial',
+                        padding: '10px 18px',
+                        background: animalScanning ? '#334155' : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                        border: 'none',
+                        borderRadius: '10px',
+                        color: '#ffffff',
+                        fontSize: '0.82rem',
+                        fontWeight: '800',
+                        cursor: animalScanning ? 'not-allowed' : 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      <Sparkles size={16} /> {animalScanning ? 'Menganalisis...' : 'Pindai Kedua Mata & Ekstrak Data'}
+                    </button>
                     <button
                       type="button"
                       onClick={stopCamera}
                       style={{
-                        padding: '9px 18px',
+                        padding: '10px 14px',
                         background: '#e03131',
                         border: 'none',
                         borderRadius: '10px',
@@ -623,39 +615,217 @@ const CekkesBiometricModal = ({ isOpen, onClose }) => {
                         gap: '6px'
                       }}
                     >
-                      <StopCircle size={16} /> Matikan Kamera
+                      <StopCircle size={16} /> Matikan
                     </button>
-                  )}
+                  </>
+                )}
+
+                {capturedPhoto && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCapturedPhoto(null);
+                      setAnimalScanResult(null);
+                      if (fileInputRef.current) fileInputRef.current.value = '';
+                    }}
+                    style={{
+                      padding: '9px 16px',
+                      background: 'rgba(30, 41, 59, 0.9)',
+                      border: '1px solid #334155',
+                      borderRadius: '10px',
+                      color: '#ffffff',
+                      fontSize: '0.8rem',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    <RefreshCw size={14} /> 🔄 Ambil Foto Ulang
+                  </button>
+                )}
+              </div>
+
+              {/* Result Card */}
+              {animalScanResult && (
+                <div style={{
+                  padding: isMobile ? '12px' : '14px',
+                  background: 'rgba(16, 185, 129, 0.08)',
+                  border: '1px solid #10b981',
+                  borderRadius: '12px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '10px'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
+                    <span style={{ fontSize: '0.82rem', fontWeight: '800', color: '#10b981', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <CheckCircle2 size={16} /> Hasil Ekstraksi Biometrik Mata
+                    </span>
+                    <span style={{ fontSize: '0.72rem', background: '#0d111a', padding: '3px 8px', borderRadius: '6px', color: '#cbd5e1' }}>
+                      ID: <strong style={{ color: '#34d399' }}>{animalScanResult.idHash}</strong>
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(auto-fit, minmax(180px, 1fr))', gap: '8px', fontSize: '0.75rem' }}>
+                    <div style={{ background: '#0d111a', padding: '8px 10px', borderRadius: '8px', border: '1px solid #232936' }}>
+                      <div style={{ color: '#94a3b8', fontSize: '0.68rem' }}>Skala FAMACHA:</div>
+                      <div style={{ color: '#34d399', fontWeight: '700', marginTop: '2px' }}>{animalScanResult.famachaLabel}</div>
+                    </div>
+                    <div style={{ background: '#0d111a', padding: '8px 10px', borderRadius: '8px', border: '1px solid #232936' }}>
+                      <div style={{ color: '#94a3b8', fontSize: '0.68rem' }}>Sklera (Hepar/Ikterus):</div>
+                      <div style={{ color: '#ffffff', fontWeight: '700', marginTop: '2px' }}>{animalScanResult.scleraCondition}</div>
+                    </div>
+                    <div style={{ background: '#0d111a', padding: '8px 10px', borderRadius: '8px', border: '1px solid #232936' }}>
+                      <div style={{ color: '#94a3b8', fontSize: '0.68rem' }}>Kejernihan Kornea:</div>
+                      <div style={{ color: '#38bdf8', fontWeight: '700', marginTop: '2px' }}>{animalScanResult.corneaClarity}</div>
+                    </div>
+                    <div style={{ background: '#0d111a', padding: '8px 10px', borderRadius: '8px', border: '1px solid #232936' }}>
+                      <div style={{ color: '#94a3b8', fontSize: '0.68rem' }}>Refleks Pupil (PLR):</div>
+                      <div style={{ color: '#ffffff', fontWeight: '700', marginTop: '2px' }}>{animalScanResult.pupilReflex}</div>
+                    </div>
+                  </div>
+
+                  <p style={{ margin: 0, fontSize: '0.72rem', color: '#cbd5e1', lineHeight: 1.4, background: '#0d111a', padding: '8px 10px', borderRadius: '8px' }}>
+                    💡 {animalScanResult.notes}
+                  </p>
                 </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB: RETINA & IRIS (MANUSIA) */}
+          {activeTab === 'retina' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ background: '#0d111a', border: '1px solid #232936', borderRadius: '12px', padding: isMobile ? '12px' : '14px' }}>
+                <h4 style={{ margin: '0 0 6px', fontSize: '0.84rem', fontWeight: '800', color: '#2dd4bf', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Eye size={16} /> Apakah Bisa Memakai Kamera HP untuk Manusia?
+                </h4>
+                <div style={{ fontSize: '0.76rem', color: '#cbd5e1', lineHeight: 1.5, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <p style={{ margin: 0 }}>
+                    • <strong>Retina (Dinding Dalam Belakang):</strong> <span style={{ color: '#f87171', fontWeight: 'bold' }}>TIDAK BISA dengan kamera HP polos.</span> Retina memerlukan alat optik <em>Fundus Camera / Oftalmoskopi</em> dengan pencahayaan koaksial tembus pupil. Menjanjikan scan retina tanpa adaptor adalah pelanggaran etika sains dan aturan Google Play.
+                  </p>
+                  <p style={{ margin: 0 }}>
+                    • <strong>Iris (Selaput Depan):</strong> <span style={{ color: '#34d399', fontWeight: 'bold' }}>Bisa dengan kamera</span> menggunakan pencahayaan inframerah jarak dekat (*NIR*) atau makro resolusi tinggi.
+                  </p>
+                </div>
+              </div>
+
+              {/* Simulator Live Video */}
+              <div style={{
+                width: '100%',
+                height: isMobile ? '200px' : '230px',
+                background: '#000000',
+                borderRadius: '12px',
+                border: '2px dashed #232936',
+                overflow: 'hidden',
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <video 
+                  ref={videoRef} 
+                  playsInline 
+                  autoPlay 
+                  muted 
+                  style={{ 
+                    width: '100%', 
+                    height: '100%', 
+                    objectFit: 'cover',
+                    display: isCameraActive ? 'block' : 'none' 
+                  }} 
+                />
+
+                {!isCameraActive && (
+                  <div style={{ textAlign: 'center', padding: '16px', color: '#64748b' }}>
+                    <Camera size={34} color="#64748b" style={{ margin: '0 auto 6px' }} />
+                    <p style={{ margin: 0, fontSize: '0.8rem', color: '#ffffff', fontWeight: '700' }}>Kamera Sedang Tidak Aktif</p>
+                    <span style={{ fontSize: '0.72rem' }}>Klik tombol di bawah untuk menguji akses kamera perangkat</span>
+                  </div>
+                )}
+
+                {isCameraActive && (
+                  <div style={{
+                    position: 'absolute',
+                    width: '100px',
+                    height: '100px',
+                    border: irisDetected ? '2px solid #34d399' : '2px dashed #60a5fa',
+                    borderRadius: '50%',
+                    boxShadow: irisDetected ? '0 0 20px rgba(52, 211, 153, 0.6)' : 'none'
+                  }}>
+                    <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '26px', height: '26px', border: '1px solid rgba(255,255,255,0.4)', borderRadius: '50%' }} />
+                  </div>
+                )}
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                {!isCameraActive ? (
+                  <button
+                    type="button"
+                    onClick={startCamera}
+                    style={{
+                      padding: '9px 18px',
+                      background: '#10b981',
+                      border: 'none',
+                      borderRadius: '10px',
+                      color: '#022c22',
+                      fontSize: '0.8rem',
+                      fontWeight: '800',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    <Camera size={16} /> Aktifkan Kamera Perangkat
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={stopCamera}
+                    style={{
+                      padding: '9px 18px',
+                      background: '#e03131',
+                      border: 'none',
+                      borderRadius: '10px',
+                      color: '#ffffff',
+                      fontSize: '0.8rem',
+                      fontWeight: '800',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    <StopCircle size={16} /> Matikan Kamera
+                  </button>
+                )}
               </div>
             </div>
           )}
 
           {/* TAB: FINGERPRINT SENSOR */}
           {activeTab === 'fingerprint' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div style={{ background: '#0d111a', border: '1px solid #232936', borderRadius: '14px', padding: '16px' }}>
-                <h4 style={{ margin: '0 0 6px', fontSize: '0.85rem', fontWeight: '800', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Fingerprint size={16} /> Bagaimana Pemeriksaan Sidik Jari Dilakukan?
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ background: '#0d111a', border: '1px solid #232936', borderRadius: '12px', padding: isMobile ? '12px' : '14px' }}>
+                <h4 style={{ margin: '0 0 6px', fontSize: '0.84rem', fontWeight: '800', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Fingerprint size={16} /> Bagaimana Pemeriksaan Sidik Jari Bekerja?
                 </h4>
-                <div style={{ fontSize: '0.8rem', color: '#cbd5e1', lineHeight: 1.6, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div style={{ fontSize: '0.76rem', color: '#cbd5e1', lineHeight: 1.5, display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <p style={{ margin: 0 }}>
-                    • <strong>Perangkat yang digunakan:</strong> Sensor sidik jari bawaan HP/Laptop (Touch ID / Fingerprint scanner) atau modul pemindai USB biometrik terhubung.
+                    • Sensor sidik jari HP/Laptop menggunakan protokol <strong>WebAuthn / FIDO2 API</strong> resmi.
                   </p>
                   <p style={{ margin: 0 }}>
-                    • <strong>Protokol Peramban:</strong> Melalui standar peramban resmi <strong>WebAuthn / FIDO2 API</strong> (`navigator.credentials`).
-                  </p>
-                  <p style={{ margin: 0 }}>
-                    • <strong>Fungsi Ilmiah:</strong> HANYA untuk verifikasi identitas masuk (*authentication / proof-of-identity*). Sidik jari <strong>tidak bisa mendeteksi penyakit dalam</strong> atau mengukur gula darah.
+                    • Berfungsi <strong>HANYA untuk verifikasi identitas pemilik akun</strong>. Sidik jari <em>tidak bisa</em> mendeteksi gula darah atau penyakit dalam.
                   </p>
                 </div>
               </div>
 
-              {/* Test Button & Result Box */}
-              <div style={{ background: '#0d111a', border: '1px solid #232936', borderRadius: '14px', padding: '20px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+              <div style={{ background: '#0d111a', border: '1px solid #232936', borderRadius: '12px', padding: '16px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
                 <div style={{
-                  width: '80px',
-                  height: '80px',
+                  width: '65px',
+                  height: '65px',
                   borderRadius: '50%',
                   background: webAuthnStatus === 'supported' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(56, 189, 248, 0.15)',
                   border: `2px solid ${webAuthnStatus === 'supported' ? '#34d399' : '#38bdf8'}`,
@@ -663,16 +833,16 @@ const CekkesBiometricModal = ({ isOpen, onClose }) => {
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}>
-                  <Fingerprint size={42} color={webAuthnStatus === 'supported' ? '#34d399' : '#38bdf8'} />
+                  <Fingerprint size={36} color={webAuthnStatus === 'supported' ? '#34d399' : '#38bdf8'} />
                 </div>
 
                 {webAuthnMessage ? (
-                  <p style={{ margin: 0, fontSize: '0.82rem', color: webAuthnStatus === 'supported' ? '#34d399' : '#f87171', maxWidth: '420px', lineHeight: 1.5 }}>
+                  <p style={{ margin: 0, fontSize: '0.78rem', color: webAuthnStatus === 'supported' ? '#34d399' : '#f87171', maxWidth: '380px', lineHeight: 1.4 }}>
                     {webAuthnMessage}
                   </p>
                 ) : (
-                  <p style={{ margin: 0, fontSize: '0.8rem', color: '#94a3b8' }}>
-                    Klik tombol di bawah untuk memeriksa kompatibilitas sensor biometrik perangkat Anda.
+                  <p style={{ margin: 0, fontSize: '0.76rem', color: '#94a3b8' }}>
+                    Klik tombol di bawah untuk memeriksa kompatibilitas sensor biometrik ponsel Anda.
                   </p>
                 )}
 
@@ -680,17 +850,17 @@ const CekkesBiometricModal = ({ isOpen, onClose }) => {
                   type="button"
                   onClick={testFingerprintSensor}
                   style={{
-                    padding: '10px 22px',
+                    padding: '9px 18px',
                     background: '#10b981',
                     border: 'none',
                     borderRadius: '10px',
                     color: '#022c22',
-                    fontSize: '0.82rem',
+                    fontSize: '0.8rem',
                     fontWeight: '800',
                     cursor: 'pointer'
                   }}
                 >
-                  Uji Kompatibilitas Sensor Sidik Jari (WebAuthn)
+                  Uji Sensor Sidik Jari (WebAuthn)
                 </button>
               </div>
             </div>
@@ -698,33 +868,29 @@ const CekkesBiometricModal = ({ isOpen, onClose }) => {
 
           {/* TAB: VOICEPRINT */}
           {activeTab === 'voice' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div style={{ background: '#0d111a', border: '1px solid #232936', borderRadius: '14px', padding: '16px' }}>
-                <h4 style={{ margin: '0 0 6px', fontSize: '0.85rem', fontWeight: '800', color: '#fbbf24', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ background: '#0d111a', border: '1px solid #232936', borderRadius: '12px', padding: isMobile ? '12px' : '14px' }}>
+                <h4 style={{ margin: '0 0 6px', fontSize: '0.84rem', fontWeight: '800', color: '#fbbf24', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <Mic size={16} /> Bagaimana Pemeriksaan Suara Dilakukan?
                 </h4>
-                <div style={{ fontSize: '0.8rem', color: '#cbd5e1', lineHeight: 1.6, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div style={{ fontSize: '0.76rem', color: '#cbd5e1', lineHeight: 1.5, display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <p style={{ margin: 0 }}>
-                    • <strong>Perangkat yang digunakan:</strong> Mikrofon bawaan ponsel cerdas atau laptop.
+                    • Menggunakan mikrofon ponsel cerdas untuk menganalisis spektrum frekuensi akustik dan modulasi laring lokal.
                   </p>
                   <p style={{ margin: 0 }}>
-                    • <strong>Fungsi Ilmiah:</strong> Mengukur spektrogram frekuensi suara, ritme akustik, dan modulasi laring untuk verifikasi identitas pemilik akun (*voice authentication*) atau catatan gejala suara serak (*hoarseness*).
-                  </p>
-                  <p style={{ margin: 0 }}>
-                    • <strong>Batasan PDP:</strong> Rekaman suara mentah tidak disebarluaskan; hanya fitur gelombang akustik terenkripsi yang disimpan lokal jika izin diberikan.
+                    • Berdasarkan UU PDP, rekaman suara mentah tidak disebarluaskan ke cloud publik.
                   </p>
                 </div>
               </div>
 
-              {/* Audio Wave Simulator */}
-              <div style={{ background: '#0d111a', border: '1px solid #232936', borderRadius: '14px', padding: '20px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px' }}>
-                <div style={{ height: '70px', display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center' }}>
+              <div style={{ background: '#0d111a', border: '1px solid #232936', borderRadius: '12px', padding: '16px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+                <div style={{ height: '50px', display: 'flex', alignItems: 'center', gap: '5px', justifyContent: 'center' }}>
                   {audioWave.map((h, i) => (
                     <div
                       key={i}
                       style={{
-                        width: '8px',
-                        height: isRecording ? `${h}px` : '15px',
+                        width: '6px',
+                        height: isRecording ? `${Math.min(45, h)}px` : '12px',
                         background: isRecording ? '#fbbf24' : '#334155',
                         borderRadius: '4px',
                         transition: 'height 0.15s ease'
@@ -733,7 +899,7 @@ const CekkesBiometricModal = ({ isOpen, onClose }) => {
                   ))}
                 </div>
 
-                <p style={{ margin: 0, fontSize: '0.8rem', color: isRecording ? '#fbbf24' : audioSampleReady ? '#34d399' : '#94a3b8' }}>
+                <p style={{ margin: 0, fontSize: '0.78rem', color: isRecording ? '#fbbf24' : audioSampleReady ? '#34d399' : '#94a3b8' }}>
                   {isRecording ? 'Merekam Sampel Akustik (Bicaralah 3 detik)...' : audioSampleReady ? '✓ Sampel Suara Berhasil Direkam & Dianalisis Lokal' : 'Mikrofon Siap untuk Pengujian'}
                 </p>
 
@@ -742,12 +908,12 @@ const CekkesBiometricModal = ({ isOpen, onClose }) => {
                   onClick={testVoiceRecording}
                   disabled={isRecording}
                   style={{
-                    padding: '10px 22px',
+                    padding: '9px 18px',
                     background: isRecording ? '#334155' : 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
                     border: 'none',
                     borderRadius: '10px',
                     color: '#ffffff',
-                    fontSize: '0.82rem',
+                    fontSize: '0.8rem',
                     fontWeight: '800',
                     cursor: isRecording ? 'not-allowed' : 'pointer',
                     display: 'flex',
@@ -755,25 +921,25 @@ const CekkesBiometricModal = ({ isOpen, onClose }) => {
                     gap: '6px'
                   }}
                 >
-                  <Mic size={16} /> {isRecording ? 'Sedang Merekam...' : 'Uji Rekam Sampel Suara (Mikrofon)'}
+                  <Mic size={16} /> {isRecording ? 'Sedang Merekam...' : 'Uji Rekam Suara (Mikrofon)'}
                 </button>
               </div>
             </div>
           )}
         </div>
 
-        {/* Footer */}
+        {/* Modal Footer */}
         <div style={{
-          padding: '12px 22px',
+          padding: isMobile ? '10px 16px' : '12px 22px',
           borderTop: '1px solid #232936',
           background: '#0d111a',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          fontSize: '0.78rem',
+          fontSize: '0.74rem',
           color: '#94a3b8'
         }}>
-          <span>Standar Kepatuhan: <strong style={{ color: '#34d399' }}>UU PDP No. 27/2022 & Bio-Ethical Standards</strong></span>
+          <span>Kepatuhan: <strong style={{ color: '#34d399' }}>UU PDP No. 27/2022</strong></span>
           <button
             onClick={() => { stopCamera(); onClose(); }}
             style={{ padding: '6px 16px', borderRadius: '8px', background: '#334155', border: 'none', color: '#ffffff', cursor: 'pointer', fontWeight: '700' }}

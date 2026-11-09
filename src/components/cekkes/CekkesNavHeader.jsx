@@ -18,7 +18,7 @@ const CekkesNavHeader = ({
   activeTab, 
   onSelectTab, 
   onOpenAddModal, 
-  onOpenAiModal, 
+  onOpenAiModal,
   onOpenBiometricModal,
   stats 
 }) => {
@@ -31,9 +31,8 @@ const CekkesNavHeader = ({
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const isMobile = windowWidth <= 1100;
-  // Offset to push ceKKes header completely below the fixed navbar
-  const topMargin = isMobile ? '75px' : '150px';
+  const isMobile = windowWidth <= 768;
+  const topMargin = isMobile ? '65px' : '150px';
 
   const tabs = [
     { id: 'all', label: 'Semua Profil', icon: <Activity size={15} />, count: stats?.total || 0 },
@@ -52,9 +51,9 @@ const CekkesNavHeader = ({
 
   return (
     <div style={{
-      background: 'linear-gradient(180deg, rgba(6, 78, 59, 0.5) 0%, rgba(15, 17, 23, 0.98) 100%)',
+      background: 'linear-gradient(180deg, rgba(6, 78, 59, 0.55) 0%, rgba(15, 17, 23, 0.98) 100%)',
       borderBottom: '1px solid rgba(16, 185, 129, 0.25)',
-      padding: isMobile ? '16px 14px 12px' : '24px 20px 16px',
+      padding: isMobile ? '12px 14px 10px' : '24px 20px 16px',
       color: '#ffffff',
       marginTop: topMargin,
       transition: 'margin-top 0.2s ease',
@@ -64,171 +63,188 @@ const CekkesNavHeader = ({
         {/* Top Header Row */}
         <div style={{
           display: 'flex',
-          flexDirection: 'row',
-          flexWrap: 'wrap',
-          alignItems: 'center',
+          flexDirection: isMobile ? 'column' : 'row',
+          alignItems: isMobile ? 'stretch' : 'center',
           justifyContent: 'space-between',
-          gap: '16px',
-          marginBottom: '20px'
+          gap: isMobile ? '10px' : '16px',
+          marginBottom: isMobile ? '12px' : '20px'
         }}>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
+            {/* Badges */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px', flexWrap: 'wrap' }}>
               <span style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '6px',
-                padding: '3px 10px',
+                gap: '4px',
+                padding: '2px 8px',
                 borderRadius: '999px',
-                fontSize: '0.72rem',
+                fontSize: '0.68rem',
                 fontWeight: '800',
                 background: 'rgba(16, 185, 129, 0.15)',
                 color: '#34d399',
                 border: '1px solid rgba(16, 185, 129, 0.4)',
-                letterSpacing: '0.4px'
+                letterSpacing: '0.3px'
               }}>
-                <Heart size={12} color="#34d399" />
-                ceKKes v1.0 MVP
+                <Heart size={11} color="#34d399" />
+                ceKKes v1.0
               </span>
               <span style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '6px',
-                padding: '3px 10px',
+                gap: '4px',
+                padding: '2px 8px',
                 borderRadius: '999px',
-                fontSize: '0.72rem',
+                fontSize: '0.68rem',
                 fontWeight: '600',
                 background: 'rgba(245, 159, 0, 0.15)',
                 color: '#fbbf24',
                 border: '1px solid rgba(245, 159, 0, 0.4)'
               }}>
-                <ShieldCheck size={12} />
-                Non-Diagnostik • Standar UU PDP No. 27/2022
+                <ShieldCheck size={11} />
+                Non-Diagnostik • UU PDP 27/2022
               </span>
             </div>
 
+            {/* Title */}
             <h1 style={{
-              fontSize: 'clamp(1.5rem, 3vw, 2.1rem)',
+              fontSize: isMobile ? '1.35rem' : 'clamp(1.5rem, 3vw, 2.1rem)',
               fontWeight: '900',
-              margin: '0 0 4px',
+              margin: '0 0 2px',
               display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
+              alignItems: 'baseline',
+              gap: '6px',
               color: '#ffffff',
               letterSpacing: '-0.5px'
             }}>
-              ceKKes <span style={{ color: '#34d399', fontWeight: '500', fontSize: '0.85em' }}>— Cek Kesehatan Terpadu</span>
+              ceKKes <span style={{ color: '#34d399', fontWeight: '600', fontSize: '0.85em' }}>— Cek Kesehatan</span>
             </h1>
 
-            <p style={{ margin: 0, fontSize: '0.86rem', color: '#cbd5e1', lineHeight: 1.5 }}>
-              <strong style={{ color: '#6ee7b7' }}>"Kenali. Pantau. Rawat."</strong> Platform Informasi Biologis & Monitoring Terpadu 3 Alam (Manusia, Hewan, Tumbuhan)
+            <p style={{ margin: 0, fontSize: isMobile ? '0.76rem' : '0.86rem', color: '#cbd5e1', lineHeight: 1.4 }}>
+              <strong style={{ color: '#6ee7b7' }}>"Kenali. Pantau. Rawat."</strong> {isMobile ? 'Bio-Monitoring Terpadu 3 Alam' : 'Platform Informasi Biologis & Monitoring Terpadu 3 Alam (Manusia, Hewan, Tumbuhan)'}
             </p>
           </div>
 
-          {/* Quick Actions */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          {/* Quick Actions - Clean 3-Grid on Mobile */}
+          <div style={{ 
+            display: isMobile ? 'grid' : 'flex',
+            gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : undefined,
+            alignItems: 'center', 
+            gap: isMobile ? '6px' : '10px' 
+          }}>
             {onOpenBiometricModal && (
               <button
                 onClick={onOpenBiometricModal}
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '8px',
-                  padding: '10px 16px',
-                  borderRadius: '12px',
-                  fontSize: '0.82rem',
+                  justifyContent: 'center',
+                  gap: '5px',
+                  padding: isMobile ? '8px 4px' : '10px 16px',
+                  borderRadius: '10px',
+                  fontSize: isMobile ? '0.74rem' : '0.82rem',
                   fontWeight: '700',
                   color: '#ffffff',
                   background: 'linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%)',
                   border: '1px solid rgba(255,255,255,0.2)',
                   boxShadow: '0 4px 15px rgba(59, 130, 246, 0.35)',
                   cursor: 'pointer',
+                  whiteSpace: 'nowrap',
                   transition: 'all 0.2s'
                 }}
               >
-                <Fingerprint size={16} color="#93c5fd" />
-                <span>🔬 Lab Biometrik</span>
+                <Fingerprint size={14} color="#93c5fd" />
+                <span>{isMobile ? 'Biometrik' : '🔬 Lab Biometrik'}</span>
               </button>
             )}
+
             <button
               onClick={onOpenAiModal}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '8px',
-                padding: '10px 16px',
-                borderRadius: '12px',
-                fontSize: '0.82rem',
+                justifyContent: 'center',
+                gap: '5px',
+                padding: isMobile ? '8px 4px' : '10px 16px',
+                borderRadius: '10px',
+                fontSize: isMobile ? '0.74rem' : '0.82rem',
                 fontWeight: '700',
                 color: '#ffffff',
                 background: 'linear-gradient(135deg, #0d9488 0%, #059669 100%)',
                 border: '1px solid rgba(255,255,255,0.2)',
                 boxShadow: '0 4px 15px rgba(5, 150, 105, 0.35)',
                 cursor: 'pointer',
+                whiteSpace: 'nowrap',
                 transition: 'all 0.2s'
               }}
             >
-              <Sparkles size={16} color="#fde68a" />
-              <span>Cek dengan AI</span>
+              <Sparkles size={14} color="#fde68a" />
+              <span>{isMobile ? 'Cek AI' : 'Cek dengan AI'}</span>
             </button>
+
             <button
               onClick={onOpenAddModal}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '8px',
-                padding: '10px 18px',
-                borderRadius: '12px',
-                fontSize: '0.82rem',
+                justifyContent: 'center',
+                gap: '5px',
+                padding: isMobile ? '8px 4px' : '10px 18px',
+                borderRadius: '10px',
+                fontSize: isMobile ? '0.74rem' : '0.82rem',
                 fontWeight: '800',
                 color: '#022c22',
                 background: '#34d399',
                 border: 'none',
                 boxShadow: '0 4px 15px rgba(52, 211, 153, 0.3)',
                 cursor: 'pointer',
+                whiteSpace: 'nowrap',
                 transition: 'all 0.2s'
               }}
             >
-              <PlusCircle size={16} color="#022c22" />
-              <span>+ Tambah Profil</span>
+              <PlusCircle size={14} color="#022c22" />
+              <span>{isMobile ? '+ Profil' : '+ Tambah Profil'}</span>
             </button>
           </div>
         </div>
 
-        {/* Tab Navigation Row with Left/Right Scroll Controls (No More Cutoffs!) */}
+        {/* Tab Navigation Row with Smooth Touch Swipe */}
         <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-          {/* Scroll Left Button */}
-          <button
-            onClick={() => handleScroll(-180)}
-            style={{
-              position: 'absolute',
-              left: '-8px',
-              zIndex: 10,
-              background: '#064e3b',
-              border: '1px solid #10b981',
-              color: '#34d399',
-              borderRadius: '50%',
-              width: '28px',
-              height: '28px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.4)'
-            }}
-            title="Geser Kiri"
-          >
-            <ChevronLeft size={16} />
-          </button>
+          {/* Scroll Left Button (Desktop only) */}
+          {!isMobile && (
+            <button
+              onClick={() => handleScroll(-180)}
+              style={{
+                position: 'absolute',
+                left: '-8px',
+                zIndex: 10,
+                background: '#064e3b',
+                border: '1px solid #10b981',
+                color: '#34d399',
+                borderRadius: '50%',
+                width: '28px',
+                height: '28px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.4)'
+              }}
+              title="Geser Kiri"
+            >
+              <ChevronLeft size={16} />
+            </button>
+          )}
 
           <div 
             ref={scrollRef}
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
+              gap: '6px',
               overflowX: 'auto',
-              padding: '4px 28px',
+              padding: isMobile ? '2px 0' : '4px 28px',
               scrollbarWidth: 'none',
+              WebkitOverflowScrolling: 'touch',
               scrollBehavior: 'smooth',
               width: '100%'
             }}
@@ -242,10 +258,10 @@ const CekkesNavHeader = ({
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '8px',
-                    padding: '9px 16px',
+                    gap: '6px',
+                    padding: isMobile ? '7px 12px' : '9px 16px',
                     borderRadius: '10px',
-                    fontSize: '0.82rem',
+                    fontSize: isMobile ? '0.76rem' : '0.82rem',
                     fontWeight: isActive ? '800' : '600',
                     whiteSpace: 'nowrap',
                     cursor: 'pointer',
@@ -260,9 +276,9 @@ const CekkesNavHeader = ({
                   <span>{tab.icon}</span>
                   <span>{tab.label}</span>
                   <span style={{
-                    padding: '2px 7px',
+                    padding: '1px 6px',
                     borderRadius: '999px',
-                    fontSize: '0.7rem',
+                    fontSize: '0.68rem',
                     fontWeight: '800',
                     background: isActive ? 'rgba(2, 44, 34, 0.3)' : 'rgba(15, 23, 42, 0.8)',
                     color: isActive ? '#022c22' : '#cbd5e1'
@@ -274,29 +290,31 @@ const CekkesNavHeader = ({
             })}
           </div>
 
-          {/* Scroll Right Button */}
-          <button
-            onClick={() => handleScroll(180)}
-            style={{
-              position: 'absolute',
-              right: '-8px',
-              zIndex: 10,
-              background: '#064e3b',
-              border: '1px solid #10b981',
-              color: '#34d399',
-              borderRadius: '50%',
-              width: '28px',
-              height: '28px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.4)'
-            }}
-            title="Geser Kanan"
-          >
-            <ChevronRight size={16} />
-          </button>
+          {/* Scroll Right Button (Desktop only) */}
+          {!isMobile && (
+            <button
+              onClick={() => handleScroll(180)}
+              style={{
+                position: 'absolute',
+                right: '-8px',
+                zIndex: 10,
+                background: '#064e3b',
+                border: '1px solid #10b981',
+                color: '#34d399',
+                borderRadius: '50%',
+                width: '28px',
+                height: '28px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.4)'
+              }}
+              title="Geser Kanan"
+            >
+              <ChevronRight size={16} />
+            </button>
+          )}
         </div>
       </div>
     </div>
