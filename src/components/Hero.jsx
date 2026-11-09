@@ -15,6 +15,7 @@ const Hero = () => {
   return (
     <section 
       id="home" 
+      className="hero-section"
       style={{
         minHeight: '100vh', 
         display: 'flex', 

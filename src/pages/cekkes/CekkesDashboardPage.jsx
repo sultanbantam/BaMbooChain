@@ -734,42 +734,50 @@ const CekkesDashboardPage = () => {
       </div>
 
       {/* Global Modals */}
-      <CekkesAddProfileModal
-        isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-        onProfileAdded={(newProfile) => {
-          setSelectedSubjectForDetail(newProfile);
-        }}
-      />
+      {isAddModalOpen && (
+        <CekkesAddProfileModal
+          isOpen={isAddModalOpen}
+          onClose={() => setIsAddModalOpen(false)}
+          onProfileAdded={(newProfile) => {
+            setSelectedSubjectForDetail(newProfile);
+          }}
+        />
+      )}
 
-      <CekkesAiCheckModal
-        isOpen={isAiModalOpen}
-        onClose={() => setIsAiModalOpen(false)}
-        preselectedSubject={preselectedSubjectForAi}
-      />
+      {isAiModalOpen && (
+        <CekkesAiCheckModal
+          isOpen={isAiModalOpen}
+          onClose={() => setIsAiModalOpen(false)}
+          preselectedSubject={preselectedSubjectForAi}
+        />
+      )}
 
-      <CekkesProfileDetailModal
-        subject={selectedSubjectForDetail}
-        isOpen={!!selectedSubjectForDetail}
-        onClose={() => setSelectedSubjectForDetail(null)}
-        onLaunchAiCheck={(sub) => {
-          setPreselectedSubjectForAi(sub);
-          setIsAiModalOpen(true);
-        }}
-        onOpenBiometricModal={() => setIsBiometricModalOpen(true)}
-        onDeleted={() => setSelectedSubjectForDetail(null)}
-        onUpdated={() => {
-          if (selectedSubjectForDetail) {
-            const updated = cekkesStore.getSubjectById(selectedSubjectForDetail.id);
-            setSelectedSubjectForDetail(updated);
-          }
-        }}
-      />
+      {selectedSubjectForDetail && (
+        <CekkesProfileDetailModal
+          subject={selectedSubjectForDetail}
+          isOpen={!!selectedSubjectForDetail}
+          onClose={() => setSelectedSubjectForDetail(null)}
+          onLaunchAiCheck={(sub) => {
+            setPreselectedSubjectForAi(sub);
+            setIsAiModalOpen(true);
+          }}
+          onOpenBiometricModal={() => setIsBiometricModalOpen(true)}
+          onDeleted={() => setSelectedSubjectForDetail(null)}
+          onUpdated={() => {
+            if (selectedSubjectForDetail) {
+              const updated = cekkesStore.getSubjectById(selectedSubjectForDetail.id);
+              setSelectedSubjectForDetail(updated);
+            }
+          }}
+        />
+      )}
 
-      <CekkesBiometricModal
-        isOpen={isBiometricModalOpen}
-        onClose={() => setIsBiometricModalOpen(false)}
-      />
+      {isBiometricModalOpen && (
+        <CekkesBiometricModal
+          isOpen={isBiometricModalOpen}
+          onClose={() => setIsBiometricModalOpen(false)}
+        />
+      )}
     </div>
   );
 };
