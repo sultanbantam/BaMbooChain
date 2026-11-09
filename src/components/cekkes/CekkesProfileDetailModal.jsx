@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   X, 
   User, 
@@ -13,7 +13,12 @@ import {
   Trash2, 
   Download, 
   Clock, 
-  Heart
+  Heart,
+  ChevronLeft,
+  ChevronRight,
+  Fingerprint,
+  Eye,
+  Mic
 } from 'lucide-react';
 import { cekkesStore } from '../../services/cekkes/cekkesStore';
 
@@ -23,10 +28,12 @@ const CekkesProfileDetailModal = ({
   onClose, 
   onUpdated, 
   onDeleted,
-  onLaunchAiCheck 
+  onLaunchAiCheck,
+  onOpenBiometricModal
 }) => {
   const [activeTab, setActiveTab] = useState('summary');
   const [showAddObs, setShowAddObs] = useState(false);
+  const scrollTabsRef = useRef(null);
 
   // New Observation Form State
   const [obsMetric, setObsMetric] = useState('');
@@ -104,6 +111,12 @@ const CekkesProfileDetailModal = ({
     { id: 'privacy', label: '7. Akses & Hak PDP', icon: <ShieldCheck size={14} /> },
   ];
 
+  const handleScrollTabs = (offset) => {
+    if (scrollTabsRef.current) {
+      scrollTabsRef.current.scrollBy({ left: offset, behavior: 'smooth' });
+    }
+  };
+
   return (
     <div style={{
       position: 'fixed',
@@ -173,48 +186,106 @@ const CekkesProfileDetailModal = ({
           </button>
         </div>
 
-        {/* 7-Tab Navigation Header */}
+        {/* 7-Tab Navigation Header with Left/Right Scroll Buttons */}
         <div style={{
+          position: 'relative',
           display: 'flex',
           alignItems: 'center',
-          gap: '6px',
-          overflowX: 'auto',
-          padding: '10px 18px',
           background: '#0f172a',
           borderBottom: '1px solid #334155',
-          scrollbarWidth: 'none'
+          padding: '8px 12px'
         }}>
-          {tabs.map(tab => {
-            const isSel = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '7px 12px',
-                  borderRadius: '8px',
-                  border: isSel ? '1px solid #10b981' : '1px solid transparent',
-                  background: isSel ? 'rgba(16, 185, 129, 0.2)' : 'transparent',
-                  color: isSel ? '#34d399' : '#94a3b8',
-                  fontSize: '0.78rem',
-                  fontWeight: '700',
-                  whiteSpace: 'nowrap',
-                  cursor: 'pointer'
-                }}
-              >
-                {tab.icon}
-                <span>{tab.label}</span>
-                {tab.count !== undefined && (
-                  <span style={{ fontSize: '0.68rem', padding: '1px 6px', borderRadius: '999px', background: '#334155', color: '#cbd5e1' }}>
-                    {tab.count}
-                  </span>
-                )}
-              </button>
-            );
-          })}
+          {/* Scroll Left Button */}
+          <button
+            onClick={() => handleScrollTabs(-180)}
+            style={{
+              background: '#1e293b',
+              border: '1px solid #334155',
+              color: '#34d399',
+              borderRadius: '8px',
+              width: '28px',
+              height: '28px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              flexShrink: 0,
+              zIndex: 5
+            }}
+            title="Geser Tab ke Kiri"
+          >
+            <ChevronLeft size={16} />
+          </button>
+
+          {/* Scrollable Tabs Container */}
+          <div 
+            ref={scrollTabsRef}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              overflowX: 'auto',
+              padding: '2px 8px',
+              scrollbarWidth: 'none',
+              scrollBehavior: 'smooth',
+              flex: 1
+            }}
+          >
+            {tabs.map(tab => {
+              const isSel = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '7px 12px',
+                    borderRadius: '8px',
+                    border: isSel ? '1px solid #10b981' : '1px solid transparent',
+                    background: isSel ? 'rgba(16, 185, 129, 0.2)' : 'transparent',
+                    color: isSel ? '#34d399' : '#94a3b8',
+                    fontSize: '0.78rem',
+                    fontWeight: '700',
+                    whiteSpace: 'nowrap',
+                    cursor: 'pointer',
+                    flexShrink: 0
+                  }}
+                >
+                  {tab.icon}
+                  <span>{tab.label}</span>
+                  {tab.count !== undefined && (
+                    <span style={{ fontSize: '0.68rem', padding: '1px 6px', borderRadius: '999px', background: '#334155', color: '#cbd5e1' }}>
+                      {tab.count}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Scroll Right Button */}
+          <button
+            onClick={() => handleScrollTabs(180)}
+            style={{
+              background: '#1e293b',
+              border: '1px solid #334155',
+              color: '#34d399',
+              borderRadius: '8px',
+              width: '28px',
+              height: '28px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              flexShrink: 0,
+              zIndex: 5
+            }}
+            title="Geser Tab ke Kanan"
+          >
+            <ChevronRight size={16} />
+          </button>
         </div>
 
         {/* Tab Contents */}
@@ -517,16 +588,80 @@ const CekkesProfileDetailModal = ({
             </div>
           )}
 
-          {/* TAB 6: DOKUMEN & IDENTITAS */}
+          {/* TAB 6: DOKUMEN & IDENTITAS BIOMETRIK */}
           {activeTab === 'documents' && (
-            <div style={{ background: '#0f172a', border: '1px solid #334155', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.82rem' }}>
-              <span style={{ color: '#94a3b8', fontWeight: '700' }}>Identifikasi Subjek Terdaftar:</span>
-              <p style={{ margin: 0, color: '#ffffff', fontFamily: 'monospace', background: '#1e293b', padding: '8px 12px', borderRadius: '8px' }}>
-                {subject.identificationTag ? `${subject.identificationTag.type}: ${subject.identificationTag.code}` : `UUID: ${subject.id}`}
-              </p>
-              <p style={{ margin: '6px 0 0', fontSize: '0.75rem', color: '#94a3b8', fontStyle: 'italic' }}>
-                * Sistem ceKKes beroperasi tanpa pengumpulan biometrik mentah (sidik jari/retina) untuk menjamin keamanan privasi hayati Anda.
-              </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '0.82rem' }}>
+              <div style={{ background: '#0f172a', border: '1px solid #334155', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <span style={{ color: '#94a3b8', fontWeight: '700' }}>Identifikasi Subjek Terdaftar:</span>
+                <p style={{ margin: 0, color: '#ffffff', fontFamily: 'monospace', background: '#1e293b', padding: '8px 12px', borderRadius: '8px' }}>
+                  {subject.identificationTag ? `${subject.identificationTag.type}: ${subject.identificationTag.code}` : `UUID: ${subject.id}`}
+                </p>
+                <p style={{ margin: '6px 0 0', fontSize: '0.75rem', color: '#94a3b8', fontStyle: 'italic' }}>
+                  * Sistem ceKKes mematuhi prinsip minimisasi data. Tidak ada pemindaian sidik jari, suara, atau retina mentah yang dikumpulkan secara default.
+                </p>
+              </div>
+
+              {/* Biometric Integration Status Box */}
+              <div style={{ background: '#0f172a', border: '1px solid #232936', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                  <div>
+                    <h4 style={{ margin: 0, fontSize: '0.85rem', fontWeight: '800', color: '#60a5fa', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Fingerprint size={16} /> Status Integrasi Biometrik (Retina, Sidik Jari, Suara)
+                    </h4>
+                    <p style={{ margin: '2px 0 0', fontSize: '0.74rem', color: '#94a3b8' }}>
+                      Kamera, sensor sidik jari, dan mikrofon untuk verifikasi identitas (Roadmap MVP 4)
+                    </p>
+                  </div>
+                  {onOpenBiometricModal && (
+                    <button
+                      type="button"
+                      onClick={onOpenBiometricModal}
+                      style={{
+                        padding: '7px 14px',
+                        background: 'linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%)',
+                        border: 'none',
+                        borderRadius: '8px',
+                        color: '#ffffff',
+                        fontSize: '0.78rem',
+                        fontWeight: '800',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      <Sparkles size={14} /> Uji Biometrik Perangkat
+                    </button>
+                  )}
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '8px', fontSize: '0.76rem', color: '#cbd5e1' }}>
+                  <div style={{ background: '#161b26', padding: '10px', borderRadius: '8px', border: '1px solid #232936' }}>
+                    <strong style={{ color: '#2dd4bf', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <Eye size={12} /> Retina & Iris (Mata):
+                    </strong>
+                    <span style={{ fontSize: '0.72rem', display: 'block', marginTop: '3px' }}>
+                      Iris via kamera optik/NIR; Retina memerlukan Fundus Camera medis khusus (bukan kamera HP biasa).
+                    </span>
+                  </div>
+                  <div style={{ background: '#161b26', padding: '10px', borderRadius: '8px', border: '1px solid #232936' }}>
+                    <strong style={{ color: '#34d399', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <Fingerprint size={12} /> Sidik Jari:
+                    </strong>
+                    <span style={{ fontSize: '0.72rem', display: 'block', marginTop: '3px' }}>
+                      Menggunakan sensor bawaan peramban WebAuthn FIDO2 untuk keamanan akun (non-diagnostik).
+                    </span>
+                  </div>
+                  <div style={{ background: '#161b26', padding: '10px', borderRadius: '8px', border: '1px solid #232936' }}>
+                    <strong style={{ color: '#fbbf24', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <Mic size={12} /> Suara (Voiceprint):
+                    </strong>
+                    <span style={{ fontSize: '0.72rem', display: 'block', marginTop: '3px' }}>
+                      Menggunakan mikrofon perangkat untuk verifikasi akustik unik pengguna.
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 

@@ -16,6 +16,7 @@ import { auth } from '../firebase/config';
 
 const Navbar = () => {
   const [showBambooMenu, setShowBambooMenu] = useState(false);
+  const [showClustersMenu, setShowClustersMenu] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -530,58 +531,152 @@ const Navbar = () => {
             <AdSpace type="horizontal" size="compact" height="25px" />
           </div>
 
-          {/* Row 2: Top Menu Bar */}
-          <div style={{ background: 'var(--bg-card)', height: '45px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '25px', padding: '0 32px', borderBottom: '1px solid var(--border-color)' }}>
-            <Link to="/boomboom" style={{ fontSize: '0.85rem', color: '#f59f00', textDecoration: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>🚀 BoomBoom</Link>
-            <Link to="/cibarani-guano" style={{ fontSize: '0.85rem', color: '#047857', textDecoration: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>🦇 Cibarani Guano</Link>
-            <Link to="/cibarani" style={{ fontSize: '0.85rem', color: '#065f46', textDecoration: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>🏕️ Cibarani Weekend</Link>
-            <Link to="/cekkes" style={{ fontSize: '0.85rem', color: '#10b981', textDecoration: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>🩺 ceKKes</Link>
-            <Link to="/bangunin" style={{ fontSize: '0.85rem', color: '#005BAA', textDecoration: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>🏢 BangunIn MBR</Link>
-            <Link to="/bambupedia" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('nav_bambupedia')}</Link>
-            <Link to="/bamboochain/academy" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('feature_academy')}</Link>
-            <Link to="/wanipiro" style={{ fontSize: '0.85rem', color: 'var(--primary)', textDecoration: 'none', fontWeight: 'bold' }}>WaniPiro?</Link>
-            <Link to="/data-tools" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('nav_datatools')}</Link>
+          {/* Row 2: Top Menu Bar with 5 Klusters (User Friendly & Consistent with Mobile) */}
+          <div style={{ background: 'var(--bg-card)', height: '45px', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', gap: '15px', padding: '0 24px', borderBottom: '1px solid var(--border-color)', position: 'relative' }}>
             
-            <Link to="/bamboochain/marketplace" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('nav_marketplace')}</Link>
-            <Link to="/community" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('nav_community')}</Link>
-            <Link to="/events" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('nav_events')}</Link>
-            <Link to="/bamboochain/volunteer" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('vol_nav_volunteer')}</Link>
-            
-            {/* bambuNUSA DROPDOWN (11 Features) */}
+            {/* 🧭 5 KLUSTER EKOSISTEM MEGA MENU DROPDOWN */}
             <div 
-              onMouseEnter={() => setShowBambooMenu(true)} 
-              onMouseLeave={() => setShowBambooMenu(false)} 
-              style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem', color: 'var(--primary)', fontWeight: 'bold', cursor: 'pointer', height: '100%' }}
+              onMouseEnter={() => setShowClustersMenu(true)} 
+              onMouseLeave={() => setShowClustersMenu(false)}
+              style={{ position: 'relative', height: '100%', display: 'flex', alignItems: 'center' }}
             >
-              bambuNUSA <ChevronDown size={14} />
-              {showBambooMenu && (
-                <div style={{ position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)', width: '260px', background: 'var(--bg-card)', boxShadow: '0 15px 40px rgba(0,0,0,0.15)', borderRadius: '0 0 16px 16px', padding: '10px', zIndex: 10005, border: '1px solid var(--border-color)' }}>
-                   {bambooNusaFeatures.map((feature, index) => (
-                      <Link 
-                        key={index} 
-                        to={feature.path} 
-                        style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 15px', color: 'var(--text-main)', textDecoration: 'none', borderRadius: '8px', transition: 'all 0.2s' }}
-                        onMouseEnter={e => { 
-                          e.currentTarget.style.background = isDark ? 'rgba(12, 166, 120, 0.2)' : '#f0fdf4'; 
-                          e.currentTarget.style.color = 'var(--primary)'; 
-                        }}
-                        onMouseLeave={e => { 
-                          e.currentTarget.style.background = 'transparent'; 
-                          e.currentTarget.style.color = 'var(--text-main)'; 
-                        }}
-                      >
-                        <div style={{ color: 'var(--primary)', display: 'flex', alignItems: 'center' }}>{feature.icon}</div>
-                        <div style={{ fontSize: '0.9rem', fontWeight: '500' }}>{feature.label}</div>
-                      </Link>
-                    ))}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontSize: '0.82rem',
+                fontWeight: '800',
+                color: '#ffffff',
+                cursor: 'pointer',
+                background: 'linear-gradient(135deg, #0ca678 0%, #087f5b 100%)',
+                padding: '5px 14px',
+                borderRadius: '20px',
+                boxShadow: '0 3px 10px rgba(12, 166, 120, 0.3)',
+                transition: 'all 0.2s'
+              }}>
+                <Layers size={14} />
+                <span>🧭 5 Kluster Ekosistem</span>
+                <ChevronDown size={13} />
+              </div>
+
+              {showClustersMenu && (
+                <div style={{
+                  position: 'absolute',
+                  top: '100%',
+                  left: '0',
+                  width: '980px',
+                  background: 'var(--bg-card)',
+                  boxShadow: '0 25px 60px rgba(0,0,0,0.3)',
+                  borderRadius: '0 0 20px 20px',
+                  padding: '20px',
+                  zIndex: 10010,
+                  border: '1px solid var(--border-color)',
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(5, 1fr)',
+                  gap: '14px',
+                  backdropFilter: 'blur(10px)'
+                }}>
+                  {featureClusters.map(cluster => (
+                    <div key={cluster.id} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        borderBottom: `2px solid ${cluster.color}`,
+                        paddingBottom: '8px'
+                      }}>
+                        {cluster.icon}
+                        <div>
+                          <div style={{ fontSize: '0.78rem', fontWeight: '800', color: cluster.color, lineHeight: 1.2 }}>
+                            {cluster.title}
+                          </div>
+                          <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>{cluster.badge}</span>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                        {cluster.items.map((item, idx) => (
+                          <Link
+                            key={idx}
+                            to={item.path}
+                            onClick={() => setShowClustersMenu(false)}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              padding: '6px 8px',
+                              borderRadius: '8px',
+                              color: 'var(--text-main)',
+                              textDecoration: 'none',
+                              fontSize: '0.75rem',
+                              fontWeight: '600',
+                              transition: 'all 0.15s'
+                            }}
+                            onMouseEnter={e => {
+                              e.currentTarget.style.background = cluster.bgLight;
+                              e.currentTarget.style.color = cluster.color;
+                            }}
+                            onMouseLeave={e => {
+                              e.currentTarget.style.background = 'transparent';
+                              e.currentTarget.style.color = 'var(--text-main)';
+                            }}
+                          >
+                            <span style={{ color: cluster.color, display: 'flex', flexShrink: 0 }}>{item.icon}</span>
+                            <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.label}</span>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
 
-            <Link to="/careers" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none' }}>{t('nav_careers')}</Link>
-            <Link to="/membership" style={{ background: 'rgba(245, 159, 0, 0.1)', padding: '4px 12px', borderRadius: '20px', fontSize: '0.85rem', color: '#f59f00', fontWeight: 'bold', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <Shield size={14} /> {t('nav_membership')}
-            </Link>
+            {/* Quick Flagship Links */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'nowrap' }}>
+              <Link to="/boomboom" style={{ fontSize: '0.82rem', color: '#f59f00', textDecoration: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>🚀 BoomBoom</Link>
+              <Link to="/cibarani-guano" style={{ fontSize: '0.82rem', color: '#047857', textDecoration: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>🦇 Cibarani Guano</Link>
+              <Link to="/cibarani" style={{ fontSize: '0.82rem', color: '#065f46', textDecoration: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>🏕️ Cibarani Weekend</Link>
+              <Link to="/cekkes" style={{ fontSize: '0.82rem', color: '#10b981', textDecoration: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>🩺 ceKKes</Link>
+              <Link to="/bangunin" style={{ fontSize: '0.82rem', color: '#005BAA', textDecoration: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>🏢 BangunIn MBR</Link>
+              <Link to="/wanipiro" style={{ fontSize: '0.82rem', color: 'var(--primary)', textDecoration: 'none', fontWeight: 'bold' }}>WaniPiro?</Link>
+              
+              {/* bambuNUSA DROPDOWN */}
+              <div 
+                onMouseEnter={() => setShowBambooMenu(true)} 
+                onMouseLeave={() => setShowBambooMenu(false)} 
+                style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.82rem', color: 'var(--primary)', fontWeight: 'bold', cursor: 'pointer', height: '100%' }}
+              >
+                bambuNUSA <ChevronDown size={13} />
+                {showBambooMenu && (
+                  <div style={{ position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)', width: '260px', background: 'var(--bg-card)', boxShadow: '0 15px 40px rgba(0,0,0,0.15)', borderRadius: '0 0 16px 16px', padding: '10px', zIndex: 10005, border: '1px solid var(--border-color)' }}>
+                     {bambooNusaFeatures.map((feature, index) => (
+                        <Link 
+                          key={index} 
+                          to={feature.path} 
+                          style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 14px', color: 'var(--text-main)', textDecoration: 'none', borderRadius: '8px', transition: 'all 0.2s' }}
+                          onMouseEnter={e => { 
+                            e.currentTarget.style.background = isDark ? 'rgba(12, 166, 120, 0.2)' : '#f0fdf4'; 
+                            e.currentTarget.style.color = 'var(--primary)'; 
+                          }}
+                          onMouseLeave={e => { 
+                            e.currentTarget.style.background = 'transparent'; 
+                            e.currentTarget.style.color = 'var(--text-main)'; 
+                          }}
+                        >
+                          <div style={{ color: 'var(--primary)', display: 'flex', alignItems: 'center' }}>{feature.icon}</div>
+                          <div style={{ fontSize: '0.85rem', fontWeight: '500' }}>{feature.label}</div>
+                        </Link>
+                      ))}
+                  </div>
+                )}
+              </div>
+
+              <Link to="/careers" style={{ fontSize: '0.82rem', color: 'var(--text-muted)', textDecoration: 'none' }}>{t('nav_careers')}</Link>
+              <Link to="/membership" style={{ background: 'rgba(245, 159, 0, 0.1)', padding: '4px 10px', borderRadius: '20px', fontSize: '0.8rem', color: '#f59f00', fontWeight: 'bold', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <Shield size={13} /> {t('nav_membership')}
+              </Link>
+            </div>
 
             <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '15px', position: 'relative' }}>
               {/* Theme Toggle - Desktop */}

@@ -420,3 +420,4 @@ export const INITIAL_AUDIT_LOGS = [
     details: 'Pencatatan mandiri tekanan darah 118/78 mmHg via tensimeter Omron.'
   }
 ];
+

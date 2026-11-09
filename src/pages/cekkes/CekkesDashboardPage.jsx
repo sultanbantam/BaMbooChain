@@ -19,6 +19,7 @@ import CekkesNavHeader from '../../components/cekkes/CekkesNavHeader';
 import CekkesAddProfileModal from '../../components/cekkes/CekkesAddProfileModal';
 import CekkesAiCheckModal from '../../components/cekkes/CekkesAiCheckModal';
 import CekkesProfileDetailModal from '../../components/cekkes/CekkesProfileDetailModal';
+import CekkesBiometricModal from '../../components/cekkes/CekkesBiometricModal';
 
 const CekkesDashboardPage = () => {
   const [storeState, setStoreState] = useState(cekkesStore.getState());
@@ -28,6 +29,7 @@ const CekkesDashboardPage = () => {
   // Modals state
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+  const [isBiometricModalOpen, setIsBiometricModalOpen] = useState(false);
   const [selectedSubjectForDetail, setSelectedSubjectForDetail] = useState(null);
   const [preselectedSubjectForAi, setPreselectedSubjectForAi] = useState(null);
 
@@ -137,6 +139,7 @@ const CekkesDashboardPage = () => {
           setPreselectedSubjectForAi(null);
           setIsAiModalOpen(true);
         }}
+        onOpenBiometricModal={() => setIsBiometricModalOpen(true)}
         stats={stats}
       />
 
@@ -202,6 +205,21 @@ const CekkesDashboardPage = () => {
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button
+              onClick={() => setIsBiometricModalOpen(true)}
+              style={{
+                padding: '8px 14px',
+                borderRadius: '10px',
+                background: 'linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                color: '#ffffff',
+                fontSize: '0.78rem',
+                fontWeight: '700',
+                cursor: 'pointer'
+              }}
+            >
+              🔬 Lab Biometrik
+            </button>
             <button
               onClick={() => setActiveTab('audit')}
               style={{
@@ -738,6 +756,7 @@ const CekkesDashboardPage = () => {
           setPreselectedSubjectForAi(sub);
           setIsAiModalOpen(true);
         }}
+        onOpenBiometricModal={() => setIsBiometricModalOpen(true)}
         onDeleted={() => setSelectedSubjectForDetail(null)}
         onUpdated={() => {
           if (selectedSubjectForDetail) {
@@ -745,6 +764,11 @@ const CekkesDashboardPage = () => {
             setSelectedSubjectForDetail(updated);
           }
         }}
+      />
+
+      <CekkesBiometricModal
+        isOpen={isBiometricModalOpen}
+        onClose={() => setIsBiometricModalOpen(false)}
       />
     </div>
   );
