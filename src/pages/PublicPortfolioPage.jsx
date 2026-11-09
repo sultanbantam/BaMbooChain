@@ -77,6 +77,17 @@ const PublicPortfolioPage = () => {
   const [selectedArticle, setSelectedArticle] = useState(null);
   const [lightboxImage, setLightboxImage] = useState(null);
 
+  // Responsive mobile detector
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const isMobile = windowWidth <= 768;
+
   // 1. Fetch Target User Data
   useEffect(() => {
     const fetchUser = async () => {
@@ -1085,40 +1096,84 @@ const PublicPortfolioPage = () => {
 
       {/* ────────── ARTICLE READ MODAL ────────── */}
       {selectedArticle && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', zIndex: 11000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-          <div style={{ background: 'var(--bg-card)', width: '100%', maxWidth: '750px', maxHeight: '90vh', borderRadius: '24px', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 50px rgba(0,0,0,0.2)', border: '1px solid var(--border-color)' }}>
+        <div style={{ 
+          position: 'fixed', 
+          top: 0, 
+          left: 0, 
+          width: '100%', 
+          height: '100%', 
+          background: 'rgba(0,0,0,0.75)', 
+          backdropFilter: 'blur(8px)', 
+          zIndex: 11000, 
+          display: 'flex', 
+          alignItems: isMobile ? 'flex-end' : 'center', 
+          justifyContent: 'center', 
+          padding: isMobile ? 0 : '20px' 
+        }}>
+          <div style={{ 
+            background: 'var(--bg-card)', 
+            width: '100%', 
+            maxWidth: '780px', 
+            height: isMobile ? '94vh' : 'auto',
+            maxHeight: isMobile ? '94vh' : '90vh', 
+            borderRadius: isMobile ? '20px 20px 0 0' : '24px', 
+            overflow: 'hidden', 
+            display: 'flex', 
+            flexDirection: 'column', 
+            boxShadow: '0 20px 50px rgba(0,0,0,0.3)', 
+            border: isMobile ? 'none' : '1px solid var(--border-color)' 
+          }}>
             
             {/* Modal Header */}
-            <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ 
+              padding: isMobile ? '12px 16px' : '18px 24px', 
+              borderBottom: '1px solid var(--border-color)', 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              background: 'var(--bg-card)',
+              flexShrink: 0
+            }}>
               <span style={{ background: 'rgba(12, 166, 120, 0.1)', color: 'var(--primary)', padding: '4px 10px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 'bold' }}>
                 {selectedArticle.category}
               </span>
               <button 
                 onClick={() => setSelectedArticle(null)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
+                style={{ 
+                  background: 'rgba(0,0,0,0.06)', 
+                  border: 'none', 
+                  borderRadius: '50%',
+                  width: '32px',
+                  height: '32px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer', 
+                  color: 'var(--text-muted)' 
+                }}
               >
-                <X size={22} />
+                <X size={18} />
               </button>
             </div>
             
             {/* Modal Body (Scrollable) */}
-            <div style={{ padding: '24px', overflowY: 'auto', flex: 1 }}>
-              <h2 style={{ fontSize: '1.6rem', color: 'var(--text-main)', marginBottom: '10px', fontWeight: '800', lineHeight: '1.3' }}>
+            <div style={{ padding: isMobile ? '16px' : '28px', overflowY: 'auto', flex: 1 }}>
+              <h2 style={{ fontSize: isMobile ? '1.25rem' : '1.6rem', color: 'var(--text-main)', marginBottom: '8px', fontWeight: '800', lineHeight: '1.35' }}>
                 {selectedArticle.title}
               </h2>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '20px' }}>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '18px' }}>
                 Ditulis oleh @{selectedArticle.username} pada {selectedArticle.date}
               </div>
 
               {/* Cover Image Slider / Single Image */}
               {selectedArticle.images && selectedArticle.images.length > 0 ? (
-                <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '15px', marginBottom: '20px' }}>
+                <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '12px', marginBottom: '18px' }}>
                   {selectedArticle.images.map((img, idx) => (
                     <img 
                       key={idx} 
                       src={img} 
                       alt={`Foto Pendukung ${idx + 1}`} 
-                      style={{ height: '220px', borderRadius: '12px', objectFit: 'cover', flexShrink: 0 }} 
+                      style={{ height: isMobile ? '160px' : '220px', borderRadius: '12px', objectFit: 'cover', flexShrink: 0 }} 
                     />
                   ))}
                 </div>
@@ -1126,13 +1181,31 @@ const PublicPortfolioPage = () => {
                 <img 
                   src={selectedArticle.image} 
                   alt={selectedArticle.title} 
-                  style={{ width: '100%', maxHeight: '350px', objectFit: 'cover', borderRadius: '12px', marginBottom: '20px' }} 
+                  style={{ width: '100%', maxHeight: isMobile ? '220px' : '350px', objectFit: 'cover', borderRadius: '12px', marginBottom: '18px' }} 
                 />
               ) : null}
 
               {/* Article Content */}
-              <div style={{ fontSize: '1rem', color: 'var(--text-main)', lineHeight: '1.7', whiteSpace: 'pre-wrap' }}>
+              <div style={{ fontSize: isMobile ? '0.94rem' : '1.02rem', color: 'var(--text-main)', lineHeight: '1.75', whiteSpace: 'pre-wrap', marginBottom: '24px' }}>
                 {selectedArticle.content}
+              </div>
+
+              <div style={{ textAlign: 'center', paddingTop: '10px', paddingBottom: '20px' }}>
+                <button 
+                  onClick={() => setSelectedArticle(null)}
+                  style={{
+                    background: 'var(--primary)',
+                    color: 'white',
+                    border: 'none',
+                    padding: isMobile ? '10px 20px' : '12px 28px',
+                    borderRadius: '12px',
+                    fontWeight: 'bold',
+                    fontSize: '0.86rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  ✓ Selesai Membaca & Tutup
+                </button>
               </div>
             </div>
 

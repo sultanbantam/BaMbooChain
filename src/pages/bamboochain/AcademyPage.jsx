@@ -953,6 +953,17 @@ const AcademyPage = () => {
 
   const [selectedArticle, setSelectedArticle] = useState(null);
 
+  // Responsive mobile detector
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const isMobile = windowWidth <= 768;
+
   // Auto-open article modal from URL query param (?article=...)
   useEffect(() => {
     const getArticleParam = () => {
@@ -2222,26 +2233,27 @@ const AcademyPage = () => {
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.6)',
+            backgroundColor: 'rgba(0,0,0,0.75)',
             backdropFilter: 'blur(8px)',
             display: 'flex',
-            alignItems: 'center',
+            alignItems: isMobile ? 'flex-end' : 'center',
             justifyContent: 'center',
             zIndex: 100000,
-            padding: '20px'
+            padding: isMobile ? 0 : '20px'
           }}
           onClick={() => { setSelectedArticle(null); setIsEditingArticle(false); }}
           >
             <div style={{
               background: 'var(--bg-card)',
-              border: '1px solid var(--border-color)',
-              borderRadius: '28px',
-              maxWidth: '750px',
+              border: isMobile ? 'none' : '1px solid var(--border-color)',
+              borderRadius: isMobile ? '20px 20px 0 0' : '28px',
+              maxWidth: '820px',
               width: '100%',
-              maxHeight: '85vh',
+              height: isMobile ? '94vh' : 'auto',
+              maxHeight: isMobile ? '94vh' : '88vh',
               display: 'flex',
               flexDirection: 'column',
-              boxShadow: '0 25px 50px rgba(0,0,0,0.25)',
+              boxShadow: '0 25px 50px rgba(0,0,0,0.3)',
               overflow: 'hidden',
               position: 'relative'
             }}
@@ -2480,390 +2492,469 @@ const AcademyPage = () => {
                 </>
               ) : (
                 <>
-                  {/* Close & Edit Action Buttons */}
+                  {/* Sleek Top Navigation Bar (Sticky / Fixed at top of modal) */}
                   <div style={{
-                    position: 'absolute',
-                    top: '20px',
-                    right: '20px',
+                    padding: isMobile ? '10px 14px' : '14px 24px',
+                    borderBottom: '1px solid var(--border-color)',
+                    background: 'var(--bg-card)',
                     display: 'flex',
-                    gap: '10px',
                     alignItems: 'center',
-                    zIndex: 10
+                    justifyContent: 'space-between',
+                    zIndex: 10,
+                    flexShrink: 0
                   }}>
-                    {user && user.id === selectedArticle.userId && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1, marginRight: '10px' }}>
                       <button 
-                        onClick={startEditingArticle}
+                        onClick={() => setSelectedArticle(null)}
                         style={{
                           border: 'none',
-                          background: 'rgba(12,166,120,0.1)',
-                          color: 'var(--primary)',
-                          borderRadius: '12px',
-                          padding: '8px 16px',
-                          fontWeight: 'bold',
-                          fontSize: '0.8rem',
+                          background: 'rgba(0,0,0,0.06)',
+                          borderRadius: '50%',
+                          width: '34px',
+                          height: '34px',
                           display: 'flex',
                           alignItems: 'center',
-                          gap: '6px',
+                          justifyContent: 'center',
                           cursor: 'pointer',
-                          transition: 'background 0.2s'
+                          color: 'var(--text-main)',
+                          flexShrink: 0
                         }}
-                        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(12,166,120,0.15)'}
-                        onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(12,166,120,0.1)'}
+                        title="Tutup / Kembali"
                       >
-                        Edit Artikel
+                        <X size={18} />
                       </button>
-                    )}
-                    <button 
-                      onClick={() => setSelectedArticle(null)}
-                      style={{
-                        border: 'none',
-                        background: 'rgba(0,0,0,0.05)',
-                        borderRadius: '50%',
-                        width: '36px',
-                        height: '36px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer',
-                        color: 'var(--text-main)'
-                      }}
-                    >
-                      <X size={18} />
-                    </button>
-                  </div>
-
-              {/* Modal Header */}
-              <div style={{ padding: '40px 40px 24px 40px', borderBottom: '1px solid var(--border-color)', background: 'linear-gradient(180deg, rgba(12,166,120,0.03), transparent)' }}>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--primary)', backgroundColor: 'rgba(12,166,120,0.08)', padding: '4px 12px', borderRadius: '12px', marginBottom: '16px' }}>
-                  <Sparkles size={12} /> Esai Sains & Kearifan Bambu
-                </div>
-                <h2 style={{ fontSize: '1.5rem', fontWeight: '900', color: 'var(--text-main)', margin: '0 0 20px 0', lineHeight: '1.3' }}>
-                  {selectedArticle.title}
-                </h2>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <img 
-                      src={selectedArticle.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedArticle.username || 'user'}`} 
-                      alt={selectedArticle.author} 
-                      style={{ 
-                        width: '44px', 
-                        height: '44px', 
-                        borderRadius: '50%', 
-                        background: '#f1f3f5', 
-                        border: '1px solid var(--border-color)',
-                        cursor: selectedArticle.username ? 'pointer' : 'default'
-                      }} 
-                      onClick={() => {
-                        if (selectedArticle.username) {
-                          setSelectedArticle(null);
-                          navigate(`/portfolio/${selectedArticle.username.toLowerCase()}`);
-                        }
-                      }}
-                    />
-                    <div>
-                      <div 
-                        style={{ 
-                          fontSize: '0.95rem', 
-                          fontWeight: 'bold', 
-                          color: 'var(--text-main)',
-                          cursor: selectedArticle.username ? 'pointer' : 'default'
-                        }}
-                        onClick={() => {
-                          if (selectedArticle.username) {
-                            setSelectedArticle(null);
-                            navigate(`/portfolio/${selectedArticle.username.toLowerCase()}`);
-                          }
-                        }}
-                        onMouseEnter={(e) => { if (selectedArticle.username) e.currentTarget.style.color = 'var(--primary)'; }}
-                        onMouseLeave={(e) => { if (selectedArticle.username) e.currentTarget.style.color = 'var(--text-main)'; }}
-                      >
-                        {selectedArticle.author}
-                      </div>
-                      {selectedArticle.username ? (
-                        <span 
-                          style={{ fontSize: '0.78rem', color: 'var(--primary)', fontWeight: 'bold', cursor: 'pointer' }}
-                          onClick={() => {
-                            setSelectedArticle(null);
-                            navigate(`/portfolio/${selectedArticle.username.toLowerCase()}`);
-                          }}
-                        >
-                          @{selectedArticle.username}
-                        </span>
-                      ) : (
-                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{selectedArticle.role}</div>
-                      )}
-                    </div>
-                  </div>
-                  <div style={{ marginLeft: 'auto', display: 'flex', gap: '16px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Calendar size={14} /> {selectedArticle.date}</span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={14} /> {selectedArticle.readTime}</span>
-                  </div>
-                </div>
-
-                {/* Social Interaction Row in Modal Header */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--border-color)' }}>
-                  <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
-                    <button 
-                      onClick={(e) => handleLike(selectedArticle.id, e)} 
-                      style={{ background: 'none', border: 'none', color: isArticleLiked(selectedArticle) ? '#fa5252' : 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.95rem' }}
-                    >
-                      <Heart size={20} fill={isArticleLiked(selectedArticle) ? '#fa5252' : 'none'} /> {getArticleLikesCount(selectedArticle)} {t('action_like')}
-                    </button>
-                    <span style={{ color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.95rem' }}>
-                      <MessageSquare size={20} /> {getArticleComments(selectedArticle).length} {t('action_comment')}
-                    </span>
-                    <button 
-                      onClick={(e) => handleShare(selectedArticle.id, selectedArticle.title, e)} 
-                      style={{ background: 'none', border: 'none', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.95rem', position: 'relative' }}
-                    >
-                      <Share2 size={20} /> {getArticleSharesCount(selectedArticle)} {t('action_share')}
-                    </button>
-                  </div>
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); setIsGiftModalOpen(selectedArticle.id); }} 
-                    style={{ background: 'linear-gradient(135deg, #f59f00 0%, #e67e22 100%)', border: 'none', color: 'white', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'bold', padding: '10px 20px', borderRadius: '12px', fontSize: '0.9rem', boxShadow: '0 4px 12px rgba(245,159,0,0.25)', transition: 'transform 0.2s' }}
-                    onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.03)'}
-                    onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                  >
-                    <Gift size={18} /> Kirim {t('action_gift')}
-                  </button>
-                </div>
-              </div>
-
-              {/* Modal Scrollable Body */}
-              <div style={{ overflowY: 'auto', padding: '32px 40px', fontSize: '1.02rem', lineHeight: '1.8', color: 'var(--text-main)' }}>
-                {/* Image Gallery / Slider */}
-                {selectedArticle.images && selectedArticle.images.length > 1 ? (
-                  <div style={{ position: 'relative', width: '100%', marginBottom: '24px' }}>
-                    {/* Horizontal scroll container with scroll snap */}
-                    <div 
-                      ref={articleImageContainerRef}
-                      onScroll={handleArticleImageScroll}
-                      style={{
-                        display: 'flex',
-                        overflowX: 'auto',
-                        scrollSnapType: 'x mandatory',
-                        scrollBehavior: 'smooth',
-                        borderRadius: '20px',
-                        background: '#fdfdfd',
-                        border: '1px solid var(--border-color)',
-                        maxHeight: '480px',
-                        msOverflowStyle: 'none',
-                        scrollbarWidth: 'none'
-                      }}
-                      className="hide-scrollbar"
-                    >
-                      {selectedArticle.images.map((img, idx) => (
-                        <div 
-                          key={idx} 
-                          style={{
-                            minWidth: '100%',
-                            maxHeight: '480px',
-                            display: 'flex',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            scrollSnapAlign: 'start',
-                            background: '#fdfdfd'
-                          }}
-                        >
-                          <img 
-                            src={img} 
-                            alt={`Slide ${idx + 1}`} 
-                            style={{ 
-                              maxWidth: '100%', 
-                              maxHeight: '480px', 
-                              objectFit: 'contain',
-                              width: 'auto',
-                              height: 'auto'
-                            }} 
-                          />
-                        </div>
-                      ))}
+                      <span style={{
+                        fontSize: isMobile ? '0.72rem' : '0.78rem',
+                        fontWeight: '700',
+                        color: 'var(--primary)',
+                        background: 'rgba(12,166,120,0.1)',
+                        padding: '3px 10px',
+                        borderRadius: '999px',
+                        whiteSpace: 'nowrap',
+                        textOverflow: 'ellipsis',
+                        overflow: 'hidden',
+                        maxWidth: isMobile ? '180px' : '320px'
+                      }}>
+                        <Sparkles size={11} style={{ marginRight: '4px', verticalAlign: '-1px' }} />
+                        {selectedArticle.category || 'Esai Sains & Kearifan Bambu'}
+                      </span>
                     </div>
 
-                    {/* Navigation Buttons (Left/Right Arrows) */}
-                    <button
-                      onClick={handlePrevArticleImg}
-                      style={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: '16px',
-                        transform: 'translateY(-50%)',
-                        background: 'rgba(255,255,255,0.9)',
-                        border: '1px solid var(--border-color)',
-                        borderRadius: '50%',
-                        width: '40px',
-                        height: '40px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                        zIndex: 10,
-                        color: 'var(--text-main)',
-                        transition: 'background 0.2s'
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.background = '#ffffff'}
-                      onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.9)'}
-                    >
-                      <ChevronLeft size={20} />
-                    </button>
-
-                    <button
-                      onClick={handleNextArticleImg}
-                      style={{
-                        position: 'absolute',
-                        top: '50%',
-                        right: '16px',
-                        transform: 'translateY(-50%)',
-                        background: 'rgba(255,255,255,0.9)',
-                        border: '1px solid var(--border-color)',
-                        borderRadius: '50%',
-                        width: '40px',
-                        height: '40px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                        zIndex: 10,
-                        color: 'var(--text-main)',
-                        transition: 'background 0.2s'
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.background = '#ffffff'}
-                      onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.9)'}
-                    >
-                      <ChevronRight size={20} />
-                    </button>
-
-                    {/* Dot Indicators */}
-                    <div style={{
-                      display: 'flex',
-                      justifyContent: 'center',
-                      gap: '8px',
-                      marginTop: '12px'
-                    }}>
-                      {selectedArticle.images.map((_, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => scrollToArticleImage(idx)}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+                      {user && user.id === selectedArticle.userId && (
+                        <button 
+                          onClick={startEditingArticle}
                           style={{
-                            width: currentArticleImgIdx === idx ? '24px' : '8px',
-                            height: '8px',
-                            borderRadius: '4px',
-                            background: currentArticleImgIdx === idx ? 'var(--primary)' : 'rgba(0,0,0,0.15)',
                             border: 'none',
-                            cursor: 'pointer',
-                            transition: 'all 0.3s ease',
-                            padding: 0
-                          }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                ) : (selectedArticle.image || (selectedArticle.images && selectedArticle.images[0])) ? (
-                  <div style={{ width: '100%', maxHeight: '480px', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#fdfdfd', borderRadius: '20px', overflow: 'hidden', marginBottom: '24px', border: '1px solid var(--border-color)' }}>
-                    <img src={selectedArticle.image || selectedArticle.images[0]} alt={selectedArticle.title} style={{ maxWidth: '100%', maxHeight: '480px', objectFit: 'contain' }} />
-                  </div>
-                ) : null}
-                {selectedArticle.content.split('\n\n').map((para, i) => (
-                  <p key={i} style={{ margin: '0 0 20px 0', whiteSpace: 'pre-line' }}>{para}</p>
-                ))}
-
-                {/* Comments Section */}
-                <div style={{ marginTop: '40px', borderTop: '2px solid var(--border-color)', paddingTop: '30px' }}>
-                  <h3 style={{ fontSize: '1.25rem', fontWeight: '900', color: 'var(--text-main)', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <MessageSquare size={20} color="var(--primary)" /> Diskusi & Komentar ({getArticleComments(selectedArticle).length})
-                  </h3>
-
-                  {/* Comments List */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '30px' }}>
-                    {getArticleComments(selectedArticle).map((comm, idx) => (
-                      <div key={idx} style={{ background: '#f8f9fa', borderRadius: '16px', padding: '16px 20px', border: '1px solid #e9ecef' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '0.75rem' }}>
-                              {comm.user.charAt(0).toUpperCase()}
-                            </div>
-                            <span style={{ fontWeight: 'bold', fontSize: '0.9rem', color: 'var(--text-main)' }}>{comm.user}</span>
-                          </div>
-                          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{comm.date}</span>
-                        </div>
-                        <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-main)', lineHeight: '1.5' }}>{comm.text}</p>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Add Comment Input Form */}
-                  <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', background: '#f8f9fa', borderRadius: '20px', padding: '16px', border: '1px solid #e9ecef' }}>
-                    <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#fa5252', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '0.9rem', flexShrink: 0 }}>
-                      {(user?.displayName || user?.email?.charAt(0) || "P").toUpperCase()}
-                    </div>
-                    <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      <textarea
-                        value={newCommentText}
-                        onChange={(e) => setNewCommentText(e.target.value)}
-                        placeholder="Tulis ulasan ilmiah atau tanggapan Anda..."
-                        style={{
-                          width: '100%',
-                          minHeight: '80px',
-                          border: '1px solid #dee2e6',
-                          borderRadius: '12px',
-                          padding: '12px',
-                          fontSize: '0.9rem',
-                          color: 'var(--text-main)',
-                          background: 'white',
-                          fontFamily: 'inherit',
-                          resize: 'vertical',
-                          outline: 'none'
-                        }}
-                      />
-                      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                        <button
-                          onClick={() => handleAddComment(selectedArticle.id)}
-                          style={{
-                            background: 'var(--primary)',
-                            color: 'white',
-                            border: 'none',
-                            padding: '10px 20px',
+                            background: 'rgba(12,166,120,0.12)',
+                            color: 'var(--primary)',
                             borderRadius: '10px',
-                            fontWeight: 'bold',
-                            fontSize: '0.85rem',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            boxShadow: '0 4px 12px rgba(12,166,120,0.2)'
+                            padding: isMobile ? '5px 10px' : '7px 14px',
+                            fontWeight: '700',
+                            fontSize: isMobile ? '0.74rem' : '0.8rem',
+                            cursor: 'pointer'
                           }}
                         >
-                          <Send size={14} /> Kirim Komentar
+                          Edit
+                        </button>
+                      )}
+                      <button 
+                        onClick={(e) => handleShare(selectedArticle.id, selectedArticle.title, e)} 
+                        style={{
+                          border: 'none',
+                          background: 'rgba(0,0,0,0.05)',
+                          borderRadius: '10px',
+                          padding: isMobile ? '6px 10px' : '7px 14px',
+                          color: 'var(--text-muted)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '5px',
+                          cursor: 'pointer',
+                          fontSize: isMobile ? '0.75rem' : '0.82rem',
+                          fontWeight: '700'
+                        }}
+                        title="Bagikan"
+                      >
+                        <Share2 size={15} /> <span>{isMobile ? '' : t('action_share')}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Entire Article Content Scrolls Together Seamlessly */}
+                  <div style={{ 
+                    overflowY: 'auto', 
+                    flex: 1, 
+                    padding: isMobile ? '16px 16px 60px' : '32px 40px 60px',
+                    WebkitOverflowScrolling: 'touch'
+                  }}>
+                    {/* Article Header Inside Scroll Container */}
+                    <div style={{ marginBottom: isMobile ? '18px' : '26px' }}>
+                      <h1 style={{ 
+                        fontSize: isMobile ? '1.3rem' : '1.75rem', 
+                        fontWeight: '900', 
+                        color: 'var(--text-main)', 
+                        margin: '0 0 14px 0', 
+                        lineHeight: '1.35',
+                        letterSpacing: '-0.3px'
+                      }}>
+                        {selectedArticle.title}
+                      </h1>
+
+                      {/* Author, Date & Read Time */}
+                      <div style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'space-between', 
+                        gap: '12px', 
+                        flexWrap: 'wrap', 
+                        paddingBottom: '14px', 
+                        borderBottom: '1px solid var(--border-color)' 
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <img 
+                            src={selectedArticle.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedArticle.username || 'user'}`} 
+                            alt={selectedArticle.author} 
+                            style={{ 
+                              width: isMobile ? '40px' : '46px', 
+                              height: isMobile ? '40px' : '46px', 
+                              borderRadius: '50%', 
+                              background: '#f1f3f5', 
+                              border: '1px solid var(--border-color)',
+                              cursor: selectedArticle.username ? 'pointer' : 'default',
+                              flexShrink: 0
+                            }} 
+                            onClick={() => {
+                              if (selectedArticle.username) {
+                                setSelectedArticle(null);
+                                navigate(`/portfolio/${selectedArticle.username.toLowerCase()}`);
+                              }
+                            }}
+                          />
+                          <div>
+                            <div 
+                              style={{ 
+                                fontSize: isMobile ? '0.88rem' : '0.95rem', 
+                                fontWeight: 'bold', 
+                                color: 'var(--text-main)',
+                                cursor: selectedArticle.username ? 'pointer' : 'default'
+                              }}
+                              onClick={() => {
+                                if (selectedArticle.username) {
+                                  setSelectedArticle(null);
+                                  navigate(`/portfolio/${selectedArticle.username.toLowerCase()}`);
+                                }
+                              }}
+                            >
+                              {selectedArticle.author}
+                            </div>
+                            {selectedArticle.username ? (
+                              <span 
+                                style={{ fontSize: '0.75rem', color: 'var(--primary)', fontWeight: 'bold', cursor: 'pointer' }}
+                                onClick={() => {
+                                  setSelectedArticle(null);
+                                  navigate(`/portfolio/${selectedArticle.username.toLowerCase()}`);
+                                }}
+                              >
+                                @{selectedArticle.username}
+                              </span>
+                            ) : (
+                              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{selectedArticle.role}</div>
+                            )}
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '12px', fontSize: '0.76rem', color: 'var(--text-muted)' }}>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Calendar size={13} /> {selectedArticle.date}</span>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={13} /> {selectedArticle.readTime}</span>
+                        </div>
+                      </div>
+
+                      {/* Social Action Bar */}
+                      <div style={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center', 
+                        marginTop: '12px', 
+                        paddingTop: '6px',
+                        gap: '8px', 
+                        flexWrap: 'wrap' 
+                      }}>
+                        <div style={{ display: 'flex', gap: isMobile ? '16px' : '22px', alignItems: 'center' }}>
+                          <button 
+                            onClick={(e) => handleLike(selectedArticle.id, e)} 
+                            style={{ background: 'none', border: 'none', color: isArticleLiked(selectedArticle) ? '#fa5252' : 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: isMobile ? '0.84rem' : '0.92rem' }}
+                          >
+                            <Heart size={18} fill={isArticleLiked(selectedArticle) ? '#fa5252' : 'none'} /> {getArticleLikesCount(selectedArticle)} {isMobile ? '' : t('action_like')}
+                          </button>
+                          <span style={{ color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px', fontSize: isMobile ? '0.84rem' : '0.92rem' }}>
+                            <MessageSquare size={18} /> {getArticleComments(selectedArticle).length} {isMobile ? '' : t('action_comment')}
+                          </span>
+                          <button 
+                            onClick={(e) => handleShare(selectedArticle.id, selectedArticle.title, e)} 
+                            style={{ background: 'none', border: 'none', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: isMobile ? '0.84rem' : '0.92rem' }}
+                          >
+                            <Share2 size={18} /> {getArticleSharesCount(selectedArticle)} {isMobile ? '' : t('action_share')}
+                          </button>
+                        </div>
+
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); setIsGiftModalOpen(selectedArticle.id); }} 
+                          style={{ 
+                            background: 'linear-gradient(135deg, #f59f00 0%, #e67e22 100%)', 
+                            border: 'none', 
+                            color: 'white', 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '6px', 
+                            cursor: 'pointer', 
+                            fontWeight: 'bold', 
+                            padding: isMobile ? '7px 12px' : '8px 16px', 
+                            borderRadius: '10px', 
+                            fontSize: isMobile ? '0.78rem' : '0.85rem', 
+                            boxShadow: '0 4px 10px rgba(245,159,0,0.25)' 
+                          }}
+                        >
+                          <Gift size={15} /> Kirim {t('action_gift')}
                         </button>
                       </div>
                     </div>
-                  </div>
-                </div>
-              </div>
 
-              {/* Modal Footer */}
-              <div style={{ padding: '20px 40px', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'flex-end', gap: '12px', background: 'var(--bg-card)' }}>
-                <button 
-                  onClick={() => setSelectedArticle(null)}
-                  style={{
-                    background: 'var(--primary)',
-                    color: 'white',
-                    border: 'none',
-                    padding: '12px 24px',
-                    borderRadius: '12px',
-                    fontWeight: 'bold',
-                    cursor: 'pointer',
-                    boxShadow: '0 4px 15px rgba(12,166,120,0.2)'
-                  }}
-                >
-                  Selesai Membaca
-                </button>
-              </div>
-            </>
-          )}
+                    {/* Image Gallery / Slider */}
+                    {selectedArticle.images && selectedArticle.images.length > 1 ? (
+                      <div style={{ position: 'relative', width: '100%', marginBottom: '24px' }}>
+                        {/* Horizontal scroll container with scroll snap */}
+                        <div 
+                          ref={articleImageContainerRef}
+                          onScroll={handleArticleImageScroll}
+                          style={{
+                            display: 'flex',
+                            overflowX: 'auto',
+                            scrollSnapType: 'x mandatory',
+                            scrollBehavior: 'smooth',
+                            borderRadius: '20px',
+                            background: '#fdfdfd',
+                            border: '1px solid var(--border-color)',
+                            maxHeight: '480px',
+                            msOverflowStyle: 'none',
+                            scrollbarWidth: 'none'
+                          }}
+                          className="hide-scrollbar"
+                        >
+                          {selectedArticle.images.map((img, idx) => (
+                            <div 
+                              key={idx} 
+                              style={{
+                                minWidth: '100%',
+                                maxHeight: '480px',
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                scrollSnapAlign: 'start',
+                                background: '#fdfdfd'
+                              }}
+                            >
+                              <img 
+                                src={img} 
+                                alt={`Slide ${idx + 1}`} 
+                                style={{ 
+                                  maxWidth: '100%', 
+                                  maxHeight: '480px', 
+                                  objectFit: 'contain',
+                                  width: 'auto',
+                                  height: 'auto'
+                                }} 
+                              />
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Navigation Buttons (Left/Right Arrows) */}
+                        <button
+                          onClick={handlePrevArticleImg}
+                          style={{
+                            position: 'absolute',
+                            top: '50%',
+                            left: '16px',
+                            transform: 'translateY(-50%)',
+                            background: 'rgba(255,255,255,0.9)',
+                            border: '1px solid var(--border-color)',
+                            borderRadius: '50%',
+                            width: '40px',
+                            height: '40px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: 'pointer',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                            zIndex: 10,
+                            color: 'var(--text-main)',
+                            transition: 'background 0.2s'
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.background = '#ffffff'}
+                          onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.9)'}
+                        >
+                          <ChevronLeft size={20} />
+                        </button>
+
+                        <button
+                          onClick={handleNextArticleImg}
+                          style={{
+                            position: 'absolute',
+                            top: '50%',
+                            right: '16px',
+                            transform: 'translateY(-50%)',
+                            background: 'rgba(255,255,255,0.9)',
+                            border: '1px solid var(--border-color)',
+                            borderRadius: '50%',
+                            width: '40px',
+                            height: '40px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: 'pointer',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                            zIndex: 10,
+                            color: 'var(--text-main)',
+                            transition: 'background 0.2s'
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.background = '#ffffff'}
+                          onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.9)'}
+                        >
+                          <ChevronRight size={20} />
+                        </button>
+
+                        {/* Dot Indicators */}
+                        <div style={{
+                          display: 'flex',
+                          justifyContent: 'center',
+                          gap: '8px',
+                          marginTop: '12px'
+                        }}>
+                          {selectedArticle.images.map((_, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => scrollToArticleImage(idx)}
+                              style={{
+                                width: currentArticleImgIdx === idx ? '24px' : '8px',
+                                height: '8px',
+                                borderRadius: '4px',
+                                background: currentArticleImgIdx === idx ? 'var(--primary)' : 'rgba(0,0,0,0.15)',
+                                border: 'none',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease',
+                                padding: 0
+                              }}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    ) : (selectedArticle.image || (selectedArticle.images && selectedArticle.images[0])) ? (
+                      <div style={{ width: '100%', maxHeight: '480px', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#fdfdfd', borderRadius: '20px', overflow: 'hidden', marginBottom: '24px', border: '1px solid var(--border-color)' }}>
+                        <img src={selectedArticle.image || selectedArticle.images[0]} alt={selectedArticle.title} style={{ maxWidth: '100%', maxHeight: '480px', objectFit: 'contain' }} />
+                      </div>
+                    ) : null}
+
+                    {/* Paragraphs */}
+                    {selectedArticle.content.split('\n\n').map((para, i) => (
+                      <p key={i} style={{ margin: '0 0 18px 0', whiteSpace: 'pre-line', fontSize: isMobile ? '0.96rem' : '1.04rem', lineHeight: '1.8', color: 'var(--text-main)' }}>{para}</p>
+                    ))}
+
+                    {/* Comments Section */}
+                    <div style={{ marginTop: '36px', borderTop: '2px solid var(--border-color)', paddingTop: '24px' }}>
+                      <h3 style={{ fontSize: isMobile ? '1.1rem' : '1.25rem', fontWeight: '900', color: 'var(--text-main)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <MessageSquare size={18} color="var(--primary)" /> Diskusi & Komentar ({getArticleComments(selectedArticle).length})
+                      </h3>
+
+                      {/* Comments List */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
+                        {getArticleComments(selectedArticle).map((comm, idx) => (
+                          <div key={idx} style={{ background: '#f8f9fa', borderRadius: '14px', padding: '14px 16px', border: '1px solid #e9ecef' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <div style={{ width: '26px', height: '26px', borderRadius: '50%', background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '0.75rem' }}>
+                                  {comm.user.charAt(0).toUpperCase()}
+                                </div>
+                                <span style={{ fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--text-main)' }}>{comm.user}</span>
+                              </div>
+                              <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{comm.date}</span>
+                            </div>
+                            <p style={{ margin: 0, fontSize: '0.86rem', color: 'var(--text-main)', lineHeight: '1.5' }}>{comm.text}</p>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Add Comment Input Form */}
+                      <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', background: '#f8f9fa', borderRadius: '16px', padding: '12px', border: '1px solid #e9ecef' }}>
+                        <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#fa5252', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '0.85rem', flexShrink: 0 }}>
+                          {(user?.displayName || user?.email?.charAt(0) || "P").toUpperCase()}
+                        </div>
+                        <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                          <textarea
+                            value={newCommentText}
+                            onChange={(e) => setNewCommentText(e.target.value)}
+                            placeholder="Tulis ulasan ilmiah atau tanggapan Anda..."
+                            style={{
+                              width: '100%',
+                              minHeight: '70px',
+                              border: '1px solid #dee2e6',
+                              borderRadius: '10px',
+                              padding: '10px',
+                              fontSize: '0.86rem',
+                              color: 'var(--text-main)',
+                              background: 'white',
+                              fontFamily: 'inherit',
+                              resize: 'vertical',
+                              outline: 'none',
+                              boxSizing: 'border-box'
+                            }}
+                          />
+                          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                            <button
+                              onClick={() => handleAddComment(selectedArticle.id)}
+                              style={{
+                                background: 'var(--primary)',
+                                color: 'white',
+                                border: 'none',
+                                padding: '8px 16px',
+                                borderRadius: '8px',
+                                fontWeight: 'bold',
+                                fontSize: '0.82rem',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                boxShadow: '0 4px 12px rgba(12,166,120,0.2)'
+                              }}
+                            >
+                              <Send size={13} /> Kirim Komentar
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Finished Reading CTA Button at the bottom of the article */}
+                    <div style={{ textAlign: 'center', marginTop: '36px', paddingBottom: '20px' }}>
+                      <button 
+                        onClick={() => setSelectedArticle(null)}
+                        style={{
+                          background: 'var(--primary)',
+                          color: 'white',
+                          border: 'none',
+                          padding: isMobile ? '12px 24px' : '14px 32px',
+                          borderRadius: '12px',
+                          fontWeight: '800',
+                          fontSize: isMobile ? '0.86rem' : '0.92rem',
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 15px rgba(12,166,120,0.25)'
+                        }}
+                      >
+                        ✓ Selesai Membaca & Tutup
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}
