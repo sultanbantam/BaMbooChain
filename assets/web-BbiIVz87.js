@@ -1,1 +1,0 @@
-import{l as e}from"./vendor-others-C8lnriPH.js";export{e as AppWeb};
