@@ -128,6 +128,18 @@ const BoomAdminDashboardPage = lazyWithRetry(() => import('./pages/boomboom/Boom
 const CibaraniGuanoPage = lazyWithRetry(() => import('./pages/guano/CibaraniGuanoPage'));
 const GuanoPublicTracePage = lazyWithRetry(() => import('./pages/guano/GuanoPublicTracePage'));
 
+// Cibarani Weekend Experience Modules (ciwee.md)
+const CibaraniLandingPage = lazyWithRetry(() => import('./pages/cibarani/CibaraniLandingPage'));
+const CibaraniExperiencePage = lazyWithRetry(() => import('./pages/cibarani/CibaraniExperiencePage'));
+const CibaraniBookingPage = lazyWithRetry(() => import('./pages/cibarani/CibaraniBookingPage'));
+const CibaraniMyBookingsPage = lazyWithRetry(() => import('./pages/cibarani/CibaraniMyBookingsPage'));
+const CibaraniAgendaPage = lazyWithRetry(() => import('./pages/cibarani/CibaraniAgendaPage'));
+const CibaraniGalleryPage = lazyWithRetry(() => import('./pages/cibarani/CibaraniGalleryPage'));
+const CibaraniStoriesPage = lazyWithRetry(() => import('./pages/cibarani/CibaraniStoriesPage'));
+const CibaraniImpactPage = lazyWithRetry(() => import('./pages/cibarani/CibaraniImpactPage'));
+const CibaraniProductsPage = lazyWithRetry(() => import('./pages/cibarani/CibaraniProductsPage'));
+const CibaraniAdminPage = lazyWithRetry(() => import('./pages/cibarani/CibaraniAdminPage'));
+
 const PageLoader = () => (
   <div style={{
     display: 'flex',
@@ -417,6 +429,19 @@ function App() {
             <Route path="/cibarani-guano" element={<CibaraniGuanoPage />} />
             <Route path="/bamboochain/cibarani-guano" element={<CibaraniGuanoPage />} />
             <Route path="/cibarani-guano/trace/:token" element={<GuanoPublicTracePage />} />
+            
+            {/* Cibarani Weekend Experience Modules */}
+            <Route path="/cibarani" element={<CibaraniLandingPage />} />
+            <Route path="/cibarani/experience" element={<CibaraniExperiencePage />} />
+            <Route path="/cibarani/booking" element={<CibaraniBookingPage />} />
+            <Route path="/cibarani/my-bookings" element={<CibaraniMyBookingsPage />} />
+            <Route path="/cibarani/agenda" element={<CibaraniAgendaPage />} />
+            <Route path="/cibarani/events" element={<CibaraniAgendaPage />} />
+            <Route path="/cibarani/gallery" element={<CibaraniGalleryPage />} />
+            <Route path="/cibarani/stories" element={<CibaraniStoriesPage />} />
+            <Route path="/cibarani/impact" element={<CibaraniImpactPage />} />
+            <Route path="/cibarani/products" element={<CibaraniProductsPage />} />
+            <Route path="/cibarani/admin" element={<ProtectedRoute><CibaraniAdminPage /></ProtectedRoute>} />
             
             <Route path="/faq" element={<FAQPage />} />
           </Routes>

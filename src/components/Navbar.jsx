@@ -77,6 +77,7 @@ const Navbar = () => {
     { label: t('feature_overview'), path: '/bamboochain', icon: <Layout size={16} /> },
     { label: '🚀 BoomBoom Mobility', path: '/boomboom', icon: <Car size={16} /> },
     { label: '🦇 Cibarani Guano', path: '/cibarani-guano', icon: <Leaf size={16} /> },
+    { label: '🏕️ Cibarani Weekend', path: '/cibarani', icon: <Compass size={16} /> },
     { label: 'Mitra & Petani', path: '/bambunusa/farmers', icon: <Users size={16} /> },
     { label: t('feature_plantation'), path: '/bamboochain/plantation', icon: <TreeDeciduous size={16} /> },
     { label: t('feature_supply_chain'), path: '/bamboochain/supply-chain', icon: <Truck size={16} /> },
@@ -531,6 +532,7 @@ const Navbar = () => {
           <div style={{ background: 'var(--bg-card)', height: '45px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '25px', padding: '0 32px', borderBottom: '1px solid var(--border-color)' }}>
             <Link to="/boomboom" style={{ fontSize: '0.85rem', color: '#f59f00', textDecoration: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>🚀 BoomBoom</Link>
             <Link to="/cibarani-guano" style={{ fontSize: '0.85rem', color: '#047857', textDecoration: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>🦇 Cibarani Guano</Link>
+            <Link to="/cibarani" style={{ fontSize: '0.85rem', color: '#065f46', textDecoration: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>🏕️ Cibarani Weekend</Link>
             <Link to="/bangunin" style={{ fontSize: '0.85rem', color: '#005BAA', textDecoration: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>🏢 BangunIn MBR</Link>
             <Link to="/bambupedia" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('nav_bambupedia')}</Link>
             <Link to="/bamboochain/academy" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('feature_academy')}</Link>
