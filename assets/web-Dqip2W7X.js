@@ -1,1 +1,0 @@
-import{t as e}from"./vendor-firebase-CtknTWS5.js";export{e as FirebaseAuthenticationWeb};

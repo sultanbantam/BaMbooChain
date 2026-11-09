@@ -1,1 +1,0 @@
-import{l as e}from"./vendor-others-BooYCV97.js";export{e as AppWeb};
