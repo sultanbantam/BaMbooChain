@@ -163,3 +163,4 @@ const CibaraniImpactPage = () => {
 };
 
 export default CibaraniImpactPage;
+

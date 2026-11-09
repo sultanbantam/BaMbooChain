@@ -315,3 +315,4 @@ export const CIBARANI_GALLERY = [
   { id: 'GAL-05', title: 'Rumpun Bambu Endemik di Lereng Bukit', category: 'Bambu', image: '/gambar/gambar/kbambu/01.jpg', photographer: 'Tim BaMbooChain', consentVerified: true },
   { id: 'GAL-06', title: 'Kerajinan Tangan dan Anyaman Bambu Warga', category: 'Produk Lokal', image: '/gambar/batang.jpg', photographer: 'Pemberdayaan Adat', consentVerified: true }
 ];
+

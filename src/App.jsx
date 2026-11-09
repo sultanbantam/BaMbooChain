@@ -140,6 +140,9 @@ const CibaraniImpactPage = lazyWithRetry(() => import('./pages/cibarani/Cibarani
 const CibaraniProductsPage = lazyWithRetry(() => import('./pages/cibarani/CibaraniProductsPage'));
 const CibaraniAdminPage = lazyWithRetry(() => import('./pages/cibarani/CibaraniAdminPage'));
 
+// ceKKes Bio-Monitoring Module (cekkes.md)
+const CekkesDashboardPage = lazyWithRetry(() => import('./pages/cekkes/CekkesDashboardPage'));
+
 const PageLoader = () => (
   <div style={{
     display: 'flex',
@@ -236,6 +239,10 @@ const SEO_MAP = {
   '/boomboom/book': {
     title: 'Pesan Perjalanan BOOMBOOM — Green Mobility',
     description: 'Pesan BoomRide, BoomCar, BoomSchedule, atau BoomTogether dengan estimasi tarif transparan dan reward token BMC.'
+  },
+  '/cekkes': {
+    title: 'ceKKes — Platform Informasi Biologis & Monitoring Terpadu',
+    description: 'Kenali. Pantau. Rawat. Monitoring kesehatan manusia, satwa, dan budidaya tanaman berbasis AI dan prinsip UU PDP.'
   }
 };
 
@@ -442,6 +449,10 @@ function App() {
             <Route path="/cibarani/impact" element={<CibaraniImpactPage />} />
             <Route path="/cibarani/products" element={<CibaraniProductsPage />} />
             <Route path="/cibarani/admin" element={<ProtectedRoute><CibaraniAdminPage /></ProtectedRoute>} />
+            
+            {/* ceKKes Bio-Monitoring Module (cekkes.md) */}
+            <Route path="/cekkes" element={<CekkesDashboardPage />} />
+            <Route path="/bamboochain/cekkes" element={<CekkesDashboardPage />} />
             
             <Route path="/faq" element={<FAQPage />} />
           </Routes>

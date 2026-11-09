@@ -3,7 +3,7 @@ import {
   Globe, Bell, ChevronDown, ChevronUp, ChevronRight, Menu, X, Shield, Layout, 
   TreeDeciduous, Truck, Factory, Wallet, Leaf, ShoppingCart, Users, GraduationCap, 
   BarChart3, TrendingUp, User, Sun, Moon, Car, Compass, Layers, CheckCircle2, 
-  Home, HelpCircle, Phone, Award, Building2
+  Home, HelpCircle, Phone, Award, Building2, Activity
 } from 'lucide-react';
 import { getAssetUrl } from '../utils/assets';
 import { Link, useLocation } from 'react-router-dom';
@@ -75,6 +75,7 @@ const Navbar = () => {
 
   const bambooNusaFeatures = [
     { label: t('feature_overview'), path: '/bamboochain', icon: <Layout size={16} /> },
+    { label: '🩺 ceKKes Bio-Monitor', path: '/cekkes', icon: <Activity size={16} /> },
     { label: '🚀 BoomBoom Mobility', path: '/boomboom', icon: <Car size={16} /> },
     { label: '🦇 Cibarani Guano', path: '/cibarani-guano', icon: <Leaf size={16} /> },
     { label: '🏕️ Cibarani Weekend', path: '/cibarani', icon: <Compass size={16} /> },
@@ -103,6 +104,7 @@ const Navbar = () => {
       bgLight: isDark ? 'rgba(16, 185, 129, 0.15)' : 'rgba(16, 185, 129, 0.08)',
       badge: language === 'en' ? '5 Features' : language === 'ja' ? '5機能' : '5 Fitur',
       items: [
+        { label: '🩺 ceKKes Bio-Monitoring', path: '/cekkes', icon: <Activity size={18} />, desc: language === 'en' ? 'Integrated human, animal & plant health monitoring' : 'Monitoring biologis manusia, satwa & tumbuhan terpadu' },
         { label: t('feature_carbon_impact'), path: '/bamboochain/carbon-impact', icon: <Leaf size={18} />, desc: language === 'en' ? 'Carbon sequestration & MRV calculations' : 'Kalkulasi serapan karbon & sertifikasi MRV' },
         { label: t('feature_data_analytics'), path: '/bamboochain/data-analytics', icon: <BarChart3 size={18} />, desc: language === 'en' ? 'Realtime sensor & plantation metrics' : 'Metrik realtime sensor & analitik data' },
         { label: t('nav_impact'), path: '/impact', icon: <TrendingUp size={18} />, desc: language === 'en' ? 'Social & environmental impact report' : 'Laporan dampak sosial & ekologi' },
@@ -533,6 +535,7 @@ const Navbar = () => {
             <Link to="/boomboom" style={{ fontSize: '0.85rem', color: '#f59f00', textDecoration: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>🚀 BoomBoom</Link>
             <Link to="/cibarani-guano" style={{ fontSize: '0.85rem', color: '#047857', textDecoration: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>🦇 Cibarani Guano</Link>
             <Link to="/cibarani" style={{ fontSize: '0.85rem', color: '#065f46', textDecoration: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>🏕️ Cibarani Weekend</Link>
+            <Link to="/cekkes" style={{ fontSize: '0.85rem', color: '#10b981', textDecoration: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>🩺 ceKKes</Link>
             <Link to="/bangunin" style={{ fontSize: '0.85rem', color: '#005BAA', textDecoration: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>🏢 BangunIn MBR</Link>
             <Link to="/bambupedia" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('nav_bambupedia')}</Link>
             <Link to="/bamboochain/academy" style={{ fontSize: '0.85rem', color: '#555', textDecoration: 'none', fontWeight: '500' }}>{t('feature_academy')}</Link>

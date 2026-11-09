@@ -179,3 +179,4 @@ const CibaraniProductsPage = () => {
 };
 
 export default CibaraniProductsPage;
+

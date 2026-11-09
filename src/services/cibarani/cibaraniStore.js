@@ -365,3 +365,4 @@ export const useCibaraniStore = () => {
     addAgentLog: cibaraniStore.addAgentLog
   };
 };
+
