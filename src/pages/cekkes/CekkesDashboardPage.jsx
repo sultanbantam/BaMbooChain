@@ -10,15 +10,9 @@ import {
   PlusCircle, 
   Sparkles, 
   Search, 
-  Filter, 
-  AlertTriangle, 
-  CheckCircle2, 
-  Clock, 
   Download, 
   RotateCcw,
-  ChevronRight,
-  ExternalLink,
-  ShieldAlert
+  ChevronRight
 } from 'lucide-react';
 import { cekkesStore } from '../../services/cekkes/cekkesStore';
 import CekkesNavHeader from '../../components/cekkes/CekkesNavHeader';
@@ -127,7 +121,13 @@ const CekkesDashboardPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white font-sans selection:bg-emerald-500 selection:text-emerald-950 pb-20">
+    <div style={{
+      minHeight: '100vh',
+      background: '#0a0f1d',
+      color: '#e2e8f0',
+      fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
+      paddingBottom: '80px'
+    }}>
       {/* Navigation Sub-Header */}
       <CekkesNavHeader
         activeTab={activeTab}
@@ -140,76 +140,98 @@ const CekkesDashboardPage = () => {
         stats={stats}
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 space-y-6">
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
         {/* Top Metric Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          <div className="p-3.5 bg-gray-900/80 border border-emerald-500/20 rounded-2xl">
-            <span className="text-[11px] text-gray-400 font-bold uppercase tracking-wider block">Total Profil</span>
-            <div className="flex items-baseline gap-1 mt-1">
-              <span className="text-2xl font-black text-white">{stats.total}</span>
-              <span className="text-xs text-gray-400">subjek</span>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+          gap: '12px'
+        }}>
+          {[
+            { label: 'Total Profil', val: stats.total, unit: 'subjek', color: '#ffffff', bg: '#161b26', border: 'rgba(255,255,255,0.08)' },
+            { label: 'Manusia (Human)', val: stats.human, unit: 'profil', color: '#34d399', bg: '#161b26', border: 'rgba(16, 185, 129, 0.3)' },
+            { label: 'Hewan (Animal)', val: stats.animal, unit: 'satwa', color: '#fbbf24', bg: '#161b26', border: 'rgba(245, 159, 0, 0.3)' },
+            { label: 'Tumbuhan (Plant)', val: stats.plant, unit: 'tanaman', color: '#2dd4bf', bg: '#161b26', border: 'rgba(45, 212, 191, 0.3)' },
+            { label: 'Perlu Perhatian', val: stats.attentionNeeded, unit: 'tindak lanjut', color: '#f87171', bg: '#161b26', border: 'rgba(239, 68, 68, 0.3)' },
+            { label: 'Jadwal Aktif', val: stats.carePlans, unit: 'pengingat', color: '#60a5fa', bg: '#161b26', border: 'rgba(96, 165, 250, 0.3)' },
+          ].map((m, i) => (
+            <div key={i} style={{
+              background: m.bg,
+              border: `1px solid ${m.border}`,
+              borderRadius: '16px',
+              padding: '14px 16px',
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)'
+            }}>
+              <span style={{ fontSize: '0.7rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.4px', color: '#94a3b8' }}>
+                {m.label}
+              </span>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '4px' }}>
+                <span style={{ fontSize: '1.6rem', fontWeight: '900', color: m.color }}>{m.val}</span>
+                <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{m.unit}</span>
+              </div>
             </div>
-          </div>
-          <div className="p-3.5 bg-gray-900/80 border border-emerald-500/20 rounded-2xl">
-            <span className="text-[11px] text-emerald-400 font-bold uppercase tracking-wider block">Manusia</span>
-            <div className="flex items-baseline gap-1 mt-1">
-              <span className="text-2xl font-black text-emerald-400">{stats.human}</span>
-              <span className="text-xs text-gray-400">profil</span>
-            </div>
-          </div>
-          <div className="p-3.5 bg-gray-900/80 border border-amber-500/20 rounded-2xl">
-            <span className="text-[11px] text-amber-400 font-bold uppercase tracking-wider block">Hewan</span>
-            <div className="flex items-baseline gap-1 mt-1">
-              <span className="text-2xl font-black text-amber-400">{stats.animal}</span>
-              <span className="text-xs text-gray-400">satwa</span>
-            </div>
-          </div>
-          <div className="p-3.5 bg-gray-900/80 border border-teal-500/20 rounded-2xl">
-            <span className="text-[11px] text-teal-400 font-bold uppercase tracking-wider block">Tumbuhan</span>
-            <div className="flex items-baseline gap-1 mt-1">
-              <span className="text-2xl font-black text-teal-400">{stats.plant}</span>
-              <span className="text-xs text-gray-400">tanaman</span>
-            </div>
-          </div>
-          <div className="p-3.5 bg-gray-900/80 border border-rose-500/30 rounded-2xl">
-            <span className="text-[11px] text-rose-400 font-bold uppercase tracking-wider block">Perlu Perhatian</span>
-            <div className="flex items-baseline gap-1 mt-1">
-              <span className="text-2xl font-black text-rose-400">{stats.attentionNeeded}</span>
-              <span className="text-xs text-rose-300/80">tindak lanjut</span>
-            </div>
-          </div>
-          <div className="p-3.5 bg-gray-900/80 border border-blue-500/20 rounded-2xl">
-            <span className="text-[11px] text-blue-400 font-bold uppercase tracking-wider block">Jadwal Aktif</span>
-            <div className="flex items-baseline gap-1 mt-1">
-              <span className="text-2xl font-black text-blue-400">{stats.carePlans}</span>
-              <span className="text-xs text-gray-400">pengingat</span>
-            </div>
-          </div>
+          ))}
         </div>
 
         {/* Scientific Boundary & Safety Banner */}
-        <div className="p-4 bg-gradient-to-r from-emerald-950/40 via-gray-900 to-gray-900 border border-emerald-500/30 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-3">
-          <div className="flex items-start gap-3">
-            <ShieldCheck size={22} className="text-emerald-400 shrink-0 mt-0.5" />
+        <div style={{
+          background: 'linear-gradient(135deg, rgba(6, 78, 59, 0.4) 0%, rgba(15, 23, 42, 0.8) 100%)',
+          border: '1px solid rgba(16, 185, 129, 0.35)',
+          borderRadius: '16px',
+          padding: '16px 20px',
+          display: 'flex',
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '14px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', maxWidth: '780px' }}>
+            <div style={{ background: 'rgba(16, 185, 129, 0.2)', padding: '8px', borderRadius: '10px', color: '#34d399', flexShrink: 0 }}>
+              <ShieldCheck size={22} />
+            </div>
             <div>
-              <h3 className="text-sm font-bold text-white">
+              <h3 style={{ margin: 0, fontSize: '0.92rem', fontWeight: '800', color: '#ffffff' }}>
                 Prinsip Sains & Kepatuhan UU No. 27/2022 (UU PDP)
               </h3>
-              <p className="text-xs text-gray-300 mt-0.5 leading-relaxed">
+              <p style={{ margin: '4px 0 0', fontSize: '0.78rem', color: '#cbd5e1', lineHeight: 1.5 }}>
                 ceKKes memisahkan identifikasi subjek dari pemeriksaan kesehatan. Sistem <strong>tidak melakukan diagnosis medis/klinis otomatis</strong> dan tidak mengumpulkan biometrik mentah (sidik jari/retina) tanpa izin eksplisit.
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <button
               onClick={() => setActiveTab('audit')}
-              className="text-xs px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-700 font-medium transition-colors cursor-pointer"
+              style={{
+                padding: '8px 14px',
+                borderRadius: '10px',
+                background: '#1e293b',
+                border: '1px solid #334155',
+                color: '#e2e8f0',
+                fontSize: '0.78rem',
+                fontWeight: '600',
+                cursor: 'pointer'
+              }}
             >
               Lihat Audit PDP
             </button>
             <button
               onClick={() => setIsAiModalOpen(true)}
-              className="text-xs px-3.5 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border border-emerald-500/40 font-bold transition-colors cursor-pointer flex items-center gap-1.5"
+              style={{
+                padding: '8px 16px',
+                borderRadius: '10px',
+                background: 'rgba(16, 185, 129, 0.2)',
+                border: '1px solid rgba(16, 185, 129, 0.4)',
+                color: '#34d399',
+                fontSize: '0.78rem',
+                fontWeight: '800',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
             >
               <Sparkles size={14} /> Asisten AI
             </button>
@@ -218,131 +240,225 @@ const CekkesDashboardPage = () => {
 
         {/* MAIN VIEWS: PROFILES vs SCHEDULE vs AUDIT */}
         {activeTab !== 'schedule' && activeTab !== 'audit' && (
-          <div className="space-y-4">
-            {/* Search and Filters Bar */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="relative flex-1 max-w-md">
-                <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {/* Search Bar */}
+            <div style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '12px'
+            }}>
+              <div style={{ position: 'relative', width: '100%', maxWidth: '420px' }}>
+                <Search size={16} color="#94a3b8" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Cari berdasarkan nama, spesies, atau domain..."
-                  className="w-full pl-9 pr-4 py-2 bg-gray-900 border border-gray-800 rounded-xl text-xs sm:text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition-colors"
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px 10px 40px',
+                    background: '#161b26',
+                    border: '1px solid #232936',
+                    borderRadius: '12px',
+                    color: '#ffffff',
+                    fontSize: '0.85rem',
+                    boxSizing: 'border-box',
+                    outline: 'none'
+                  }}
                 />
               </div>
 
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-400 font-medium">
-                  Menampilkan: <strong className="text-white">{filteredSubjects.length}</strong> profil
-                </span>
-              </div>
+              <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
+                Menampilkan: <strong style={{ color: '#ffffff' }}>{filteredSubjects.length}</strong> profil
+              </span>
             </div>
 
             {/* Profile Cards Grid */}
             {filteredSubjects.length === 0 ? (
-              <div className="p-12 text-center bg-gray-900/40 border border-gray-800 rounded-2xl space-y-3">
-                <Activity size={32} className="mx-auto text-gray-600" />
-                <h3 className="text-sm font-bold text-gray-300">Tidak ada profil yang cocok</h3>
-                <p className="text-xs text-gray-500">Coba ubah kata kunci pencarian atau daftarkan profil biologis baru.</p>
+              <div style={{
+                textAlign: 'center',
+                padding: '50px 20px',
+                background: '#161b26',
+                border: '1px solid #232936',
+                borderRadius: '16px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '10px'
+              }}>
+                <Activity size={36} color="#64748b" />
+                <h3 style={{ margin: 0, fontSize: '0.95rem', fontWeight: '800', color: '#e2e8f0' }}>Tidak ada profil yang cocok</h3>
+                <p style={{ margin: 0, fontSize: '0.8rem', color: '#94a3b8' }}>Coba ubah kata kunci pencarian atau daftarkan profil biologis baru.</p>
                 <button
                   onClick={() => setIsAddModalOpen(true)}
-                  className="px-4 py-2 text-xs font-bold text-emerald-950 bg-emerald-400 rounded-xl hover:bg-emerald-300 cursor-pointer"
+                  style={{
+                    padding: '8px 18px',
+                    background: '#10b981',
+                    border: 'none',
+                    borderRadius: '10px',
+                    color: '#022c22',
+                    fontSize: '0.82rem',
+                    fontWeight: '800',
+                    cursor: 'pointer',
+                    marginTop: '8px'
+                  }}
                 >
                   + Tambah Profil Sekarang
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+                gap: '16px'
+              }}>
                 {filteredSubjects.map(sub => {
                   const isAttention = sub.status === 'Perlu Tindak Lanjut';
                   return (
                     <div
                       key={sub.id}
-                      className="p-5 bg-gray-900/80 border border-gray-800/80 hover:border-emerald-500/40 rounded-2xl transition-all shadow-lg flex flex-col justify-between group"
+                      style={{
+                        background: '#161b26',
+                        border: '1px solid #232936',
+                        borderRadius: '16px',
+                        padding: '18px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                        boxShadow: '0 4px 15px rgba(0, 0, 0, 0.25)',
+                        transition: 'all 0.2s'
+                      }}
                     >
                       <div>
                         {/* Domain & Demo Badges */}
-                        <div className="flex items-center justify-between gap-2 mb-3">
-                          <div className="flex items-center gap-1.5">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                             {sub.domain === 'human' && (
-                              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
-                                <User size={10} /> MANUSIA
+                              <span style={{ fontSize: '0.68rem', fontWeight: '800', padding: '3px 8px', borderRadius: '6px', background: 'rgba(16, 185, 129, 0.2)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.3)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                <User size={11} /> MANUSIA
                               </span>
                             )}
                             {sub.domain === 'animal' && (
-                              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1">
-                                <Dog size={10} /> HEWAN
+                              <span style={{ fontSize: '0.68rem', fontWeight: '800', padding: '3px 8px', borderRadius: '6px', background: 'rgba(245, 159, 0, 0.2)', color: '#fbbf24', border: '1px solid rgba(245, 159, 0, 0.3)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                <Dog size={11} /> HEWAN
                               </span>
                             )}
                             {sub.domain === 'plant' && (
-                              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-teal-500/20 text-teal-300 border border-teal-500/30 flex items-center gap-1">
-                                <Leaf size={10} /> TUMBUHAN
+                              <span style={{ fontSize: '0.68rem', fontWeight: '800', padding: '3px 8px', borderRadius: '6px', background: 'rgba(45, 212, 191, 0.2)', color: '#2dd4bf', border: '1px solid rgba(45, 212, 191, 0.3)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                <Leaf size={11} /> TUMBUHAN
                               </span>
                             )}
                             {sub.isDemo && (
-                              <span className="px-1.5 py-0.2 rounded text-[9px] font-black bg-gray-800 text-gray-400 border border-gray-700">
+                              <span style={{ fontSize: '0.65rem', fontWeight: '900', padding: '2px 5px', borderRadius: '4px', background: '#232936', color: '#94a3b8' }}>
                                 DEMO
                               </span>
                             )}
                           </div>
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-                            isAttention
-                              ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40 animate-pulse'
-                              : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                          }`}>
+                          <span style={{
+                            fontSize: '0.68rem',
+                            fontWeight: '700',
+                            padding: '3px 10px',
+                            borderRadius: '999px',
+                            background: isAttention ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.15)',
+                            color: isAttention ? '#fca5a5' : '#34d399',
+                            border: `1px solid ${isAttention ? 'rgba(239, 68, 68, 0.4)' : 'rgba(16, 185, 129, 0.3)'}`
+                          }}>
                             {sub.status}
                           </span>
                         </div>
 
                         {/* Title & Subtitle */}
-                        <h3 className="text-base font-extrabold text-white group-hover:text-emerald-400 transition-colors">
+                        <h3 style={{ margin: '0 0 3px', fontSize: '1.05rem', fontWeight: '800', color: '#ffffff' }}>
                           {sub.fullName || sub.name}
                         </h3>
-                        <p className="text-xs text-gray-400 mt-0.5 line-clamp-1">
+                        <p style={{ margin: 0, fontSize: '0.78rem', color: '#94a3b8', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                           {sub.scientificName || sub.species || sub.ageGroup}
                         </p>
 
-                        {/* Specific Metrics */}
-                        <div className="mt-4 p-3 bg-gray-950/50 rounded-xl border border-gray-800/80 text-xs space-y-1">
+                        {/* Metrics Card */}
+                        <div style={{
+                          background: '#0d111a',
+                          border: '1px solid #1f2533',
+                          borderRadius: '12px',
+                          padding: '12px',
+                          marginTop: '14px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '6px',
+                          fontSize: '0.78rem'
+                        }}>
                           {sub.domain === 'human' && (
-                            <div className="flex items-center justify-between text-gray-300">
+                            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#cbd5e1' }}>
                               <span>Tensi Terkini:</span>
-                              <strong className="text-emerald-400">{sub.physicalSummary?.latestBloodPressure || 'Belum diukur'}</strong>
+                              <strong style={{ color: '#34d399' }}>{sub.physicalSummary?.latestBloodPressure || 'Belum diukur'}</strong>
                             </div>
                           )}
                           {sub.domain === 'animal' && (
-                            <div className="flex items-center justify-between text-gray-300">
+                            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#cbd5e1' }}>
                               <span>Bobot Badan:</span>
-                              <strong className="text-amber-400">{sub.weightKg} kg</strong>
+                              <strong style={{ color: '#fbbf24' }}>{sub.weightKg} kg</strong>
                             </div>
                           )}
                           {sub.domain === 'plant' && (
-                            <div className="flex items-center justify-between text-gray-300">
+                            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#cbd5e1' }}>
                               <span>Fase Tumbuh:</span>
-                              <strong className="text-teal-400">{sub.growthPhase}</strong>
+                              <strong style={{ color: '#2dd4bf' }}>{sub.growthPhase}</strong>
                             </div>
                           )}
-                          <div className="flex items-center justify-between text-gray-400 text-[11px] pt-1 border-t border-gray-800/60">
+                          <div style={{ display: 'flex', justifyContent: 'space-between', color: '#94a3b8', fontSize: '0.74rem', borderTop: '1px solid #1f2533', paddingTop: '6px' }}>
                             <span>Kondisi:</span>
-                            <span className="truncate max-w-[170px] text-right font-medium text-gray-300">{sub.riskLevel}</span>
+                            <span style={{ color: '#e2e8f0', fontWeight: '600' }}>{sub.riskLevel}</span>
                           </div>
                         </div>
                       </div>
 
                       {/* Card Actions */}
-                      <div className="mt-5 pt-3 border-t border-gray-800/80 flex items-center justify-between gap-2">
+                      <div style={{
+                        marginTop: '16px',
+                        paddingTop: '12px',
+                        borderTop: '1px solid #232936',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: '8px'
+                      }}>
                         <button
                           type="button"
                           onClick={() => handleOpenAiWithSubject(sub)}
-                          className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-teal-300 bg-teal-500/10 hover:bg-teal-500/20 border border-teal-500/30 transition-colors cursor-pointer"
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '5px',
+                            padding: '7px 12px',
+                            borderRadius: '8px',
+                            background: 'rgba(20, 184, 166, 0.15)',
+                            border: '1px solid rgba(20, 184, 166, 0.35)',
+                            color: '#2dd4bf',
+                            fontSize: '0.75rem',
+                            fontWeight: '700',
+                            cursor: 'pointer'
+                          }}
                         >
-                          <Sparkles size={12} /> Cek AI
+                          <Sparkles size={13} /> Cek AI
                         </button>
                         <button
                           type="button"
                           onClick={() => setSelectedSubjectForDetail(sub)}
-                          className="flex items-center gap-1 px-3.5 py-1.5 rounded-lg text-xs font-bold text-white bg-gray-800 hover:bg-emerald-500 hover:text-emerald-950 transition-all cursor-pointer"
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            padding: '7px 14px',
+                            borderRadius: '8px',
+                            background: '#1e293b',
+                            border: '1px solid #334155',
+                            color: '#ffffff',
+                            fontSize: '0.78rem',
+                            fontWeight: '700',
+                            cursor: 'pointer'
+                          }}
                         >
                           <span>Detail (7 Tab)</span>
                           <ChevronRight size={14} />
@@ -358,46 +474,58 @@ const CekkesDashboardPage = () => {
 
         {/* TAB: JADWAL & PENGINGAT (CARE PLANS) */}
         {activeTab === 'schedule' && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <h2 className="text-base font-bold text-white flex items-center gap-2">
-                  <Calendar size={18} className="text-emerald-400" />
+                <h2 style={{ margin: 0, fontSize: '1.05rem', fontWeight: '800', color: '#ffffff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Calendar size={18} color="#34d399" />
                   Jadwal & Pengingat Perawatan Biologis
                 </h2>
-                <p className="text-xs text-gray-400">Pengingat rutin pola hidup manusia, vaksinasi hewan, dan pemupukan tanaman</p>
+                <p style={{ margin: '2px 0 0', fontSize: '0.78rem', color: '#94a3b8' }}>
+                  Pengingat rutin pola hidup manusia, vaksinasi hewan, dan pemupukan tanaman
+                </p>
               </div>
               <button
                 onClick={() => setShowAddPlan(!showAddPlan)}
-                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold text-emerald-950 bg-emerald-400 hover:bg-emerald-300 transition-colors cursor-pointer"
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '10px',
+                  background: '#10b981',
+                  border: 'none',
+                  color: '#022c22',
+                  fontSize: '0.8rem',
+                  fontWeight: '800',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
               >
-                <PlusCircle size={14} />
-                <span>+ Jadwal Baru</span>
+                <PlusCircle size={15} /> + Jadwal Baru
               </button>
             </div>
 
-            {/* Add Schedule Form Drawer */}
             {showAddPlan && (
-              <form onSubmit={handleCreateCarePlan} className="p-4 bg-gray-900 border border-emerald-500/30 rounded-2xl space-y-3">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-300">Buat Jadwal / Pengingat Baru</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <form onSubmit={handleCreateCarePlan} style={{ background: '#161b26', border: '1px solid rgba(16, 185, 129, 0.4)', borderRadius: '14px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <h3 style={{ margin: 0, fontSize: '0.82rem', fontWeight: '800', textTransform: 'uppercase', color: '#34d399' }}>Buat Jadwal Baru</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px' }}>
                   <div>
-                    <label className="block text-xs text-gray-300 mb-1">Judul Tindakan Perawatan *</label>
+                    <label style={{ display: 'block', fontSize: '0.72rem', color: '#94a3b8', marginBottom: '4px' }}>Judul Tindakan Perawatan *</label>
                     <input
                       type="text"
                       required
                       value={newPlanTitle}
                       onChange={(e) => setNewPlanTitle(e.target.value)}
-                      placeholder="Contoh: Pemupukan Guano Fosfat / Vaksinasi Kucing"
-                      className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-xs text-white focus:outline-none focus:border-emerald-500"
+                      placeholder="Contoh: Pemupukan Guano Fosfat / Vaksinasi"
+                      style={{ width: '100%', padding: '8px 10px', background: '#0d111a', border: '1px solid #232936', borderRadius: '8px', color: '#ffffff', fontSize: '0.82rem', boxSizing: 'border-box' }}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-gray-300 mb-1">Pilih Subjek</label>
+                    <label style={{ display: 'block', fontSize: '0.72rem', color: '#94a3b8', marginBottom: '4px' }}>Pilih Subjek</label>
                     <select
                       value={newPlanSubjectId}
                       onChange={(e) => setNewPlanSubjectId(e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-xs text-white focus:outline-none focus:border-emerald-500"
+                      style={{ width: '100%', padding: '8px 10px', background: '#0d111a', border: '1px solid #232936', borderRadius: '8px', color: '#ffffff', fontSize: '0.82rem', boxSizing: 'border-box' }}
                     >
                       <option value="">Umum (Tanpa Subjek)</option>
                       {subjects.map(s => (
@@ -406,87 +534,84 @@ const CekkesDashboardPage = () => {
                     </select>
                   </div>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px' }}>
                   <div>
-                    <label className="block text-xs text-gray-300 mb-1">Frekuensi</label>
+                    <label style={{ display: 'block', fontSize: '0.72rem', color: '#94a3b8', marginBottom: '4px' }}>Frekuensi</label>
                     <select
                       value={newPlanFreq}
                       onChange={(e) => setNewPlanFreq(e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-xs text-white focus:outline-none focus:border-emerald-500"
+                      style={{ width: '100%', padding: '8px 10px', background: '#0d111a', border: '1px solid #232936', borderRadius: '8px', color: '#ffffff', fontSize: '0.82rem', boxSizing: 'border-box' }}
                     >
                       <option value="Harian">Harian</option>
                       <option value="Mingguan">Mingguan</option>
                       <option value="Bulanan">Bulanan</option>
-                      <option value="Tiap 3 Bulan (Kuartalan)">Tiap 3 Bulan (Kuartalan)</option>
+                      <option value="Tiap 3 Bulan">Tiap 3 Bulan</option>
                       <option value="Tahunan">Tahunan</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs text-gray-300 mb-1">Catatan Tambahan</label>
+                    <label style={{ display: 'block', fontSize: '0.72rem', color: '#94a3b8', marginBottom: '4px' }}>Catatan</label>
                     <input
                       type="text"
                       value={newPlanNotes}
                       onChange={(e) => setNewPlanNotes(e.target.value)}
                       placeholder="Petunjuk dosis atau instruksi khusus..."
-                      className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-xs text-white focus:outline-none focus:border-emerald-500"
+                      style={{ width: '100%', padding: '8px 10px', background: '#0d111a', border: '1px solid #232936', borderRadius: '8px', color: '#ffffff', fontSize: '0.82rem', boxSizing: 'border-box' }}
                     />
                   </div>
                 </div>
-                <div className="flex justify-end gap-2 pt-1">
-                  <button
-                    type="button"
-                    onClick={() => setShowAddPlan(false)}
-                    className="px-3 py-1.5 text-xs text-gray-400 hover:text-white"
-                  >
-                    Batal
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-1.5 text-xs font-bold text-emerald-950 bg-emerald-400 rounded-lg hover:bg-emerald-300"
-                  >
-                    Simpan Jadwal
-                  </button>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '6px' }}>
+                  <button type="button" onClick={() => setShowAddPlan(false)} style={{ padding: '6px 14px', background: 'transparent', border: 'none', color: '#94a3b8', fontSize: '0.8rem', cursor: 'pointer' }}>Batal</button>
+                  <button type="submit" style={{ padding: '7px 18px', background: '#10b981', border: 'none', borderRadius: '8px', color: '#022c22', fontSize: '0.8rem', fontWeight: '800', cursor: 'pointer' }}>Simpan Jadwal</button>
                 </div>
               </form>
             )}
 
-            {/* Care Plans List */}
-            <div className="space-y-2">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {carePlans.map(plan => (
                 <div
                   key={plan.id}
-                  className={`p-4 rounded-xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
-                    plan.isCompleted
-                      ? 'bg-gray-900/40 border-gray-800/60 opacity-60'
-                      : 'bg-gray-900 border-gray-800 hover:border-emerald-500/40 shadow-sm'
-                  }`}
+                  style={{
+                    background: plan.isCompleted ? 'rgba(22, 27, 38, 0.4)' : '#161b26',
+                    border: '1px solid #232936',
+                    borderRadius: '12px',
+                    padding: '14px 16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '12px',
+                    opacity: plan.isCompleted ? 0.6 : 1
+                  }}
                 >
-                  <div className="flex items-start gap-3">
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
                     <input
                       type="checkbox"
                       checked={plan.isCompleted}
                       onChange={() => handleToggleCarePlan(plan.id)}
-                      className="mt-1 h-5 w-5 rounded border-gray-700 text-emerald-500 focus:ring-emerald-500 cursor-pointer"
+                      style={{ marginTop: '3px', cursor: 'pointer' }}
                     />
                     <div>
-                      <h4 className={`text-sm font-bold ${plan.isCompleted ? 'line-through text-gray-400' : 'text-white'}`}>
+                      <h4 style={{ margin: 0, fontSize: '0.9rem', fontWeight: '700', color: plan.isCompleted ? '#94a3b8' : '#ffffff', textDecoration: plan.isCompleted ? 'line-through' : 'none' }}>
                         {plan.title}
                       </h4>
-                      <p className="text-xs text-gray-400 mt-0.5">
-                        Untuk: <strong className="text-emerald-400">{plan.subjectName}</strong> ({plan.domain}) • Frekuensi: <span className="text-gray-300">{plan.frequency}</span>
+                      <p style={{ margin: '3px 0 0', fontSize: '0.78rem', color: '#94a3b8' }}>
+                        Untuk: <strong style={{ color: '#34d399' }}>{plan.subjectName}</strong> ({plan.domain}) • Frekuensi: <span style={{ color: '#cbd5e1' }}>{plan.frequency}</span>
                       </p>
                       {plan.notes && (
-                        <p className="text-xs text-gray-400 italic mt-1">"{plan.notes}"</p>
+                        <p style={{ margin: '3px 0 0', fontSize: '0.75rem', color: '#94a3b8', fontStyle: 'italic' }}>"{plan.notes}"</p>
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 self-end sm:self-center">
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                      plan.isCompleted ? 'bg-gray-800 text-gray-400' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
-                    }`}>
-                      {plan.isCompleted ? 'Selesai' : 'Aktif'}
-                    </span>
-                  </div>
+                  <span style={{
+                    fontSize: '0.7rem',
+                    fontWeight: '800',
+                    padding: '3px 10px',
+                    borderRadius: '999px',
+                    background: plan.isCompleted ? '#232936' : 'rgba(96, 165, 250, 0.2)',
+                    color: plan.isCompleted ? '#94a3b8' : '#60a5fa'
+                  }}>
+                    {plan.isCompleted ? 'Selesai' : 'Aktif'}
+                  </span>
                 </div>
               ))}
             </div>
@@ -495,65 +620,93 @@ const CekkesDashboardPage = () => {
 
         {/* TAB: AUDIT & UU PDP PRIVACY COMPLIANCE */}
         {activeTab === 'audit' && (
-          <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
               <div>
-                <h2 className="text-base font-bold text-white flex items-center gap-2">
-                  <ShieldCheck size={18} className="text-emerald-400" />
+                <h2 style={{ margin: 0, fontSize: '1.05rem', fontWeight: '800', color: '#ffffff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <ShieldCheck size={18} color="#34d399" />
                   Kepatuhan UU No. 27/2022 (UU PDP) & Audit Log
                 </h2>
-                <p className="text-xs text-gray-400">Transparansi pemrosesan data biologis, consent receipt, dan portabilitas data</p>
+                <p style={{ margin: '2px 0 0', fontSize: '0.78rem', color: '#94a3b8' }}>
+                  Transparansi pemrosesan data biologis, consent receipt, dan portabilitas data
+                </p>
               </div>
-              <div className="flex items-center gap-2">
+              <div style={{ display: 'flex', gap: '8px' }}>
                 <button
                   type="button"
                   onClick={handleExportAll}
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold text-white bg-gray-800 hover:bg-gray-700 border border-gray-700 transition-colors cursor-pointer"
+                  style={{
+                    padding: '8px 14px',
+                    borderRadius: '10px',
+                    background: '#1e293b',
+                    border: '1px solid #334155',
+                    color: '#ffffff',
+                    fontSize: '0.78rem',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
                 >
-                  <Download size={14} />
-                  <span>Ekspor Data (JSON)</span>
+                  <Download size={14} /> Ekspor Data (JSON)
                 </button>
                 <button
                   type="button"
                   onClick={handleResetDemo}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 transition-colors cursor-pointer"
+                  style={{
+                    padding: '8px 14px',
+                    borderRadius: '10px',
+                    background: 'rgba(245, 159, 0, 0.15)',
+                    border: '1px solid rgba(245, 159, 0, 0.35)',
+                    color: '#fbbf24',
+                    fontSize: '0.78rem',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
                 >
-                  <RotateCcw size={14} />
-                  <span>Reset Demo</span>
+                  <RotateCcw size={14} /> Reset Demo
                 </button>
               </div>
             </div>
 
-            {/* PDP Rights Summary Card */}
-            <div className="p-4 bg-emerald-950/20 border border-emerald-500/30 rounded-2xl grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-              <div>
-                <strong className="text-emerald-400 block mb-1">1. Hak Akses & Portabilitas</strong>
-                <p className="text-gray-300">Anda berhak mengunduh seluruh data observasi biologis dan log AI yang tersimpan di ceKKes kapan saja.</p>
+            {/* PDP Summary Cards */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+              gap: '12px'
+            }}>
+              <div style={{ background: '#161b26', border: '1px solid #232936', borderRadius: '12px', padding: '14px', fontSize: '0.8rem' }}>
+                <strong style={{ color: '#34d399', display: 'block', marginBottom: '4px' }}>1. Hak Akses & Portabilitas</strong>
+                <p style={{ margin: 0, color: '#cbd5e1', lineHeight: 1.5 }}>Anda berhak mengunduh seluruh data observasi biologis dan log AI yang tersimpan di ceKKes kapan saja.</p>
               </div>
-              <div>
-                <strong className="text-emerald-400 block mb-1">2. Hak Koreksi & Perbaikan</strong>
-                <p className="text-gray-300">Setiap data profil, bobot, atau observasi dapat diperbarui secara mandiri melalui menu detail profil.</p>
+              <div style={{ background: '#161b26', border: '1px solid #232936', borderRadius: '12px', padding: '14px', fontSize: '0.8rem' }}>
+                <strong style={{ color: '#34d399', display: 'block', marginBottom: '4px' }}>2. Hak Koreksi & Perbaikan</strong>
+                <p style={{ margin: 0, color: '#cbd5e1', lineHeight: 1.5 }}>Setiap data profil, bobot, atau observasi dapat diperbarui secara mandiri melalui menu detail profil.</p>
               </div>
-              <div>
-                <strong className="text-emerald-400 block mb-1">3. Hak Hapus & Penarikan Izin</strong>
-                <p className="text-gray-300">Penghapusan data menghapus seluruh catatan terkait secara permanen tanpa jejak di peladen publik.</p>
+              <div style={{ background: '#161b26', border: '1px solid #232936', borderRadius: '12px', padding: '14px', fontSize: '0.8rem' }}>
+                <strong style={{ color: '#34d399', display: 'block', marginBottom: '4px' }}>3. Hak Hapus & Penarikan Izin</strong>
+                <p style={{ margin: 0, color: '#cbd5e1', lineHeight: 1.5 }}>Penghapusan data menghapus seluruh catatan terkait secara permanen tanpa jejak di peladen publik.</p>
               </div>
             </div>
 
             {/* Audit Logs List */}
-            <div className="p-4 bg-gray-900 border border-gray-800 rounded-2xl space-y-3">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400">
+            <div style={{ background: '#161b26', border: '1px solid #232936', borderRadius: '14px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <h3 style={{ margin: 0, fontSize: '0.8rem', fontWeight: '800', textTransform: 'uppercase', color: '#94a3b8' }}>
                 Log Audit Aktivitas Sistem (Append-Only)
               </h3>
-              <div className="space-y-2 max-h-96 overflow-y-auto">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '380px', overflowY: 'auto' }}>
                 {auditLogs.map(log => (
-                  <div key={log.id} className="p-3 bg-gray-950/60 border border-gray-800/80 rounded-xl text-xs space-y-1">
-                    <div className="flex items-center justify-between text-[11px]">
-                      <span className="font-mono text-emerald-400 font-bold">{log.action}</span>
-                      <span className="text-gray-500">{new Date(log.timestamp).toLocaleString('id-ID')}</span>
+                  <div key={log.id} style={{ background: '#0d111a', border: '1px solid #1f2533', borderRadius: '10px', padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '0.78rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontFamily: 'monospace', color: '#34d399', fontWeight: '800' }}>{log.action}</span>
+                      <span style={{ fontSize: '0.7rem', color: '#64748b' }}>{new Date(log.timestamp).toLocaleString('id-ID')}</span>
                     </div>
-                    <p className="text-gray-200">{log.details}</p>
-                    <span className="text-[10px] text-gray-400">Pelaku: {log.actor} • Domain: {log.domain}</span>
+                    <p style={{ margin: 0, color: '#e2e8f0' }}>{log.details}</p>
+                    <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>Pelaku: {log.actor} • Domain: {log.domain}</span>
                   </div>
                 ))}
               </div>
@@ -587,7 +740,6 @@ const CekkesDashboardPage = () => {
         }}
         onDeleted={() => setSelectedSubjectForDetail(null)}
         onUpdated={() => {
-          // Re-fetch current subject
           if (selectedSubjectForDetail) {
             const updated = cekkesStore.getSubjectById(selectedSubjectForDetail.id);
             setSelectedSubjectForDetail(updated);

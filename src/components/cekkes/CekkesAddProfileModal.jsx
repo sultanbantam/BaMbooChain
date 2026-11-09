@@ -5,9 +5,7 @@ import {
   Dog, 
   Leaf, 
   ShieldCheck, 
-  AlertCircle, 
-  CheckCircle2,
-  Info
+  AlertCircle
 } from 'lucide-react';
 import { cekkesStore } from '../../services/cekkes/cekkesStore';
 
@@ -25,7 +23,6 @@ const CekkesAddProfileModal = ({ isOpen, onClose, onProfileAdded }) => {
   const [heightCm, setHeightCm] = useState('170');
   const [weightKg, setWeightKg] = useState('65');
   const [allergies, setAllergies] = useState('');
-  const [supplements, setSupplements] = useState('');
   const [emergencyName, setEmergencyName] = useState('');
   const [emergencyPhone, setEmergencyPhone] = useState('');
 
@@ -37,7 +34,6 @@ const CekkesAddProfileModal = ({ isOpen, onClose, onProfileAdded }) => {
   const [animalGender, setAnimalGender] = useState('Jantan (Telah Steril)');
   const [animalWeight, setAnimalWeight] = useState('4.0');
   const [microchipTag, setMicrochipTag] = useState('');
-  const [dietType, setDietType] = useState('');
   const [vaccineStatus, setVaccineStatus] = useState('Lengkap / Terjadwal');
   const [vetName, setVetName] = useState('');
 
@@ -48,7 +44,6 @@ const CekkesAddProfileModal = ({ isOpen, onClose, onProfileAdded }) => {
   const [growthPhase, setGrowthPhase] = useState('Vegetatif Aktif');
   const [location, setLocation] = useState('Plot Bambu Sabumi Cibarani');
   const [substrate, setSubstrate] = useState('Tanah Humus Vulkanik Berpasir');
-  const [sunlight, setSunlight] = useState('Matahari Penuh');
   const [nutrition, setNutrition] = useState('Pupuk Cibarani Guano Organik 2 kg / kuartal');
 
   // Common Notes
@@ -71,7 +66,7 @@ const CekkesAddProfileModal = ({ isOpen, onClose, onProfileAdded }) => {
         consentGranted: {
           healthDataProcessing: true,
           aiEducationalInsights: true,
-          biometricEnrollment: false, // Default NON-biometrik
+          biometricEnrollment: false,
           lastUpdated: new Date().toISOString()
         }
       };
@@ -103,7 +98,7 @@ const CekkesAddProfileModal = ({ isOpen, onClose, onProfileAdded }) => {
             latestBloodPressure: 'Belum diukur',
             restingHeartRate: 'Normal',
             knownAllergies: allergies ? allergies.split(',').map(s => s.trim()) : ['Tidak ada alergi terlapor'],
-            currentSupplements: supplements ? supplements.split(',').map(s => s.trim()) : [],
+            currentSupplements: [],
             chronicConditions: []
           },
           emergencyContact: {
@@ -133,7 +128,7 @@ const CekkesAddProfileModal = ({ isOpen, onClose, onProfileAdded }) => {
             collarColor: 'Standar'
           },
           careProfile: {
-            dietType: dietType || 'Pakan Standar Seimbang',
+            dietType: 'Pakan Standar Seimbang',
             feedingSchedule: '2x Sehari',
             vaccinationStatus: vaccineStatus,
             dewormingDate: new Date().toISOString().split('T')[0],
@@ -142,7 +137,6 @@ const CekkesAddProfileModal = ({ isOpen, onClose, onProfileAdded }) => {
           }
         };
       } else {
-        // Plant
         if (!plantName.trim()) {
           alert('Nama tanaman wajib diisi.');
           setIsSubmitting(false);
@@ -159,7 +153,7 @@ const CekkesAddProfileModal = ({ isOpen, onClose, onProfileAdded }) => {
           location: location.trim() || 'Lahan Sabumi',
           cultivationDetails: {
             substrate,
-            sunlightNeed: sunlight,
+            sunlightNeed: 'Matahari Penuh',
             irrigationNeed: 'Sesuai musim',
             nutritionProgram: nutrition,
             pestResistance: 'Organik Terpadu',
@@ -179,124 +173,183 @@ const CekkesAddProfileModal = ({ isOpen, onClose, onProfileAdded }) => {
     }
   };
 
+  const inputStyle = {
+    width: '100%',
+    padding: '10px 12px',
+    background: '#111827',
+    border: '1px solid #374151',
+    borderRadius: '10px',
+    color: '#ffffff',
+    fontSize: '0.85rem',
+    boxSizing: 'border-box',
+    outline: 'none'
+  };
+
+  const labelStyle = {
+    display: 'block',
+    fontSize: '0.75rem',
+    fontWeight: '700',
+    color: '#9ca3af',
+    marginBottom: '5px'
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
-      <div className="relative w-full max-w-2xl bg-gray-900 border border-emerald-500/30 rounded-2xl shadow-2xl overflow-hidden my-6">
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      background: 'rgba(0, 0, 0, 0.85)',
+      backdropFilter: 'blur(8px)',
+      zIndex: 20000,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '20px',
+      boxSizing: 'border-box'
+    }}>
+      <div style={{
+        background: '#1e293b',
+        border: '1px solid rgba(16, 185, 129, 0.4)',
+        borderRadius: '20px',
+        width: '100%',
+        maxWidth: '680px',
+        maxHeight: '90vh',
+        display: 'flex',
+        flexDirection: 'column',
+        boxShadow: '0 25px 60px rgba(0, 0, 0, 0.6)',
+        overflow: 'hidden',
+        color: '#ffffff'
+      }}>
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-800 bg-gray-950/70">
-          <div className="flex items-center gap-2">
-            <span className="p-2 rounded-lg bg-emerald-500/20 text-emerald-400">
+        <div style={{
+          padding: '18px 22px',
+          borderBottom: '1px solid #334155',
+          background: '#0f172a',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ background: 'rgba(16, 185, 129, 0.2)', padding: '8px', borderRadius: '10px', color: '#34d399' }}>
               <ShieldCheck size={20} />
-            </span>
+            </div>
             <div>
-              <h2 className="text-lg font-bold text-white">Tambah Profil Biologis ceKKes</h2>
-              <p className="text-xs text-gray-400">Pilih domain dan isi data observasi biologis sesuai standar UU PDP</p>
+              <h2 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '800', color: '#ffffff' }}>
+                Tambah Profil Biologis ceKKes
+              </h2>
+              <p style={{ margin: 0, fontSize: '0.75rem', color: '#94a3b8' }}>
+                Pilih domain dan isi data observasi biologis sesuai standar UU PDP
+              </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800 transition-colors cursor-pointer"
+            style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '6px' }}
           >
-            <X size={20} />
+            <X size={22} />
           </button>
         </div>
 
         {/* Domain Selection Tabs */}
-        <div className="grid grid-cols-3 gap-2 p-4 bg-gray-950/40 border-b border-gray-800">
-          <button
-            type="button"
-            onClick={() => setDomain('human')}
-            className={`flex flex-col items-center justify-center p-3 rounded-xl border text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
-              domain === 'human'
-                ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300'
-                : 'bg-gray-800/40 border-gray-700 text-gray-400 hover:bg-gray-800 hover:text-white'
-            }`}
-          >
-            <User size={20} className="mb-1" />
-            <span>Manusia (Human)</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setDomain('animal')}
-            className={`flex flex-col items-center justify-center p-3 rounded-xl border text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
-              domain === 'animal'
-                ? 'bg-amber-500/20 border-amber-500 text-amber-300'
-                : 'bg-gray-800/40 border-gray-700 text-gray-400 hover:bg-gray-800 hover:text-white'
-            }`}
-          >
-            <Dog size={20} className="mb-1" />
-            <span>Hewan (Animal)</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setDomain('plant')}
-            className={`flex flex-col items-center justify-center p-3 rounded-xl border text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
-              domain === 'plant'
-                ? 'bg-teal-500/20 border-teal-500 text-teal-300'
-                : 'bg-gray-800/40 border-gray-700 text-gray-400 hover:bg-gray-800 hover:text-white'
-            }`}
-          >
-            <Leaf size={20} className="mb-1" />
-            <span>Tumbuhan (Plant)</span>
-          </button>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr 1fr',
+          gap: '8px',
+          padding: '12px 20px',
+          background: '#0f172a',
+          borderBottom: '1px solid #334155'
+        }}>
+          {[
+            { id: 'human', label: 'Manusia (Human)', icon: <User size={18} />, color: '#10b981', bg: 'rgba(16, 185, 129, 0.2)' },
+            { id: 'animal', label: 'Hewan (Animal)', icon: <Dog size={18} />, color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.2)' },
+            { id: 'plant', label: 'Tumbuhan (Plant)', icon: <Leaf size={18} />, color: '#14b8a6', bg: 'rgba(20, 184, 166, 0.2)' },
+          ].map(d => {
+            const isSel = domain === d.id;
+            return (
+              <button
+                key={d.id}
+                type="button"
+                onClick={() => setDomain(d.id)}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '4px',
+                  padding: '10px',
+                  borderRadius: '12px',
+                  border: isSel ? `2px solid ${d.color}` : '1px solid #334155',
+                  background: isSel ? d.bg : 'rgba(30, 41, 59, 0.5)',
+                  color: isSel ? d.color : '#94a3b8',
+                  fontWeight: '700',
+                  fontSize: '0.8rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+              >
+                {d.icon}
+                <span>{d.label}</span>
+              </button>
+            );
+          })}
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-5 space-y-4 max-h-[68vh] overflow-y-auto">
+        <form onSubmit={handleSubmit} style={{ padding: '20px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '14px' }}>
           {domain === 'human' && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
                 <div>
-                  <label className="block text-xs font-medium text-gray-300 mb-1">Nama Lengkap *</label>
+                  <label style={labelStyle}>Nama Lengkap *</label>
                   <input
                     type="text"
                     required
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder="Contoh: Budi Santoso"
-                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
+                    style={inputStyle}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-300 mb-1">Nama Panggilan</label>
+                  <label style={labelStyle}>Nama Panggilan</label>
                   <input
                     type="text"
                     value={preferredName}
                     onChange={(e) => setPreferredName(e.target.value)}
                     placeholder="Contoh: Budi"
-                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
+                    style={inputStyle}
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px' }}>
                 <div>
-                  <label className="block text-xs font-medium text-gray-300 mb-1">Tahun Lahir</label>
+                  <label style={labelStyle}>Tahun Lahir</label>
                   <input
                     type="number"
                     value={birthYear}
                     onChange={(e) => setBirthYear(e.target.value)}
-                    placeholder="1995"
-                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white focus:outline-none focus:border-emerald-500"
+                    style={inputStyle}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-300 mb-1">Jenis Kelamin</label>
+                  <label style={labelStyle}>Jenis Kelamin</label>
                   <select
                     value={gender}
                     onChange={(e) => setGender(e.target.value)}
-                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white focus:outline-none focus:border-emerald-500"
+                    style={inputStyle}
                   >
                     <option value="Laki-laki">Laki-laki</option>
                     <option value="Perempuan">Perempuan</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-300 mb-1">Gol. Darah (Opsional)</label>
+                  <label style={labelStyle}>Gol. Darah (Opsional)</label>
                   <select
                     value={bloodType}
                     onChange={(e) => setBloodType(e.target.value)}
-                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white focus:outline-none focus:border-emerald-500"
+                    style={inputStyle}
                   >
                     <option value="A+">A+</option>
                     <option value="B+">B+</option>
@@ -307,207 +360,195 @@ const CekkesAddProfileModal = ({ isOpen, onClose, onProfileAdded }) => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
-                  <label className="block text-xs font-medium text-gray-300 mb-1">Tinggi Badan (cm)</label>
+                  <label style={labelStyle}>Tinggi Badan (cm)</label>
                   <input
                     type="number"
                     value={heightCm}
                     onChange={(e) => setHeightCm(e.target.value)}
-                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white focus:outline-none focus:border-emerald-500"
+                    style={inputStyle}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-300 mb-1">Berat Badan (kg)</label>
+                  <label style={labelStyle}>Berat Badan (kg)</label>
                   <input
                     type="number"
                     step="0.5"
                     value={weightKg}
                     onChange={(e) => setWeightKg(e.target.value)}
-                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white focus:outline-none focus:border-emerald-500"
+                    style={inputStyle}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-300 mb-1">Riwayat Alergi (Opsional)</label>
+                <label style={labelStyle}>Riwayat Alergi (Opsional)</label>
                 <input
                   type="text"
                   value={allergies}
                   onChange={(e) => setAllergies(e.target.value)}
                   placeholder="Contoh: Udang, Penisilin (pisahkan dengan koma)"
-                  className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
+                  style={inputStyle}
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
                 <div>
-                  <label className="block text-xs font-medium text-gray-300 mb-1">Kontak Darurat (Nama)</label>
+                  <label style={labelStyle}>Kontak Darurat (Nama)</label>
                   <input
                     type="text"
                     value={emergencyName}
                     onChange={(e) => setEmergencyName(e.target.value)}
                     placeholder="Contoh: Rina (Pasangan)"
-                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
+                    style={inputStyle}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-300 mb-1">No. HP Kontak Darurat</label>
+                  <label style={labelStyle}>No. HP Kontak Darurat</label>
                   <input
                     type="tel"
                     value={emergencyPhone}
                     onChange={(e) => setEmergencyPhone(e.target.value)}
                     placeholder="+62 812-xxxx-xxxx"
-                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
+                    style={inputStyle}
                   />
                 </div>
               </div>
-            </div>
+            </>
           )}
 
           {domain === 'animal' && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
                 <div>
-                  <label className="block text-xs font-medium text-gray-300 mb-1">Nama Hewan *</label>
+                  <label style={labelStyle}>Nama Hewan *</label>
                   <input
                     type="text"
                     required
                     value={animalName}
                     onChange={(e) => setAnimalName(e.target.value)}
                     placeholder="Contoh: Miko, Bima"
-                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-500"
+                    style={inputStyle}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-300 mb-1">Spesies *</label>
+                  <label style={labelStyle}>Spesies *</label>
                   <select
                     value={species}
                     onChange={(e) => setSpecies(e.target.value)}
-                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white focus:outline-none focus:border-amber-500"
+                    style={inputStyle}
                   >
                     <option value="Kucing Domestik (Felis catus)">Kucing (Felis catus)</option>
                     <option value="Kambing Perah (Capra hircus)">Kambing (Capra hircus)</option>
                     <option value="Sapi Perah / Potong (Bos taurus)">Sapi (Bos taurus)</option>
                     <option value="Anjing (Canis familiaris)">Anjing (Canis familiaris)</option>
                     <option value="Unggas / Ayam (Gallus gallus)">Ayam / Unggas</option>
-                    <option value="Kelinci (Oryctolagus cuniculus)">Kelinci</option>
                   </select>
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px' }}>
                 <div>
-                  <label className="block text-xs font-medium text-gray-300 mb-1">Ras / Varietas</label>
+                  <label style={labelStyle}>Ras / Varietas</label>
                   <input
                     type="text"
                     value={breed}
                     onChange={(e) => setBreed(e.target.value)}
                     placeholder="Contoh: Short Hair, Ettawa"
-                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-500"
+                    style={inputStyle}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-300 mb-1">Usia / Tgl Lahir</label>
+                  <label style={labelStyle}>Usia / Deskripsi</label>
                   <input
                     type="text"
                     value={animalAge}
                     onChange={(e) => setAnimalAge(e.target.value)}
                     placeholder="Contoh: 2 Tahun 6 Bulan"
-                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-500"
+                    style={inputStyle}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-300 mb-1">Bobot (kg)</label>
+                  <label style={labelStyle}>Bobot (kg)</label>
                   <input
                     type="number"
                     step="0.1"
                     value={animalWeight}
                     onChange={(e) => setAnimalWeight(e.target.value)}
-                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white focus:outline-none focus:border-amber-500"
+                    style={inputStyle}
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
                 <div>
-                  <label className="block text-xs font-medium text-gray-300 mb-1">Tag Fisik / Microchip ISO (Opsional)</label>
+                  <label style={labelStyle}>Tag / Microchip (Opsional)</label>
                   <input
                     type="text"
                     value={microchipTag}
                     onChange={(e) => setMicrochipTag(e.target.value)}
-                    placeholder="Contoh: ID-MC-982-12093 / Ear Tag #008"
-                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-500"
+                    placeholder="ID-MC-982-12093 / Ear Tag #008"
+                    style={inputStyle}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-300 mb-1">Status Vaksinasi</label>
+                  <label style={labelStyle}>Status Vaksinasi</label>
                   <input
                     type="text"
                     value={vaccineStatus}
                     onChange={(e) => setVaccineStatus(e.target.value)}
-                    placeholder="Contoh: Rabies Aktif s/d 2027"
-                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-500"
+                    placeholder="Rabies Aktif s/d 2027"
+                    style={inputStyle}
                   />
                 </div>
               </div>
-
-              <div>
-                <label className="block text-xs font-medium text-gray-300 mb-1">Dokter Hewan / Puskeswan Rujukan</label>
-                <input
-                  type="text"
-                  value={vetName}
-                  onChange={(e) => setVetName(e.target.value)}
-                  placeholder="Contoh: drh. Hendra Wijaya (Klinik Satwa Sejahtera)"
-                  className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-500"
-                />
-              </div>
-            </div>
+            </>
           )}
 
           {domain === 'plant' && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
                 <div>
-                  <label className="block text-xs font-medium text-gray-300 mb-1">Nama Tanaman / Rumpun *</label>
+                  <label style={labelStyle}>Nama Tanaman / Rumpun *</label>
                   <input
                     type="text"
                     required
                     value={plantName}
                     onChange={(e) => setPlantName(e.target.value)}
                     placeholder="Contoh: Rumpun Bambu Petung A-3"
-                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-teal-500"
+                    style={inputStyle}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-300 mb-1">Nama Ilmiah (Latin)</label>
+                  <label style={labelStyle}>Nama Ilmiah (Latin)</label>
                   <input
                     type="text"
                     value={scientificName}
                     onChange={(e) => setScientificName(e.target.value)}
                     placeholder="Dendrocalamus asper"
-                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-teal-500"
+                    style={inputStyle}
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px' }}>
                 <div>
-                  <label className="block text-xs font-medium text-gray-300 mb-1">Kultivar / Varietas</label>
+                  <label style={labelStyle}>Kultivar / Varietas</label>
                   <input
                     type="text"
                     value={variety}
                     onChange={(e) => setVariety(e.target.value)}
-                    placeholder="Contoh: Petung Hitam Banten"
-                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-teal-500"
+                    placeholder="Petung Hitam Banten"
+                    style={inputStyle}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-300 mb-1">Fase Pertumbuhan</label>
+                  <label style={labelStyle}>Fase Pertumbuhan</label>
                   <select
                     value={growthPhase}
                     onChange={(e) => setGrowthPhase(e.target.value)}
-                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white focus:outline-none focus:border-teal-500"
+                    style={inputStyle}
                   >
                     <option value="Bibit / Semai">Bibit / Semai</option>
                     <option value="Vegetatif Aktif">Vegetatif Aktif</option>
@@ -516,73 +557,94 @@ const CekkesAddProfileModal = ({ isOpen, onClose, onProfileAdded }) => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-300 mb-1">Lokasi / Plot</label>
+                  <label style={labelStyle}>Lokasi / Plot</label>
                   <input
                     type="text"
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
-                    placeholder="Contoh: Plot Sabumi Blok A"
-                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-teal-500"
+                    placeholder="Plot Sabumi Blok A"
+                    style={inputStyle}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-300 mb-1">Program Pupuk & Nutrisi</label>
+                <label style={labelStyle}>Program Pupuk & Nutrisi</label>
                 <input
                   type="text"
                   value={nutrition}
                   onChange={(e) => setNutrition(e.target.value)}
-                  placeholder="Contoh: Cibarani Guano Organik 2 kg / kuartal"
-                  className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-teal-500"
+                  placeholder="Cibarani Guano Organik 2 kg / kuartal"
+                  style={inputStyle}
                 />
               </div>
-            </div>
+            </>
           )}
 
           <div>
-            <label className="block text-xs font-medium text-gray-300 mb-1">Catatan Tambahan (Opsional)</label>
+            <label style={labelStyle}>Catatan Tambahan (Opsional)</label>
             <textarea
               rows={2}
               value={generalNotes}
               onChange={(e) => setGeneralNotes(e.target.value)}
               placeholder="Catatan observasi awal, kondisi fisik, atau riwayat perawatan..."
-              className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
+              style={{ ...inputStyle, resize: 'vertical' }}
             />
           </div>
 
           {/* Privacy & Legal Consent Notice (UU PDP) */}
-          <div className="p-3.5 bg-emerald-950/30 border border-emerald-500/30 rounded-xl space-y-2">
-            <div className="flex items-start gap-2.5">
+          <div style={{
+            background: 'rgba(6, 78, 59, 0.3)',
+            border: '1px solid rgba(16, 185, 129, 0.4)',
+            borderRadius: '12px',
+            padding: '12px 14px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
               <input
                 type="checkbox"
                 id="consent-check"
                 checked={consentChecked}
                 onChange={(e) => setConsentChecked(e.target.checked)}
-                className="mt-1 h-4 w-4 rounded border-gray-700 text-emerald-500 focus:ring-emerald-500 cursor-pointer"
+                style={{ marginTop: '3px', cursor: 'pointer' }}
               />
-              <label htmlFor="consent-check" className="text-xs text-gray-300 cursor-pointer">
-                <strong className="text-emerald-400">Persetujuan Pemrosesan Data (UU PDP No. 27/2022):</strong> Saya memberikan persetujuan eksplisit untuk pencatatan data biologis ini secara mandiri. Data hanya digunakan untuk pemantauan kebugaran, pemeliharaan hewan, atau budidaya tanaman tanpa pengambilan biometrik invasif (sidik jari/retina).
+              <label htmlFor="consent-check" style={{ fontSize: '0.76rem', color: '#e2e8f0', cursor: 'pointer', lineHeight: 1.5 }}>
+                <strong style={{ color: '#34d399' }}>Persetujuan Pemrosesan Data (UU PDP No. 27/2022):</strong> Saya mengonfirmasi bahwa pencatatan data biologis ini bersifat sukarela dan non-biometrik (tanpa pengambilan sidik jari/retina mentah). Data tersimpan di perangkat lokal pengguna.
               </label>
             </div>
-            <p className="text-[11px] text-gray-400 pl-6">
-              * Data tersimpan aman di perangkat Anda dan dapat dihapus atau diekspor kapan saja via menu Hak Privasi.
-            </p>
           </div>
 
-          {/* Form Actions */}
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-gray-800">
+          {/* Actions */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', paddingTop: '8px', borderTop: '1px solid #334155' }}>
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs sm:text-sm font-medium text-gray-400 hover:text-white bg-gray-800 hover:bg-gray-700 transition-colors cursor-pointer"
+              style={{
+                padding: '9px 18px',
+                borderRadius: '10px',
+                background: '#334155',
+                border: 'none',
+                color: '#cbd5e1',
+                fontSize: '0.85rem',
+                fontWeight: '600',
+                cursor: 'pointer'
+              }}
             >
               Batal
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-5 py-2 rounded-xl text-xs sm:text-sm font-bold text-emerald-950 bg-emerald-400 hover:bg-emerald-300 active:scale-95 transition-all shadow-md shadow-emerald-500/20 disabled:opacity-50 cursor-pointer"
+              style={{
+                padding: '9px 22px',
+                borderRadius: '10px',
+                background: '#10b981',
+                border: 'none',
+                color: '#022c22',
+                fontSize: '0.85rem',
+                fontWeight: '800',
+                cursor: 'pointer',
+                boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)'
+              }}
             >
               {isSubmitting ? 'Menyimpan...' : 'Simpan Profil'}
             </button>

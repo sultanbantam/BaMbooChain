@@ -9,8 +9,7 @@ import {
   AlertTriangle,
   Heart,
   Dog,
-  Leaf,
-  Info
+  Leaf
 } from 'lucide-react';
 import { cekkesStore } from '../../services/cekkes/cekkesStore';
 
@@ -66,7 +65,6 @@ const CekkesAiCheckModal = ({
     setResult(null);
 
     try {
-      // Simulate real agentic knowledge retrieval step
       await new Promise(r => setTimeout(r, 600));
 
       const res = await cekkesStore.assessWithAi({
@@ -96,78 +94,122 @@ const CekkesAiCheckModal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
-      <div className="relative w-full max-w-3xl bg-gray-900 border border-emerald-500/30 rounded-2xl shadow-2xl overflow-hidden my-6">
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      background: 'rgba(0, 0, 0, 0.85)',
+      backdropFilter: 'blur(8px)',
+      zIndex: 20000,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '20px',
+      boxSizing: 'border-box'
+    }}>
+      <div style={{
+        background: '#1e293b',
+        border: '1px solid rgba(16, 185, 129, 0.4)',
+        borderRadius: '20px',
+        width: '100%',
+        maxWidth: '740px',
+        maxHeight: '90vh',
+        display: 'flex',
+        flexDirection: 'column',
+        boxShadow: '0 25px 60px rgba(0, 0, 0, 0.6)',
+        overflow: 'hidden',
+        color: '#ffffff'
+      }}>
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-800 bg-gray-950/70">
-          <div className="flex items-center gap-2">
-            <span className="p-2 rounded-lg bg-teal-500/20 text-teal-300">
-              <Sparkles size={20} className="animate-pulse" />
-            </span>
+        <div style={{
+          padding: '18px 22px',
+          borderBottom: '1px solid #334155',
+          background: '#0f172a',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ background: 'rgba(13, 148, 136, 0.25)', padding: '8px', borderRadius: '10px', color: '#2dd4bf' }}>
+              <Sparkles size={20} />
+            </div>
             <div>
-              <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                Asisten Analisis AI ceKKes <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-medium">Multi-Agent v1.0</span>
+              <h2 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '800', color: '#ffffff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                Asisten Analisis AI ceKKes
+                <span style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: '999px', background: 'rgba(16, 185, 129, 0.2)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                  Multi-Agent v1.0
+                </span>
               </h2>
-              <p className="text-xs text-gray-400">Edukasi biologis berbasis bukti, batasan keselamatan & non-diagnostik klinis</p>
+              <p style={{ margin: 0, fontSize: '0.75rem', color: '#94a3b8' }}>
+                Edukasi biologis berbasis bukti, batasan keselamatan & non-diagnostik klinis
+              </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800 transition-colors cursor-pointer"
+            style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '6px' }}
           >
-            <X size={20} />
+            <X size={22} />
           </button>
         </div>
 
         {/* Modal Content */}
-        <div className="p-5 max-h-[75vh] overflow-y-auto space-y-5">
+        <div style={{ padding: '20px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {/* Domain & Subject Selectors */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}>
             <div>
-              <label className="block text-xs font-semibold text-gray-300 mb-1">Domain Biologis</label>
-              <div className="grid grid-cols-3 gap-2">
-                <button
-                  type="button"
-                  onClick={() => { setDomain('human'); setSelectedSubjectId(''); setResult(null); }}
-                  className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
-                    domain === 'human'
-                      ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300'
-                      : 'bg-gray-800/40 border-gray-700 text-gray-400 hover:text-white'
-                  }`}
-                >
-                  <Heart size={14} /> Manusia
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setDomain('animal'); setSelectedSubjectId(''); setResult(null); }}
-                  className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
-                    domain === 'animal'
-                      ? 'bg-amber-500/20 border-amber-500 text-amber-300'
-                      : 'bg-gray-800/40 border-gray-700 text-gray-400 hover:text-white'
-                  }`}
-                >
-                  <Dog size={14} /> Hewan
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setDomain('plant'); setSelectedSubjectId(''); setResult(null); }}
-                  className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
-                    domain === 'plant'
-                      ? 'bg-teal-500/20 border-teal-500 text-teal-300'
-                      : 'bg-gray-800/40 border-gray-700 text-gray-400 hover:text-white'
-                  }`}
-                >
-                  <Leaf size={14} /> Tumbuhan
-                </button>
+              <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '700', color: '#9ca3af', marginBottom: '6px' }}>Domain Biologis</label>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px' }}>
+                {[
+                  { id: 'human', label: 'Manusia', icon: <Heart size={14} />, color: '#10b981' },
+                  { id: 'animal', label: 'Hewan', icon: <Dog size={14} />, color: '#f59e0b' },
+                  { id: 'plant', label: 'Tumbuhan', icon: <Leaf size={14} />, color: '#14b8a6' },
+                ].map(d => {
+                  const isSel = domain === d.id;
+                  return (
+                    <button
+                      key={d.id}
+                      type="button"
+                      onClick={() => { setDomain(d.id); setSelectedSubjectId(''); setResult(null); }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                        padding: '8px 10px',
+                        borderRadius: '8px',
+                        border: isSel ? `1px solid ${d.color}` : '1px solid #334155',
+                        background: isSel ? 'rgba(16, 185, 129, 0.2)' : 'rgba(30, 41, 59, 0.5)',
+                        color: isSel ? d.color : '#94a3b8',
+                        fontWeight: '700',
+                        fontSize: '0.78rem',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {d.icon} {d.label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-300 mb-1">Subjek Terdaftar (Opsional)</label>
+              <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '700', color: '#9ca3af', marginBottom: '6px' }}>Subjek Terdaftar (Opsional)</label>
               <select
                 value={selectedSubjectId}
                 onChange={(e) => setSelectedSubjectId(e.target.value)}
-                className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-xs sm:text-sm text-white focus:outline-none focus:border-emerald-500"
+                style={{
+                  width: '100%',
+                  padding: '9px 12px',
+                  background: '#111827',
+                  border: '1px solid #374151',
+                  borderRadius: '10px',
+                  color: '#ffffff',
+                  fontSize: '0.85rem',
+                  outline: 'none'
+                }}
               >
                 <option value="">Analisis Umum (Tanpa Profil Khusus)</option>
                 {subjects.map(sub => (
@@ -179,11 +221,10 @@ const CekkesAiCheckModal = ({
             </div>
           </div>
 
-          {/* Prompt Input Form */}
           {!result && (
-            <form onSubmit={handleRunAssessment} className="space-y-4">
+            <form onSubmit={handleRunAssessment} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div>
-                <label className="block text-xs font-semibold text-gray-300 mb-1">
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '700', color: '#9ca3af', marginBottom: '6px' }}>
                   Deskripsi Observasi / Gejala / Pertanyaan Perawatan *
                 </label>
                 <textarea
@@ -192,20 +233,42 @@ const CekkesAiCheckModal = ({
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                   placeholder="Deskripsikan observasi Anda secara detail (misal: pengukuran tensi, perubahan perilaku hewan, kondisi daun/tanaman)..."
-                  className="w-full px-3.5 py-2.5 bg-gray-800 border border-gray-700 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    background: '#111827',
+                    border: '1px solid #374151',
+                    borderRadius: '12px',
+                    color: '#ffffff',
+                    fontSize: '0.85rem',
+                    boxSizing: 'border-box',
+                    outline: 'none',
+                    resize: 'vertical'
+                  }}
                 />
               </div>
 
               {/* Quick Prompt Suggestions */}
               <div>
-                <span className="text-[11px] font-semibold text-gray-400 block mb-1.5">Contoh Pertanyaan Cepat:</span>
-                <div className="flex flex-wrap gap-1.5">
+                <span style={{ fontSize: '0.72rem', fontWeight: '700', color: '#9ca3af', display: 'block', marginBottom: '6px' }}>
+                  Contoh Pertanyaan Cepat:
+                </span>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                   {(QUICK_PROMPTS[domain] || []).map((sample, idx) => (
                     <button
                       key={idx}
                       type="button"
                       onClick={() => setPrompt(sample)}
-                      className="text-[11px] px-2.5 py-1 rounded-full bg-gray-800/80 text-gray-300 hover:bg-gray-700 hover:text-emerald-300 border border-gray-700/60 transition-colors text-left cursor-pointer"
+                      style={{
+                        padding: '5px 10px',
+                        borderRadius: '999px',
+                        background: '#1e293b',
+                        border: '1px solid #334155',
+                        color: '#cbd5e1',
+                        fontSize: '0.72rem',
+                        cursor: 'pointer',
+                        textAlign: 'left'
+                      }}
                     >
                       "{sample}"
                     </button>
@@ -214,135 +277,169 @@ const CekkesAiCheckModal = ({
               </div>
 
               {/* Consent Toggle */}
-              <div className="p-3 bg-gray-950/50 border border-gray-800 rounded-xl flex items-start gap-2.5">
+              <div style={{
+                background: 'rgba(15, 23, 42, 0.7)',
+                border: '1px solid #334155',
+                borderRadius: '12px',
+                padding: '12px',
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '10px'
+              }}>
                 <input
                   type="checkbox"
                   id="ai-consent"
                   checked={consentGiven}
                   onChange={(e) => setConsentGiven(e.target.checked)}
-                  className="mt-1 h-4 w-4 rounded border-gray-700 text-emerald-500 focus:ring-emerald-500 cursor-pointer"
+                  style={{ marginTop: '3px', cursor: 'pointer' }}
                 />
-                <label htmlFor="ai-consent" className="text-xs text-gray-300 cursor-pointer leading-relaxed">
-                  <strong className="text-emerald-400">Persetujuan Pemrosesan AI:</strong> Saya mengizinkan AI Agent ceKKes memproses teks observasi di atas untuk memberikan rekomendasi gaya hidup/budidaya. Saya memahami bahwa hasil ini <strong>bukan diagnosis medis atau veteriner</strong>.
+                <label htmlFor="ai-consent" style={{ fontSize: '0.75rem', color: '#e2e8f0', cursor: 'pointer', lineHeight: 1.5 }}>
+                  <strong style={{ color: '#34d399' }}>Persetujuan Pemrosesan AI:</strong> Saya mengizinkan AI Agent ceKKes memproses teks observasi di atas untuk memberikan rekomendasi gaya hidup/budidaya non-diagnostik. Saya memahami bahwa hasil ini <strong>bukan vonis medis atau veteriner klinis</strong>.
                 </label>
               </div>
 
               {errorMsg && (
-                <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl text-xs text-rose-300 flex items-center gap-2">
+                <div style={{
+                  padding: '10px 14px',
+                  background: 'rgba(224, 49, 49, 0.15)',
+                  border: '1px solid rgba(224, 49, 49, 0.4)',
+                  borderRadius: '10px',
+                  color: '#fca5a5',
+                  fontSize: '0.8rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
                   <AlertTriangle size={16} />
                   <span>{errorMsg}</span>
                 </div>
               )}
 
-              {/* Action Buttons */}
-              <div className="flex items-center justify-end gap-2 pt-2">
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', paddingTop: '6px' }}>
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2 rounded-xl text-xs sm:text-sm font-medium text-gray-400 hover:text-white bg-gray-800 hover:bg-gray-700 transition-colors cursor-pointer"
+                  style={{
+                    padding: '9px 18px',
+                    borderRadius: '10px',
+                    background: '#334155',
+                    border: 'none',
+                    color: '#cbd5e1',
+                    fontSize: '0.85rem',
+                    fontWeight: '600',
+                    cursor: 'pointer'
+                  }}
                 >
                   Tutup
                 </button>
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="flex items-center gap-2 px-5 py-2 rounded-xl text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 active:scale-95 transition-all shadow-md shadow-emerald-900/40 disabled:opacity-50 cursor-pointer"
+                  style={{
+                    padding: '10px 22px',
+                    borderRadius: '10px',
+                    background: 'linear-gradient(135deg, #0d9488 0%, #059669 100%)',
+                    border: 'none',
+                    color: '#ffffff',
+                    fontSize: '0.85rem',
+                    fontWeight: '800',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 15px rgba(5, 150, 105, 0.35)'
+                  }}
                 >
-                  <Sparkles size={16} className={isLoading ? 'animate-spin' : ''} />
+                  <Sparkles size={16} />
                   <span>{isLoading ? 'Menganalisis...' : 'Jalankan Analisis AI'}</span>
                 </button>
               </div>
             </form>
           )}
 
-          {/* AI Result Card */}
           {result && (
-            <div className="space-y-4">
-              {/* Agent Identifier & Confidence Bar */}
-              <div className="p-4 bg-gradient-to-r from-emerald-950/60 to-gray-900 border border-emerald-500/30 rounded-xl">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              {/* Agent Identifier */}
+              <div style={{
+                background: 'linear-gradient(135deg, rgba(6, 78, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%)',
+                border: '1px solid rgba(16, 185, 129, 0.4)',
+                borderRadius: '14px',
+                padding: '14px 16px'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
                   <div>
-                    <span className="text-[10px] uppercase tracking-wider text-emerald-400 font-bold block">Agent Spesialis Bertugas</span>
-                    <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+                    <span style={{ fontSize: '0.68rem', fontWeight: '800', textTransform: 'uppercase', color: '#34d399', letterSpacing: '0.5px' }}>
+                      Agent Spesialis
+                    </span>
+                    <h3 style={{ margin: '2px 0 0', fontSize: '1rem', fontWeight: '800', color: '#ffffff' }}>
                       {result.agentName}
                     </h3>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-300 font-medium">Confidence:</span>
-                    <span className="px-2.5 py-1 rounded-full text-xs font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ fontSize: '0.75rem', color: '#cbd5e1' }}>Confidence:</span>
+                    <span style={{
+                      padding: '3px 10px',
+                      borderRadius: '999px',
+                      background: 'rgba(16, 185, 129, 0.25)',
+                      color: '#6ee7b7',
+                      fontSize: '0.75rem',
+                      fontWeight: '800',
+                      border: '1px solid rgba(16, 185, 129, 0.4)'
+                    }}>
                       {result.confidence} (Tinggi)
                     </span>
                   </div>
                 </div>
-                <p className="text-xs text-gray-300 italic border-l-2 border-emerald-500/50 pl-2.5 mt-2">
-                  "{result.inputPrompt}"
-                </p>
               </div>
 
               {/* Summary */}
-              <div className="p-4 bg-gray-800/40 border border-gray-700/60 rounded-xl">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-teal-400 mb-1.5 flex items-center gap-1.5">
+              <div style={{ background: '#0f172a', border: '1px solid #334155', borderRadius: '12px', padding: '14px' }}>
+                <h4 style={{ margin: '0 0 6px', fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', color: '#2dd4bf', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <BookOpen size={14} /> Rangkuman Informasi Biologis
                 </h4>
-                <p className="text-sm text-gray-200 leading-relaxed">
+                <p style={{ margin: 0, fontSize: '0.85rem', color: '#e2e8f0', lineHeight: 1.6 }}>
                   {result.summary}
                 </p>
               </div>
 
               {/* Recommendations */}
-              <div className="p-4 bg-gray-800/40 border border-gray-700/60 rounded-xl">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-400 mb-2 flex items-center gap-1.5">
+              <div style={{ background: '#0f172a', border: '1px solid #334155', borderRadius: '12px', padding: '14px' }}>
+                <h4 style={{ margin: '0 0 8px', fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', color: '#34d399', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <CheckCircle2 size={14} /> Rekomendasi Tindakan Aman (Non-Risiko)
                 </h4>
-                <ul className="space-y-2">
+                <ul style={{ margin: 0, paddingLeft: '18px', display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.83rem', color: '#e2e8f0' }}>
                   {result.recommendations.map((rec, i) => (
-                    <li key={i} className="flex items-start gap-2 text-xs sm:text-sm text-gray-200">
-                      <span className="text-emerald-400 font-bold mt-0.5">•</span>
-                      <span>{rec}</span>
-                    </li>
+                    <li key={i}>{rec}</li>
                   ))}
                 </ul>
               </div>
 
-              {/* Red Flags / Danger Signs */}
+              {/* Red Flags */}
               {result.redFlags && result.redFlags.length > 0 && (
-                <div className="p-4 bg-rose-950/30 border border-rose-500/40 rounded-xl">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-rose-400 mb-2 flex items-center gap-1.5">
+                <div style={{ background: 'rgba(153, 27, 27, 0.25)', border: '1px solid rgba(239, 68, 68, 0.4)', borderRadius: '12px', padding: '14px' }}>
+                  <h4 style={{ margin: '0 0 8px', fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', color: '#f87171', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <AlertTriangle size={14} /> Tanda Bahaya (Kapan Wajib Menemui Profesional)
                   </h4>
-                  <ul className="space-y-1.5">
+                  <ul style={{ margin: 0, paddingLeft: '18px', display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.8rem', color: '#fecaca' }}>
                     {result.redFlags.map((flag, i) => (
-                      <li key={i} className="flex items-start gap-2 text-xs text-rose-200">
-                        <span className="text-rose-400 font-bold">⚠️</span>
-                        <span>{flag}</span>
-                      </li>
+                      <li key={i}>{flag}</li>
                     ))}
                   </ul>
-                  <p className="text-[11px] text-rose-300/80 mt-2 italic">
-                    * Jika mengalami gejala di atas, segera konsultasikan langsung ke dokter, dokter hewan, atau balai pertanian berwenang.
-                  </p>
                 </div>
               )}
 
-              {/* Knowledge Sources Citations */}
+              {/* Citations */}
               {result.citations && result.citations.length > 0 && (
-                <div className="p-3.5 bg-gray-950/60 border border-gray-800 rounded-xl">
-                  <span className="text-[10px] uppercase font-bold tracking-wider text-gray-400 block mb-1">
-                    Sumber Rujukan Ilmiah & Regulasi
+                <div style={{ background: '#0f172a', border: '1px solid #334155', borderRadius: '12px', padding: '12px' }}>
+                  <span style={{ fontSize: '0.7rem', fontWeight: '800', textTransform: 'uppercase', color: '#94a3b8', display: 'block', marginBottom: '6px' }}>
+                    Sumber Rujukan Ilmiah & Regulasi Terverifikasi
                   </span>
-                  <div className="space-y-1.5">
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     {result.citations.map((cite, i) => (
-                      <div key={i} className="text-xs text-gray-300 flex items-center justify-between gap-2">
-                        <span>
-                          <strong>{cite.publisher}</strong> ({cite.year}): {cite.title}
-                        </span>
+                      <div key={i} style={{ fontSize: '0.78rem', color: '#cbd5e1', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span><strong>{cite.publisher}</strong> ({cite.year}): {cite.title}</span>
                         {cite.url && (
-                          <a
-                            href={cite.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-emerald-400 hover:text-emerald-300 inline-flex items-center gap-0.5 text-[11px]"
-                          >
+                          <a href={cite.url} target="_blank" rel="noopener noreferrer" style={{ color: '#34d399', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '3px', fontSize: '0.72rem' }}>
                             Tautan <ExternalLink size={10} />
                           </a>
                         )}
@@ -352,27 +449,45 @@ const CekkesAiCheckModal = ({
                 </div>
               )}
 
-              {/* Legal & Medical Disclaimer Banner */}
-              <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-start gap-2.5">
-                <ShieldAlert size={18} className="text-amber-400 shrink-0 mt-0.5" />
-                <p className="text-[11px] text-amber-200/90 leading-tight">
-                  <strong className="text-amber-300">DISCLAIMER KESELAMATAN:</strong> {result.disclaimer}
+              {/* Disclaimer */}
+              <div style={{ background: 'rgba(245, 159, 0, 0.15)', border: '1px solid rgba(245, 159, 0, 0.4)', borderRadius: '12px', padding: '12px', display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                <ShieldAlert size={18} color="#fbbf24" style={{ flexShrink: 0, marginTop: '2px' }} />
+                <p style={{ margin: 0, fontSize: '0.75rem', color: '#fef3c7', lineHeight: 1.5 }}>
+                  <strong style={{ color: '#fde68a' }}>DISCLAIMER KESELAMATAN:</strong> {result.disclaimer}
                 </p>
               </div>
 
-              {/* Result Actions */}
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-800">
+              {/* Actions */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', paddingTop: '8px', borderTop: '1px solid #334155' }}>
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="px-4 py-2 rounded-xl text-xs sm:text-sm font-medium text-gray-300 hover:text-white bg-gray-800 hover:bg-gray-700 transition-colors cursor-pointer"
+                  style={{
+                    padding: '9px 18px',
+                    borderRadius: '10px',
+                    background: '#334155',
+                    border: 'none',
+                    color: '#cbd5e1',
+                    fontSize: '0.85rem',
+                    fontWeight: '600',
+                    cursor: 'pointer'
+                  }}
                 >
                   Analisis Pertanyaan Lain
                 </button>
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-5 py-2 rounded-xl text-xs sm:text-sm font-bold text-emerald-950 bg-emerald-400 hover:bg-emerald-300 transition-all cursor-pointer"
+                  style={{
+                    padding: '9px 22px',
+                    borderRadius: '10px',
+                    background: '#10b981',
+                    border: 'none',
+                    color: '#022c22',
+                    fontSize: '0.85rem',
+                    fontWeight: '800',
+                    cursor: 'pointer'
+                  }}
                 >
                   Selesai
                 </button>
