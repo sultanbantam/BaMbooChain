@@ -75,7 +75,7 @@ const formatBalance = (val) => {
 
 const ProfilePage = () => {
   const { t } = useLanguage();
-  const { user } = useAuth();
+  const { user, updateProfile } = useAuth();
   const { data: articles = [] } = useArticles();
   const { plantings, maintenances, harvests } = useBambupedia();
   const { data: plantationDonations = [] } = usePlantationDonations(user?.id, user?.username);
@@ -496,8 +496,8 @@ const ProfilePage = () => {
   const handleAvatarFileChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) {
-      alert("⚠️ Ukuran foto profil maksimal adalah 2MB!");
+    if (file.size > 5 * 1024 * 1024) {
+      alert("⚠️ Ukuran foto profil maksimal adalah 5MB!");
       return;
     }
     const reader = new FileReader();
@@ -505,18 +505,31 @@ const ProfilePage = () => {
       compressAvatar(uploadEvent.target.result).then(async (compressedBase64) => {
         try {
           const uid = user?.id || user?.uid || 'guest';
-          const avatarRef = ref(storage, `users/${uid}/avatar_${Date.now()}.jpg`);
-          await uploadString(avatarRef, compressedBase64, 'data_url');
-          const avatarUrl = await getDownloadURL(avatarRef);
+          let avatarUrl = compressedBase64;
+
+          // Attempt uploading to Firebase Storage if online & accessible
+          try {
+            const avatarRef = ref(storage, `users/${uid}/avatar_${Date.now()}.jpg`);
+            await uploadString(avatarRef, compressedBase64, 'data_url');
+            avatarUrl = await getDownloadURL(avatarRef);
+          } catch (storageErr) {
+            console.warn("Storage upload fallback to compressed base64:", storageErr);
+            avatarUrl = compressedBase64;
+          }
 
           setFormData(prev => ({ ...prev, avatarUrl }));
-          const success = await updateProfile({ avatarUrl });
-          if (success) {
+          if (updateProfile) {
+            const success = await updateProfile({ avatarUrl });
+            if (success) {
+              alert("✅ Foto profil berhasil diperbarui!");
+            }
+          } else {
+            await updateDoc(doc(db, "users", uid), { avatarUrl });
             alert("✅ Foto profil berhasil diperbarui!");
           }
         } catch (err) {
            console.error("Error uploading avatar:", err);
-           alert("❌ Gagal mengunggah foto profil.");
+           alert("❌ Gagal memperbarui foto profil: " + err.message);
         }
       });
     };
@@ -524,15 +537,22 @@ const ProfilePage = () => {
   };
 
   const handleAvatarChange = () => {
-    const choice = window.confirm("Pilih Sumber Foto Profil:\n\nKlik 'OK' untuk mengunggah foto Anda sendiri dari perangkat.\nKlik 'Batal' untuk menggunakan generator karakter (Dicebear seed).");
-    if (choice) {
-      document.getElementById('avatar-upload-file').click();
-    } else {
-      const newSeed = prompt('Masukkan kata unik untuk mengubah avatar Anda:');
-      if (newSeed) {
-        const newUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${newSeed}`;
-        setFormData({ ...formData, avatarUrl: newUrl });
+    // Directly open native gallery/file picker
+    const fileInput = document.getElementById('avatar-upload-file');
+    if (fileInput) {
+      fileInput.click();
+    }
+  };
+
+  const handleCreateDicebearAvatar = () => {
+    const newSeed = prompt('Masukkan nama atau kata unik untuk membuat avatar karakter acak:');
+    if (newSeed && newSeed.trim()) {
+      const newUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(newSeed.trim())}`;
+      setFormData(prev => ({ ...prev, avatarUrl: newUrl }));
+      if (updateProfile) {
         updateProfile({ avatarUrl: newUrl });
+      } else if (user?.id) {
+        updateDoc(doc(db, "users", user.id), { avatarUrl: newUrl });
       }
     }
   };
@@ -776,24 +796,59 @@ const ProfilePage = () => {
             {/* Account Card */}
             <div style={{ background: 'var(--bg-card)', borderRadius: '24px', padding: '30px', boxShadow: '0 10px 40px rgba(0,0,0,0.05)', border: '1px solid var(--border-color)', transition: 'background 0.3s' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap', marginBottom: '30px' }}>
-                <div style={{ position: 'relative' }}>
-                  <div style={{ width: '100px', height: '100px', borderRadius: '50%', background: 'var(--bg-color)', overflow: 'hidden', border: '3px solid var(--primary)' }}>
-                    <img src={formData.avatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <div style={{ position: 'relative' }}>
+                    <div style={{ width: '100px', height: '100px', borderRadius: '50%', background: 'var(--bg-color)', overflow: 'hidden', border: '3px solid var(--primary)', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
+                      <img src={formData.avatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    </div>
+                    <label 
+                      htmlFor="avatar-upload-file"
+                      style={{ 
+                        position: 'absolute', 
+                        bottom: 0, 
+                        right: 0, 
+                        background: 'var(--primary)', 
+                        color: 'white', 
+                        border: '2px solid white', 
+                        width: '34px', 
+                        height: '34px', 
+                        borderRadius: '50%', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center', 
+                        cursor: 'pointer',
+                        boxShadow: '0 4px 10px rgba(0,0,0,0.25)',
+                        zIndex: 2
+                      }}
+                      title="Pilih Foto Profil dari Galeri HP / Komputer"
+                    >
+                      <Camera size={16} />
+                    </label>
+                    <input 
+                      type="file" 
+                      id="avatar-upload-file" 
+                      accept="image/*" 
+                      style={{ display: 'none' }} 
+                      onChange={handleAvatarFileChange} 
+                    />
                   </div>
                   <button 
-                    onClick={handleAvatarChange}
-                    style={{ position: 'absolute', bottom: 0, right: 0, background: 'var(--text-main)', color: 'white', border: 'none', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-                    title={t('profile_avatar_change')}
+                    type="button" 
+                    onClick={handleCreateDicebearAvatar}
+                    style={{ 
+                      marginTop: '8px', 
+                      background: 'rgba(12,166,120,0.08)', 
+                      border: 'none', 
+                      color: 'var(--primary)', 
+                      fontSize: '0.72rem', 
+                      fontWeight: 'bold', 
+                      cursor: 'pointer', 
+                      padding: '3px 8px', 
+                      borderRadius: '8px' 
+                    }}
                   >
-                    <Camera size={16} />
+                    🎭 Buat Avatar Acak
                   </button>
-                  <input 
-                    type="file" 
-                    id="avatar-upload-file" 
-                    accept="image/*" 
-                    style={{ display: 'none' }} 
-                    onChange={handleAvatarFileChange} 
-                  />
                 </div>
                 <div style={{ flex: 1 }}>
                   {isEditing ? (

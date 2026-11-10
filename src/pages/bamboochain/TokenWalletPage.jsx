@@ -1222,10 +1222,44 @@ const ContributeDataBMC = () => {
     // This is handled directly inside the GoogleMap onClick now
   };
 
-  const handleFileChange = (e, fileKey) => {
+  const compressImage = (file) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          const maxDim = 800;
+          if (width > height && width > maxDim) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else if (height > maxDim) {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', 0.75));
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleFileChange = async (e, fileKey) => {
     if(e.target.files && e.target.files.length > 0) {
-      const ObjectURL = URL.createObjectURL(e.target.files[0]);
-      setUploadedFiles(prev => ({ ...prev, [fileKey]: ObjectURL }));
+      const file = e.target.files[0];
+      try {
+        const compressedBase64 = await compressImage(file);
+        setUploadedFiles(prev => ({ ...prev, [fileKey]: compressedBase64 }));
+      } catch (err) {
+        console.error("Error compressing file:", err);
+      }
     }
   };
 
@@ -1755,12 +1789,45 @@ const ValidatorBMC = () => {
                         <div>
                           <div style={{ fontWeight: 'bold', fontSize: '0.8rem', marginBottom: '12px', color: 'var(--text-main)' }}>📷 {t('tw_val_report_files')}:</div>
                           <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '8px' }}>
-                            {Object.entries(task.uploadedFiles).map(([key, imgUrl]) => (
-                              <div key={key} onClick={() => setPreviewImgWithWatermark(imgUrl)} style={{ position: 'relative', flexShrink: 0, width: '90px', height: '90px', borderRadius: '12px', backgroundImage: `url("${imgUrl}")`, backgroundPosition: 'center', backgroundSize: 'cover', backgroundColor: '#e9ecef', border: '2.5px solid white', cursor: 'zoom-in', boxShadow: '0 4px 10px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                {!imgUrl || typeof imgUrl !== 'string' || !imgUrl.startsWith('data:') ? <span style={{fontSize: '0.6rem', color: '#adb5bd', textAlign: 'center'}}>No Image</span> : null}
-                                <div style={{ position: 'absolute', background: 'rgba(0,0,0,0.7)', color: 'white', fontSize: '0.6rem', padding: '4px', bottom: 0, left: 0, right: 0, textAlign: 'center', borderBottomLeftRadius: '10px', borderBottomRightRadius: '10px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{key}</div>
-                              </div>
-                            ))}
+                            {Object.entries(task.uploadedFiles).map(([key, imgUrl]) => {
+                              const isValidUrl = imgUrl && typeof imgUrl === 'string' && (imgUrl.startsWith('data:') || imgUrl.startsWith('http') || imgUrl.startsWith('blob:'));
+                              return (
+                                <div 
+                                  key={key} 
+                                  onClick={() => isValidUrl && setPreviewImgWithWatermark(imgUrl)} 
+                                  style={{ 
+                                    position: 'relative', 
+                                    flexShrink: 0, 
+                                    width: '95px', 
+                                    height: '95px', 
+                                    borderRadius: '12px', 
+                                    overflow: 'hidden',
+                                    backgroundColor: '#e9ecef', 
+                                    border: '2px solid white', 
+                                    cursor: isValidUrl ? 'zoom-in' : 'default', 
+                                    boxShadow: '0 4px 10px rgba(0,0,0,0.12)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                  }}
+                                >
+                                  {isValidUrl ? (
+                                    <img 
+                                      src={imgUrl} 
+                                      alt={key} 
+                                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                                    />
+                                  ) : (
+                                    <span style={{ fontSize: '0.65rem', color: '#adb5bd', textAlign: 'center', padding: '4px' }}>
+                                      No Image
+                                    </span>
+                                  )}
+                                  <div style={{ position: 'absolute', background: 'rgba(0,0,0,0.72)', color: 'white', fontSize: '0.6rem', padding: '3px 4px', bottom: 0, left: 0, right: 0, textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                    {key}
+                                  </div>
+                                </div>
+                              );
+                            })}
                           </div>
                         </div>
                       )}

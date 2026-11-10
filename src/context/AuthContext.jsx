@@ -1206,6 +1206,32 @@ export const AuthProvider = ({ children }) => {
           });
         }
 
+        // 5b. Auto-register approved bamboo observation into 'plantings' ecosystem database
+        if (isApproved && !plantingId && valData.gps && (valData.title?.includes('Observasi') || valData.tags?.includes('Observasi') || valData.details)) {
+          try {
+            const speciesName = valData.title?.replace('Observasi: ', '') || 'Bambu Alami';
+            const plantingData = {
+              species: speciesName,
+              location: `${speciesName} (${valData.gps})`,
+              gps: valData.gps,
+              count: parseInt(valData.details?.estClumps || valData.details?.jmlRebung || 1, 10) || 1,
+              status: 'Terverifikasi (Observasi)',
+              date: new Date().toISOString().split('T')[0],
+              userId: targetUserId || user?.id || 'guest',
+              username: valData.username || user?.username || 'Contributor',
+              details: valData.details || {},
+              verified: true,
+              isVerified: true,
+              verifiedBy: validatorUsername,
+              verifiedAt: new Date().toISOString(),
+              photos: valData.uploadedFiles ? Object.values(valData.uploadedFiles) : []
+            };
+            await addDoc(collection(db, "plantings"), plantingData);
+          } catch (plantingErr) {
+            console.error("Error creating planting from approved validation:", plantingErr);
+          }
+        }
+
         // 6. Submitter Reward Payout (if approved and target user is not guest)
         if (isApproved && rewardAmount > 0 && targetUserId && targetUserId !== 'guest') {
           const submitterRef = doc(db, "users", targetUserId);

@@ -21,9 +21,39 @@ function PlantPastPage() {
   const [selfiePetani, setSelfiePetani] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleFileChange = (e, setter) => {
+  const compressImage = (file) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          const maxDim = 800;
+          if (width > height && width > maxDim) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else if (height > maxDim) {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', 0.75));
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleFileChange = async (e, setter) => {
     if(e.target.files && e.target.files[0]) {
-      setter(URL.createObjectURL(e.target.files[0]));
+      const b64 = await compressImage(e.target.files[0]);
+      setter(b64);
     }
   };
 
