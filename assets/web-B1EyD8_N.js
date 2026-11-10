@@ -1,1 +1,0 @@
-import{c as e}from"./vendor-others-CO1TukKT.js";export{e as SplashScreenWeb};
