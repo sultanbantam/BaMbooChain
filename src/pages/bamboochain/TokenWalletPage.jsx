@@ -17,7 +17,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { updateDoc, doc, arrayUnion } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { useQueryClient } from '@tanstack/react-query';
-import { GoogleMap, useLoadScript, Marker } from '@react-google-maps/api';
+import LeafletLocationPickerModal from '../../components/common/LeafletLocationPickerModal';
 
 const formatBalance = (val) => {
   const num = Number(val || 0);
@@ -1182,10 +1182,6 @@ const ContributeDataBMC = () => {
   const [previewImg, setPreviewImg] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
-  const { isLoaded: isMapLoaded } = useLoadScript({
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
-  });
-
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener('resize', handleResize);
@@ -1279,30 +1275,14 @@ const ContributeDataBMC = () => {
         </div>
       )}
 
-      {mapOpen && (
-        <div style={{ position: 'fixed', top:0, left:0, right:0, bottom:0, background: 'rgba(0,0,0,0.8)', zIndex: 9999, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}>
-          <div style={{ background: 'white', padding: isMobile ? '24px' : '32px', borderRadius: '24px', width: '90%', maxWidth: '600px', display: 'flex', flexDirection: 'column', gap: '16px', animation: 'fadeIn 0.2s' }}>
-            <h3 style={{ margin:0, fontWeight: '900' }}>Pilih Lokasi</h3>
-            <p style={{ margin:0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>Klik di peta untuk koordinat GPS.</p>
-            <div style={{ width: '100%', height: isMobile ? '200px' : '300px', borderRadius: '16px', border: '2px solid #dee2e6', overflow: 'hidden', position: 'relative', margin: '16px 0' }}>
-              {!isMapLoaded ? (
-                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', background: '#f8f9fa' }}>Loading Google Maps...</div>
-              ) : (
-                 <GoogleMap
-                   zoom={5}
-                   center={{ lat: -2.5, lng: 118.0 }}
-                   mapContainerStyle={{ width: '100%', height: '100%' }}
-                   onClick={(e) => {
-                     setGps(`${e.latLng.lat().toFixed(5)}, ${e.latLng.lng().toFixed(5)}`);
-                     setMapOpen(false);
-                   }}
-                 />
-              )}
-            </div>
-            <button onClick={() => setMapOpen(false)} style={{ padding: '12px', border: '1px solid #ced4da', background: 'white', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.9rem' }}>Batal</button>
-          </div>
-        </div>
-      )}
+      <LeafletLocationPickerModal
+        isOpen={mapOpen}
+        onClose={() => setMapOpen(false)}
+        initialCoords={gps}
+        onSelectLocation={(lat, lng, coordString) => {
+          setGps(coordString);
+        }}
+      />
 
       <h3 style={{ fontSize: isMobile ? '1.3rem' : '1.5rem', marginBottom: '8px', fontWeight: '900' }}>{t('tw_contribute_title')}</h3>
       <p style={{ color: 'var(--text-muted)', marginBottom: '24px', fontSize: '0.9rem' }}>{t('tw_contribute_desc')}</p>

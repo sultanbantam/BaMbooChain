@@ -143,28 +143,47 @@ function MapLocationSelect({ value, onChange }) {
           )}
 
           {activeTab === 'map' && (
-            <div style={{ height: '280px', width: '100%', borderRadius: '12px', overflow: 'hidden', border: '1px solid #eee' }}>
-              <MapContainer 
-                center={[-6.2088, 106.8456]} zoom={8} 
-                style={{ height: '100%', width: '100%' }}
-                whenReady={(mapInstance) => { setTimeout(() => mapInstance.target.invalidateSize(), 100); }}
-              >
-                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                {allPins.map((pin, i) => (
-                  <Marker key={i} position={[pin.lat, pin.lng]} icon={defaultIcon}>
-                    <Popup>
-                      <strong>{pin.name}</strong><br/>
-                      <button type="button" onClick={() => handleSelect(pin)} style={{ marginTop: '8px', padding: '4px 10px', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Pilih</button>
-                    </Popup>
-                  </Marker>
-                ))}
-                {customPosition && (
-                  <Marker position={[customPosition.lat, customPosition.lng]} icon={customPinIcon}>
-                    <Popup>Lokasi Kustom Anda</Popup>
-                  </Marker>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.75rem', color: '#6c757d' }}>Klik titik pada peta</span>
+                {navigator.geolocation && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.geolocation.getCurrentPosition(
+                        (pos) => handleMapClick(pos.coords.latitude, pos.coords.longitude),
+                        (err) => alert('Gagal mendeteksi GPS: ' + err.message)
+                      );
+                    }}
+                    style={{ background: '#e6fcf5', color: 'var(--primary)', border: '1px solid #63e6be', borderRadius: '8px', padding: '4px 8px', fontSize: '0.72rem', fontWeight: 'bold', cursor: 'pointer' }}
+                  >
+                    📍 GPS Saya
+                  </button>
                 )}
-                <MapClickHandler onLocationSelect={handleMapClick} />
-              </MapContainer>
+              </div>
+              <div style={{ height: '260px', width: '100%', borderRadius: '12px', overflow: 'hidden', border: '1px solid #eee' }}>
+                <MapContainer 
+                  center={[-6.2088, 106.8456]} zoom={8} 
+                  style={{ height: '100%', width: '100%' }}
+                  whenReady={(mapInstance) => { setTimeout(() => mapInstance.target.invalidateSize(), 100); }}
+                >
+                  <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                  {allPins.map((pin, i) => (
+                    <Marker key={i} position={[pin.lat, pin.lng]} icon={defaultIcon}>
+                      <Popup>
+                        <strong>{pin.name}</strong><br/>
+                        <button type="button" onClick={() => handleSelect(pin)} style={{ marginTop: '8px', padding: '4px 10px', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Pilih</button>
+                      </Popup>
+                    </Marker>
+                  ))}
+                  {customPosition && (
+                    <Marker position={[customPosition.lat, customPosition.lng]} icon={customPinIcon}>
+                      <Popup>Lokasi Kustom Anda</Popup>
+                    </Marker>
+                  )}
+                  <MapClickHandler onLocationSelect={handleMapClick} />
+                </MapContainer>
+              </div>
             </div>
           )}
         </div>

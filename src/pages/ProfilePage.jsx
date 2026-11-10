@@ -15,7 +15,18 @@ import {
   UploadCloud, FileText, Trash2, Send, ChevronRight, PlayCircle, Search, Leaf, Bell, Smile, Calendar
 } from 'lucide-react';
 import EmojiPicker from 'emoji-picker-react';
-import { GoogleMap, useLoadScript, Marker, InfoWindow } from '@react-google-maps/api';
+import { MapContainer, TileLayer, Marker as LeafletMarker, Popup as LeafletPopup } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+const greenPinIcon = L.icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
 
 const compressAvatar = (base64Str) => {
   return new Promise((resolve) => {
@@ -95,13 +106,21 @@ const ProfilePage = () => {
   // Real-time statuses list state
   const [statuses, setStatuses] = useState([]);
   
+  // Mobile detector & Pagination limits to avoid infinite scrolling
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  const isMobile = windowWidth <= 768;
+
+  const [statusVisibleCount, setStatusVisibleCount] = useState(3);
+  const [eventVisibleCount, setEventVisibleCount] = useState(3);
+
   const [expandedCommentsStatusId, setExpandedCommentsStatusId] = useState(null);
   const [expandedGiftsStatusId, setExpandedGiftsStatusId] = useState(null);
   const [activeMapMarker, setActiveMapMarker] = useState(null);
-
-  const { isLoaded: isMapLoaded } = useLoadScript({
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
-  });
   const [showInbox, setShowInbox] = useState(false);
 
   const [shareModalData, setShareModalData] = useState({ isOpen: false, url: '', title: '' });
@@ -628,16 +647,16 @@ const ProfilePage = () => {
   }
 
   return (
-    <div style={{ paddingTop: '190px', paddingBottom: '100px', minHeight: '100vh', background: 'var(--bg-color)', transition: 'background 0.3s ease' }}>
-      <div className="container profile-container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
+    <div style={{ paddingTop: isMobile ? '130px' : '190px', paddingBottom: '100px', minHeight: '100vh', background: 'var(--bg-color)', transition: 'background 0.3s ease' }}>
+      <div className="container profile-container" style={{ maxWidth: '1200px', margin: '0 auto', padding: isMobile ? '0 12px' : '0 20px' }}>
         
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', flexWrap: 'wrap', gap: '20px' }}>
-          <h1 style={{ fontSize: '2.5rem', fontWeight: '900', color: 'var(--text-main)', margin: 0 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isMobile ? '20px' : '30px', flexWrap: 'wrap', gap: '16px' }}>
+          <h1 style={{ fontSize: isMobile ? '1.8rem' : '2.5rem', fontWeight: '900', color: 'var(--text-main)', margin: 0 }}>
             {t('profile_title')}
           </h1>
           
           {/* Global User Search Bar */}
-          <div style={{ position: 'relative', width: '320px' }}>
+          <div style={{ position: 'relative', width: isMobile ? '100%' : '320px' }}>
             <div style={{ position: 'relative' }}>
               <input
                 type="text"
@@ -749,7 +768,7 @@ const ProfilePage = () => {
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '30px', alignItems: 'start' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(320px, 1fr))', gap: isMobile ? '20px' : '30px', alignItems: 'start' }}>
           
           {/* ────────── LEFT COLUMN: ACCOUNT DETAILS & REFERRAL ────────── */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
@@ -979,9 +998,9 @@ const ProfilePage = () => {
             </div>
 
             {/* Riwayat Event Card */}
-            <div style={{ background: 'var(--bg-card)', borderRadius: '24px', padding: '30px', boxShadow: '0 10px 40px rgba(0,0,0,0.05)', border: '1px solid var(--border-color)', transition: 'background 0.3s' }}>
+            <div style={{ background: 'var(--bg-card)', borderRadius: isMobile ? '20px' : '24px', padding: isMobile ? '20px 16px' : '30px', boxShadow: '0 10px 40px rgba(0,0,0,0.05)', border: '1px solid var(--border-color)', transition: 'background 0.3s' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                <h3 style={{ fontSize: '1.25rem', margin: 0, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <h3 style={{ fontSize: isMobile ? '1.1rem' : '1.25rem', margin: 0, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <Calendar size={20} color="var(--primary)" /> Riwayat Event
                 </h3>
                 {userEvents.some(ev => ev.userRoles.includes('Penggagas') || ev.userRoles.includes('Panitia')) && (
@@ -1001,7 +1020,7 @@ const ProfilePage = () => {
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {userEvents.map((ev, idx) => (
+                  {userEvents.slice(0, eventVisibleCount).map((ev, idx) => (
                     <div key={ev.id || idx} style={{ background: 'var(--bg-color)', padding: '16px', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                         <h4 style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text-main)' }}>{ev.title || 'Event Tanpa Judul'}</h4>
@@ -1026,6 +1045,46 @@ const ProfilePage = () => {
                       </div>
                     </div>
                   ))}
+
+                  {/* Limit & Expand Controls for Events */}
+                  {userEvents.length > 3 && (
+                    <div style={{ textAlign: 'center', marginTop: '6px' }}>
+                      {eventVisibleCount < userEvents.length ? (
+                        <button
+                          type="button"
+                          onClick={() => setEventVisibleCount(userEvents.length)}
+                          style={{
+                            background: 'rgba(12,166,120,0.08)',
+                            color: 'var(--primary)',
+                            border: '1px solid rgba(12,166,120,0.2)',
+                            padding: '8px 16px',
+                            borderRadius: '10px',
+                            fontSize: '0.8rem',
+                            fontWeight: 'bold',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Lihat Semua Event ({userEvents.length})
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setEventVisibleCount(3)}
+                          style={{
+                            background: 'var(--bg-color)',
+                            color: 'var(--text-muted)',
+                            border: '1px solid var(--border-color)',
+                            padding: '6px 14px',
+                            borderRadius: '10px',
+                            fontSize: '0.78rem',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          ▲ Ciutkan Event (Tampilkan 3 Saja)
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -1249,24 +1308,25 @@ const ProfilePage = () => {
                     </p>
                   </div>
                 ) : (
-                  statuses.map((status) => {
-                    const isCommentsExpanded = expandedCommentsStatusId === status.id;
-                    const isGiftsExpanded = expandedGiftsStatusId === status.id;
-                    
-                    return (
-                      <div 
-                        key={status.id} 
-                        style={{ 
-                          background: 'var(--bg-card)', 
-                          padding: '24px', 
-                          borderRadius: '20px', 
-                          border: '1px solid var(--border-color)',
-                          boxShadow: '0 4px 15px rgba(0,0,0,0.02)',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '12px'
-                        }}
-                      >
+                  <>
+                    {statuses.slice(0, statusVisibleCount).map((status) => {
+                      const isCommentsExpanded = expandedCommentsStatusId === status.id;
+                      const isGiftsExpanded = expandedGiftsStatusId === status.id;
+                      
+                      return (
+                        <div 
+                          key={status.id} 
+                          style={{ 
+                            background: 'var(--bg-card)', 
+                            padding: isMobile ? '16px' : '24px', 
+                            borderRadius: '20px', 
+                            border: '1px solid var(--border-color)',
+                            boxShadow: '0 4px 15px rgba(0,0,0,0.02)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '12px'
+                          }}
+                        >
                         {/* Status Header */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <span style={{ background: 'rgba(12,166,120,0.1)', color: 'var(--primary)', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '6px', textTransform: 'uppercase' }}>
@@ -1449,9 +1509,72 @@ const ProfilePage = () => {
                         )}
                       </div>
                     );
-                  })
-                )}
-              </div>
+                  })}
+
+                  {/* Limit & Expand Controls for Status */}
+                  {statuses.length > 3 && (
+                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '4px', flexWrap: 'wrap' }}>
+                      {statusVisibleCount < statuses.length && (
+                        <button
+                          type="button"
+                          onClick={() => setStatusVisibleCount(prev => Math.min(prev + 5, statuses.length))}
+                          style={{
+                            background: 'rgba(12,166,120,0.1)',
+                            color: 'var(--primary)',
+                            border: '1px solid rgba(12,166,120,0.25)',
+                            padding: '9px 16px',
+                            borderRadius: '12px',
+                            fontWeight: 'bold',
+                            fontSize: '0.82rem',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px'
+                          }}
+                        >
+                          <span>Lihat 5 Status Lagi</span>
+                          <span style={{ fontSize: '0.72rem', opacity: 0.8 }}>({Math.min(statusVisibleCount, statuses.length)} dari {statuses.length})</span>
+                        </button>
+                      )}
+                      {statusVisibleCount < statuses.length ? (
+                        <button
+                          type="button"
+                          onClick={() => setStatusVisibleCount(statuses.length)}
+                          style={{
+                            background: 'var(--bg-card)',
+                            color: 'var(--text-muted)',
+                            border: '1px solid var(--border-color)',
+                            padding: '9px 14px',
+                            borderRadius: '12px',
+                            fontSize: '0.8rem',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Lihat Semua ({statuses.length})
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setStatusVisibleCount(3)}
+                          style={{
+                            background: 'var(--bg-card)',
+                            color: 'var(--text-muted)',
+                            border: '1px solid var(--border-color)',
+                            padding: '9px 16px',
+                            borderRadius: '12px',
+                            fontWeight: 'bold',
+                            fontSize: '0.82rem',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          ▲ Ciutkan Status (Tampilkan 3 Saja)
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
 
               {/* Eco Metrics Grid */}
               <div style={{ marginBottom: '25px' }}>
@@ -1574,55 +1697,45 @@ const ProfilePage = () => {
                 <p style={{ margin: '0 0 12px 0', fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   🗺️ Peta Lokasi Aktivitas Hijau
                 </p>
-                <div style={{ height: '240px', width: '100%', borderRadius: '16px', overflow: 'hidden', border: '1px solid var(--border-color)', marginBottom: '15px', zIndex: 1 }}>
-                  {!isMapLoaded ? (
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', background: '#f8f9fa' }}>Loading Google Maps...</div>
-                  ) : (
-                    <GoogleMap 
-                      center={mapCenter ? { lat: mapCenter[0], lng: mapCenter[1] } : { lat: -6.5888, lng: 106.3144 }} 
-                      zoom={10} 
-                      mapContainerStyle={{ height: '100%', width: '100%' }}
-                    >
-                      {(plantings || []).map((p, idx) => {
-                        const coords = parseCoords(p.location);
-                        if (!coords) return null;
-                        const pos = { lat: coords[0], lng: coords[1] };
-                        const markerId = p.id || `marker-${idx}`;
-                        return (
-                          <Marker 
-                            key={markerId} 
-                            position={pos} 
-                            onClick={() => setActiveMapMarker(markerId)}
-                          >
-                            {activeMapMarker === markerId && (
-                              <InfoWindow onCloseClick={() => setActiveMapMarker(null)}>
-                                <div style={{ fontSize: '0.8rem', color: '#333', padding: '4px' }}>
-                                  <strong style={{ color: 'var(--primary)' }}>{p.species || 'Bambu'}</strong><br/>
-                                  <span>Jumlah: {p.count || 0} rumpun</span><br/>
-                                  <span>Status: {p.status || 'Planted'}</span>
-                                </div>
-                              </InfoWindow>
-                            )}
-                          </Marker>
-                        );
-                      })}
-                      {coordsList.length === 0 && (
-                        <Marker 
-                          position={mapCenter ? { lat: mapCenter[0], lng: mapCenter[1] } : { lat: -6.5888, lng: 106.3144 }}
-                          onClick={() => setActiveMapMarker('cibarani')}
-                        >
-                          {activeMapMarker === 'cibarani' && (
-                            <InfoWindow onCloseClick={() => setActiveMapMarker(null)}>
-                              <div style={{ fontSize: '0.8rem', color: '#333', padding: '4px' }}>
-                                <strong>Area Konservasi Cibarani</strong><br/>
-                                <span>Lokasi demonstrasi penanaman bambu lestari.</span>
-                              </div>
-                            </InfoWindow>
-                          )}
-                        </Marker>
-                      )}
-                    </GoogleMap>
-                  )}
+                <div style={{ height: isMobile ? '220px' : '260px', width: '100%', borderRadius: '16px', overflow: 'hidden', border: '1px solid var(--border-color)', marginBottom: '15px', zIndex: 1 }}>
+                  <MapContainer
+                    center={mapCenter}
+                    zoom={10}
+                    scrollWheelZoom={false}
+                    style={{ height: '100%', width: '100%' }}
+                    whenReady={(mapInstance) => { setTimeout(() => mapInstance.target.invalidateSize(), 150); }}
+                  >
+                    <TileLayer
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    />
+                    {(plantings || []).map((p, idx) => {
+                      const coords = parseCoords(p.location);
+                      if (!coords) return null;
+                      return (
+                        <LeafletMarker key={p.id || idx} position={coords} icon={greenPinIcon}>
+                          <LeafletPopup>
+                            <div style={{ fontSize: '0.8rem', color: '#212529', lineHeight: 1.4 }}>
+                              <strong style={{ color: 'var(--primary)' }}>{p.species || 'Bambu'}</strong><br/>
+                              <span>Jumlah: {p.count || 0} rumpun</span><br/>
+                              <span>Status: {p.status || 'Planted'}</span><br/>
+                              <span style={{ fontSize: '0.72rem', color: '#6c757d' }}>{p.location}</span>
+                            </div>
+                          </LeafletPopup>
+                        </LeafletMarker>
+                      );
+                    })}
+                    {coordsList.length === 0 && (
+                      <LeafletMarker position={mapCenter} icon={greenPinIcon}>
+                        <LeafletPopup>
+                          <div style={{ fontSize: '0.8rem', color: '#212529', lineHeight: 1.4 }}>
+                            <strong style={{ color: 'var(--primary)' }}>Area Konservasi Cibarani</strong><br/>
+                            <span>Lokasi demonstrasi penanaman bambu lestari.</span>
+                          </div>
+                        </LeafletPopup>
+                      </LeafletMarker>
+                    )}
+                  </MapContainer>
                 </div>
                 {/* Green Action Navigation Links */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>

@@ -12,7 +12,18 @@ import {
   TreeDeciduous, GraduationCap, Shield, Award, Sparkles, X, ChevronRight,
   DownloadCloud, Lock, FileText, CheckCircle, Send
 } from 'lucide-react';
-import { GoogleMap, useLoadScript, Marker, InfoWindow } from '@react-google-maps/api';
+import { MapContainer, TileLayer, Marker as LeafletMarker, Popup as LeafletPopup } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+const greenPinIcon = L.icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
 const parseCoords = (locStr) => {
   if (!locStr) return null;
   const match = locStr.match(/\((-?\d+\.\d+),\s*(-?\d+\.\d+)\)/);
@@ -64,10 +75,8 @@ const PublicPortfolioPage = () => {
   const [expandedCommentsStatusId, setExpandedCommentsStatusId] = useState(null);
   const [expandedGiftsStatusId, setExpandedGiftsStatusId] = useState(null);
   const [activeMapMarker, setActiveMapMarker] = useState(null);
+  const [statusVisibleCount, setStatusVisibleCount] = useState(3);
 
-  const { isLoaded: isMapLoaded } = useLoadScript({
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
-  });
   // Direct private messaging states
   const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
   const [messageText, setMessageText] = useState('');
@@ -575,26 +584,27 @@ const PublicPortfolioPage = () => {
                       </p>
                     </div>
                   ) : (
-                    displayStatuses.map(status => {
-                      const isCommentsExpanded = expandedCommentsStatusId === status.id;
-                      const isGiftsExpanded = expandedGiftsStatusId === status.id;
-                      const isCommentFormActive = activeCommentStatusId === status.id;
-                      const isGiftFormActive = activeGiftStatusId === status.id;
-                      
-                      return (
-                        <div 
-                          key={status.id} 
-                          style={{ 
-                            background: 'var(--bg-color)', 
-                            border: '1px solid var(--border-color)', 
-                            borderRadius: '20px', 
-                            padding: '24px', 
-                            boxShadow: '0 4px 15px rgba(0,0,0,0.02)',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '12px'
-                          }}
-                        >
+                    <>
+                      {displayStatuses.slice(0, statusVisibleCount).map(status => {
+                        const isCommentsExpanded = expandedCommentsStatusId === status.id;
+                        const isGiftsExpanded = expandedGiftsStatusId === status.id;
+                        const isCommentFormActive = activeCommentStatusId === status.id;
+                        const isGiftFormActive = activeGiftStatusId === status.id;
+                        
+                        return (
+                          <div 
+                            key={status.id} 
+                            style={{ 
+                              background: 'var(--bg-color)', 
+                              border: '1px solid var(--border-color)', 
+                              borderRadius: '20px', 
+                              padding: isMobile ? '16px' : '24px', 
+                              boxShadow: '0 4px 15px rgba(0,0,0,0.02)',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '12px'
+                            }}
+                          >
                           {/* Header */}
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <span style={{ background: 'rgba(12,166,120,0.1)', color: 'var(--primary)', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '6px', textTransform: 'uppercase' }}>
@@ -793,10 +803,73 @@ const PublicPortfolioPage = () => {
 
                         </div>
                       );
-                    })
-                  )}
-                </div>
+                    })}
+
+                    {/* Limit & Expand Controls for Status */}
+                    {displayStatuses.length > 3 && (
+                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '4px', flexWrap: 'wrap' }}>
+                        {statusVisibleCount < displayStatuses.length && (
+                          <button
+                            type="button"
+                            onClick={() => setStatusVisibleCount(prev => Math.min(prev + 5, displayStatuses.length))}
+                            style={{
+                              background: 'rgba(12,166,120,0.1)',
+                              color: 'var(--primary)',
+                              border: '1px solid rgba(12,166,120,0.25)',
+                              padding: '9px 16px',
+                              borderRadius: '12px',
+                              fontWeight: 'bold',
+                              fontSize: '0.82rem',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px'
+                            }}
+                          >
+                            <span>Lihat 5 Status Lagi</span>
+                            <span style={{ fontSize: '0.72rem', opacity: 0.8 }}>({Math.min(statusVisibleCount, displayStatuses.length)} dari {displayStatuses.length})</span>
+                          </button>
+                        )}
+                        {statusVisibleCount < displayStatuses.length ? (
+                          <button
+                            type="button"
+                            onClick={() => setStatusVisibleCount(displayStatuses.length)}
+                            style={{
+                              background: 'var(--bg-card)',
+                              color: 'var(--text-muted)',
+                              border: '1px solid var(--border-color)',
+                              padding: '9px 14px',
+                              borderRadius: '12px',
+                              fontSize: '0.8rem',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            Lihat Semua ({displayStatuses.length})
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setStatusVisibleCount(3)}
+                            style={{
+                              background: 'var(--bg-card)',
+                              color: 'var(--text-muted)',
+                              border: '1px solid var(--border-color)',
+                              padding: '9px 16px',
+                              borderRadius: '12px',
+                              fontWeight: 'bold',
+                              fontSize: '0.82rem',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            ▲ Ciutkan Status (Tampilkan 3 Saja)
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
+            </div>
 
               {/* Right Column: Statistics Grid & Details */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -846,55 +919,45 @@ const PublicPortfolioPage = () => {
                   <p style={{ margin: '0 0 12px 0', fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     🗺️ Peta Lokasi Aktivitas Hijau
                   </p>
-                  <div style={{ height: '240px', width: '100%', borderRadius: '16px', overflow: 'hidden', border: '1px solid var(--border-color)', marginBottom: '15px', zIndex: 1 }}>
-                  {!isMapLoaded ? (
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', background: '#f8f9fa' }}>Loading Google Maps...</div>
-                  ) : (
-                    <GoogleMap 
-                      center={mapCenter ? { lat: mapCenter[0], lng: mapCenter[1] } : { lat: -6.5888, lng: 106.3144 }} 
-                      zoom={10} 
-                      mapContainerStyle={{ height: '100%', width: '100%' }}
+                  <div style={{ height: isMobile ? '220px' : '260px', width: '100%', borderRadius: '16px', overflow: 'hidden', border: '1px solid var(--border-color)', marginBottom: '15px', zIndex: 1 }}>
+                    <MapContainer
+                      center={mapCenter}
+                      zoom={10}
+                      scrollWheelZoom={false}
+                      style={{ height: '100%', width: '100%' }}
+                      whenReady={(mapInstance) => { setTimeout(() => mapInstance.target.invalidateSize(), 150); }}
                     >
+                      <TileLayer
+                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      />
                       {(plantingsList || []).map((p, idx) => {
                         const coords = parseCoords(p.location);
                         if (!coords) return null;
-                        const pos = { lat: coords[0], lng: coords[1] };
-                        const markerId = p.id || `marker-${idx}`;
                         return (
-                          <Marker 
-                            key={markerId} 
-                            position={pos} 
-                            onClick={() => setActiveMapMarker(markerId)}
-                          >
-                            {activeMapMarker === markerId && (
-                              <InfoWindow onCloseClick={() => setActiveMapMarker(null)}>
-                                <div style={{ fontSize: '0.8rem', color: '#333', padding: '4px' }}>
-                                  <strong style={{ color: 'var(--primary)' }}>{p.species || 'Bambu'}</strong><br/>
-                                  <span>Jumlah: {p.count || 0} rumpun</span><br/>
-                                  <span>Status: {p.status || 'Planted'}</span>
-                                </div>
-                              </InfoWindow>
-                            )}
-                          </Marker>
+                          <LeafletMarker key={p.id || idx} position={coords} icon={greenPinIcon}>
+                            <LeafletPopup>
+                              <div style={{ fontSize: '0.8rem', color: '#212529', lineHeight: 1.4 }}>
+                                <strong style={{ color: 'var(--primary)' }}>{p.species || 'Bambu'}</strong><br/>
+                                <span>Jumlah: {p.count || 0} rumpun</span><br/>
+                                <span>Status: {p.status || 'Planted'}</span><br/>
+                                <span style={{ fontSize: '0.72rem', color: '#6c757d' }}>{p.location}</span>
+                              </div>
+                            </LeafletPopup>
+                          </LeafletMarker>
                         );
                       })}
                       {coordsList.length === 0 && (
-                        <Marker 
-                          position={mapCenter ? { lat: mapCenter[0], lng: mapCenter[1] } : { lat: -6.5888, lng: 106.3144 }}
-                          onClick={() => setActiveMapMarker('cibarani')}
-                        >
-                          {activeMapMarker === 'cibarani' && (
-                            <InfoWindow onCloseClick={() => setActiveMapMarker(null)}>
-                              <div style={{ fontSize: '0.8rem', color: '#333', padding: '4px' }}>
-                                <strong>Area Konservasi Cibarani</strong><br/>
-                                <span>Lokasi demonstrasi penanaman bambu lestari.</span>
-                              </div>
-                            </InfoWindow>
-                          )}
-                        </Marker>
+                        <LeafletMarker position={mapCenter} icon={greenPinIcon}>
+                          <LeafletPopup>
+                            <div style={{ fontSize: '0.8rem', color: '#212529', lineHeight: 1.4 }}>
+                              <strong style={{ color: 'var(--primary)' }}>Area Konservasi Cibarani</strong><br/>
+                              <span>Lokasi demonstrasi penanaman bambu lestari.</span>
+                            </div>
+                          </LeafletPopup>
+                        </LeafletMarker>
                       )}
-                    </GoogleMap>
-                  )}
+                    </MapContainer>
                   </div>
                   {/* Green Action Navigation Links */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
