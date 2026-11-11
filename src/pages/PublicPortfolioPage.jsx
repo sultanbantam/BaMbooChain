@@ -12,7 +12,7 @@ import {
   TreeDeciduous, GraduationCap, Shield, Award, Sparkles, X, ChevronRight,
   DownloadCloud, Lock, FileText, CheckCircle, Send
 } from 'lucide-react';
-import { MapContainer, TileLayer, Marker as LeafletMarker, Popup as LeafletPopup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker as LeafletMarker, Popup as LeafletPopup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -24,11 +24,34 @@ const greenPinIcon = L.icon({
   popupAnchor: [1, -34],
   shadowSize: [41, 41]
 });
+
+const orangePinIcon = L.icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+const MapRecenter = ({ center }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (center && center[0] && center[1]) {
+      map.flyTo(center, Math.max(map.getZoom(), 12), { animate: true, duration: 1.2 });
+    }
+  }, [center, map]);
+  return null;
+};
 const parseCoords = (locStr) => {
   if (!locStr) return null;
-  const match = locStr.match(/\((-?\d+\.\d+),\s*(-?\d+\.\d+)\)/);
+  const match = locStr.match(/(-?\d+(?:\.\d+)?)[,\s]+(-?\d+(?:\.\d+)?)/);
   if (match) {
-    return [parseFloat(match[1]), parseFloat(match[2])];
+    const lat = parseFloat(match[1]);
+    const lng = parseFloat(match[2]);
+    if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+      return [lat, lng];
+    }
   }
   return null;
 };
@@ -52,6 +75,7 @@ const PublicPortfolioPage = () => {
   const [maintenanceCount, setMaintenanceCount] = useState(0);
   const [articlesList, setArticlesList] = useState([]);
   const [matsList, setMatsList] = useState([]);
+  const [observationsList, setObservationsList] = useState([]);
   
   // Status interactions
   const [interactions, setInteractions] = useState({
@@ -161,6 +185,21 @@ const PublicPortfolioPage = () => {
         const matsSnap = await getDocs(matsQuery);
         const matsData = matsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setMatsList(matsData);
+
+        // Bamboo clump observations from validations
+        try {
+          const valQuery = query(collection(db, "validations"), where("userId", "==", targetUser.id));
+          const valSnap = await getDocs(valQuery);
+          const rawVals = valSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          const bambooObs = rawVals.filter(v => {
+            const titleLower = (v.title || '').toLowerCase();
+            const tagsLower = (v.tags || '').toLowerCase();
+            return titleLower.includes('observasi') || tagsLower.includes('observasi') || v.details?.jmlRebung !== undefined;
+          }).sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime());
+          setObservationsList(bambooObs);
+        } catch (valErr) {
+          console.warn("Could not fetch user bamboo observations:", valErr);
+        }
       } catch (err) {
         console.error("Error loading ecosystem stats:", err);
       }
@@ -417,8 +456,10 @@ const PublicPortfolioPage = () => {
 
   const alreadyLiked = currentUser && interactions.likes.includes(currentUser.id);
 
-  const coordsList = (plantingsList || []).map(p => parseCoords(p.location)).filter(Boolean);
-  const mapCenter = coordsList.length > 0 ? coordsList[0] : [-6.5888, 106.3144];
+  const plantingCoords = (plantingsList || []).map(p => parseCoords(p.location)).filter(Boolean);
+  const obsCoords = (observationsList || []).map(o => parseCoords(o.gps)).filter(Boolean);
+  const coordsList = [...plantingCoords, ...obsCoords];
+  const mapCenter = obsCoords.length > 0 ? obsCoords[0] : (plantingCoords.length > 0 ? plantingCoords[0] : [-6.5888, 106.3144]);
 
   return (
     <div style={{ paddingTop: '190px', paddingBottom: '100px', minHeight: '100vh', background: 'var(--bg-color)', transition: 'background 0.3s ease' }}>
@@ -927,6 +968,7 @@ const PublicPortfolioPage = () => {
                       style={{ height: '100%', width: '100%' }}
                       whenReady={(mapInstance) => { setTimeout(() => mapInstance.target.invalidateSize(), 150); }}
                     >
+                      <MapRecenter center={mapCenter} />
                       <TileLayer
                         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -942,6 +984,22 @@ const PublicPortfolioPage = () => {
                                 <span>Jumlah: {p.count || 0} rumpun</span><br/>
                                 <span>Status: {p.status || 'Planted'}</span><br/>
                                 <span style={{ fontSize: '0.72rem', color: '#6c757d' }}>{p.location}</span>
+                              </div>
+                            </LeafletPopup>
+                          </LeafletMarker>
+                        );
+                      })}
+                      {(observationsList || []).map((o, idx) => {
+                        const coords = parseCoords(o.gps);
+                        if (!coords) return null;
+                        return (
+                          <LeafletMarker key={o.id || `obs-${idx}`} position={coords} icon={orangePinIcon}>
+                            <LeafletPopup>
+                              <div style={{ fontSize: '0.8rem', color: '#212529', lineHeight: 1.4 }}>
+                                <strong style={{ color: '#f59f00' }}>📍 {o.title || 'Observasi Rumpun Bambu'}</strong><br/>
+                                <span>{o.details?.jenisBambu ? `Jenis: ${o.details.jenisBambu}` : ''}</span><br/>
+                                <span>{o.details?.jmlRebung !== undefined ? `Rebung: ${o.details.jmlRebung}` : ''}</span><br/>
+                                <span style={{ fontSize: '0.72rem', color: '#6c757d' }}>{o.gps}</span>
                               </div>
                             </LeafletPopup>
                           </LeafletMarker>
@@ -1154,6 +1212,53 @@ const PublicPortfolioPage = () => {
             ))}
           </div>
         )}
+
+        {/* ────────── VIRAL JOIN CTA CARD ────────── */}
+        <div style={{
+          marginTop: '40px',
+          background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(5, 150, 105, 0.05))',
+          border: '1px solid rgba(16, 185, 129, 0.3)',
+          borderRadius: '24px',
+          padding: '36px 24px',
+          textAlign: 'center',
+          position: 'relative',
+          overflow: 'hidden',
+          boxShadow: '0 10px 30px rgba(0,0,0,0.04)'
+        }}>
+          <div style={{ maxWidth: '620px', margin: '0 auto' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(16, 185, 129, 0.18)', color: 'var(--primary)', padding: '6px 16px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 700, marginBottom: '14px' }}>
+              <Sparkles size={16} /> Bergabung Bersama {targetUser.name || `@${targetUser.username}`}
+            </div>
+            <h3 style={{ fontSize: '1.5rem', fontWeight: 800, margin: '0 0 10px 0', color: 'var(--text-main)', letterSpacing: '-0.3px' }}>
+              Mulai Aksi Hijau & Kumpulkan Reward Token BMC
+            </h3>
+            <p style={{ fontSize: '0.92rem', color: 'var(--text-muted)', lineHeight: 1.6, margin: '0 0 22px 0' }}>
+              Ikuti jejak kedaulatan ekologis ini. Catat rumpun bambu di sekitar Anda, validasi data lapangan, terbitkan paspor digital Web3, dan dapatkan sertifikat dampak hijau.
+            </p>
+            <button
+              onClick={() => navigate(`/join?ref=REF-${(targetUser.username || targetUser.id || '').toUpperCase()}`)}
+              style={{
+                background: 'linear-gradient(135deg, #10b981, #059669)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '14px',
+                padding: '13px 30px',
+                fontSize: '0.98rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                boxShadow: '0 8px 24px rgba(16, 185, 129, 0.35)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                transition: 'transform 0.15s ease'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+              onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+            >
+              Daftar Akun BaMbooChain <ChevronRight size={18} />
+            </button>
+          </div>
+        </div>
 
       </div>
 

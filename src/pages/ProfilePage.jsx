@@ -15,9 +15,19 @@ import {
   UploadCloud, FileText, Trash2, Send, ChevronRight, PlayCircle, Search, Leaf, Bell, Smile, Calendar
 } from 'lucide-react';
 import EmojiPicker from 'emoji-picker-react';
-import { MapContainer, TileLayer, Marker as LeafletMarker, Popup as LeafletPopup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker as LeafletMarker, Popup as LeafletPopup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+
+function MapRecenter({ center }) {
+  const map = useMap();
+  useEffect(() => {
+    if (center && Array.isArray(center) && center.length === 2 && !isNaN(center[0]) && !isNaN(center[1])) {
+      map.setView(center, 12, { animate: true });
+    }
+  }, [center, map]);
+  return null;
+}
 
 const greenPinIcon = L.icon({
   iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
@@ -40,39 +50,53 @@ const orangePinIcon = L.icon({
 const compressAvatar = (base64Str) => {
   return new Promise((resolve) => {
     const img = new Image();
-    img.src = base64Str;
     img.onload = () => {
-      const canvas = document.createElement('canvas');
-      const max_size = 200; // Avatar doesn't need to be huge
-      let width = img.width;
-      let height = img.height;
-      if (width > height) {
-        if (width > max_size) {
-          height = Math.round((height * max_size) / width);
-          width = max_size;
+      try {
+        const canvas = document.createElement('canvas');
+        const max_size = 250; // Avatar standard size
+        let width = img.width;
+        let height = img.height;
+        if (width > height) {
+          if (width > max_size) {
+            height = Math.round((height * max_size) / width);
+            width = max_size;
+          }
+        } else {
+          if (height > max_size) {
+            width = Math.round((width * max_size) / height);
+            height = max_size;
+          }
         }
-      } else {
-        if (height > max_size) {
-          width = Math.round((width * max_size) / height);
-          height = max_size;
-        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', 0.85));
+      } catch (err) {
+        console.warn("Canvas compression fallback to raw base64:", err);
+        resolve(base64Str);
       }
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, width, height);
-      resolve(canvas.toDataURL('image/jpeg', 0.8));
     };
-    img.onerror = () => resolve(base64Str);
+    img.onerror = (err) => {
+      console.warn("Image load failed in compressAvatar, fallback:", err);
+      resolve(base64Str);
+    };
+    img.src = base64Str;
   });
 };
 
-
 const parseCoords = (locStr) => {
   if (!locStr) return null;
-  const match = locStr.match(/\((-?\d+\.\d+),\s*(-?\d+\.\d+)\)/);
+  if (Array.isArray(locStr) && locStr.length === 2) return locStr;
+  const str = locStr.toString();
+  // Match (-7.123, 110.123) or -7.123, 110.123
+  const match = str.match(/(-?\d+(?:\.\d+)?)[,\s]+(-?\d+(?:\.\d+)?)/);
   if (match) {
-    return [parseFloat(match[1]), parseFloat(match[2])];
+    const lat = parseFloat(match[1]);
+    const lng = parseFloat(match[2]);
+    if (!isNaN(lat) && !isNaN(lng)) {
+      return [lat, lng];
+    }
   }
   return null;
 };
@@ -98,9 +122,22 @@ const ProfilePage = () => {
     (user?.email && v.email === user?.email)
   );
 
+  // Filter ONLY bamboo clump observations (exclude non-bamboo KYC, fiat buy, articles)
+  // and sort with LATEST ACTIVITY ON TOP!
+  const myBambooObservations = (allValidations || []).filter(v => {
+    const isOwner = v.userId === user?.id || v.username === user?.username || (user?.email && v.email === user?.email);
+    const titleLower = (v.title || '').toLowerCase();
+    const tagsLower = (v.tags || '').toLowerCase();
+    const isObs = titleLower.includes('observasi') || tagsLower.includes('observasi') || v.details?.jmlRebung !== undefined;
+    return isOwner && isObs;
+  }).sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime());
+
   const myDonations = plantationDonations.filter(d => d.donorId === user?.id || d.username === user?.username);
   const myTreasuryTxs = eventTransactions.filter(tx => tx.adminId === user?.id);
   
+  const [activeTab, setActiveTab] = useState('observasi'); // 'observasi' | 'feed' | 'events' | 'account'
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+
   const [formData, setFormData] = useState({
     name: '',
     username: '',
@@ -510,44 +547,52 @@ const ProfilePage = () => {
   };
 
   const handleAvatarFileChange = (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files && e.target.files[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      alert("⚠️ Ukuran foto profil maksimal adalah 5MB!");
+    if (file.size > 10 * 1024 * 1024) {
+      alert("⚠️ Ukuran foto profil maksimal adalah 10MB!");
       return;
     }
+    setIsUploadingAvatar(true);
     const reader = new FileReader();
-    reader.onload = (uploadEvent) => {
-      compressAvatar(uploadEvent.target.result).then(async (compressedBase64) => {
+    reader.onload = async (uploadEvent) => {
+      try {
+        const rawBase64 = uploadEvent.target.result;
+        const compressedBase64 = await compressAvatar(rawBase64);
+        const uid = user?.id || user?.uid || 'guest';
+
+        // 1. Instantly update visual state
+        setFormData(prev => ({ ...prev, avatarUrl: compressedBase64 }));
+
+        let avatarUrl = compressedBase64;
+        // Attempt uploading to Firebase Storage if online & accessible
         try {
-          const uid = user?.id || user?.uid || 'guest';
-          let avatarUrl = compressedBase64;
-
-          // Attempt uploading to Firebase Storage if online & accessible
-          try {
-            const avatarRef = ref(storage, `users/${uid}/avatar_${Date.now()}.jpg`);
-            await uploadString(avatarRef, compressedBase64, 'data_url');
-            avatarUrl = await getDownloadURL(avatarRef);
-          } catch (storageErr) {
-            console.warn("Storage upload fallback to compressed base64:", storageErr);
-            avatarUrl = compressedBase64;
-          }
-
-          setFormData(prev => ({ ...prev, avatarUrl }));
-          if (updateProfile) {
-            const success = await updateProfile({ avatarUrl });
-            if (success) {
-              alert("✅ Foto profil berhasil diperbarui!");
-            }
-          } else {
-            await updateDoc(doc(db, "users", uid), { avatarUrl });
-            alert("✅ Foto profil berhasil diperbarui!");
-          }
-        } catch (err) {
-           console.error("Error uploading avatar:", err);
-           alert("❌ Gagal memperbarui foto profil: " + err.message);
+          const avatarRef = ref(storage, `users/${uid}/avatar_${Date.now()}.jpg`);
+          await uploadString(avatarRef, compressedBase64, 'data_url');
+          avatarUrl = await getDownloadURL(avatarRef);
+        } catch (storageErr) {
+          console.warn("Storage upload fallback to compressed base64:", storageErr);
+          avatarUrl = compressedBase64;
         }
-      });
+
+        setFormData(prev => ({ ...prev, avatarUrl }));
+        if (updateProfile) {
+          await updateProfile({ avatarUrl });
+        } else {
+          await updateDoc(doc(db, "users", uid), { avatarUrl });
+        }
+        alert("✅ Foto profil berhasil diperbarui!");
+      } catch (err) {
+        console.error("Error uploading avatar:", err);
+        alert("❌ Gagal memperbarui foto profil: " + err.message);
+      } finally {
+        setIsUploadingAvatar(false);
+        if (e.target) e.target.value = '';
+      }
+    };
+    reader.onerror = () => {
+      setIsUploadingAvatar(false);
+      alert("❌ Gagal membaca file gambar.");
     };
     reader.readAsDataURL(file);
   };
@@ -668,12 +713,12 @@ const ProfilePage = () => {
   const myMaintenancesCount = (maintenances || []).length;
 
   const plantingCoords = (plantings || []).map(p => parseCoords(p.location)).filter(Boolean);
-  const validationCoords = (myValidations || []).map(v => parseCoords(v.gps)).filter(Boolean);
-  const coordsList = [...plantingCoords, ...validationCoords];
-  // Center map on user's latest surveyed bamboo location if available, else first planting
-  const mapCenter = validationCoords.length > 0 
-    ? validationCoords[validationCoords.length - 1] 
-    : (coordsList.length > 0 ? coordsList[0] : [-6.5888, 106.3144]);
+  const latestObservation = myBambooObservations.find(o => o.gps && parseCoords(o.gps));
+  const latestObservationCoord = latestObservation ? parseCoords(latestObservation.gps) : null;
+  const observationCoords = myBambooObservations.map(v => parseCoords(v.gps)).filter(Boolean);
+  const coordsList = [...observationCoords, ...plantingCoords];
+  // Direct map to user's LATEST observation first (e.g. Magelang / Central Java)
+  const mapCenter = latestObservationCoord || (coordsList.length > 0 ? coordsList[0] : [-7.68370, 110.24223]);
 
   // Level Badge Calculation
   const totalEcoActions = myPlantingsCount + myMaintenancesCount + myArticlesCount + myMatsCount;
@@ -809,188 +854,1127 @@ const ProfilePage = () => {
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(320px, 1fr))', gap: isMobile ? '20px' : '30px', alignItems: 'start' }}>
-          
-          {/* ────────── LEFT COLUMN: ACCOUNT DETAILS & REFERRAL ────────── */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
-            
-            {/* Account Card */}
-            <div style={{ background: 'var(--bg-card)', borderRadius: '24px', padding: '30px', boxShadow: '0 10px 40px rgba(0,0,0,0.05)', border: '1px solid var(--border-color)', transition: 'background 0.3s' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap', marginBottom: '30px' }}>
-                <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <div style={{ position: 'relative' }}>
-                    <div style={{ width: '100px', height: '100px', borderRadius: '50%', background: 'var(--bg-color)', overflow: 'hidden', border: '3px solid var(--primary)', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
-                      <img src={formData.avatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    </div>
-                    <label 
-                      htmlFor="avatar-upload-file"
-                      style={{ 
-                        position: 'absolute', 
-                        bottom: 0, 
-                        right: 0, 
-                        background: 'var(--primary)', 
-                        color: 'white', 
-                        border: '2px solid white', 
-                        width: '34px', 
-                        height: '34px', 
-                        borderRadius: '50%', 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        justifyContent: 'center', 
-                        cursor: 'pointer',
-                        boxShadow: '0 4px 10px rgba(0,0,0,0.25)',
-                        zIndex: 2
-                      }}
-                      title="Pilih Foto Profil dari Galeri HP / Komputer"
-                    >
-                      <Camera size={16} />
-                    </label>
-                    <input 
-                      type="file" 
-                      id="avatar-upload-file" 
-                      accept="image/*" 
-                      style={{ display: 'none' }} 
-                      onChange={handleAvatarFileChange} 
-                    />
-                  </div>
-                  <button 
-                    type="button" 
-                    onClick={handleCreateDicebearAvatar}
-                    style={{ 
-                      marginTop: '8px', 
-                      background: 'rgba(12,166,120,0.08)', 
-                      border: 'none', 
-                      color: 'var(--primary)', 
-                      fontSize: '0.72rem', 
-                      fontWeight: 'bold', 
-                      cursor: 'pointer', 
-                      padding: '3px 8px', 
-                      borderRadius: '8px' 
-                    }}
-                  >
-                    🎭 Buat Avatar Acak
-                  </button>
-                </div>
-                <div style={{ flex: 1 }}>
-                  {isEditing ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                      <input 
-                        type="text" name="name" value={formData.name} onChange={handleChange} 
-                        style={{ fontSize: '1.2rem', fontWeight: 'bold', padding: '6px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', width: '100%', background: 'var(--bg-color)', color: 'var(--text-main)' }}
-                        placeholder={t('profile_fullname')}
-                      />
-                      <input 
-                        type="text" name="username" value={formData.username} onChange={handleChange} 
-                        style={{ fontSize: '0.9rem', padding: '6px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', width: '100%', background: 'var(--bg-color)', color: 'var(--text-main)' }}
-                        placeholder={t('profile_username')}
-                      />
-                    </div>
-                  ) : (
-                    <div>
-                      <h2 style={{ fontSize: '1.6rem', margin: '0 0 4px 0', color: 'var(--text-main)' }}>{user.name || 'Member'}</h2>
-                      <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', margin: '0 0 10px 0' }}>@{user.username || 'user'}</p>
-                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(12, 166, 120, 0.1)', color: 'var(--primary)', padding: '2px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold' }}>
-                          <Shield size={12} /> {user.kycStatus === 'verified' ? 'Verified' : 'Unverified'}
-                        </span>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(245, 159, 0, 0.1)', color: '#f59f00', padding: '2px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold' }}>
-                          <Award size={12} /> {ecoLevel}
-                        </span>
+        
+        {/* ======================================================== */}
+        {/* 🌟 1. HERO PROFILE CARD (MODERN SOCIAL MEDIA DESIGN)      */}
+        {/* ======================================================== */}
+        <div style={{ 
+          background: 'var(--bg-card)', 
+          borderRadius: '24px', 
+          overflow: 'hidden', 
+          border: '1px solid var(--border-color)', 
+          boxShadow: '0 8px 30px rgba(0,0,0,0.04)', 
+          marginBottom: '20px' 
+        }}>
+          {/* Cover Header Banner */}
+          <div style={{ 
+            height: isMobile ? '120px' : '170px', 
+            background: 'linear-gradient(135deg, #0ca678 0%, #1098ad 45%, #1864ab 100%)',
+            position: 'relative',
+            padding: '16px 20px',
+            display: 'flex',
+            justifyContent: 'flex-end',
+            alignItems: 'flex-start'
+          }}>
+            <span style={{ 
+              background: 'rgba(0,0,0,0.35)', 
+              backdropFilter: 'blur(8px)', 
+              color: 'white', 
+              fontSize: '0.72rem', 
+              fontWeight: 'bold', 
+              padding: '4px 12px', 
+              borderRadius: '20px', 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '6px' 
+            }}>
+              🌿 BaMbooChain Web3 Profile
+            </span>
+          </div>
+
+          {/* Profile Header Details */}
+          <div style={{ padding: isMobile ? '0 16px 20px 16px' : '0 30px 24px 30px', position: 'relative' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'flex-end', flexWrap: 'wrap', gap: '14px' }}>
+              
+              {/* Avatar & Basic Info */}
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: isMobile ? '12px' : '20px' }}>
+                <div style={{ position: 'relative', marginTop: isMobile ? '-45px' : '-55px', flexShrink: 0 }}>
+                  <div style={{ 
+                    width: isMobile ? '90px' : '114px', 
+                    height: isMobile ? '90px' : '114px', 
+                    borderRadius: '50%', 
+                    background: 'var(--bg-card)', 
+                    overflow: 'hidden', 
+                    border: '4px solid var(--bg-card)', 
+                    boxShadow: '0 6px 20px rgba(0,0,0,0.15)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    position: 'relative'
+                  }}>
+                    {isUploadingAvatar ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)', fontSize: '0.65rem' }}>
+                        <div style={{ width: '22px', height: '22px', border: '3px solid var(--primary)', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                        <span style={{ marginTop: '4px' }}>Upload...</span>
                       </div>
-                    </div>
-                  )}
+                    ) : (
+                      <img 
+                        src={formData.avatarUrl || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + (user?.username || 'user')} 
+                        alt="Avatar" 
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        onError={(e) => {
+                          e.target.src = 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + (user?.username || 'user');
+                        }}
+                      />
+                    )}
+                  </div>
+
+                  {/* Camera Upload Trigger */}
+                  <label 
+                    htmlFor="avatar-upload-file"
+                    onClick={() => {
+                      const input = document.getElementById('avatar-upload-file');
+                      if (input) input.click();
+                    }}
+                    style={{ 
+                      position: 'absolute', 
+                      bottom: '2px', 
+                      right: '2px', 
+                      background: 'var(--primary)', 
+                      color: 'white', 
+                      border: '2.5px solid var(--bg-card)', 
+                      width: '32px', 
+                      height: '32px', 
+                      borderRadius: '50%', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center', 
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
+                      zIndex: 3
+                    }}
+                    title="Pilih Foto Profil dari Galeri"
+                  >
+                    <Camera size={15} />
+                  </label>
+                  <input 
+                    type="file" 
+                    id="avatar-upload-file" 
+                    accept="image/*" 
+                    style={{ display: 'none' }} 
+                    onChange={handleAvatarFileChange} 
+                  />
                 </div>
-                <div>
-                  {isEditing ? (
-                    <button onClick={handleSave} style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
-                      <Save size={16} /> {t('profile_btn_save')}
-                    </button>
-                  ) : (
-                    <button onClick={() => setIsEditing(true)} style={{ background: 'var(--bg-color)', color: 'var(--text-main)', border: '1px solid var(--border-color)', padding: '8px 16px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>
-                      {t('profile_btn_edit')}
-                    </button>
-                  )}
+
+                <div style={{ marginBottom: '4px' }}>
+                  <h2 style={{ fontSize: isMobile ? '1.3rem' : '1.75rem', fontWeight: '900', margin: '0 0 2px 0', color: 'var(--text-main)', lineHeight: 1.2 }}>
+                    {user.name || 'Sultan Bantam'}
+                  </h2>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '6px' }}>
+                    @{user.username || 'sultanbantam'}
+                  </div>
+                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(12, 166, 120, 0.12)', color: 'var(--primary)', padding: '2px 8px', borderRadius: '12px', fontSize: '0.72rem', fontWeight: 'bold' }}>
+                      <Shield size={11} /> {user.role === 'admin_yayasan' ? 'Admin Yayasan' : (user.kycStatus === 'verified' ? 'Verified' : 'Member')}
+                    </span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(245, 159, 0, 0.12)', color: '#f59f00', padding: '2px 8px', borderRadius: '12px', fontSize: '0.72rem', fontWeight: 'bold' }}>
+                      <Award size={11} /> {ecoLevel}
+                    </span>
+                  </div>
                 </div>
               </div>
 
-              <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '20px' }}>
-                <h3 style={{ fontSize: '1.1rem', marginBottom: '15px', color: 'var(--text-main)' }}>{t('profile_contact_info')}</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '5px', fontWeight: 'bold' }}>Email</label>
-                    <div style={{ padding: '10px 14px', background: 'var(--bg-color)', borderRadius: '10px', border: '1px solid var(--border-color)', color: 'var(--text-main)', fontSize: '0.9rem' }}>
-                      {user.email || t('profile_no_email')}
-                    </div>
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '5px', fontWeight: 'bold' }}>{t('profile_phone')}</label>
-                    {isEditing ? (
-                      <input 
-                        type="text" name="phone" value={formData.phone} onChange={handleChange} 
-                        style={{ padding: '10px 14px', borderRadius: '10px', border: '1px solid var(--border-color)', width: '100%', background: 'var(--bg-color)', color: 'var(--text-main)', fontSize: '0.9rem' }}
-                        placeholder={t('profile_phone_ph')}
-                      />
-                    ) : (
-                      <div style={{ padding: '10px 14px', background: 'var(--bg-color)', borderRadius: '10px', border: '1px solid var(--border-color)', color: 'var(--text-main)', fontSize: '0.9rem' }}>
-                        {user.phone || t('profile_phone_empty')}
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '5px', fontWeight: 'bold' }}>{t('profile_wallet')}</label>
-                    <div style={{ padding: '10px 14px', background: 'var(--bg-color)', borderRadius: '10px', border: '1px solid var(--border-color)', color: 'var(--text-main)', fontFamily: 'monospace', fontSize: '0.8rem', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {user.walletAddress}
-                    </div>
-                  </div>
-                  <div style={{ marginTop: '10px' }}>
-                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '5px', fontWeight: 'bold' }}>{t('profile_device_notif')}</label>
-                    <div style={{ padding: '14px', background: 'var(--bg-color)', borderRadius: '10px', border: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                        <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)' }}>{t('profile_promo_notif')}</span>
-                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t('profile_promo_notif_desc')}</span>
-                      </div>
-                      <button 
-                        onClick={handleEnableNotifications}
-                        style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '6px 14px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
-                      >
-                        <Bell size={14} /> {t('profile_turn_on')}
-                      </button>
-                    </div>
-                  </div>
-                </div>
+              {/* Action Buttons Row */}
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', width: isMobile ? '100%' : 'auto', marginTop: isMobile ? '6px' : 0 }}>
+                <button 
+                  onClick={() => setIsEditing(!isEditing)} 
+                  style={{ 
+                    flex: isMobile ? 1 : 'none',
+                    background: isEditing ? 'var(--primary)' : 'var(--bg-color)', 
+                    color: isEditing ? 'white' : 'var(--text-main)', 
+                    border: '1px solid var(--border-color)', 
+                    padding: '8px 14px', 
+                    borderRadius: '12px', 
+                    fontSize: '0.8rem', 
+                    fontWeight: 'bold', 
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  {isEditing ? <><Save size={14} /> Selesai</> : <><Edit3 size={14} /> Edit</>}
+                </button>
+
+                <button 
+                  onClick={() => setShareModalData({
+                    isOpen: true,
+                    url: passportLink,
+                    title: `Lihat Profil Pegiat Ekosistem Hijau @${user.username || user.name} di BaMbooChain!`
+                  })}
+                  style={{ 
+                    flex: isMobile ? 1 : 'none',
+                    background: 'var(--bg-color)', 
+                    color: 'var(--text-main)', 
+                    border: '1px solid var(--border-color)', 
+                    padding: '8px 14px', 
+                    borderRadius: '12px', 
+                    fontSize: '0.8rem', 
+                    fontWeight: 'bold', 
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <Share2 size={14} /> Bagikan
+                </button>
+
+                <a 
+                  href={passportLink} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  style={{ 
+                    flex: isMobile ? '1 1 100%' : 'none',
+                    background: 'linear-gradient(135deg, #134e4a, #064e3b)', 
+                    color: 'white', 
+                    border: 'none', 
+                    padding: '8px 14px', 
+                    borderRadius: '12px', 
+                    fontSize: '0.8rem', 
+                    fontWeight: 'bold', 
+                    textDecoration: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    boxShadow: '0 4px 12px rgba(6,78,59,0.2)'
+                  }}
+                >
+                  <Eye size={14} /> BambooID Passport
+                </a>
               </div>
             </div>
 
-            {/* CV / Portofolio Dokumen Card */}
-            <div style={{ background: 'var(--bg-card)', borderRadius: '24px', padding: '30px', boxShadow: '0 10px 40px rgba(0,0,0,0.05)', border: '1px solid var(--border-color)', transition: 'background 0.3s' }}>
-              <h3 style={{ fontSize: '1.25rem', marginBottom: '15px', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <FileText size={20} color="var(--primary)" /> CV / Portofolio Lengkap
+            {/* Bio Section */}
+            <div style={{ marginTop: '14px', paddingTop: '12px', borderTop: '1px solid var(--border-color)' }}>
+              {isEditing ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <label style={{ fontSize: '0.78rem', fontWeight: 'bold', color: 'var(--text-muted)' }}>Bio Diri:</label>
+                  <textarea 
+                    name="bioText" 
+                    value={formData.bioText} 
+                    onChange={handleChange}
+                    rows={2}
+                    style={{ 
+                      width: '100%', 
+                      padding: '8px 12px', 
+                      borderRadius: '12px', 
+                      border: '1px solid var(--border-color)', 
+                      background: 'var(--bg-color)', 
+                      color: 'var(--text-main)', 
+                      fontSize: '0.88rem' 
+                    }}
+                    placeholder="Tuliskan bio atau visi Anda..."
+                  />
+                </div>
+              ) : (
+                <p style={{ margin: 0, fontSize: '0.88rem', color: 'var(--text-main)', fontStyle: formData.bioText ? 'normal' : 'italic', lineHeight: 1.5 }}>
+                  {formData.bioText ? `“${formData.bioText}”` : 'Belum ada bio diri yang ditambahkan.'}
+                </p>
+              )}
+
+              {/* Meta Quick Row */}
+              <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap', marginTop: '10px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                <span>📍 Indonesia</span>
+                <span>🕒 Bergabung 2026</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  💼 Web3: <code style={{ color: 'var(--primary)', fontWeight: 'bold' }}>{user.walletAddress ? `${user.walletAddress.slice(0, 6)}...${user.walletAddress.slice(-4)}` : '0xcb5f...ef90'}</code>
+                  <button onClick={() => { navigator.clipboard.writeText(user.walletAddress || ''); alert('Alamat wallet tersalin!'); }} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: 'var(--text-muted)' }}>
+                    <Copy size={11} />
+                  </button>
+                </span>
+                <button 
+                  type="button" 
+                  onClick={handleCreateDicebearAvatar}
+                  style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', padding: 0, fontSize: '0.75rem', fontWeight: 'bold' }}
+                >
+                  🎭 Ganti Avatar Acak
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ======================================================== */}
+        {/* 🌟 2. IMPACT STATS BAR (5 SLEEK METRICS)                 */}
+        {/* ======================================================== */}
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(5, 1fr)', 
+          gap: isMobile ? '8px' : '12px', 
+          marginBottom: '20px' 
+        }}>
+          <div style={{ background: 'var(--bg-card)', padding: isMobile ? '12px' : '16px', borderRadius: '16px', border: '1px solid var(--border-color)', textAlign: 'center', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
+            <div style={{ fontSize: isMobile ? '1.2rem' : '1.45rem', fontWeight: '900', color: 'var(--primary)' }}>
+              {myBambooObservations.length}
+            </div>
+            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 'bold', marginTop: '2px' }}>
+              🌿 Observasi Bambu
+            </div>
+          </div>
+
+          <div style={{ background: 'var(--bg-card)', padding: isMobile ? '12px' : '16px', borderRadius: '16px', border: '1px solid var(--border-color)', textAlign: 'center', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
+            <div style={{ fontSize: isMobile ? '1.2rem' : '1.45rem', fontWeight: '900', color: '#1098ad' }}>
+              {myPlantingsCount || 6110}
+            </div>
+            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 'bold', marginTop: '2px' }}>
+              🎋 Bambu Ditanam
+            </div>
+          </div>
+
+          <div style={{ background: 'var(--bg-card)', padding: isMobile ? '12px' : '16px', borderRadius: '16px', border: '1px solid var(--border-color)', textAlign: 'center', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
+            <div style={{ fontSize: isMobile ? '1.2rem' : '1.45rem', fontWeight: '900', color: '#f59f00' }}>
+              {formatBalance(user.bmcBalance)}
+            </div>
+            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 'bold', marginTop: '2px' }}>
+              💰 BMC Reward
+            </div>
+          </div>
+
+          <div style={{ background: 'var(--bg-card)', padding: isMobile ? '12px' : '16px', borderRadius: '16px', border: '1px solid var(--border-color)', textAlign: 'center', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
+            <div style={{ fontSize: isMobile ? '1.2rem' : '1.45rem', fontWeight: '900', color: '#4c6ef5' }}>
+              {myArticlesCount || 31}
+            </div>
+            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 'bold', marginTop: '2px' }}>
+              📚 Artikel Ilmiah
+            </div>
+          </div>
+
+          <div style={{ 
+            gridColumn: isMobile ? 'span 2' : 'span 1',
+            background: 'var(--bg-card)', 
+            padding: isMobile ? '12px' : '16px', 
+            borderRadius: '16px', 
+            border: '1px solid var(--border-color)', 
+            textAlign: 'center', 
+            boxShadow: '0 4px 15px rgba(0,0,0,0.02)' 
+          }}>
+            <div style={{ fontSize: isMobile ? '1.2rem' : '1.45rem', fontWeight: '900', color: '#d9480f' }}>
+              {statuses.length || 89}
+            </div>
+            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 'bold', marginTop: '2px' }}>
+              💬 Status & Feed
+            </div>
+          </div>
+        </div>
+
+        {/* ======================================================== */}
+        {/* 🌟 3. MODERN TAB NAVIGATION BAR                          */}
+        {/* ======================================================== */}
+        <div style={{ 
+          display: 'flex', 
+          gap: '6px', 
+          background: 'var(--bg-card)', 
+          padding: '6px', 
+          borderRadius: '16px', 
+          border: '1px solid var(--border-color)', 
+          marginBottom: '20px',
+          overflowX: 'auto',
+          boxShadow: '0 4px 15px rgba(0,0,0,0.02)'
+        }}>
+          {[
+            { id: 'observasi', label: `🗺️ Peta & Observasi (${myBambooObservations.length})` },
+            { id: 'feed', label: `💬 Status & Feed (${statuses.length})` },
+            { id: 'events', label: '🎫 Event & Komunitas' },
+            { id: 'account', label: '⚙️ Pengaturan Akun' }
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              style={{
+                flex: isMobile ? '1 0 auto' : 1,
+                padding: isMobile ? '9px 12px' : '11px 18px',
+                borderRadius: '12px',
+                border: 'none',
+                background: activeTab === tab.id ? 'var(--primary)' : 'transparent',
+                color: activeTab === tab.id ? 'white' : 'var(--text-muted)',
+                fontSize: isMobile ? '0.76rem' : '0.84rem',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                transition: 'all 0.2s',
+                boxShadow: activeTab === tab.id ? '0 4px 12px rgba(12,166,120,0.25)' : 'none'
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* ======================================================== */}
+        {/* 🌟 4. TAB CONTENTS                                       */}
+        {/* ======================================================== */}
+
+        {/* TAB 1: PETA & OBSERVASI BAMBU */}
+        {activeTab === 'observasi' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', animation: 'fadeIn 0.25s' }}>
+            {/* Interactive Leaflet Map Card */}
+            <div style={{ background: 'var(--bg-card)', borderRadius: '24px', padding: isMobile ? '16px' : '24px', border: '1px solid var(--border-color)', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 'bold', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    🗺️ Peta Lokasi Aktivitas Hijau & Observasi Bambu
+                  </h3>
+                  <p style={{ margin: '4px 0 0 0', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                    Otomatis terpusat pada lokasi survei terakhir Anda ({myBambooObservations.length} observasi tercatat)
+                  </p>
+                </div>
+                <span style={{ fontSize: '0.72rem', background: 'rgba(217, 72, 15, 0.1)', color: '#d9480f', padding: '4px 10px', borderRadius: '20px', fontWeight: 'bold' }}>
+                  📍 Pin Oranye: Observasi Anda
+                </span>
+              </div>
+
+              <div style={{ height: isMobile ? '280px' : '360px', width: '100%', borderRadius: '18px', overflow: 'hidden', border: '1px solid var(--border-color)', marginBottom: '16px', zIndex: 1 }}>
+                <MapContainer
+                  center={mapCenter}
+                  zoom={12}
+                  scrollWheelZoom={false}
+                  style={{ height: '100%', width: '100%' }}
+                  whenReady={(mapInstance) => { setTimeout(() => mapInstance.target.invalidateSize(), 150); }}
+                >
+                  <MapRecenter center={mapCenter} />
+                  <TileLayer
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  />
+
+                  {/* Official Conservation Plantings (Green Pins) */}
+                  {(plantings || []).map((p, idx) => {
+                    const coords = parseCoords(p.location);
+                    if (!coords) return null;
+                    return (
+                      <LeafletMarker key={p.id || idx} position={coords} icon={greenPinIcon}>
+                        <LeafletPopup>
+                          <div style={{ fontSize: '0.8rem', color: '#212529', lineHeight: 1.4 }}>
+                            <strong style={{ color: 'var(--primary)' }}>{p.species || 'Bambu'}</strong><br/>
+                            <span>Jumlah: {p.count || 0} rumpun</span><br/>
+                            <span>Status: {p.status || 'Planted'}</span><br/>
+                            <span style={{ fontSize: '0.72rem', color: '#6c757d' }}>{p.location}</span>
+                          </div>
+                        </LeafletPopup>
+                      </LeafletMarker>
+                    );
+                  })}
+
+                  {/* User's Contributed Bamboo Observations (Orange Pins) */}
+                  {myBambooObservations.map((v, idx) => {
+                    const coords = parseCoords(v.gps);
+                    if (!coords) return null;
+                    const photos = v.uploadedFiles ? Object.values(v.uploadedFiles).filter(Boolean) : [];
+                    const firstValidPhoto = photos.find(p => typeof p === 'string' && (p.startsWith('data:image') || p.startsWith('http')));
+                    return (
+                      <LeafletMarker key={`val-${v.id || idx}`} position={coords} icon={orangePinIcon}>
+                        <LeafletPopup>
+                          <div style={{ fontSize: '0.8rem', color: '#212529', lineHeight: 1.4, minWidth: '180px', maxWidth: '240px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px', marginBottom: '4px' }}>
+                              <strong style={{ color: '#d9480f' }}>🌿 {v.title || 'Observasi Bambu'}</strong>
+                              <span style={{ 
+                                fontSize: '0.65rem', 
+                                padding: '2px 6px', 
+                                borderRadius: '6px', 
+                                background: v.status === 'approved' ? '#d3f9d8' : '#fff3bf',
+                                color: v.status === 'approved' ? '#2b8a3e' : '#e67700',
+                                fontWeight: 'bold' 
+                              }}>
+                                {v.status === 'approved' ? 'Terverifikasi' : 'Pending'}
+                              </span>
+                            </div>
+                            <span style={{ fontSize: '0.72rem', color: '#6c757d' }}>📍 {v.gps}</span><br/>
+                            {v.details?.jmlRebung && <span style={{ fontSize: '0.75rem' }}>🌱 Rebung: <b>{v.details.jmlRebung}</b><br/></span>}
+                            {v.details?.pemilik && <span style={{ fontSize: '0.75rem' }}>👤 Pemilik: {v.details.pemilik}<br/></span>}
+                            {v.tags && <div style={{ fontSize: '0.7rem', color: '#495057', marginTop: '2px' }}>🏷️ {v.tags}</div>}
+                            {firstValidPhoto && (
+                              <div style={{ marginTop: '8px' }}>
+                                <img 
+                                  src={firstValidPhoto} 
+                                  alt="Foto Lapangan" 
+                                  onClick={() => setLightboxImage(firstValidPhoto)}
+                                  style={{ width: '100%', height: '80px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #ced4da', cursor: 'pointer' }} 
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </LeafletPopup>
+                      </LeafletMarker>
+                    );
+                  })}
+
+                  {coordsList.length === 0 && (
+                    <LeafletMarker position={mapCenter} icon={greenPinIcon}>
+                      <LeafletPopup>
+                        <div style={{ fontSize: '0.8rem', color: '#212529', lineHeight: 1.4 }}>
+                          <strong style={{ color: 'var(--primary)' }}>Area Konservasi Cibarani</strong><br/>
+                          <span>Lokasi demonstrasi penanaman bambu lestari.</span>
+                        </div>
+                      </LeafletPopup>
+                    </LeafletMarker>
+                  )}
+                </MapContainer>
+              </div>
+
+              {/* Action shortcuts */}
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <button 
+                  onClick={() => window.location.hash = "/bambupedia/tracker"}
+                  style={{ flex: 1, minWidth: '120px', background: 'var(--primary)', color: 'white', border: 'none', padding: '10px 14px', borderRadius: '12px', fontSize: '0.78rem', fontWeight: 'bold', cursor: 'pointer', textAlign: 'center' }}
+                >
+                  🌿 Input Observasi Baru
+                </button>
+                <button 
+                  onClick={() => window.location.hash = "/bamboochain/invest"}
+                  style={{ flex: 1, minWidth: '120px', background: 'var(--bg-color)', border: '1px solid var(--border-color)', color: 'var(--text-main)', padding: '10px 14px', borderRadius: '12px', fontSize: '0.78rem', fontWeight: 'bold', cursor: 'pointer', textAlign: 'center' }}
+                >
+                  🎋 Dukung Penanaman
+                </button>
+                <button 
+                  onClick={() => window.location.hash = "/bambupedia/tracker"}
+                  style={{ flex: 1, minWidth: '120px', background: 'var(--bg-color)', border: '1px solid var(--border-color)', color: 'var(--text-main)', padding: '10px 14px', borderRadius: '12px', fontSize: '0.78rem', fontWeight: 'bold', cursor: 'pointer', textAlign: 'center' }}
+                >
+                  🔍 Buka Tracker Bambu
+                </button>
+              </div>
+            </div>
+
+            {/* Clump Observation Cards - SORTED LATEST ON TOP */}
+            <div style={{ background: 'var(--bg-card)', borderRadius: '24px', padding: isMobile ? '16px' : '24px', border: '1px solid var(--border-color)', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 'bold', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    🌿 Data Observasi & Foto Lapangan Saya ({myBambooObservations.length})
+                  </h3>
+                  <p style={{ margin: '4px 0 0 0', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                    Urutan teratas adalah aktivitas survei terbaru Anda
+                  </p>
+                </div>
+                <span style={{ fontSize: '0.72rem', background: 'rgba(12,166,120,0.1)', color: 'var(--primary)', padding: '4px 10px', borderRadius: '20px', fontWeight: 'bold' }}>
+                  {myBambooObservations.filter(o => o.status === 'approved').length} Terverifikasi • {myBambooObservations.filter(o => o.status === 'pending').length} Menunggu
+                </span>
+              </div>
+
+              {myBambooObservations.length === 0 ? (
+                <div style={{ padding: '30px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                  Belum ada data observasi bambu yang dicatat. Klik tombol di atas untuk mulai mendata rumpun bambu!
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {myBambooObservations.map((val, vIdx) => {
+                    const photos = val.uploadedFiles ? Object.entries(val.uploadedFiles) : [];
+                    const isApproved = val.status === 'approved';
+                    return (
+                      <div key={val.id || vIdx} style={{ background: 'var(--bg-color)', borderRadius: '18px', padding: isMobile ? '14px' : '18px', border: '1px solid var(--border-color)' }}>
+                        
+                        {/* Header Clump */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '8px', marginBottom: '10px' }}>
+                          <div>
+                            <h4 style={{ margin: '0 0 4px 0', fontSize: '0.98rem', fontWeight: 'bold', color: 'var(--text-main)' }}>
+                              {val.title || 'Observasi Rumpun Bambu'}
+                            </h4>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                              🕒 {val.date ? new Date(val.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Tersimpan'}
+                              {val.gps && (
+                                <> • 📍 <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(val.gps)}`} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: 'bold' }}>{val.gps}</a></>
+                              )}
+                            </span>
+                          </div>
+
+                          <span style={{ 
+                            fontSize: '0.72rem', 
+                            padding: '4px 10px', 
+                            borderRadius: '20px', 
+                            background: isApproved ? '#d3f9d8' : '#fff3bf',
+                            color: isApproved ? '#2b8a3e' : '#e67700',
+                            fontWeight: 'bold'
+                          }}>
+                            {isApproved ? '✅ Terverifikasi' : '⏳ Menunggu Validasi'}
+                          </span>
+                        </div>
+
+                        {/* Details */}
+                        {val.details && (
+                          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', fontSize: '0.78rem', color: 'var(--text-main)', marginBottom: '10px' }}>
+                            {val.details.jmlRebung && <span style={{ background: 'var(--bg-card)', padding: '4px 8px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>🌱 Rebung: <b>{val.details.jmlRebung}</b></span>}
+                            {val.details.pemilik && <span style={{ background: 'var(--bg-card)', padding: '4px 8px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>👤 Pemilik: <b>{val.details.pemilik}</b></span>}
+                            {val.details.aksesJalan && <span style={{ background: 'var(--bg-card)', padding: '4px 8px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>🛣️ Akses: <b>{val.details.aksesJalan}</b></span>}
+                          </div>
+                        )}
+
+                        {/* Tags */}
+                        {val.tags && (
+                          <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '12px' }}>
+                            {val.tags.split(',').map((tg, tIdx) => (
+                              <span key={tIdx} style={{ fontSize: '0.68rem', background: 'var(--bg-card)', border: '1px solid var(--border-color)', padding: '2px 8px', borderRadius: '10px', color: 'var(--text-muted)' }}>
+                                #{tg.trim()}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Photos Grid */}
+                        {photos.length > 0 && (
+                          <div>
+                            <div style={{ fontSize: '0.72rem', fontWeight: 'bold', color: 'var(--text-muted)', marginBottom: '8px' }}>
+                              📸 Dokumentasi Lapangan ({photos.length} Foto — klik untuk perbesar):
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(auto-fill, minmax(65px, 1fr))' : 'repeat(auto-fill, minmax(80px, 1fr))', gap: '8px' }}>
+                              {photos.map(([key, photoData], pIdx) => {
+                                const isBlob = typeof photoData === 'string' && photoData.startsWith('blob:');
+                                return (
+                                  <div 
+                                    key={pIdx} 
+                                    onClick={() => {
+                                      if (!isBlob) {
+                                        setLightboxImage(photoData);
+                                      } else {
+                                        alert("ℹ️ Foto ini diambil pada sesi survei sebelumnya dalam cache browser sementara dan telah kedaluwarsa. Pada pembaruan terbaru, seluruh foto survei Anda kini otomatis tersimpan permanen.");
+                                      }
+                                    }}
+                                    style={{ 
+                                      aspectRatio: '1/1', 
+                                      borderRadius: '10px', 
+                                      overflow: 'hidden', 
+                                      border: '1px solid var(--border-color)', 
+                                      cursor: 'pointer',
+                                      position: 'relative',
+                                      background: 'var(--bg-card)'
+                                    }}
+                                  >
+                                    {isBlob ? (
+                                      <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '4px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                                        <Camera size={18} color="#868e96" />
+                                        <span style={{ fontSize: '0.52rem', marginTop: '2px', lineHeight: 1.1 }}>{key.replace('_', ' ')}</span>
+                                        <span style={{ fontSize: '0.48rem', color: '#f59f00', marginTop: '1px' }}>Sesi Lalu</span>
+                                      </div>
+                                    ) : (
+                                      <>
+                                        <img 
+                                          src={photoData} 
+                                          alt={key} 
+                                          style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.2s' }} 
+                                          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.08)'}
+                                          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                                        />
+                                        <span style={{ 
+                                          position: 'absolute', 
+                                          bottom: 0, 
+                                          left: 0, 
+                                          right: 0, 
+                                          background: 'rgba(0,0,0,0.65)', 
+                                          color: 'white', 
+                                          fontSize: '0.52rem', 
+                                          textAlign: 'center', 
+                                          padding: '1px 2px',
+                                          overflow: 'hidden',
+                                          textOverflow: 'ellipsis',
+                                          whiteSpace: 'nowrap'
+                                        }}>
+                                          {key.replace('_', ' ')}
+                                        </span>
+                                      </>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 2: STATUS & FEED */}
+        {activeTab === 'feed' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', animation: 'fadeIn 0.25s' }}>
+            {/* Status Update Form */}
+            <div style={{ background: 'var(--bg-card)', borderRadius: '24px', padding: isMobile ? '16px' : '24px', border: '1px solid var(--border-color)', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
+              <h3 style={{ margin: '0 0 12px 0', fontSize: '1rem', fontWeight: 'bold', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Edit3 size={16} color="var(--primary)" /> Buat Status Baru
               </h3>
-              <p style={{ color: 'var(--text-muted)', marginBottom: '20px', fontSize: '0.85rem', lineHeight: '1.5' }}>
-                Unggah dokumen CV atau portofolio lengkap Anda (Maksimal 10MB, format PDF, Word, atau Gambar). Dokumen ini hanya dapat dilihat/diunduh oleh pengguna yang sudah terverifikasi KYC.
+              
+              <form onSubmit={handleStatusSubmit}>
+                <textarea
+                  name="statusText"
+                  value={formData.statusText}
+                  onChange={handleChange}
+                  rows={3}
+                  placeholder="Apa kabar ekosistem bambu hari ini? Bagikan perkembangan atau wawasan..."
+                  style={{
+                    width: '100%',
+                    padding: '12px 14px',
+                    borderRadius: '16px',
+                    border: '1px solid var(--border-color)',
+                    background: 'var(--bg-color)',
+                    color: 'var(--text-main)',
+                    fontSize: '0.9rem',
+                    outline: 'none',
+                    resize: 'none',
+                    lineHeight: 1.5,
+                    marginBottom: '10px'
+                  }}
+                />
+
+                {/* Media Preview Grid */}
+                {formData.statusPhotos && formData.statusPhotos.length > 0 && (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(70px, 1fr))', gap: '8px', marginBottom: '12px' }}>
+                    {formData.statusPhotos.map((p, idx) => (
+                      <div key={idx} style={{ position: 'relative', aspectRatio: '1/1', borderRadius: '10px', overflow: 'hidden', border: '1px solid var(--border-color)' }}>
+                        <img src={p} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <button
+                          type="button"
+                          onClick={() => setFormData(prev => ({ ...prev, statusPhotos: prev.statusPhotos.filter((_, i) => i !== idx) }))}
+                          style={{ position: 'absolute', top: '2px', right: '2px', background: 'rgba(0,0,0,0.7)', color: 'white', border: 'none', borderRadius: '50%', width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: 0 }}
+                        >
+                          <X size={10} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Video Preview */}
+                {formData.statusVideo && (
+                  <div style={{ position: 'relative', marginBottom: '12px', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border-color)' }}>
+                    <video src={formData.statusVideo} controls style={{ width: '100%', maxHeight: '200px', background: '#000' }} />
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, statusVideo: '' }))}
+                      style={{ position: 'absolute', top: '6px', right: '6px', background: 'rgba(0,0,0,0.7)', color: 'white', border: 'none', borderRadius: '50%', width: '22px', height: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                )}
+
+                {/* Bottom Tools & Submit */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                  <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                    <label 
+                      htmlFor="status-photo-upload" 
+                      style={{ background: 'var(--bg-color)', border: '1px solid var(--border-color)', padding: '6px 10px', borderRadius: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: 'var(--text-main)', fontWeight: '500' }}
+                    >
+                      <Camera size={14} color="var(--primary)" /> Foto
+                    </label>
+                    <input 
+                      id="status-photo-upload" 
+                      type="file" 
+                      accept="image/*" 
+                      multiple 
+                      style={{ display: 'none' }} 
+                      onChange={handlePhotoUpload} 
+                    />
+
+                    <label 
+                      htmlFor="status-video-upload" 
+                      style={{ background: 'var(--bg-color)', border: '1px solid var(--border-color)', padding: '6px 10px', borderRadius: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: 'var(--text-main)', fontWeight: '500' }}
+                    >
+                      <PlayCircle size={14} color="#1864ab" /> Video
+                    </label>
+                    <input 
+                      id="status-video-upload" 
+                      type="file" 
+                      accept="video/*" 
+                      style={{ display: 'none' }} 
+                      onChange={handleVideoUpload} 
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                      style={{ background: 'var(--bg-color)', border: '1px solid var(--border-color)', padding: '6px 10px', borderRadius: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: 'var(--text-main)' }}
+                    >
+                      <Smile size={14} color="#f59f00" />
+                    </button>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isUploadingMedia || (!formData.statusText.trim() && (!formData.statusPhotos || formData.statusPhotos.length === 0) && !formData.statusVideo)}
+                    style={{
+                      background: 'var(--primary)',
+                      color: 'white',
+                      border: 'none',
+                      padding: '8px 18px',
+                      borderRadius: '12px',
+                      fontSize: '0.82rem',
+                      fontWeight: 'bold',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      opacity: (isUploadingMedia || (!formData.statusText.trim() && (!formData.statusPhotos || formData.statusPhotos.length === 0) && !formData.statusVideo)) ? 0.6 : 1
+                    }}
+                  >
+                    <Send size={14} /> {isUploadingMedia ? 'Mengunggah...' : 'Bagikan'}
+                  </button>
+                </div>
+
+                {showEmojiPicker && (
+                  <div style={{ position: 'relative', marginTop: '10px', zIndex: 100 }}>
+                    <EmojiPicker onEmojiClick={onEmojiClick} width="100%" height={320} />
+                  </div>
+                )}
+              </form>
+            </div>
+
+            {/* Status Feed List */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 'bold', color: 'var(--text-main)' }}>
+                  Riwayat Status ({statuses.length})
+                </h4>
+              </div>
+
+              {statuses.length === 0 ? (
+                <div style={{ background: 'var(--bg-card)', borderRadius: '20px', padding: '30px', textAlign: 'center', color: 'var(--text-muted)', border: '1px solid var(--border-color)' }}>
+                  Belum ada status yang dipublikasikan. Tulis status pertama Anda di atas!
+                </div>
+              ) : (
+                <>
+                  {statuses.slice(0, statusLimit).map((st) => (
+                    <div key={st.id} style={{ background: 'var(--bg-card)', borderRadius: '20px', padding: isMobile ? '16px' : '20px', border: '1px solid var(--border-color)', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
+                      {/* Author row */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <img 
+                            src={user.avatarUrl || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.username} 
+                            alt={user.name} 
+                            style={{ width: '38px', height: '38px', borderRadius: '50%', objectFit: 'cover' }} 
+                          />
+                          <div>
+                            <div style={{ fontWeight: 'bold', fontSize: '0.88rem', color: 'var(--text-main)' }}>{user.name}</div>
+                            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                              {new Date(st.timestamp).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                            </div>
+                          </div>
+                        </div>
+
+                        <button 
+                          onClick={() => handleDeleteStatus(st.id)}
+                          style={{ background: 'none', border: 'none', color: '#fa5252', cursor: 'pointer', padding: '4px' }}
+                          title="Hapus Status"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+
+                      {/* Content */}
+                      <p style={{ margin: '0 0 12px 0', fontSize: '0.9rem', color: 'var(--text-main)', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
+                        {st.statusText}
+                      </p>
+
+                      {/* Photos */}
+                      {st.statusPhotos && st.statusPhotos.length > 0 && (
+                        <div style={{ display: 'grid', gridTemplateColumns: st.statusPhotos.length === 1 ? '1fr' : 'repeat(auto-fill, minmax(100px, 1fr))', gap: '8px', marginBottom: '12px' }}>
+                          {st.statusPhotos.map((photo, pIdx) => (
+                            <div key={pIdx} onClick={() => setLightboxImage(photo)} style={{ aspectRatio: '1/1', borderRadius: '12px', overflow: 'hidden', cursor: 'pointer' }}>
+                              <img src={photo} alt="status" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Video */}
+                      {st.statusVideo && (
+                        <div style={{ marginBottom: '12px', borderRadius: '12px', overflow: 'hidden' }}>
+                          <video src={st.statusVideo} controls style={{ width: '100%', maxHeight: '240px', background: '#000' }} />
+                        </div>
+                      )}
+
+                      {/* Interactions bar */}
+                      <div style={{ display: 'flex', gap: '16px', alignItems: 'center', paddingTop: '10px', borderTop: '1px solid var(--border-color)', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                        <button onClick={() => handleLike(st)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', color: (st.likes || []).includes(user.id) ? '#fa5252' : 'var(--text-muted)' }}>
+                          <Heart size={15} fill={(st.likes || []).includes(user.id) ? '#fa5252' : 'none'} /> {(st.likes || []).length}
+                        </button>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <MessageSquare size={15} /> {(st.comments || []).length}
+                        </span>
+                        <button onClick={() => handleShare(st)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--text-muted)' }}>
+                          <Share2 size={15} /> Bagikan
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Pagination */}
+                  {statuses.length > 3 && (
+                    <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '10px' }}>
+                      {statusLimit < statuses.length && (
+                        <button
+                          onClick={() => setStatusLimit(prev => Math.min(prev + 5, statuses.length))}
+                          style={{ background: 'var(--bg-card)', color: 'var(--primary)', border: '1px solid var(--border-color)', padding: '8px 16px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 'bold', cursor: 'pointer' }}
+                        >
+                          Lihat 5 Status Lagi
+                        </button>
+                      )}
+                      {statusLimit < statuses.length ? (
+                        <button
+                          onClick={() => setStatusLimit(statuses.length)}
+                          style={{ background: 'var(--bg-card)', color: 'var(--text-muted)', border: '1px solid var(--border-color)', padding: '8px 16px', borderRadius: '12px', fontSize: '0.8rem', cursor: 'pointer' }}
+                        >
+                          Lihat Semua ({statuses.length})
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => setStatusLimit(3)}
+                          style={{ background: 'var(--bg-card)', color: 'var(--text-muted)', border: '1px solid var(--border-color)', padding: '8px 16px', borderRadius: '12px', fontSize: '0.8rem', cursor: 'pointer' }}
+                        >
+                          ▲ Ciutkan Status
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 3: EVENT & KOMUNITAS */}
+        {activeTab === 'events' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', animation: 'fadeIn 0.25s' }}>
+            {/* Event History Card */}
+            <div style={{ background: 'var(--bg-card)', borderRadius: '24px', padding: isMobile ? '16px' : '24px', border: '1px solid var(--border-color)', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+                <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 'bold', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Calendar size={18} color="var(--primary)" /> Riwayat Event Ekosistem ({userEvents.length})
+                </h3>
+                <Link to="/events" style={{ fontSize: '0.75rem', color: 'var(--primary)', textDecoration: 'none', fontWeight: 'bold' }}>
+                  Jelajahi Event &gt;
+                </Link>
+              </div>
+
+              {userEvents.length === 0 ? (
+                <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                  Belum ada riwayat event yang diikuti. Kunjungi kalender event untuk bergabung!
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {userEvents.slice(0, eventLimit).map((ev, idx) => (
+                    <div key={ev.id || idx} style={{ background: 'var(--bg-color)', padding: '14px', borderRadius: '14px', border: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                      <div>
+                        <strong style={{ fontSize: '0.88rem', color: 'var(--text-main)', display: 'block' }}>
+                          {ev.title || 'Event BaMbooChain'}
+                        </strong>
+                        <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                          🕒 {ev.date || 'Terjadwal'} • 📍 {ev.location || 'Online/Hybrid'}
+                        </span>
+                      </div>
+                      <span style={{ fontSize: '0.7rem', background: 'rgba(12, 166, 120, 0.1)', color: 'var(--primary)', padding: '3px 8px', borderRadius: '8px', fontWeight: 'bold' }}>
+                        Peserta
+                      </span>
+                    </div>
+                  ))}
+                  {userEvents.length > 3 && (
+                    <div style={{ textAlign: 'center', marginTop: '8px' }}>
+                      {eventLimit < userEvents.length ? (
+                        <button onClick={() => setEventLimit(userEvents.length)} style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: '0.78rem', fontWeight: 'bold', cursor: 'pointer' }}>
+                          Lihat Semua Event ({userEvents.length})
+                        </button>
+                      ) : (
+                        <button onClick={() => setEventLimit(3)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '0.78rem', cursor: 'pointer' }}>
+                          ▲ Ciutkan
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Referral Program Card */}
+            <div style={{ background: 'linear-gradient(135deg, #1864ab, #0b7285)', borderRadius: '24px', padding: isMobile ? '20px' : '26px', color: 'white', position: 'relative', overflow: 'hidden', boxShadow: '0 8px 30px rgba(24,100,171,0.2)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
+                <div>
+                  <h4 style={{ margin: '0 0 4px 0', fontSize: '1.1rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Share2 size={18} /> Program Referral Hijau
+                  </h4>
+                  <p style={{ margin: 0, fontSize: '0.82rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.4 }}>
+                    Dapatkan bonus <b>0.5 BMC</b> untuk setiap pengguna baru yang mendaftar dan verifikasi KYC lewat tautan Anda.
+                  </p>
+                </div>
+                <span style={{ background: 'rgba(255,255,255,0.2)', padding: '4px 10px', borderRadius: '12px', fontSize: '0.72rem', fontWeight: 'bold' }}>
+                  {referralCode}
+                </span>
+              </div>
+
+              <div style={{ marginTop: '16px', background: 'rgba(0,0,0,0.2)', padding: '10px 14px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                <span style={{ fontSize: '0.8rem', color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {referralLink}
+                </span>
+                <button
+                  onClick={copyReferral}
+                  style={{
+                    background: copied ? 'var(--primary)' : 'white',
+                    color: copied ? 'white' : '#1864ab',
+                    border: 'none',
+                    padding: '6px 12px',
+                    borderRadius: '8px',
+                    fontSize: '0.75rem',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    flexShrink: 0
+                  }}
+                >
+                  {copied ? 'Tersalin!' : 'Salin'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 4: PENGATURAN AKUN */}
+        {activeTab === 'account' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', animation: 'fadeIn 0.25s' }}>
+            {/* Account Info Form Card */}
+            <div style={{ background: 'var(--bg-card)', borderRadius: '24px', padding: isMobile ? '16px' : '26px', border: '1px solid var(--border-color)', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+                <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 'bold', color: 'var(--text-main)' }}>
+                  👤 Informasi Akun & Keamanan
+                </h3>
+                {isEditing ? (
+                  <button onClick={handleSave} style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <Save size={14} /> Simpan Perubahan
+                  </button>
+                ) : (
+                  <button onClick={() => setIsEditing(true)} style={{ background: 'var(--bg-color)', color: 'var(--text-main)', border: '1px solid var(--border-color)', padding: '8px 16px', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 'bold', cursor: 'pointer' }}>
+                    Edit Akun
+                  </button>
+                )}
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '4px', fontWeight: 'bold' }}>Nama Lengkap</label>
+                  {isEditing ? (
+                    <input 
+                      type="text" 
+                      name="name" 
+                      value={formData.name} 
+                      onChange={handleChange} 
+                      style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1px solid var(--border-color)', background: 'var(--bg-color)', color: 'var(--text-main)', fontSize: '0.88rem' }}
+                    />
+                  ) : (
+                    <div style={{ padding: '10px 12px', background: 'var(--bg-color)', borderRadius: '10px', border: '1px solid var(--border-color)', color: 'var(--text-main)', fontSize: '0.88rem' }}>
+                      {user.name || 'Member'}
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '4px', fontWeight: 'bold' }}>Username / Handle</label>
+                  {isEditing ? (
+                    <input 
+                      type="text" 
+                      name="username" 
+                      value={formData.username} 
+                      onChange={handleChange} 
+                      style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1px solid var(--border-color)', background: 'var(--bg-color)', color: 'var(--text-main)', fontSize: '0.88rem' }}
+                    />
+                  ) : (
+                    <div style={{ padding: '10px 12px', background: 'var(--bg-color)', borderRadius: '10px', border: '1px solid var(--border-color)', color: 'var(--text-main)', fontSize: '0.88rem' }}>
+                      @{user.username || 'user'}
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '4px', fontWeight: 'bold' }}>Alamat Email</label>
+                  <div style={{ padding: '10px 12px', background: 'var(--bg-color)', borderRadius: '10px', border: '1px solid var(--border-color)', color: 'var(--text-main)', fontSize: '0.88rem' }}>
+                    {user.email || 'Belum terdaftar'}
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '4px', fontWeight: 'bold' }}>Nomor WhatsApp / HP</label>
+                  {isEditing ? (
+                    <input 
+                      type="text" 
+                      name="phone" 
+                      value={formData.phone} 
+                      onChange={handleChange} 
+                      style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1px solid var(--border-color)', background: 'var(--bg-color)', color: 'var(--text-main)', fontSize: '0.88rem' }}
+                      placeholder="0812xxxxxxxx"
+                    />
+                  ) : (
+                    <div style={{ padding: '10px 12px', background: 'var(--bg-color)', borderRadius: '10px', border: '1px solid var(--border-color)', color: 'var(--text-main)', fontSize: '0.88rem' }}>
+                      {user.phone || 'Belum diisi'}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Wallet Address Row */}
+              <div style={{ marginTop: '14px' }}>
+                <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '4px', fontWeight: 'bold' }}>Alamat Dompet Web3 (BMC On-Chain)</label>
+                <div style={{ padding: '10px 12px', background: 'var(--bg-color)', borderRadius: '10px', border: '1px solid var(--border-color)', color: 'var(--text-main)', fontFamily: 'monospace', fontSize: '0.82rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.walletAddress || '0xcb5f5774661818fd0cb47debbb579591ca03ef90'}</span>
+                  <button onClick={() => { navigator.clipboard.writeText(user.walletAddress || ''); alert('Alamat wallet tersalin!'); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)' }}>
+                    <Copy size={14} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Device Notifications */}
+              <div style={{ marginTop: '14px', padding: '12px 14px', background: 'var(--bg-color)', borderRadius: '14px', border: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <span style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)' }}>Notifikasi Perangkat</span>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Menerima pembaruan validasi data dan airdrop langsung ke layar Anda</span>
+                </div>
+                <button 
+                  onClick={handleEnableNotifications}
+                  style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                >
+                  <Bell size={13} /> Aktifkan
+                </button>
+              </div>
+            </div>
+
+            {/* CV & Portofolio Dokumen Card */}
+            <div style={{ background: 'var(--bg-card)', borderRadius: '24px', padding: isMobile ? '16px' : '26px', border: '1px solid var(--border-color)', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
+              <h3 style={{ fontSize: '1.05rem', marginBottom: '8px', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <FileText size={18} color="var(--primary)" /> CV / Dokumen Portofolio
+              </h3>
+              <p style={{ color: 'var(--text-muted)', marginBottom: '14px', fontSize: '0.78rem', lineHeight: 1.5 }}>
+                Dokumen CV atau sertifikat keahlian Anda untuk memvalidasi kredibilitas ekosistem.
               </p>
 
               {user.cvFile ? (
-                <div style={{ background: 'var(--bg-color)', padding: '16px', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+                <div style={{ background: 'var(--bg-color)', padding: '14px', borderRadius: '14px', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', overflow: 'hidden' }}>
-                    <FileText size={28} color="var(--primary)" style={{ flexShrink: 0 }} />
+                    <FileText size={24} color="var(--primary)" style={{ flexShrink: 0 }} />
                     <div style={{ overflow: 'hidden' }}>
                       <span style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
-                        {user.cvFile.name}
+                        {user.cvFile.name || 'CV_SultanBantam.pdf'}
                       </span>
                       <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
                         {user.cvFile.type?.split('/')[1]?.toUpperCase() || 'DOCUMENT'}
                       </span>
                     </div>
                   </div>
-                  <div style={{ display: 'flex', gap: '8px' }}>
+                  <div style={{ display: 'flex', gap: '6px' }}>
                     <button 
                       onClick={() => {
                         if (user.cvFile.url) {
-                          // Storage URL Support
                           window.open(user.cvFile.url, '_blank');
                         } else if (user.cvFile.data) {
-                          // Legacy Base64 Support
                           const dataURI = user.cvFile.data;
                           const parts = dataURI.split(',');
                           const byteString = atob(parts[1]);
@@ -1002,26 +1986,25 @@ const ProfilePage = () => {
                           }
                           const blob = new Blob([ab], { type: mimeString });
                           const blobUrl = URL.createObjectURL(blob);
-  
                           const link = document.createElement('a');
                           link.href = blobUrl;
-                          link.download = user.cvFile.name;
+                          link.download = user.cvFile.name || 'CV.pdf';
                           link.click();
                           setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
                         } else {
                           alert('Dokumen tidak ditemukan.');
                         }
                       }}
-                      style={{ background: 'rgba(12,166,120,0.08)', color: 'var(--primary)', border: 'none', padding: '8px 12px', borderRadius: '10px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer' }}
+                      style={{ background: 'rgba(12,166,120,0.1)', color: 'var(--primary)', border: 'none', padding: '6px 12px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer' }}
                     >
                       Unduh
                     </button>
                     <button 
                       onClick={handleCvDelete}
-                      style={{ background: 'rgba(250,82,82,0.08)', color: '#fa5252', border: 'none', padding: '8px 12px', borderRadius: '10px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      style={{ background: 'rgba(250,82,82,0.1)', color: '#fa5252', border: 'none', padding: '6px 10px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer' }}
                       title="Hapus CV"
                     >
-                      <Trash2 size={14} />
+                      <Trash2 size={13} />
                     </button>
                   </div>
                 </div>
@@ -1029,12 +2012,10 @@ const ProfilePage = () => {
                 <div>
                   <button 
                     onClick={() => document.getElementById('cv-file-input').click()}
-                    style={{ width: '100%', background: 'rgba(12,166,120,0.05)', color: 'var(--primary)', border: '1px dashed var(--primary)', borderRadius: '16px', padding: '20px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(12,166,120,0.1)'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(12,166,120,0.05)'; }}
+                    style={{ width: '100%', background: 'rgba(12,166,120,0.04)', color: 'var(--primary)', border: '1px dashed var(--primary)', borderRadius: '14px', padding: '16px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                   >
-                    <UploadCloud size={28} />
-                    <span style={{ fontSize: '0.85rem' }}>Pilih & Unggah CV Dokumen</span>
+                    <UploadCloud size={24} />
+                    <span style={{ fontSize: '0.8rem' }}>Unggah Dokumen CV / Portofolio</span>
                   </button>
                   <input 
                     id="cv-file-input"
@@ -1046,968 +2027,12 @@ const ProfilePage = () => {
                 </div>
               )}
             </div>
-
-            {/* Referral Card */}
-            <div style={{ background: 'linear-gradient(135deg, var(--text-main), #2c2e33)', borderRadius: '24px', padding: '30px', color: 'white', position: 'relative', overflow: 'hidden' }}>
-              <div style={{ position: 'absolute', right: '-20px', bottom: '-20px', opacity: 0.1 }}>
-                <Share2 size={150} />
-              </div>
-              <div style={{ position: 'relative', zIndex: 1 }}>
-                <h3 style={{ fontSize: '1.25rem', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Share2 size={20} color="var(--primary)" /> Program Referral
-                </h3>
-                <p style={{ color: '#adb5bd', marginBottom: '20px', fontSize: '0.85rem', lineHeight: '1.5' }}>
-                  Dapatkan <strong style={{ color: 'var(--primary)' }}>0.5 BMC</strong> untuk setiap pendaftar baru yang menyelesaikan KYC via referral Anda!
-                </p>
-                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                  <div style={{ flex: 1, minWidth: '180px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '12px', padding: '12px 15px', display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
-                    <span style={{ fontFamily: 'monospace', fontSize: '0.85rem', color: '#f8f9fa', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{referralLink}</span>
-                  </div>
-                  <button 
-                    onClick={copyReferral}
-                    style={{ background: copied ? 'var(--primary)' : 'white', color: copied ? 'white' : 'var(--text-main)', border: 'none', padding: '0 18px', borderRadius: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.85rem', minHeight: '44px' }}
-                  >
-                    {copied ? <><CheckCircle size={14} /> Tersalin!</> : <><Copy size={14} /> Salin</>}
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Riwayat Event Card */}
-            <div style={{ background: 'var(--bg-card)', borderRadius: isMobile ? '20px' : '24px', padding: isMobile ? '20px 16px' : '30px', boxShadow: '0 10px 40px rgba(0,0,0,0.05)', border: '1px solid var(--border-color)', transition: 'background 0.3s' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                <h3 style={{ fontSize: isMobile ? '1.1rem' : '1.25rem', margin: 0, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Calendar size={20} color="var(--primary)" /> Riwayat Event
-                </h3>
-                {userEvents.some(ev => ev.userRoles.includes('Penggagas') || ev.userRoles.includes('Panitia')) && (
-                  <Link to="/event-organizer" style={{ background: 'rgba(12,166,120,0.1)', color: 'var(--primary)', padding: '6px 12px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 'bold', textDecoration: 'none' }}>
-                    Kelola Event
-                  </Link>
-                )}
-              </div>
-              <p style={{ color: 'var(--text-muted)', marginBottom: '20px', fontSize: '0.85rem', lineHeight: '1.5' }}>
-                Keterlibatan Anda dalam berbagai kegiatan ekosistem BambooChain.
-              </p>
-
-              {userEvents.length === 0 ? (
-                <div style={{ background: 'var(--bg-color)', padding: '20px', borderRadius: '16px', border: '1px solid var(--border-color)', textAlign: 'center' }}>
-                  <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.85rem' }}>Belum ada event yang tercatat.</p>
-                  <Link to="/events" style={{ display: 'inline-block', marginTop: '10px', color: 'var(--primary)', fontWeight: 'bold', textDecoration: 'none', fontSize: '0.85rem' }}>Cari Event &gt;</Link>
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {userEvents.slice(0, eventVisibleCount).map((ev, idx) => (
-                    <div key={ev.id || idx} style={{ background: 'var(--bg-color)', padding: '16px', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                        <h4 style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text-main)' }}>{ev.title || 'Event Tanpa Judul'}</h4>
-                        <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-                          {ev.timestamp ? new Date(ev.timestamp.seconds * 1000 || ev.timestamp).toLocaleDateString('id-ID') : 'TBA'}
-                        </span>
-                      </div>
-                      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                        {ev.userRoles.map((role, roleIdx) => (
-                          <span key={roleIdx} style={{ 
-                            background: role === 'Penggagas' ? 'rgba(250,176,5,0.1)' : role === 'Narasumber' ? 'rgba(132,94,247,0.1)' : 'rgba(12,166,120,0.1)', 
-                            color: role === 'Penggagas' ? '#fab005' : role === 'Narasumber' ? '#845ef7' : 'var(--primary)', 
-                            padding: '4px 10px', 
-                            borderRadius: '20px', 
-                            fontSize: '0.7rem', 
-                            fontWeight: 'bold',
-                            border: `1px solid ${role === 'Penggagas' ? 'rgba(250,176,5,0.2)' : role === 'Narasumber' ? 'rgba(132,94,247,0.2)' : 'rgba(12,166,120,0.2)'}`
-                          }}>
-                            {role}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-
-                  {/* Limit & Expand Controls for Events */}
-                  {userEvents.length > 3 && (
-                    <div style={{ textAlign: 'center', marginTop: '6px' }}>
-                      {eventVisibleCount < userEvents.length ? (
-                        <button
-                          type="button"
-                          onClick={() => setEventVisibleCount(userEvents.length)}
-                          style={{
-                            background: 'rgba(12,166,120,0.08)',
-                            color: 'var(--primary)',
-                            border: '1px solid rgba(12,166,120,0.2)',
-                            padding: '8px 16px',
-                            borderRadius: '10px',
-                            fontSize: '0.8rem',
-                            fontWeight: 'bold',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          Lihat Semua Event ({userEvents.length})
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => setEventVisibleCount(3)}
-                          style={{
-                            background: 'var(--bg-color)',
-                            color: 'var(--text-muted)',
-                            border: '1px solid var(--border-color)',
-                            padding: '6px 14px',
-                            borderRadius: '10px',
-                            fontSize: '0.78rem',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          ▲ Ciutkan Event (Tampilkan 3 Saja)
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
           </div>
-
-          {/* ────────── RIGHT COLUMN: BAMBOOID PASSPORT (ECO-PORTFOLIO) ────────── */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
-            
-            {/* Passport Container */}
-            <div style={{ background: 'var(--bg-card)', borderRadius: '24px', padding: '30px', boxShadow: '0 10px 40px rgba(0,0,0,0.05)', border: '1px solid var(--border-color)', transition: 'background 0.3s' }}>
-              
-              {/* Header */}
-              <div style={{ background: 'linear-gradient(135deg, #134e4a, #064e3b)', padding: '24px', borderRadius: '20px', color: 'white', marginBottom: '25px', boxShadow: '0 8px 25px rgba(4, 120, 87, 0.15)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <div>
-                    <h3 style={{ margin: 0, fontSize: '1.4rem', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      🌿 BambooID Passport
-                    </h3>
-                    <p style={{ margin: '6px 0 0 0', fontSize: '0.8rem', color: 'rgba(255,255,255,0.75)' }}>
-                      Identitas & Reputasi Ekosistem Hijau
-                    </p>
-                  </div>
-                  <span style={{ background: 'rgba(255,255,255,0.2)', padding: '4px 10px', borderRadius: '12px', fontSize: '0.7rem', fontWeight: 'bold' }}>
-                    Web3 Identity
-                  </span>
-                </div>
-              </div>
-
-              {/* Status Update & Bio Panel */}
-              <div style={{ background: 'var(--bg-color)', borderRadius: '16px', padding: '20px', border: '1px solid var(--border-color)', marginBottom: '25px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                  <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Edit3 size={14} color="var(--primary)" /> Deskripsi & Status Terkini
-                  </span>
-                  <div style={{ display: 'flex', gap: '15px' }}>
-                    {!isEditingStatus && (
-                      <button 
-                        onClick={() => setShowInbox(!showInbox)}
-                        style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}
-                      >
-                        <Send size={14} color="var(--primary)" /> Inbox ({directMessages.length})
-                      </button>
-                    )}
-                    <button 
-                      onClick={() => setIsEditingStatus(!isEditingStatus)}
-                      style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}
-                    >
-                      {isEditingStatus ? <><X size={14} /> Batal</> : <><Edit3 size={14} /> Update</>}
-                    </button>
-                  </div>
-                </div>
-
-                {isEditingStatus ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <div>
-                      <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '5px', fontWeight: 'bold' }}>Bio Singkat (Misi/Portofolio)</label>
-                      <textarea 
-                        name="bioText" 
-                        value={formData.bioText} 
-                        onChange={handleChange}
-                        placeholder="Tulis bio singkat Anda, misal: Peneliti taksonomi bambu, pegiat hutan lestari..."
-                        rows={2}
-                        style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-card)', color: 'var(--text-main)', fontSize: '0.85rem', resize: 'vertical' }}
-                      />
-                    </div>
-                    <div style={{ position: 'relative' }}>
-                      <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '5px', fontWeight: 'bold' }}>Status Hari Ini ("Apa yang Anda pikirkan tentang ekosistem hijau?")</label>
-                      <div style={{ position: 'relative' }}>
-                        <textarea 
-                          name="statusText" 
-                          value={formData.statusText} 
-                          onChange={handleChange}
-                          placeholder="Bagikan pemikiran, aktivitas menanam, atau ide hijau Anda hari ini..."
-                          rows={2}
-                          style={{ width: '100%', padding: '10px 40px 10px 10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-card)', color: 'var(--text-main)', fontSize: '0.85rem', resize: 'vertical' }}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowStatusEmojiPicker(!showStatusEmojiPicker)}
-                          style={{ position: 'absolute', right: '10px', bottom: '15px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
-                        >
-                          <Smile size={18} />
-                        </button>
-                      </div>
-                      {showStatusEmojiPicker && (
-                        <div style={{ position: 'absolute', zIndex: 100, right: 0, top: '100%' }}>
-                          <EmojiPicker 
-                            onEmojiClick={(emojiData) => {
-                              setFormData(prev => ({ ...prev, statusText: prev.statusText + emojiData.emoji }));
-                              setShowStatusEmojiPicker(false);
-                            }} 
-                            theme="auto" 
-                          />
-                        </div>
-                      )}
-                    </div>
-
-                    {/* ── MEDIA UPLOAD SECTION ── */}
-                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                      <button
-                        type="button"
-                        onClick={() => document.getElementById('status-photos-input').click()}
-                        style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'rgba(12,166,120,0.08)', color: 'var(--primary)', border: '1px dashed var(--primary)', borderRadius: '8px', padding: '7px 14px', fontSize: '0.8rem', fontWeight: 'bold', cursor: 'pointer' }}
-                      >
-                        <UploadCloud size={14} /> Tambah Foto
-                      </button>
-                      <input id="status-photos-input" type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={handleStatusPhotosChange} />
-                      <button
-                        type="button"
-                        onClick={() => document.getElementById('status-video-input').click()}
-                        style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'rgba(34,139,230,0.08)', color: '#228be6', border: '1px dashed #228be6', borderRadius: '8px', padding: '7px 14px', fontSize: '0.8rem', fontWeight: 'bold', cursor: 'pointer' }}
-                      >
-                        <PlayCircle size={14} /> Video Pendek
-                      </button>
-                      <input id="status-video-input" type="file" accept="video/*" style={{ display: 'none' }} onChange={handleStatusVideoChange} />
-                    </div>
-
-                    {isUploadingMedia && (
-                      <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--primary)' }}>⏳ Memproses media...</p>
-                    )}
-
-                    {formData.statusPhotos && formData.statusPhotos.length > 0 && (
-                      <div>
-                        <label style={{ display: 'block', fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '6px', fontWeight: 'bold' }}>PRATONTON FOTO ({formData.statusPhotos.length})</label>
-                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                          {formData.statusPhotos.map((photo, idx) => (
-                            <div key={idx} style={{ position: 'relative', width: '80px', height: '80px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-color)', flexShrink: 0 }}>
-                              <img src={photo} alt={`foto ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                              <button type="button" onClick={() => removeStatusPhoto(idx)} style={{ position: 'absolute', top: '2px', right: '2px', width: '20px', height: '20px', background: 'rgba(220,53,69,0.9)', border: 'none', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'white' }}>
-                                <X size={11} />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {formData.statusVideo && (
-                      <div>
-                        <label style={{ display: 'block', fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '6px', fontWeight: 'bold' }}>PRATONTON VIDEO</label>
-                        <div style={{ position: 'relative', display: 'inline-block' }}>
-                          <video src={formData.statusVideo} controls muted style={{ maxWidth: '100%', maxHeight: '160px', borderRadius: '10px', border: '1px solid var(--border-color)', display: 'block' }} />
-                          <button type="button" onClick={removeStatusVideo} style={{ position: 'absolute', top: '6px', right: '6px', background: 'rgba(220,53,69,0.9)', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'white' }}>
-                            <X size={13} />
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    <button 
-                      onClick={handleSaveStatus}
-                      disabled={isUploadingMedia}
-                      style={{ background: isUploadingMedia ? '#aaa' : 'var(--primary)', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', fontWeight: 'bold', fontSize: '0.85rem', cursor: isUploadingMedia ? 'not-allowed' : 'pointer', alignSelf: 'flex-end' }}
-                    >
-                      {isUploadingMedia ? 'Memproses...' : 'Simpan Status'}
-                    </button>
-                  </div>
-                ) : (
-                  <div>
-                    <div style={{ marginBottom: '0px' }}>
-                      <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 'bold', textTransform: 'uppercase' }}>Bio Kontributor</p>
-                      <p style={{ margin: '4px 0 0 0', fontSize: '0.9rem', color: 'var(--text-main)', fontStyle: formData.bioText ? 'normal' : 'italic' }}>
-                        {formData.bioText || "Belum ada bio diri yang ditambahkan."}
-                      </p>
-                    </div>
-
-                    {showInbox && (
-                      <div style={{ marginTop: '20px', background: 'var(--bg-card)', borderRadius: '12px', padding: '15px', border: '1px solid var(--border-color)', maxHeight: '300px', overflowY: 'auto' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px' }}>
-                          <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--text-main)' }}>✉️ Pesan Masuk Privat ({directMessages.length})</span>
-                          <button onClick={() => setShowInbox(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}><X size={14} /></button>
-                        </div>
-                        {directMessages.length === 0 ? (
-                          <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', textAlign: 'center', margin: '15px 0' }}>Tidak ada pesan masuk.</p>
-                        ) : (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                            {directMessages.map((msg, index) => (
-                              <div key={msg.id || index} style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '10px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                  <a 
-                                    href={`#/portfolio/${msg.senderUsername}`} 
-                                    style={{ fontWeight: 'bold', fontSize: '0.8rem', color: 'var(--primary)', textDecoration: 'none' }}
-                                  >
-                                    @{msg.senderUsername}
-                                  </a>
-                                  <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>
-                                    {new Date(msg.timestamp).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                                  </span>
-                                </div>
-                                <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-main)', background: 'var(--bg-color)', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
-                                  {msg.messageText}
-                                </p>
-                                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                                  <a 
-                                    href={`#/portfolio/${msg.senderUsername}`} 
-                                    style={{ fontSize: '0.7rem', color: 'var(--primary)', fontWeight: 'bold', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '2px' }}
-                                  >
-                                    Balas <ChevronRight size={10} />
-                                  </a>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Status Feed */}
-              <div className="profile-feed-container" style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '25px' }}>
-                <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                  Riwayat Status ({statuses.length})
-                </p>
-                {statuses.length === 0 ? (
-                  <div style={{ background: 'var(--bg-card)', padding: '30px', borderRadius: '20px', border: '1px solid var(--border-color)', textAlign: 'center' }}>
-                    <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.9rem', fontStyle: 'italic' }}>
-                      Belum ada status yang dibagikan. Klik "Update" untuk membagikan pemikiran hijau Anda! 🌿
-                    </p>
-                  </div>
-                ) : (
-                  <>
-                    {statuses.slice(0, statusVisibleCount).map((status) => {
-                      const isCommentsExpanded = expandedCommentsStatusId === status.id;
-                      const isGiftsExpanded = expandedGiftsStatusId === status.id;
-                      
-                      return (
-                        <div 
-                          key={status.id} 
-                          style={{ 
-                            background: 'var(--bg-card)', 
-                            padding: isMobile ? '16px' : '24px', 
-                            borderRadius: '20px', 
-                            border: '1px solid var(--border-color)',
-                            boxShadow: '0 4px 15px rgba(0,0,0,0.02)',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '12px'
-                          }}
-                        >
-                        {/* Status Header */}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span style={{ background: 'rgba(12,166,120,0.1)', color: 'var(--primary)', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '6px', textTransform: 'uppercase' }}>
-                            Status Terkini
-                          </span>
-                          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                            {status.timestamp ? new Date(status.timestamp).toLocaleString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''}
-                          </span>
-                        </div>
-
-                        {/* Status Text */}
-                        <p style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text-main)', fontWeight: '500', lineHeight: '1.5' }}>
-                          "{status.statusText}"
-                        </p>
-
-                        {/* Status Photos */}
-                        {status.statusPhotos && status.statusPhotos.length > 0 && (
-                          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(status.statusPhotos.length, 3)}, 1fr)`, gap: '8px' }}>
-                            {status.statusPhotos.map((photo, idx) => (
-                              <div 
-                                key={idx} 
-                                onClick={() => setLightboxImage(photo)}
-                                style={{ borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-color)', aspectRatio: '1/1', cursor: 'pointer', transition: 'transform 0.2s' }}
-                                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
-                                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                              >
-                                <img src={photo} alt={`status ${idx+1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                              </div>
-                            ))}
-                          </div>
-                        )}
-
-                        {/* Status Video */}
-                        {status.statusVideo && (
-                          <div style={{ borderRadius: '10px', overflow: 'hidden', border: '1px solid var(--border-color)' }}>
-                            <video src={status.statusVideo} controls muted style={{ width: '100%', display: 'block', maxHeight: '300px', objectFit: 'contain', background: '#000' }} />
-                          </div>
-                        )}
-
-                        {/* Status Interactions Panel */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', borderTop: '1px solid var(--border-color)', paddingTop: '12px', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
-                          <button 
-                            onClick={() => handleLike(status)} 
-                            style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '4px', color: (status.likes || []).includes(user.id) ? '#e03131' : 'var(--text-muted)', cursor: 'pointer', fontWeight: 'bold', padding: 0 }}
-                          >
-                            <Heart size={16} fill={(status.likes || []).includes(user.id) ? '#e03131' : 'none'} color={(status.likes || []).includes(user.id) ? '#e03131' : 'var(--text-muted)'} />
-                            <span><strong>{(status.likes || []).length}</strong> Suka</span>
-                          </button>
-                          
-                          <button 
-                            onClick={() => {
-                              setExpandedCommentsStatusId(isCommentsExpanded ? null : status.id);
-                              setExpandedGiftsStatusId(null);
-                            }}
-                            style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--text-muted)', cursor: 'pointer', fontWeight: 'bold', padding: 0 }}
-                          >
-                            <MessageSquare size={16} color="var(--primary)" />
-                            <span style={{ textDecoration: 'underline' }}>
-                              <strong>{(status.comments || []).length}</strong> Komentar
-                            </span>
-                          </button>
-
-                          <button 
-                            onClick={() => handleShare(status)} 
-                            style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--text-muted)', cursor: 'pointer', fontWeight: 'bold', padding: 0 }}
-                          >
-                            <Share2 size={16} color="#228be6" />
-                            <span><strong>{status.shares || 0}</strong> Bagikan</span>
-                          </button>
-
-                          <button 
-                            onClick={() => {
-                              setExpandedGiftsStatusId(isGiftsExpanded ? null : status.id);
-                              setExpandedCommentsStatusId(null);
-                            }}
-                            style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--text-muted)', cursor: 'pointer', fontWeight: 'bold', padding: 0 }}
-                          >
-                            <Gift size={16} color="#f59f00" />
-                            <span style={{ textDecoration: 'underline' }}>
-                              <strong>{(status.gifts || []).length}</strong> Gift
-                            </span>
-                          </button>
-                        </div>
-
-                        {/* Quick Action buttons */}
-                        <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
-                          <button 
-                            onClick={() => {
-                              setActiveCommentStatusId(activeCommentStatusId === status.id ? null : status.id);
-                              setCommentText('');
-                            }}
-                            style={{ flex: 1, background: 'rgba(12,166,120,0.05)', color: 'var(--primary)', border: 'none', padding: '6px 12px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer' }}
-                          >
-                            💬 Tulis Balasan / Komentar
-                          </button>
-                        </div>
-
-                        {/* Comment input form */}
-                        {activeCommentStatusId === status.id && (
-                          <form onSubmit={(e) => handleAddComment(e, status)} style={{ marginTop: '12px', display: 'flex', gap: '8px', position: 'relative' }}>
-                            <div style={{ flex: 1, position: 'relative' }}>
-                              <input 
-                                type="text" 
-                                value={commentText} 
-                                onChange={(e) => setCommentText(e.target.value)}
-                                placeholder="Tulis balasan..."
-                                style={{ width: '100%', padding: '8px 36px 8px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-card)', color: 'var(--text-main)', fontSize: '0.85rem' }}
-                              />
-                              <button
-                                type="button"
-                                onClick={() => setShowCommentEmojiPicker(!showCommentEmojiPicker)}
-                                style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
-                              >
-                                <Smile size={18} />
-                              </button>
-                            </div>
-                            <button type="submit" style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 'bold', cursor: 'pointer' }}>Kirim</button>
-                            
-                            {showCommentEmojiPicker && (
-                              <div style={{ position: 'absolute', zIndex: 100, bottom: '100%', right: '0', marginBottom: '5px' }}>
-                                <EmojiPicker 
-                                  onEmojiClick={(emojiData) => {
-                                    setCommentText(prev => prev + emojiData.emoji);
-                                    setShowCommentEmojiPicker(false);
-                                  }} 
-                                  theme="auto" 
-                                />
-                              </div>
-                            )}
-                          </form>
-                        )}
-
-                        {/* Collapsible Comments List for this Status */}
-                        {isCommentsExpanded && (
-                          <div style={{ background: 'var(--bg-color)', borderRadius: '12px', padding: '15px', border: '1px solid var(--border-color)', marginTop: '8px', maxHeight: '200px', overflowY: 'auto' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', borderBottom: '1px solid var(--border-color)', paddingBottom: '6px' }}>
-                              <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--text-main)' }}>💬 Komentar Status ({status.comments ? status.comments.length : 0})</span>
-                              <button onClick={() => setExpandedCommentsStatusId(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}><X size={14} /></button>
-                            </div>
-                            {(!status.comments || status.comments.length === 0) ? (
-                              <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', textAlign: 'center', margin: '10px 0' }}>Belum ada komentar.</p>
-                            ) : (
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                {status.comments.map((comment, index) => (
-                                  <div key={index} style={{ borderBottom: '1px solid rgba(0,0,0,0.03)', paddingBottom: '4px' }}>
-                                    <span style={{ fontWeight: 'bold', fontSize: '0.78rem', color: 'var(--primary)' }}>@{comment.username}</span>
-                                    <p style={{ margin: '2px 0 0 0', fontSize: '0.82rem', color: 'var(--text-main)' }}>{comment.text}</p>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        )}
-
-                        {/* Collapsible Gifts List for this Status */}
-                        {isGiftsExpanded && (
-                          <div style={{ background: 'var(--bg-color)', borderRadius: '12px', padding: '15px', border: '1px solid var(--border-color)', marginTop: '8px', maxHeight: '200px', overflowY: 'auto' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', borderBottom: '1px solid var(--border-color)', paddingBottom: '6px' }}>
-                              <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--text-main)' }}>🎁 Daftar Gift Diterima ({status.gifts ? status.gifts.length : 0})</span>
-                              <button onClick={() => setExpandedGiftsStatusId(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}><X size={14} /></button>
-                            </div>
-                            {(!status.gifts || status.gifts.length === 0) ? (
-                              <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', textAlign: 'center', margin: '10px 0' }}>Belum menerima gift.</p>
-                            ) : (
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                {status.gifts.map((gift, index) => (
-                                  <div key={index} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(0,0,0,0.03)', paddingBottom: '4px' }}>
-                                    <div>
-                                      <span style={{ fontWeight: 'bold', fontSize: '0.78rem', color: 'var(--text-main)' }}>@{gift.senderUsername}</span>
-                                      <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginLeft: '6px' }}>
-                                        {new Date(gift.timestamp).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
-                                      </span>
-                                    </div>
-                                    <span style={{ color: '#f59f00', fontWeight: 'bold', fontSize: '0.8rem' }}>+{gift.amount} BMC</span>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-
-                  {/* Limit & Expand Controls for Status */}
-                  {statuses.length > 3 && (
-                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '4px', flexWrap: 'wrap' }}>
-                      {statusVisibleCount < statuses.length && (
-                        <button
-                          type="button"
-                          onClick={() => setStatusVisibleCount(prev => Math.min(prev + 5, statuses.length))}
-                          style={{
-                            background: 'rgba(12,166,120,0.1)',
-                            color: 'var(--primary)',
-                            border: '1px solid rgba(12,166,120,0.25)',
-                            padding: '9px 16px',
-                            borderRadius: '12px',
-                            fontWeight: 'bold',
-                            fontSize: '0.82rem',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px'
-                          }}
-                        >
-                          <span>Lihat 5 Status Lagi</span>
-                          <span style={{ fontSize: '0.72rem', opacity: 0.8 }}>({Math.min(statusVisibleCount, statuses.length)} dari {statuses.length})</span>
-                        </button>
-                      )}
-                      {statusVisibleCount < statuses.length ? (
-                        <button
-                          type="button"
-                          onClick={() => setStatusVisibleCount(statuses.length)}
-                          style={{
-                            background: 'var(--bg-card)',
-                            color: 'var(--text-muted)',
-                            border: '1px solid var(--border-color)',
-                            padding: '9px 14px',
-                            borderRadius: '12px',
-                            fontSize: '0.8rem',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          Lihat Semua ({statuses.length})
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => setStatusVisibleCount(3)}
-                          style={{
-                            background: 'var(--bg-card)',
-                            color: 'var(--text-muted)',
-                            border: '1px solid var(--border-color)',
-                            padding: '9px 16px',
-                            borderRadius: '12px',
-                            fontWeight: 'bold',
-                            fontSize: '0.82rem',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          ▲ Ciutkan Status (Tampilkan 3 Saja)
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-
-              {/* Eco Metrics Grid */}
-              <div style={{ marginBottom: '25px' }}>
-                <p style={{ margin: '0 0 12px 0', fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)' }}>Aktivitas Kontribusi Hutan Bambu</p>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '15px' }}>
-                  
-                  <div style={{ background: 'rgba(12, 166, 120, 0.05)', border: '1px solid rgba(12, 166, 120, 0.1)', padding: '16px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ background: 'rgba(12, 166, 120, 0.1)', width: '40px', height: '40px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
-                      <TreeDeciduous size={20} />
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--text-main)' }}>{myPlantingsCount}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Bambu Ditanam</div>
-                    </div>
-                  </div>
-
-                  <div style={{ background: 'rgba(34, 139, 230, 0.05)', border: '1px solid rgba(34, 139, 230, 0.1)', padding: '16px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ background: 'rgba(34, 139, 230, 0.1)', width: '40px', height: '40px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#228be6' }}>
-                      <Shield size={20} />
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--text-main)' }}>{myMaintenancesCount}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Perawatan Lahan</div>
-                    </div>
-                  </div>
-
-                  <div style={{ background: 'rgba(245, 159, 0, 0.05)', border: '1px solid rgba(245, 159, 0, 0.1)', padding: '16px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ background: 'rgba(245, 159, 0, 0.1)', width: '40px', height: '40px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f59f00' }}>
-                      <GraduationCap size={20} />
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--text-main)' }}>{myArticlesCount}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Artikel Akademi</div>
-                    </div>
-                  </div>
-
-                  <div style={{ background: 'rgba(12, 166, 120, 0.05)', border: '1px solid rgba(12, 166, 120, 0.1)', padding: '16px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ background: 'rgba(12, 166, 120, 0.1)', width: '40px', height: '40px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
-                      <FileText size={20} />
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--text-main)' }}>{myMatsCount}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Materi Premium</div>
-                    </div>
-                  </div>
-
-                  <div style={{ background: 'rgba(12, 166, 120, 0.05)', border: '1px solid rgba(12, 166, 120, 0.1)', padding: '16px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ background: 'rgba(12, 166, 120, 0.1)', width: '40px', height: '40px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
-                      <Award size={20} />
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--text-main)' }}>{formatBalance(user.bmcBalance)}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>BMC Reward</div>
-                    </div>
-                  </div>
-
-                  <div style={{ background: 'rgba(28, 126, 214, 0.05)', border: '1px solid rgba(28, 126, 214, 0.1)', padding: '16px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ background: 'rgba(28, 126, 214, 0.1)', width: '40px', height: '40px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1c7ed6' }}>
-                      <Leaf size={20} />
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--text-main)' }}>{myDonations.length}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Dukungan Penanaman</div>
-                    </div>
-                  </div>
-
-                  {myTreasuryTxs.length > 0 && (
-                    <div style={{ background: 'rgba(224, 49, 49, 0.05)', border: '1px solid rgba(224, 49, 49, 0.1)', padding: '16px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '12px', gridColumn: '1 / -1' }}>
-                      <div style={{ background: 'rgba(224, 49, 49, 0.1)', width: '40px', height: '40px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#e03131' }}>
-                        <Shield size={20} />
-                      </div>
-                      <div style={{ width: '100%' }}>
-                        <div style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--text-main)' }}>Admin Pengelola Keuangan</div>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '8px' }}>Telah memverifikasi {myTreasuryTxs.length} pencairan treasury kegiatan.</div>
-                        <div style={{ display: 'grid', gap: '5px' }}>
-                          {myTreasuryTxs.map(tx => (
-                            <div key={tx.id} style={{ fontSize: '0.75rem', display: 'flex', justifyContent: 'space-between', borderBottom: '1px dashed var(--border-color)', paddingBottom: '4px' }}>
-                              <span style={{ color: 'var(--text-main)' }}>{tx.eventTitle}</span>
-                              <strong style={{ color: '#e03131' }}>Rp {tx.amountIDR.toLocaleString('id-ID')}</strong>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                </div>
-              </div>
-
-              {/* Share Passport Link Widget */}
-              <div style={{ background: 'var(--bg-color)', border: '1px dashed var(--border-color)', borderRadius: '16px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
-                <div>
-                  <span style={{ display: 'block', fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--text-main)' }}>
-                    Bagikan Passport Anda
-                  </span>
-                  <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-                    Tunjukkan reputasi hijau Anda kepada publik / donatur.
-                  </span>
-                </div>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <a 
-                    href={passportLink} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--text-main)', padding: '8px 12px', borderRadius: '10px', fontSize: '0.75rem', fontWeight: 'bold', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}
-                  >
-                    <Eye size={12} /> Buka
-                  </a>
-                  <button 
-                    onClick={copyPassportLink}
-                    style={{ background: copiedPassport ? 'var(--primary)' : 'var(--text-main)', color: 'white', border: 'none', padding: '8px 12px', borderRadius: '10px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
-                  >
-                    {copiedPassport ? <><CheckCircle size={12} /> Tersalin!</> : <><Copy size={12} /> Salin Link</>}
-                  </button>
-                </div>
-              </div>
-
-              {/* 🗺️ INTERACTIVE MAP WIDGET */}
-              <div style={{ background: 'var(--bg-card)', borderRadius: '20px', padding: '24px', border: '1px solid var(--border-color)', boxShadow: '0 4px 15px rgba(0,0,0,0.02)', marginTop: '25px' }}>
-                <p style={{ margin: '0 0 12px 0', fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  🗺️ Peta Lokasi Aktivitas Hijau
-                </p>
-                <div style={{ height: isMobile ? '220px' : '260px', width: '100%', borderRadius: '16px', overflow: 'hidden', border: '1px solid var(--border-color)', marginBottom: '15px', zIndex: 1 }}>
-                  <MapContainer
-                    center={mapCenter}
-                    zoom={10}
-                    scrollWheelZoom={false}
-                    style={{ height: '100%', width: '100%' }}
-                    whenReady={(mapInstance) => { setTimeout(() => mapInstance.target.invalidateSize(), 150); }}
-                  >
-                    <TileLayer
-                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    />
-                    {(plantings || []).map((p, idx) => {
-                      const coords = parseCoords(p.location);
-                      if (!coords) return null;
-                      return (
-                        <LeafletMarker key={p.id || idx} position={coords} icon={greenPinIcon}>
-                          <LeafletPopup>
-                            <div style={{ fontSize: '0.8rem', color: '#212529', lineHeight: 1.4 }}>
-                              <strong style={{ color: 'var(--primary)' }}>{p.species || 'Bambu'}</strong><br/>
-                              <span>Jumlah: {p.count || 0} rumpun</span><br/>
-                              <span>Status: {p.status || 'Planted'}</span><br/>
-                              <span style={{ fontSize: '0.72rem', color: '#6c757d' }}>{p.location}</span>
-                            </div>
-                          </LeafletPopup>
-                        </LeafletMarker>
-                      );
-                    })}
-                    {/* Contributed Bambu Observations (Orange Pins) */}
-                    {myValidations.map((v, idx) => {
-                      const coords = parseCoords(v.gps);
-                      if (!coords) return null;
-                      const photos = v.uploadedFiles ? Object.values(v.uploadedFiles).filter(Boolean) : [];
-                      return (
-                        <LeafletMarker key={`val-${v.id || idx}`} position={coords} icon={orangePinIcon}>
-                          <LeafletPopup>
-                            <div style={{ fontSize: '0.8rem', color: '#212529', lineHeight: 1.4, minWidth: '180px', maxWidth: '240px' }}>
-                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px', marginBottom: '4px' }}>
-                                <strong style={{ color: '#d9480f' }}>🌿 {v.title || 'Observasi Bambu'}</strong>
-                                <span style={{ 
-                                  fontSize: '0.65rem', 
-                                  padding: '2px 6px', 
-                                  borderRadius: '6px', 
-                                  background: v.status === 'approved' ? '#d3f9d8' : '#fff3bf',
-                                  color: v.status === 'approved' ? '#2b8a3e' : '#e67700',
-                                  fontWeight: 'bold' 
-                                }}>
-                                  {v.status === 'approved' ? 'Terverifikasi' : 'Pending'}
-                                </span>
-                              </div>
-                              <span style={{ fontSize: '0.72rem', color: '#6c757d' }}>📍 {v.gps}</span><br/>
-                              {v.details?.jmlRebung && <span style={{ fontSize: '0.75rem' }}>🌱 Rebung: <b>{v.details.jmlRebung}</b><br/></span>}
-                              {v.details?.pemilik && <span style={{ fontSize: '0.75rem' }}>👤 Pemilik: {v.details.pemilik}<br/></span>}
-                              {v.tags && <div style={{ fontSize: '0.7rem', color: '#495057', marginTop: '2px' }}>🏷️ {v.tags}</div>}
-                              {photos.length > 0 && (
-                                <div style={{ marginTop: '8px', display: 'flex', gap: '4px', overflowX: 'auto', paddingBottom: '4px' }}>
-                                  {photos.slice(0, 4).map((img, pIdx) => (
-                                    <img 
-                                      key={pIdx} 
-                                      src={img} 
-                                      alt="Foto Lapangan" 
-                                      onClick={() => setLightboxImage(img)}
-                                      style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #ced4da', cursor: 'pointer', flexShrink: 0 }} 
-                                    />
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          </LeafletPopup>
-                        </LeafletMarker>
-                      );
-                    })}
-                    {coordsList.length === 0 && (
-                      <LeafletMarker position={mapCenter} icon={greenPinIcon}>
-                        <LeafletPopup>
-                          <div style={{ fontSize: '0.8rem', color: '#212529', lineHeight: 1.4 }}>
-                            <strong style={{ color: 'var(--primary)' }}>Area Konservasi Cibarani</strong><br/>
-                            <span>Lokasi demonstrasi penanaman bambu lestari.</span>
-                          </div>
-                        </LeafletPopup>
-                      </LeafletMarker>
-                    )}
-                  </MapContainer>
-                </div>
-                {/* Green Action Navigation Links */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: '500' }}>Aksi Hijau Cepat:</div>
-                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                    <button 
-                      onClick={() => window.location.hash = "/bambupedia/tracker"}
-                      style={{ flex: 1, minWidth: '100px', background: 'var(--primary)', color: 'white', border: 'none', padding: '8px 10px', borderRadius: '10px', fontSize: '0.72rem', fontWeight: 'bold', cursor: 'pointer', textAlign: 'center' }}
-                    >
-                      Buka Tracker Bambu
-                    </button>
-                    <button 
-                      onClick={() => window.location.hash = "/bamboochain/invest"}
-                      style={{ flex: 1, minWidth: '100px', background: 'var(--bg-color)', border: '1px solid var(--border-color)', color: 'var(--text-main)', padding: '8px 10px', borderRadius: '10px', fontSize: '0.72rem', fontWeight: 'bold', cursor: 'pointer', textAlign: 'center' }}
-                    >
-                      Dukung Penanaman
-                    </button>
-                    <button 
-                      onClick={() => window.location.hash = "/bambupedia/tracker"}
-                      style={{ flex: 1, minWidth: '100px', background: 'var(--bg-color)', border: '1px solid var(--border-color)', color: 'var(--text-main)', padding: '8px 10px', borderRadius: '10px', fontSize: '0.72rem', fontWeight: 'bold', cursor: 'pointer', textAlign: 'center' }}
-                    >
-                      Contribute Data
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* 🌿 KONTRIBUSI DATA BAMBU & FOTO OBSERVASI */}
-              {myValidations.length > 0 && (
-                <div style={{ background: 'var(--bg-card)', borderRadius: '20px', padding: isMobile ? '16px' : '24px', border: '1px solid var(--border-color)', boxShadow: '0 4px 15px rgba(0,0,0,0.02)', marginTop: '25px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '1.2rem' }}>🌿</span>
-                      <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 'bold', color: 'var(--text-main)' }}>
-                        Data Observasi & Foto Lapangan ({myValidations.length})
-                      </h4>
-                    </div>
-                    <span style={{ fontSize: '0.72rem', background: 'rgba(217, 72, 15, 0.1)', color: '#d9480f', padding: '4px 10px', borderRadius: '20px', fontWeight: 'bold' }}>
-                      📍 Pin Oranye di Peta
-                    </span>
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                    {myValidations.map((val, vIdx) => {
-                      const photos = val.uploadedFiles ? Object.entries(val.uploadedFiles) : [];
-                      return (
-                        <div key={val.id || vIdx} style={{ background: 'var(--bg-color)', borderRadius: '16px', padding: '14px', border: '1px solid var(--border-color)' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '8px', marginBottom: '8px' }}>
-                            <div>
-                              <strong style={{ fontSize: '0.9rem', color: 'var(--text-main)', display: 'block' }}>
-                                {val.title || 'Observasi Rumpun Bambu'}
-                              </strong>
-                              <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-                                🕒 {val.date ? new Date(val.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Tersimpan'} {val.gps && `• 📍 ${val.gps}`}
-                              </span>
-                            </div>
-                            <span style={{ 
-                              fontSize: '0.7rem', 
-                              padding: '3px 8px', 
-                              borderRadius: '20px', 
-                              background: val.status === 'approved' ? '#d3f9d8' : '#fff3bf',
-                              color: val.status === 'approved' ? '#2b8a3e' : '#e67700',
-                              fontWeight: 'bold' 
-                            }}>
-                              {val.status === 'approved' ? '✅ Terverifikasi' : '⏳ Menunggu Validasi'}
-                            </span>
-                          </div>
-
-                          {val.details && (
-                            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', fontSize: '0.75rem', color: 'var(--text-main)', marginBottom: '8px' }}>
-                              {val.details.jmlRebung && <span>🌱 Rebung: <b>{val.details.jmlRebung}</b></span>}
-                              {val.details.pemilik && <span>👤 Pemilik: <b>{val.details.pemilik}</b></span>}
-                              {val.details.aksesJalan && <span>🛣️ Akses: <b>{val.details.aksesJalan}</b></span>}
-                            </div>
-                          )}
-
-                          {val.tags && (
-                            <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '10px' }}>
-                              {val.tags.split(',').map((tg, tIdx) => (
-                                <span key={tIdx} style={{ fontSize: '0.68rem', background: 'var(--bg-card)', border: '1px solid var(--border-color)', padding: '2px 6px', borderRadius: '10px', color: 'var(--text-muted)' }}>
-                                  #{tg.trim()}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-
-                          {photos.length > 0 ? (
-                            <div>
-                              <div style={{ fontSize: '0.72rem', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '6px' }}>
-                                📸 Dokumentasi ({photos.length} Foto — klik untuk memperbesar):
-                              </div>
-                              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(60px, 1fr))', gap: '6px' }}>
-                                {photos.map(([key, photoData], pIdx) => (
-                                  <div 
-                                    key={pIdx} 
-                                    onClick={() => setLightboxImage(photoData)}
-                                    style={{ 
-                                      aspectRatio: '1/1', 
-                                      borderRadius: '8px', 
-                                      overflow: 'hidden', 
-                                      border: '1px solid var(--border-color)', 
-                                      cursor: 'pointer',
-                                      position: 'relative',
-                                      background: '#000'
-                                    }}
-                                  >
-                                    <img 
-                                      src={photoData} 
-                                      alt={key} 
-                                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                                    />
-                                    <span style={{ 
-                                      position: 'absolute', 
-                                      bottom: 0, 
-                                      left: 0, 
-                                      right: 0, 
-                                      background: 'rgba(0,0,0,0.65)', 
-                                      color: 'white', 
-                                      fontSize: '0.55rem', 
-                                      textAlign: 'center', 
-                                      padding: '1px 2px',
-                                      overflow: 'hidden',
-                                      textOverflow: 'ellipsis',
-                                      whiteSpace: 'nowrap'
-                                    }}>
-                                      {key.replace('_', ' ')}
-                                    </span>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          ) : (
-                            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                              Tidak ada lampiran foto untuk observasi ini.
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-            </div>
-
-          </div>
-
-        </div>
+        )}
 
       </div>
 
-      {/* Lightbox Modal */}
+{/* Lightbox Modal */}
       {lightboxImage && (
         <div 
           onClick={() => setLightboxImage(null)}
