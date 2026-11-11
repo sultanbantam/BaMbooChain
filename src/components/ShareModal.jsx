@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { X, Copy, Check } from 'lucide-react';
 import { normalizeShareUrl } from '../utils/shareUrl';
 

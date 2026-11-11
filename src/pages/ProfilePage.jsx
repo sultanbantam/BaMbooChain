@@ -138,6 +138,8 @@ const ProfilePage = () => {
   const [activeTab, setActiveTab] = useState('observasi'); // 'observasi' | 'feed' | 'events' | 'account'
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [isUploadingBanner, setIsUploadingBanner] = useState(false);
+  const [isUploadingCv, setIsUploadingCv] = useState(false);
+  const [cvUploadProgress, setCvUploadProgress] = useState('');
 
   const [formData, setFormData] = useState({
     name: '',
@@ -732,61 +734,80 @@ const ProfilePage = () => {
   };
 
   const handleCvUpload = async (e) => {
-    console.log("handleCvUpload triggered");
-    const file = e.target.files[0];
-    if (!file) {
-      console.log("No file selected");
-      return;
-    }
-    console.log("File selected:", file.name, file.size, file.type);
-    
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+
     if (file.size > 10 * 1024 * 1024) {
       alert("⚠️ Ukuran file maksimal adalah 10MB!");
+      if (e.target) e.target.value = '';
       return;
     }
-    
+
+    setIsUploadingCv(true);
+    setCvUploadProgress(`Membaca file "${file.name}"...`);
+
     try {
-      alert("⏳ Sedang mengunggah dokumen, mohon tunggu...");
-      console.log("Starting Cloudinary upload...");
-      
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('upload_preset', 'cv_bamboochain');
-      
-      const response = await fetch('https://api.cloudinary.com/v1_1/dsieguutz/auto/upload', {
-        method: 'POST',
-        body: formData
+      // 1. Read file as Base64 data URL (super fast, < 100ms)
+      const base64Data = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = (err) => reject(err);
+        reader.readAsDataURL(file);
       });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error?.message || 'Gagal mengunggah ke server cloud.');
+
+      let downloadUrl = '';
+
+      // 2. Try fast Cloudinary upload with 8s timeout, but fallback seamlessly to Base64
+      try {
+        setCvUploadProgress('Mengunggah ke server cloud...');
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', file);
+        uploadFormData.append('upload_preset', 'cv_bamboochain');
+
+        const response = await fetch('https://api.cloudinary.com/v1_1/dsieguutz/auto/upload', {
+          method: 'POST',
+          body: uploadFormData,
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        if (response.ok) {
+          const data = await response.json();
+          downloadUrl = data.secure_url || '';
+        }
+      } catch (cloudErr) {
+        console.warn("Cloudinary upload timed out or skipped, saving as direct data URL:", cloudErr);
       }
-      
-      const data = await response.json();
-      console.log("Upload completed, getting download URL...");
-      const downloadUrl = data.secure_url;
-      console.log("Download URL:", downloadUrl);
-      
+
+      // 3. Prepare cvFile record
       const cvFile = {
-        name: file.name || 'Dokumen CV',
-        type: file.type || 'application/octet-stream',
-        url: downloadUrl || ''
+        name: file.name || 'Dokumen CV.pdf',
+        type: file.type || 'application/pdf',
+        size: file.size,
+        uploadedAt: Date.now(),
+        url: downloadUrl || '',
+        data: downloadUrl ? '' : base64Data
       };
-      
-      console.log("Updating profile with:", cvFile);
+
       if (user?.id) {
+        setCvUploadProgress('Menyimpan ke profil...');
         await updateDoc(doc(db, 'users', user.id), { cvFile });
-        alert("✅ CV/Portofolio berhasil diunggah!");
+        if (updateProfile) {
+          updateProfile({ cvFile });
+        }
+        alert("✅ Dokumen CV / Portofolio berhasil diunggah!");
       }
-      
-      // alert already handled above
     } catch (err) {
       console.error("Error uploading CV:", err);
-      alert("❌ Gagal mengunggah dokumen: " + err.message);
+      alert("❌ Gagal mengunggah dokumen: " + (err.message || 'Terjadi kesalahan'));
+    } finally {
+      setIsUploadingCv(false);
+      setCvUploadProgress('');
+      if (e.target) e.target.value = '';
     }
-    e.target.value = ''; // Reset input
-    console.log("Input reset");
   };
 
   const handleCvDelete = async () => {
@@ -2242,6 +2263,16 @@ const ProfilePage = () => {
                       <Trash2 size={13} />
                     </button>
                   </div>
+                </div>
+              ) : isUploadingCv ? (
+                <div style={{ background: 'var(--bg-color)', padding: '24px', borderRadius: '14px', border: '1px dashed var(--primary)', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                  <div style={{ width: '28px', height: '28px', border: '3px solid var(--primary)', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                  <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--primary)' }}>
+                    {cvUploadProgress || 'Sedang memproses dokumen...'}
+                  </span>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                    Mohon tunggu beberapa detik, dokumen Anda sedang disimpan...
+                  </span>
                 </div>
               ) : (
                 <div>
