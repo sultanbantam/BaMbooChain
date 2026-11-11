@@ -14,31 +14,47 @@
     },
     {
       "source": "/article/:id/image",
-      "destination": "/api/share-article?id=:id&type=image"
+      "destination": "/api/share?kind=article&id=:id&type=image"
     },
     {
       "source": "/article/:id",
-      "destination": "/api/share-article?id=:id"
+      "destination": "/api/share?kind=article&id=:id"
     },
     {
       "source": "/event/:id/image",
-      "destination": "/api/share-event?id=:id&type=image"
+      "destination": "/api/share?kind=event&id=:id&type=image"
     },
     {
       "source": "/event/:id",
-      "destination": "/api/share-event?id=:id"
+      "destination": "/api/share?kind=event&id=:id"
     },
     {
       "source": "/events",
-      "destination": "/api/share-event"
+      "destination": "/api/share?kind=event"
     },
     {
       "source": "/u/:username/image",
-      "destination": "/api/share-profile"
+      "destination": "/api/share?kind=profile&username=:username&type=image"
     },
     {
       "source": "/u/:username",
-      "destination": "/api/share-profile"
+      "destination": "/api/share?kind=profile&username=:username"
+    },
+    {
+      "source": "/p/:username/image",
+      "destination": "/api/share?kind=profile&username=:username&type=image"
+    },
+    {
+      "source": "/p/:username",
+      "destination": "/api/share?kind=profile&username=:username"
+    },
+    {
+      "source": "/portfolio/:username/image",
+      "destination": "/api/share?kind=profile&username=:username&type=image"
+    },
+    {
+      "source": "/portfolio/:username",
+      "destination": "/api/share?kind=profile&username=:username"
     },
     {
       "source": "/:path((?!api/|assets/|images/|gambar/|logos/|favicon.svg|.*\\..*).*)",
