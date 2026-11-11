@@ -13,7 +13,8 @@ const ShareModal = ({
   userName, 
   userHandle, 
   userRole, 
-  userBio 
+  userBio,
+  onShare
 }) => {
   const [copied, setCopied] = useState(false);
 
@@ -22,19 +23,23 @@ const ShareModal = ({
   const finalShareUrl = normalizeShareUrl(shareUrl || url || '');
   const finalShareTitle = shareTitle || title || 'Lihat halaman menarik ini di BaMbooChain!';
 
-  // High-converting hook text for social media sharing
+  // High-converting, compliant share text emphasizing 5 clusters
   const generateShareText = () => {
     if (userName || userHandle) {
-      return `🎋 *PORTAL RESMI PEGIAT BAMBU NUSANTARA*
-Halo! Kenalan dengan *${userName || 'Pegiat Ekosistem'}* (@${userHandle || 'bamboochain'}) di platform BaMbooChain.
+      return `🎋 *PROFIL RESMI PEGIAT BAMBOOCHAIN*
+Halo! Kenalan dengan *${userName || 'Pegiat Ekosistem'}* (@${userHandle || 'bamboochain'}) di platform ekonomi digital bambu BaMbooChain.
 
-${userBio ? `🌱 *“${userBio}”*\n` : ''}
-🔥 *Kenapa Harus Bergabung Sekarang?*
-• 🌿 Sensus & petakan rumpun bambu lokal di sekitarmu
-• 🆔 Terbitkan BambooID Passport & reputasi Web3 hijau milikmu
-• 💎 Dapatkan airdrop & reward token BMC hijau gratis!
+${userBio ? `🌱 *“${userBio}”*\n\n` : ''}🌿 *5 Kluster Ekosistem BaMbooChain:*
+1. Keseimbangan Lingkungan (Environmental Balance)
+2. Pemulihan Ekologis (Ecological Restoration)
+3. Penanaman Bambu Digital (Digital Bamboo Planting)
+4. Pemberdayaan Petani Milenial
+5. Inkubasi Wirausaha Milenial
 
-👇 *Buka Paspor Digital & Gabung Komunitas Hijau:*
+🤝 *Peluang Kolaborasi Ekosistem:*
+Terbuka ruang partisipasi sains, riset & edukasi, kemitraan budidaya bambu lestari, perdagangan marketplace, integrasi rantai pasok, dan paspor hijau Web3.
+
+👇 *Kunjungi Profil Lengkap & Bergabung Bersama Kami:*
 ${finalShareUrl}`;
     }
     return finalShareTitle.includes(finalShareUrl)
@@ -47,6 +52,7 @@ ${finalShareUrl}`;
   const handleCopy = () => {
     navigator.clipboard.writeText(fullShareText);
     setCopied(true);
+    if (onShare) onShare('copy');
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -58,6 +64,7 @@ ${finalShareUrl}`;
           text: fullShareText,
           url: finalShareUrl
         });
+        if (onShare) onShare('native');
       } catch (err) {
         console.log('Share canceled', err);
       }
@@ -72,25 +79,36 @@ ${finalShareUrl}`;
       name: 'WhatsApp',
       url: `https://api.whatsapp.com/send?text=${encodedFullText}`,
       color: '#25D366',
-      icon: '💬'
-    },
-    {
-      name: 'Telegram',
-      url: `https://t.me/share/url?url=${encodedUrl}&text=${encodeURIComponent(finalShareTitle)}`,
-      color: '#0088cc',
-      icon: '✈️'
+      icon: '💬',
+      id: 'whatsapp'
     },
     {
       name: 'Facebook',
       url: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
       color: '#1877F2',
-      icon: '📘'
+      icon: '📘',
+      id: 'facebook'
     },
     {
-      name: 'Twitter / X',
+      name: 'LinkedIn',
+      url: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`,
+      color: '#0A66C2',
+      icon: '💼',
+      id: 'linkedin'
+    },
+    {
+      name: 'Telegram',
+      url: `https://t.me/share/url?url=${encodedUrl}&text=${encodeURIComponent(finalShareTitle)}`,
+      color: '#0088cc',
+      icon: '✈️',
+      id: 'telegram'
+    },
+    {
+      name: 'X (Twitter)',
       url: `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodeURIComponent(finalShareTitle)}`,
       color: '#1DA1F2',
-      icon: '🐦'
+      icon: '🐦',
+      id: 'twitter'
     }
   ];
 
@@ -212,6 +230,7 @@ ${finalShareUrl}`;
             <a
               key={ch.name}
               href={ch.url}
+              onClick={() => { if (onShare) onShare(ch.id); }}
               target="_blank"
               rel="noopener noreferrer"
               style={{

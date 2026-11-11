@@ -569,7 +569,7 @@ const ProfilePage = () => {
   };
 
   const handleShare = async (status) => {
-    const shareUrl = `${window.location.origin}/#/portfolio/${user.username || user.id}`;
+    const shareUrl = `${window.location.origin}/u/${encodeURIComponent(user.username || user.id)}`;
     setShareModalData({
       isOpen: true,
       url: shareUrl,
@@ -833,8 +833,9 @@ const ProfilePage = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Passport Link Calculation
-  const passportLink = `${window.location.origin}/#/portfolio/${user.username || user.id}`;
+  // Passport Link Calculation (Canonical clean URL for social sharing & crawlers)
+  const passportLink = `${window.location.origin}/u/${encodeURIComponent(user.username || user.id)}`;
+  const passportSpaLink = `${window.location.origin}/#/portfolio/${encodeURIComponent(user.username || user.id)}`;
   const copyPassportLink = () => {
     navigator.clipboard.writeText(passportLink);
     setCopiedPassport(true);
@@ -1211,7 +1212,7 @@ const ProfilePage = () => {
                 </button>
 
                 <a 
-                  href={passportLink} 
+                  href={passportSpaLink} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   style={{ 

@@ -239,6 +239,55 @@ const PublicPortfolioPage = () => {
     }
   }, [targetUser]);
 
+  // 4. Referral persistence & privacy-conscious visit tracking
+  useEffect(() => {
+    if (!targetUser) return;
+
+    // Preserve referral code in localStorage so subsequent navigation still attributes signup
+    try {
+      const userRefCode = `REF-${(targetUser.username || targetUser.id || '').toUpperCase()}`;
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('kodiba_referral_code', userRefCode);
+      }
+    } catch (e) {}
+
+    // Record privacy-conscious profile visit count (only if viewer is not the profile owner)
+    if (currentUser?.id !== targetUser.id) {
+      try {
+        const analyticsRef = doc(db, "profile_analytics", targetUser.id);
+        setDoc(analyticsRef, {
+          profileViews: increment(1),
+          lastVisitedAt: Date.now(),
+          username: targetUser.username || '',
+          name: targetUser.name || ''
+        }, { merge: true }).catch(err => console.warn("Profile visit tracking error:", err));
+      } catch (e) {}
+    }
+  }, [targetUser, currentUser?.id]);
+
+  // Conversion tracking helper
+  const trackConversion = async (type, meta = {}) => {
+    if (!targetUser?.id) return;
+    try {
+      const analyticsRef = doc(db, "profile_analytics", targetUser.id);
+      const updates = { lastInteractionAt: Date.now() };
+      if (type === 'share') {
+        updates.shareCount = increment(1);
+        if (meta.channel) {
+          updates[`share_${meta.channel}`] = increment(1);
+        }
+      } else if (type === 'cta') {
+        updates.ctaClicks = increment(1);
+        if (meta.ctaName) {
+          updates[`cta_${meta.ctaName}`] = increment(1);
+        }
+      }
+      await setDoc(analyticsRef, updates, { merge: true });
+    } catch (err) {
+      console.warn("Conversion tracking error:", err);
+    }
+  };
+
   if (loading) {
     return (
       <div style={{ paddingTop: '150px', minHeight: '80vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '15px' }}>
@@ -319,10 +368,10 @@ const PublicPortfolioPage = () => {
   };
 
   const handleShare = async (status) => {
-    const shareUrl = `${window.location.origin}/#/portfolio/${targetUser?.username || username}`;
+    const canonicalShareUrl = `${window.location.origin}/u/${encodeURIComponent(targetUser?.username || username)}`;
     setShareModalData({
       isOpen: true,
-      url: shareUrl,
+      url: canonicalShareUrl,
       title: `Lihat status terkini dari @${targetUser?.username || username} di BaMbooChain!`,
       userName: targetUser?.name || 'Pegiat Ekosistem',
       userHandle: targetUser?.username || username,
@@ -332,6 +381,7 @@ const PublicPortfolioPage = () => {
     });
 
     try {
+      trackConversion('share', { channel: 'status' });
       const realStatusId = await ensureRealStatus(status);
       const statusRef = doc(db, "statuses", realStatusId);
       await updateDoc(statusRef, { shares: increment(1) });
@@ -506,16 +556,34 @@ const PublicPortfolioPage = () => {
                     <Sparkles size={12} /> {ecoLevel}
                   </span>
                 </div>
-                {currentUser?.id !== targetUser.id && (
-                  <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '12px' }}>
+                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '12px' }}>
+                  {currentUser?.id !== targetUser.id && (
                     <button 
                       onClick={() => setIsMessageModalOpen(true)}
                       style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', boxShadow: '0 4px 15px rgba(0,0,0,0.15)' }}
                     >
                       <Send size={14} /> Kirim Pesan Privat
                     </button>
-                  </div>
-                )}
+                  )}
+                  <button 
+                    onClick={() => {
+                      const canonicalShareUrl = `${window.location.origin}/u/${encodeURIComponent(targetUser.username || targetUser.id)}`;
+                      setShareModalData({
+                        isOpen: true,
+                        url: canonicalShareUrl,
+                        title: `Lihat Profil Pegiat Ekosistem Hijau ${targetUser.name || `@${targetUser.username}`} di BaMbooChain!`,
+                        userName: targetUser.name,
+                        userHandle: targetUser.username,
+                        userAvatar: targetUser.avatarUrl,
+                        userBio: targetUser.bioText,
+                        userRole: targetUser.role || ecoLevel
+                      });
+                    }}
+                    style={{ background: 'rgba(255,255,255,0.2)', color: 'white', border: '1px solid rgba(255,255,255,0.3)', padding: '8px 16px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', backdropFilter: 'blur(5px)' }}
+                  >
+                    <Share2 size={14} /> Bagikan Profil
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -1224,44 +1292,108 @@ const PublicPortfolioPage = () => {
           background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(5, 150, 105, 0.05))',
           border: '1px solid rgba(16, 185, 129, 0.3)',
           borderRadius: '24px',
-          padding: '36px 24px',
+          padding: isMobile ? '28px 18px' : '40px 32px',
           textAlign: 'center',
           position: 'relative',
           overflow: 'hidden',
           boxShadow: '0 10px 30px rgba(0,0,0,0.04)'
         }}>
-          <div style={{ maxWidth: '620px', margin: '0 auto' }}>
+          <div style={{ maxWidth: '680px', margin: '0 auto' }}>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(16, 185, 129, 0.18)', color: 'var(--primary)', padding: '6px 16px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 700, marginBottom: '14px' }}>
               <Sparkles size={16} /> Bergabung Bersama {targetUser.name || `@${targetUser.username}`}
             </div>
-            <h3 style={{ fontSize: '1.5rem', fontWeight: 800, margin: '0 0 10px 0', color: 'var(--text-main)', letterSpacing: '-0.3px' }}>
-              Mulai Aksi Hijau & Kumpulkan Reward Token BMC
+            <h3 style={{ fontSize: isMobile ? '1.35rem' : '1.75rem', fontWeight: 800, margin: '0 0 10px 0', color: 'var(--text-main)', letterSpacing: '-0.3px' }}>
+              Ekonomi Digital Bambu Nusantara
             </h3>
-            <p style={{ fontSize: '0.92rem', color: 'var(--text-muted)', lineHeight: 1.6, margin: '0 0 22px 0' }}>
-              Ikuti jejak kedaulatan ekologis ini. Catat rumpun bambu di sekitar Anda, validasi data lapangan, terbitkan paspor digital Web3, dan dapatkan sertifikat dampak hijau.
+            <p style={{ fontSize: '0.92rem', color: 'var(--text-muted)', lineHeight: 1.6, margin: '0 0 24px 0' }}>
+              Berpartisipasi aktif dalam 5 kluster ekosistem: Keseimbangan Lingkungan, Pemulihan Ekologis, Penanaman Digital, Petani Milenial, dan Wirausaha Milenial. Temukan ruang riset, kemitraan budidaya lestari, marketplace hasil hutan bukan kayu, dan terbitkan paspor hijau Web3 milik Anda.
             </p>
-            <button
-              onClick={() => navigate(`/join?ref=REF-${(targetUser.username || targetUser.id || '').toUpperCase()}`)}
-              style={{
-                background: 'linear-gradient(135deg, #10b981, #059669)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '14px',
-                padding: '13px 30px',
-                fontSize: '0.98rem',
-                fontWeight: 700,
-                cursor: 'pointer',
-                boxShadow: '0 8px 24px rgba(16, 185, 129, 0.35)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                transition: 'transform 0.15s ease'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-              onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-            >
-              Daftar Akun BaMbooChain <ChevronRight size={18} />
-            </button>
+
+            {/* 3 High-Converting Conversion CTAs */}
+            <div style={{
+              display: 'flex',
+              flexDirection: isMobile ? 'column' : 'row',
+              justifyContent: 'center',
+              alignItems: 'stretch',
+              gap: '12px'
+            }}>
+              {/* Primary CTA: Register / Sign Up */}
+              <button
+                onClick={() => {
+                  trackConversion('cta', { ctaName: 'register' });
+                  const refCode = (targetUser.username || targetUser.id || '').toUpperCase();
+                  navigate(`/join?ref=REF-${refCode}`);
+                }}
+                style={{
+                  background: 'linear-gradient(135deg, #10b981, #059669)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '14px',
+                  padding: '13px 24px',
+                  fontSize: '0.95rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  boxShadow: '0 8px 24px rgba(16, 185, 129, 0.35)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  transition: 'transform 0.15s ease'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+              >
+                <span>Daftar / Buat Akun</span> <ChevronRight size={18} />
+              </button>
+
+              {/* Secondary CTA: Join Community */}
+              <button
+                onClick={() => {
+                  trackConversion('cta', { ctaName: 'community' });
+                  navigate('/events');
+                }}
+                style={{
+                  background: 'rgba(16, 185, 129, 0.1)',
+                  color: 'var(--primary)',
+                  border: '1px solid rgba(16, 185, 129, 0.3)',
+                  borderRadius: '14px',
+                  padding: '13px 20px',
+                  fontSize: '0.92rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px'
+                }}
+              >
+                <span>Gabung Komunitas</span>
+              </button>
+
+              {/* Tertiary CTA: Explore BaMbooChain */}
+              <button
+                onClick={() => {
+                  trackConversion('cta', { ctaName: 'explore' });
+                  window.location.hash = '/bambupedia/tracker';
+                }}
+                style={{
+                  background: 'transparent',
+                  color: 'var(--text-muted)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '14px',
+                  padding: '13px 18px',
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px'
+                }}
+              >
+                <span>Jelajahi Ekosistem</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -1513,6 +1645,7 @@ const PublicPortfolioPage = () => {
         userAvatar={shareModalData.userAvatar}
         userBio={shareModalData.userBio}
         userRole={shareModalData.userRole}
+        onShare={(channel) => trackConversion('share', { channel })}
       />
     </div>
   );

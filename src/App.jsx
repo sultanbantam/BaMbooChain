@@ -358,6 +358,8 @@ function App() {
             <Route path="/bamboochain/pre-order" element={<PreOrderPage />} />
             <Route path="/careers" element={<CareersPage />} />
             <Route path="/portfolio/:username" element={<PublicPortfolioPage />} />
+            <Route path="/u/:username" element={<PublicPortfolioPage />} />
+            <Route path="/p/:username" element={<PublicPortfolioPage />} />
             <Route path="/bamboochain/meeting" element={<BambooMeetingPage />} />
             <Route path="/authorize" element={<AuthorizePage />} />
             <Route path="/events" element={<EventsPage />} />
