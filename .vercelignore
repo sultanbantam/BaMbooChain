@@ -8,3 +8,7 @@ play-store-assets
 *.aab
 *.apk
 node_modules
+scripts
+*.mjs
+*.ps1
+
