@@ -105,7 +105,7 @@ export const CIBARANI_EXPERIENCES = [
     title: 'Edukasi Budidaya Bambu & Konservasi Sumber Air',
     tagline: 'Bambu sebagai Penopang Kehidupan dan Ekonomi Berkelanjutan',
     desc: 'Belajar langsung mengenali jenis-jenis bambu endemik, teknik pembibitan, pemeliharaan rumpun, hingga peran akar bambu dalam mengikat tanah dan menjaga mata air desa.',
-    image: '/gambar/gambar/kbambu/01.jpg',
+    image: '/gambar/kbambu/01.jpg',
     highlights: ['Praktik teknik silvikultur bambu', 'Pembuatan kerajinan & anyaman bersama perajin desa', 'Penanaman bibit bambu konservasi BaMbooChain'],
     difficulty: 'Mudah - Sedang',
     status: 'Tersedia'
@@ -303,7 +303,7 @@ export const CIBARANI_IMPACT_PROJECTS = [
     status: 'Sedang Berjalan',
     desc: 'Program penanaman bambu untuk mencegah longsor lereng jalan dan memelihara resapan air ke perkebunan warga.',
     beforeImg: '/gambar/survey.jpg',
-    afterImg: '/gambar/gambar/kbambu/01.jpg'
+    afterImg: '/gambar/kbambu/01.jpg'
   }
 ];
 
@@ -312,7 +312,7 @@ export const CIBARANI_GALLERY = [
   { id: 'GAL-02', title: 'Deretan Leuit Lumbung Padi Adat', category: 'Leuit & Pangan', image: '/gambar/pehc.JPG', photographer: 'Arsip Adat Cibarani', consentVerified: true },
   { id: 'GAL-03', title: 'Aliran Bening Mata Air Sirah Banteng', category: 'Alam & Air', image: '/gambar/pehc2.JPG', photographer: 'Relawan Cibarani', consentVerified: true },
   { id: 'GAL-04', title: 'Rumah Panggung dan Dinding Anyaman Bambu', category: 'Rumah Adat', image: '/gambar/pehc3.JPG', photographer: 'Dok. YSNJ', consentVerified: true },
-  { id: 'GAL-05', title: 'Rumpun Bambu Endemik di Lereng Bukit', category: 'Bambu', image: '/gambar/gambar/kbambu/01.jpg', photographer: 'Tim BaMbooChain', consentVerified: true },
+  { id: 'GAL-05', title: 'Rumpun Bambu Endemik di Lereng Bukit', category: 'Bambu', image: '/gambar/kbambu/01.jpg', photographer: 'Tim BaMbooChain', consentVerified: true },
   { id: 'GAL-06', title: 'Kerajinan Tangan dan Anyaman Bambu Warga', category: 'Produk Lokal', image: '/gambar/batang.jpg', photographer: 'Pemberdayaan Adat', consentVerified: true }
 ];
 
