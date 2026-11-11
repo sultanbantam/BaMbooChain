@@ -34,27 +34,11 @@
     },
     {
       "source": "/u/:username/image",
-      "destination": "/api/share-profile?username=:username&type=image"
+      "destination": "/api/share-profile"
     },
     {
       "source": "/u/:username",
-      "destination": "/api/share-profile?username=:username"
-    },
-    {
-      "source": "/p/:username/image",
-      "destination": "/api/share-profile?username=:username&type=image"
-    },
-    {
-      "source": "/p/:username",
-      "destination": "/api/share-profile?username=:username"
-    },
-    {
-      "source": "/portfolio/:username/image",
-      "destination": "/api/share-profile?username=:username&type=image"
-    },
-    {
-      "source": "/portfolio/:username",
-      "destination": "/api/share-profile?username=:username"
+      "destination": "/api/share-profile"
     },
     {
       "source": "/:path((?!api/|assets/|images/|gambar/|logos/|favicon.svg|.*\\..*).*)",

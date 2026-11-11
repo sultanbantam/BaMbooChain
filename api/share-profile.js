@@ -105,10 +105,12 @@ async function getUserFromDb(rawUsername = '') {
 }
 
 export default async function handler(req, res) {
-  const { username, u, p, id, type } = req.query;
-  const targetUserParam = username || u || p || id || '';
+  const { username, u, p, id, type } = req.query || {};
+  const urlMatch = req.url ? req.url.match(/^\/(?:u|p|portfolio)\/([^/?#]+)/i) : null;
+  const usernameFromUrl = urlMatch ? urlMatch[1] : '';
+  const targetUserParam = username || usernameFromUrl || u || p || id || '';
   const cleanUsername = String(targetUserParam).trim().toLowerCase().replace(/^@/, '');
-  const isImageRequest = type === 'image' || req.query['amp;type'] === 'image' || (req.url && req.url.includes('/image'));
+  const isImageRequest = type === 'image' || req.query?.['amp;type'] === 'image' || (req.url && req.url.includes('/image'));
 
   const host = req.headers['x-forwarded-host'] || req.headers.host || 'www.bamboochain.id';
   const proto = req.headers['x-forwarded-proto'] || 'https';
