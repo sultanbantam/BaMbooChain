@@ -6,7 +6,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { db, storage } from '../firebase/config';
 import { ref, uploadBytes, uploadString, getDownloadURL } from 'firebase/storage';
 import { useArticles, usePlantationDonations, useEventTransactions, useUserEvents, useValidations } from '../hooks/useFirestoreQueries';
-import { doc, onSnapshot, updateDoc, setDoc, collection, query, where, getDoc, getDocs, addDoc, arrayUnion, arrayRemove, increment } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc, setDoc, collection, query, where, getDoc, getDocs, addDoc, deleteDoc, arrayUnion, arrayRemove, increment } from 'firebase/firestore';
 import { requestForToken } from '../utils/NotificationService';
 import ShareModal from '../components/ShareModal';
 import { 
@@ -137,13 +137,17 @@ const ProfilePage = () => {
   
   const [activeTab, setActiveTab] = useState('observasi'); // 'observasi' | 'feed' | 'events' | 'account'
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [isUploadingBanner, setIsUploadingBanner] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
     username: '',
     phone: '',
     avatarUrl: '',
+    bannerUrl: '',
     bioText: '',
+    ngopiUsername: '',
+    bambooChat: '',
     statusText: '',
     statusPhotos: [],
     statusVideo: ''
@@ -170,13 +174,26 @@ const ProfilePage = () => {
 
   const [statusVisibleCount, setStatusVisibleCount] = useState(3);
   const [eventVisibleCount, setEventVisibleCount] = useState(3);
+  const statusLimit = statusVisibleCount;
+  const setStatusLimit = setStatusVisibleCount;
+  const eventLimit = eventVisibleCount;
+  const setEventLimit = setEventVisibleCount;
 
   const [expandedCommentsStatusId, setExpandedCommentsStatusId] = useState(null);
   const [expandedGiftsStatusId, setExpandedGiftsStatusId] = useState(null);
   const [activeMapMarker, setActiveMapMarker] = useState(null);
   const [showInbox, setShowInbox] = useState(false);
 
-  const [shareModalData, setShareModalData] = useState({ isOpen: false, url: '', title: '' });
+  const [shareModalData, setShareModalData] = useState({ 
+    isOpen: false, 
+    url: '', 
+    title: '', 
+    userName: '', 
+    userHandle: '', 
+    userAvatar: '', 
+    userBio: '', 
+    userRole: '' 
+  });
   const [commentText, setCommentText] = useState('');
   const [activeCommentStatusId, setActiveCommentStatusId] = useState(null);
 
@@ -187,6 +204,8 @@ const ProfilePage = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [showStatusEmojiPicker, setShowStatusEmojiPicker] = useState(false);
   const [showCommentEmojiPicker, setShowCommentEmojiPicker] = useState(false);
+  const showEmojiPicker = showStatusEmojiPicker;
+  const setShowEmojiPicker = setShowStatusEmojiPicker;
 
   const handleEnableNotifications = async () => {
     try {
@@ -268,7 +287,10 @@ const ProfilePage = () => {
         username: user.username || '',
         phone: user.phone || '',
         avatarUrl: user.avatarUrl || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + (user.username || 'default'),
+        bannerUrl: user.bannerUrl || '',
         bioText: user.bioText || '',
+        ngopiUsername: user.ngopiUsername || user.ngopiAccount || '',
+        bambooChat: user.bambooChat || user.bambooChatUsername || '',
         statusText: '',
         statusPhotos: [],
         statusVideo: ''
@@ -344,13 +366,20 @@ const ProfilePage = () => {
   const handleSave = async () => {
     if (!user?.id) return;
     try {
-      await updateDoc(doc(db, 'users', user.id), {
+      const updateData = {
         name: formData.name,
         username: formData.username.toLowerCase().replace(/\s+/g, ''),
-        phone: formData.phone
-      });
+        phone: formData.phone || '',
+        bioText: formData.bioText || '',
+        ngopiUsername: formData.ngopiUsername || '',
+        bambooChat: formData.bambooChat || ''
+      };
+      await updateDoc(doc(db, 'users', user.id), updateData);
+      if (updateProfile) {
+        updateProfile(updateData);
+      }
       setIsEditing(false);
-      alert(t('profile_alert_saved'));
+      alert(t('profile_alert_saved') || '✅ Profil berhasil diperbarui!');
     } catch (err) {
       console.error("Error updating profile:", err);
       alert("❌ Gagal memperbarui profil: " + err.message);
@@ -509,12 +538,45 @@ const ProfilePage = () => {
     }
   };
 
+  const handlePhotoUpload = handleStatusPhotosChange;
+  const handleVideoUpload = handleStatusVideoChange;
+
+  const handleStatusSubmit = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    handleSaveStatus();
+  };
+
+  const onEmojiClick = (emojiData) => {
+    setFormData(prev => ({
+      ...prev,
+      statusText: (prev.statusText || '') + (emojiData.emoji || '')
+    }));
+    setShowStatusEmojiPicker(false);
+  };
+
+  const handleDeleteStatus = async (statusId) => {
+    if (!window.confirm("Apakah Anda yakin ingin menghapus status ini?")) return;
+    try {
+      await deleteDoc(doc(db, "statuses", statusId));
+      setStatuses(prev => prev.filter(s => s.id !== statusId));
+      alert("✅ Status berhasil dihapus!");
+    } catch (err) {
+      console.error("Error deleting status:", err);
+      alert("❌ Gagal menghapus status: " + err.message);
+    }
+  };
+
   const handleShare = async (status) => {
     const shareUrl = `${window.location.origin}/#/portfolio/${user.username || user.id}`;
     setShareModalData({
       isOpen: true,
       url: shareUrl,
-      title: `Lihat status terkini dari @${user.username || user.name} di BaMbooChain!`
+      title: `Lihat status terkini dari @${user.username || user.name} di BaMbooChain!`,
+      userName: user.name || 'Sultan Bantam',
+      userHandle: user.username || 'sultanbantam',
+      userAvatar: formData.avatarUrl || user.avatarUrl,
+      userBio: formData.bioText || user.bioText,
+      userRole: user.role === 'admin_yayasan' ? 'Admin Yayasan' : 'Forest Guardian'
     });
     try {
       const statusRef = doc(db, "statuses", status.id);
@@ -559,27 +621,14 @@ const ProfilePage = () => {
       try {
         const rawBase64 = uploadEvent.target.result;
         const compressedBase64 = await compressAvatar(rawBase64);
-        const uid = user?.id || user?.uid || 'guest';
+        const uid = user?.id || user?.uid;
+        if (!uid) throw new Error("Pengguna tidak terautentikasi");
 
-        // 1. Instantly update visual state
+        // Super-fast instant update directly to Firestore & local state (< 100ms)
         setFormData(prev => ({ ...prev, avatarUrl: compressedBase64 }));
-
-        let avatarUrl = compressedBase64;
-        // Attempt uploading to Firebase Storage if online & accessible
-        try {
-          const avatarRef = ref(storage, `users/${uid}/avatar_${Date.now()}.jpg`);
-          await uploadString(avatarRef, compressedBase64, 'data_url');
-          avatarUrl = await getDownloadURL(avatarRef);
-        } catch (storageErr) {
-          console.warn("Storage upload fallback to compressed base64:", storageErr);
-          avatarUrl = compressedBase64;
-        }
-
-        setFormData(prev => ({ ...prev, avatarUrl }));
+        await updateDoc(doc(db, "users", uid), { avatarUrl: compressedBase64 });
         if (updateProfile) {
-          await updateProfile({ avatarUrl });
-        } else {
-          await updateDoc(doc(db, "users", uid), { avatarUrl });
+          updateProfile({ avatarUrl: compressedBase64 });
         }
         alert("✅ Foto profil berhasil diperbarui!");
       } catch (err) {
@@ -593,6 +642,70 @@ const ProfilePage = () => {
     reader.onerror = () => {
       setIsUploadingAvatar(false);
       alert("❌ Gagal membaca file gambar.");
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const compressBanner = (base64Str) => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.src = base64Str;
+      img.onload = () => {
+        const maxWidth = 1200;
+        const maxHeight = 450;
+        let w = img.width, h = img.height;
+        if (w > maxWidth) {
+          h = Math.round((h * maxWidth) / w);
+          w = maxWidth;
+        }
+        if (h > maxHeight) {
+          w = Math.round((w * maxHeight) / h);
+          h = maxHeight;
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', 0.72));
+      };
+      img.onerror = () => resolve(base64Str);
+    });
+  };
+
+  const handleBannerFileChange = async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      alert("⚠️ Ukuran foto banner maksimal adalah 10MB!");
+      return;
+    }
+    setIsUploadingBanner(true);
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      try {
+        const rawBase64 = ev.target.result;
+        const compressedBanner = await compressBanner(rawBase64);
+        const uid = user?.id || user?.uid;
+        if (!uid) throw new Error("Pengguna tidak teridentifikasi");
+
+        setFormData(prev => ({ ...prev, bannerUrl: compressedBanner }));
+        await updateDoc(doc(db, "users", uid), { bannerUrl: compressedBanner });
+        if (updateProfile) {
+          updateProfile({ bannerUrl: compressedBanner });
+        }
+        alert("✅ Banner profil berhasil dipasang!");
+      } catch (err) {
+        console.error("Error updating banner:", err);
+        alert("❌ Gagal memperbarui banner profil: " + err.message);
+      } finally {
+        setIsUploadingBanner(false);
+        if (e.target) e.target.value = '';
+      }
+    };
+    reader.onerror = () => {
+      setIsUploadingBanner(false);
+      alert("❌ Gagal membaca file banner.");
     };
     reader.readAsDataURL(file);
   };
@@ -868,15 +981,54 @@ const ProfilePage = () => {
         }}>
           {/* Cover Header Banner */}
           <div style={{ 
-            height: isMobile ? '120px' : '170px', 
-            background: 'linear-gradient(135deg, #0ca678 0%, #1098ad 45%, #1864ab 100%)',
+            height: isMobile ? '130px' : '180px', 
+            background: formData.bannerUrl ? `url(${formData.bannerUrl}) center/cover no-repeat` : 'linear-gradient(135deg, #0ca678 0%, #1098ad 45%, #1864ab 100%)',
             position: 'relative',
             padding: '16px 20px',
             display: 'flex',
-            justifyContent: 'flex-end',
-            alignItems: 'flex-start'
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+            transition: 'background 0.3s ease'
           }}>
+            {formData.bannerUrl && (
+              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.22)', zIndex: 1 }} />
+            )}
+
+            {/* Banner Upload Button */}
+            <label 
+              htmlFor="banner-upload-file" 
+              style={{ 
+                position: 'relative',
+                zIndex: 2,
+                background: 'rgba(0,0,0,0.45)', 
+                backdropFilter: 'blur(8px)', 
+                color: 'white', 
+                fontSize: '0.75rem', 
+                fontWeight: 'bold', 
+                padding: '6px 14px', 
+                borderRadius: '20px', 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '6px',
+                cursor: 'pointer',
+                border: '1px solid rgba(255,255,255,0.25)',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+              }}
+              title="Pasang atau ganti foto banner sampul profil"
+            >
+              <Camera size={14} /> {isUploadingBanner ? 'Mengunggah...' : (formData.bannerUrl ? 'Ganti Banner' : 'Pasang Banner')}
+            </label>
+            <input 
+              type="file" 
+              id="banner-upload-file" 
+              accept="image/*" 
+              style={{ display: 'none' }} 
+              onChange={handleBannerFileChange} 
+            />
+
             <span style={{ 
+              position: 'relative',
+              zIndex: 2,
               background: 'rgba(0,0,0,0.35)', 
               backdropFilter: 'blur(8px)', 
               color: 'white', 
@@ -1011,7 +1163,12 @@ const ProfilePage = () => {
                   onClick={() => setShareModalData({
                     isOpen: true,
                     url: passportLink,
-                    title: `Lihat Profil Pegiat Ekosistem Hijau @${user.username || user.name} di BaMbooChain!`
+                    title: `Lihat Profil Pegiat Ekosistem Hijau @${user.username || user.name} di BaMbooChain!`,
+                    userName: user.name || 'Sultan Bantam',
+                    userHandle: user.username || 'sultanbantam',
+                    userAvatar: formData.avatarUrl || user.avatarUrl,
+                    userBio: formData.bioText || user.bioText,
+                    userRole: user.role === 'admin_yayasan' ? 'Admin Yayasan' : 'Forest Guardian'
                   })}
                   style={{ 
                     flex: isMobile ? 1 : 'none',
@@ -1096,6 +1253,28 @@ const ProfilePage = () => {
                     <Copy size={11} />
                   </button>
                 </span>
+                {(formData.ngopiUsername || user.ngopiUsername) && (
+                  <a 
+                    href={(formData.ngopiUsername || user.ngopiUsername).startsWith('http') ? (formData.ngopiUsername || user.ngopiUsername) : `https://ngopi.top/@${(formData.ngopiUsername || user.ngopiUsername).replace(/^@/, '')}`}
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#1864ab', textDecoration: 'none', fontWeight: 'bold' }}
+                    title="Buka profil ngopi.top"
+                  >
+                    ☕ {(formData.ngopiUsername || user.ngopiUsername).startsWith('@') ? (formData.ngopiUsername || user.ngopiUsername) : `@${formData.ngopiUsername || user.ngopiUsername}`}
+                  </a>
+                )}
+                {(formData.bambooChat || user.bambooChat) && (
+                  <a 
+                    href="https://www.bamboochat.click" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#0ca678', textDecoration: 'none', fontWeight: 'bold' }}
+                    title="Buka BambooChat"
+                  >
+                    💬 {(formData.bambooChat || user.bambooChat).startsWith('@') ? (formData.bambooChat || user.bambooChat) : `@${formData.bambooChat || user.bambooChat}`}
+                  </a>
+                )}
                 <button 
                   type="button" 
                   onClick={handleCreateDicebearAvatar}
@@ -1919,6 +2098,62 @@ const ProfilePage = () => {
                     </div>
                   )}
                 </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '4px', fontWeight: 'bold' }}>☕ Akun ngopi.top</label>
+                  {isEditing ? (
+                    <input 
+                      type="text" 
+                      name="ngopiUsername" 
+                      value={formData.ngopiUsername} 
+                      onChange={handleChange} 
+                      style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1px solid var(--border-color)', background: 'var(--bg-color)', color: 'var(--text-main)', fontSize: '0.88rem' }}
+                      placeholder="@sultanbantam atau username ngopi"
+                    />
+                  ) : (
+                    <div style={{ padding: '10px 12px', background: 'var(--bg-color)', borderRadius: '10px', border: '1px solid var(--border-color)', color: 'var(--text-main)', fontSize: '0.88rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span>{user.ngopiUsername ? (user.ngopiUsername.startsWith('@') ? user.ngopiUsername : `@${user.ngopiUsername}`) : 'Belum dihubungkan'}</span>
+                      {user.ngopiUsername && (
+                        <a 
+                          href={user.ngopiUsername.startsWith('http') ? user.ngopiUsername : `https://ngopi.top/@${user.ngopiUsername.replace(/^@/, '')}`}
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          style={{ fontSize: '0.75rem', color: '#1864ab', textDecoration: 'none', fontWeight: 'bold' }}
+                        >
+                          Buka ngopi.top ↗
+                        </a>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '4px', fontWeight: 'bold' }}>💬 Akun BambooChat</label>
+                  {isEditing ? (
+                    <input 
+                      type="text" 
+                      name="bambooChat" 
+                      value={formData.bambooChat} 
+                      onChange={handleChange} 
+                      style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1px solid var(--border-color)', background: 'var(--bg-color)', color: 'var(--text-main)', fontSize: '0.88rem' }}
+                      placeholder="Nickname Anda di BambooChat"
+                    />
+                  ) : (
+                    <div style={{ padding: '10px 12px', background: 'var(--bg-color)', borderRadius: '10px', border: '1px solid var(--border-color)', color: 'var(--text-main)', fontSize: '0.88rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span>{user.bambooChat ? (user.bambooChat.startsWith('@') ? user.bambooChat : `@${user.bambooChat}`) : 'Belum dihubungkan'}</span>
+                      {user.bambooChat && (
+                        <a 
+                          href="https://www.bamboochat.click" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          style={{ fontSize: '0.75rem', color: '#0ca678', textDecoration: 'none', fontWeight: 'bold' }}
+                        >
+                          Buka Chat ↗
+                        </a>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Wallet Address Row */}
@@ -2100,6 +2335,11 @@ const ProfilePage = () => {
           onClose={() => setShareModalData(prev => ({ ...prev, isOpen: false }))}
           url={shareModalData.url}
           title={shareModalData.title}
+          userName={shareModalData.userName}
+          userHandle={shareModalData.userHandle}
+          userAvatar={shareModalData.userAvatar}
+          userBio={shareModalData.userBio}
+          userRole={shareModalData.userRole}
         />
       )}
     </div>

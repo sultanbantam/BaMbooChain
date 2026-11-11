@@ -323,7 +323,12 @@ const PublicPortfolioPage = () => {
     setShareModalData({
       isOpen: true,
       url: shareUrl,
-      title: `Lihat status terkini dari @${targetUser?.username || username} di BaMbooChain!`
+      title: `Lihat status terkini dari @${targetUser?.username || username} di BaMbooChain!`,
+      userName: targetUser?.name || 'Pegiat Ekosistem',
+      userHandle: targetUser?.username || username,
+      userAvatar: targetUser?.avatarUrl || '',
+      userBio: targetUser?.bioText || '',
+      userRole: targetUser?.kycStatus === 'verified' ? 'Verified Member' : 'Pegiat Ekosistem'
     });
 
     try {
@@ -1503,6 +1508,11 @@ const PublicPortfolioPage = () => {
         onClose={() => setShareModalData(prev => ({ ...prev, isOpen: false }))}
         shareUrl={shareModalData.url}
         shareTitle={shareModalData.title}
+        userName={shareModalData.userName}
+        userHandle={shareModalData.userHandle}
+        userAvatar={shareModalData.userAvatar}
+        userBio={shareModalData.userBio}
+        userRole={shareModalData.userRole}
       />
     </div>
   );

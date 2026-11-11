@@ -2,7 +2,19 @@
 import { X, Copy, Check } from 'lucide-react';
 import { normalizeShareUrl } from '../utils/shareUrl';
 
-const ShareModal = ({ isOpen, onClose, shareUrl, shareTitle, url, title }) => {
+const ShareModal = ({ 
+  isOpen, 
+  onClose, 
+  shareUrl, 
+  shareTitle, 
+  url, 
+  title, 
+  userAvatar, 
+  userName, 
+  userHandle, 
+  userRole, 
+  userBio 
+}) => {
   const [copied, setCopied] = useState(false);
 
   if (!isOpen) return null;
@@ -10,9 +22,27 @@ const ShareModal = ({ isOpen, onClose, shareUrl, shareTitle, url, title }) => {
   const finalShareUrl = normalizeShareUrl(shareUrl || url || '');
   const finalShareTitle = shareTitle || title || 'Lihat halaman menarik ini di BaMbooChain!';
 
-  const fullShareText = finalShareTitle.includes(finalShareUrl)
-    ? finalShareTitle
-    : `${finalShareTitle}\n\n${finalShareUrl}`;
+  // High-converting hook text for social media sharing
+  const generateShareText = () => {
+    if (userName || userHandle) {
+      return `🎋 *PORTAL RESMI PEGIAT BAMBU NUSANTARA*
+Halo! Kenalan dengan *${userName || 'Pegiat Ekosistem'}* (@${userHandle || 'bamboochain'}) di platform BaMbooChain.
+
+${userBio ? `🌱 *“${userBio}”*\n` : ''}
+🔥 *Kenapa Harus Bergabung Sekarang?*
+• 🌿 Sensus & petakan rumpun bambu lokal di sekitarmu
+• 🆔 Terbitkan BambooID Passport & reputasi Web3 hijau milikmu
+• 💎 Dapatkan airdrop & reward token BMC hijau gratis!
+
+👇 *Buka Paspor Digital & Gabung Komunitas Hijau:*
+${finalShareUrl}`;
+    }
+    return finalShareTitle.includes(finalShareUrl)
+      ? finalShareTitle
+      : `${finalShareTitle}\n\n${finalShareUrl}`;
+  };
+
+  const fullShareText = generateShareText();
 
   const handleCopy = () => {
     navigator.clipboard.writeText(fullShareText);
@@ -101,12 +131,58 @@ const ShareModal = ({ isOpen, onClose, shareUrl, shareTitle, url, title }) => {
           <X size={16} />
         </button>
 
-        <div style={{ textAlign: 'center', marginBottom: '24px', padding: '0 20px' }}>
-          <h3 style={{ fontSize: '1.25rem', fontWeight: '900', margin: '0 0 8px 0', color: 'var(--text-main)' }}>Bagikan Ke Sosial Media</h3>
-          <p style={{ fontSize: '0.88rem', color: 'var(--text-muted, #888888)', margin: 0 }}>
-            Pilih platform untuk membagikan informasi acara ini.
+        <div style={{ textAlign: 'center', marginBottom: '20px', padding: '0 10px' }}>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: '900', margin: '0 0 6px 0', color: 'var(--text-main)' }}>Bagikan Ke Sosial Media</h3>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted, #888888)', margin: 0 }}>
+            {userName ? `Sebarkan profil & inspirasi hijau ${userName} ke jejaring sosial Anda.` : 'Pilih platform untuk membagikan tautan ini.'}
           </p>
         </div>
+
+        {/* 👤 Visual Preview Card with User Avatar & Hook */}
+        {(userAvatar || userName) && (
+          <div style={{
+            background: 'linear-gradient(135deg, rgba(12, 166, 120, 0.08), rgba(24, 100, 171, 0.08))',
+            border: '1px solid rgba(12, 166, 120, 0.22)',
+            borderRadius: '18px',
+            padding: '14px 16px',
+            marginBottom: '18px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.02)'
+          }}>
+            <div style={{
+              width: '52px',
+              height: '52px',
+              borderRadius: '50%',
+              overflow: 'hidden',
+              border: '2.5px solid var(--primary, #0ca678)',
+              flexShrink: 0,
+              background: '#ffffff',
+              boxShadow: '0 4px 10px rgba(0,0,0,0.1)'
+            }}>
+              <img 
+                src={userAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userHandle || 'user'}`} 
+                alt={userName || 'Avatar'} 
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+              />
+            </div>
+            <div style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
+              <div style={{ fontWeight: 800, fontSize: '0.92rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                <span>{userName || 'Pegiat Ekosistem Hijau'}</span>
+                <span style={{ fontSize: '0.68rem', background: 'rgba(12, 166, 120, 0.15)', color: 'var(--primary, #0ca678)', padding: '2px 6px', borderRadius: '6px', fontWeight: 700 }}>
+                  ✓ {userRole || 'Verified Member'}
+                </span>
+              </div>
+              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>@{userHandle || 'pegiat'}</div>
+              {userBio && (
+                <div style={{ fontSize: '0.74rem', color: 'var(--text-main)', marginTop: '3px', fontStyle: 'italic', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  "{userBio}"
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {typeof navigator !== 'undefined' && navigator.share && (
           <button
