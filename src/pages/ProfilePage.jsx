@@ -5,7 +5,7 @@ import { useBambupedia } from '../context/BambupediaContext';
 import { useLanguage } from '../context/LanguageContext';
 import { db, storage } from '../firebase/config';
 import { ref, uploadBytes, uploadString, getDownloadURL } from 'firebase/storage';
-import { useArticles, usePlantationDonations, useEventTransactions, useUserEvents } from '../hooks/useFirestoreQueries';
+import { useArticles, usePlantationDonations, useEventTransactions, useUserEvents, useValidations } from '../hooks/useFirestoreQueries';
 import { doc, onSnapshot, updateDoc, setDoc, collection, query, where, getDoc, getDocs, addDoc, arrayUnion, arrayRemove, increment } from 'firebase/firestore';
 import { requestForToken } from '../utils/NotificationService';
 import ShareModal from '../components/ShareModal';
@@ -21,6 +21,15 @@ import 'leaflet/dist/leaflet.css';
 
 const greenPinIcon = L.icon({
   iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+const orangePinIcon = L.icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png',
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
   iconSize: [25, 41],
   iconAnchor: [12, 41],
@@ -81,6 +90,13 @@ const ProfilePage = () => {
   const { data: plantationDonations = [] } = usePlantationDonations(user?.id, user?.username);
   const { data: eventTransactions = [] } = useEventTransactions();
   const { data: userEvents = [] } = useUserEvents(user?.id, user?.name || user?.username);
+  const { data: allValidations = [] } = useValidations(user?.id);
+
+  const myValidations = (allValidations || []).filter(v => 
+    v.userId === user?.id || 
+    v.username === user?.username || 
+    (user?.email && v.email === user?.email)
+  );
 
   const myDonations = plantationDonations.filter(d => d.donorId === user?.id || d.username === user?.username);
   const myTreasuryTxs = eventTransactions.filter(tx => tx.adminId === user?.id);
@@ -651,8 +667,13 @@ const ProfilePage = () => {
   const myPlantingsCount = (plantings || []).reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
   const myMaintenancesCount = (maintenances || []).length;
 
-  const coordsList = (plantings || []).map(p => parseCoords(p.location)).filter(Boolean);
-  const mapCenter = coordsList.length > 0 ? coordsList[0] : [-6.5888, 106.3144];
+  const plantingCoords = (plantings || []).map(p => parseCoords(p.location)).filter(Boolean);
+  const validationCoords = (myValidations || []).map(v => parseCoords(v.gps)).filter(Boolean);
+  const coordsList = [...plantingCoords, ...validationCoords];
+  // Center map on user's latest surveyed bamboo location if available, else first planting
+  const mapCenter = validationCoords.length > 0 
+    ? validationCoords[validationCoords.length - 1] 
+    : (coordsList.length > 0 ? coordsList[0] : [-6.5888, 106.3144]);
 
   // Level Badge Calculation
   const totalEcoActions = myPlantingsCount + myMaintenancesCount + myArticlesCount + myMatsCount;
@@ -1780,6 +1801,50 @@ const ProfilePage = () => {
                         </LeafletMarker>
                       );
                     })}
+                    {/* Contributed Bambu Observations (Orange Pins) */}
+                    {myValidations.map((v, idx) => {
+                      const coords = parseCoords(v.gps);
+                      if (!coords) return null;
+                      const photos = v.uploadedFiles ? Object.values(v.uploadedFiles).filter(Boolean) : [];
+                      return (
+                        <LeafletMarker key={`val-${v.id || idx}`} position={coords} icon={orangePinIcon}>
+                          <LeafletPopup>
+                            <div style={{ fontSize: '0.8rem', color: '#212529', lineHeight: 1.4, minWidth: '180px', maxWidth: '240px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px', marginBottom: '4px' }}>
+                                <strong style={{ color: '#d9480f' }}>🌿 {v.title || 'Observasi Bambu'}</strong>
+                                <span style={{ 
+                                  fontSize: '0.65rem', 
+                                  padding: '2px 6px', 
+                                  borderRadius: '6px', 
+                                  background: v.status === 'approved' ? '#d3f9d8' : '#fff3bf',
+                                  color: v.status === 'approved' ? '#2b8a3e' : '#e67700',
+                                  fontWeight: 'bold' 
+                                }}>
+                                  {v.status === 'approved' ? 'Terverifikasi' : 'Pending'}
+                                </span>
+                              </div>
+                              <span style={{ fontSize: '0.72rem', color: '#6c757d' }}>📍 {v.gps}</span><br/>
+                              {v.details?.jmlRebung && <span style={{ fontSize: '0.75rem' }}>🌱 Rebung: <b>{v.details.jmlRebung}</b><br/></span>}
+                              {v.details?.pemilik && <span style={{ fontSize: '0.75rem' }}>👤 Pemilik: {v.details.pemilik}<br/></span>}
+                              {v.tags && <div style={{ fontSize: '0.7rem', color: '#495057', marginTop: '2px' }}>🏷️ {v.tags}</div>}
+                              {photos.length > 0 && (
+                                <div style={{ marginTop: '8px', display: 'flex', gap: '4px', overflowX: 'auto', paddingBottom: '4px' }}>
+                                  {photos.slice(0, 4).map((img, pIdx) => (
+                                    <img 
+                                      key={pIdx} 
+                                      src={img} 
+                                      alt="Foto Lapangan" 
+                                      onClick={() => setLightboxImage(img)}
+                                      style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #ced4da', cursor: 'pointer', flexShrink: 0 }} 
+                                    />
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </LeafletPopup>
+                        </LeafletMarker>
+                      );
+                    })}
                     {coordsList.length === 0 && (
                       <LeafletMarker position={mapCenter} icon={greenPinIcon}>
                         <LeafletPopup>
@@ -1817,6 +1882,122 @@ const ProfilePage = () => {
                   </div>
                 </div>
               </div>
+
+              {/* 🌿 KONTRIBUSI DATA BAMBU & FOTO OBSERVASI */}
+              {myValidations.length > 0 && (
+                <div style={{ background: 'var(--bg-card)', borderRadius: '20px', padding: isMobile ? '16px' : '24px', border: '1px solid var(--border-color)', boxShadow: '0 4px 15px rgba(0,0,0,0.02)', marginTop: '25px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '1.2rem' }}>🌿</span>
+                      <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 'bold', color: 'var(--text-main)' }}>
+                        Data Observasi & Foto Lapangan ({myValidations.length})
+                      </h4>
+                    </div>
+                    <span style={{ fontSize: '0.72rem', background: 'rgba(217, 72, 15, 0.1)', color: '#d9480f', padding: '4px 10px', borderRadius: '20px', fontWeight: 'bold' }}>
+                      📍 Pin Oranye di Peta
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                    {myValidations.map((val, vIdx) => {
+                      const photos = val.uploadedFiles ? Object.entries(val.uploadedFiles) : [];
+                      return (
+                        <div key={val.id || vIdx} style={{ background: 'var(--bg-color)', borderRadius: '16px', padding: '14px', border: '1px solid var(--border-color)' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '8px', marginBottom: '8px' }}>
+                            <div>
+                              <strong style={{ fontSize: '0.9rem', color: 'var(--text-main)', display: 'block' }}>
+                                {val.title || 'Observasi Rumpun Bambu'}
+                              </strong>
+                              <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                                🕒 {val.date ? new Date(val.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Tersimpan'} {val.gps && `• 📍 ${val.gps}`}
+                              </span>
+                            </div>
+                            <span style={{ 
+                              fontSize: '0.7rem', 
+                              padding: '3px 8px', 
+                              borderRadius: '20px', 
+                              background: val.status === 'approved' ? '#d3f9d8' : '#fff3bf',
+                              color: val.status === 'approved' ? '#2b8a3e' : '#e67700',
+                              fontWeight: 'bold' 
+                            }}>
+                              {val.status === 'approved' ? '✅ Terverifikasi' : '⏳ Menunggu Validasi'}
+                            </span>
+                          </div>
+
+                          {val.details && (
+                            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', fontSize: '0.75rem', color: 'var(--text-main)', marginBottom: '8px' }}>
+                              {val.details.jmlRebung && <span>🌱 Rebung: <b>{val.details.jmlRebung}</b></span>}
+                              {val.details.pemilik && <span>👤 Pemilik: <b>{val.details.pemilik}</b></span>}
+                              {val.details.aksesJalan && <span>🛣️ Akses: <b>{val.details.aksesJalan}</b></span>}
+                            </div>
+                          )}
+
+                          {val.tags && (
+                            <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '10px' }}>
+                              {val.tags.split(',').map((tg, tIdx) => (
+                                <span key={tIdx} style={{ fontSize: '0.68rem', background: 'var(--bg-card)', border: '1px solid var(--border-color)', padding: '2px 6px', borderRadius: '10px', color: 'var(--text-muted)' }}>
+                                  #{tg.trim()}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+
+                          {photos.length > 0 ? (
+                            <div>
+                              <div style={{ fontSize: '0.72rem', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '6px' }}>
+                                📸 Dokumentasi ({photos.length} Foto — klik untuk memperbesar):
+                              </div>
+                              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(60px, 1fr))', gap: '6px' }}>
+                                {photos.map(([key, photoData], pIdx) => (
+                                  <div 
+                                    key={pIdx} 
+                                    onClick={() => setLightboxImage(photoData)}
+                                    style={{ 
+                                      aspectRatio: '1/1', 
+                                      borderRadius: '8px', 
+                                      overflow: 'hidden', 
+                                      border: '1px solid var(--border-color)', 
+                                      cursor: 'pointer',
+                                      position: 'relative',
+                                      background: '#000'
+                                    }}
+                                  >
+                                    <img 
+                                      src={photoData} 
+                                      alt={key} 
+                                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                                    />
+                                    <span style={{ 
+                                      position: 'absolute', 
+                                      bottom: 0, 
+                                      left: 0, 
+                                      right: 0, 
+                                      background: 'rgba(0,0,0,0.65)', 
+                                      color: 'white', 
+                                      fontSize: '0.55rem', 
+                                      textAlign: 'center', 
+                                      padding: '1px 2px',
+                                      overflow: 'hidden',
+                                      textOverflow: 'ellipsis',
+                                      whiteSpace: 'nowrap'
+                                    }}>
+                                      {key.replace('_', ' ')}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ) : (
+                            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                              Tidak ada lampiran foto untuk observasi ini.
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
             </div>
 

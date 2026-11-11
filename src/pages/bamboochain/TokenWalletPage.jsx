@@ -1283,6 +1283,19 @@ const ContributeDataBMC = () => {
         details: { jmlRebung, pemilik, alamatPemilik, waPemilik, aksesJalan },
         uploadedFiles
       });
+
+      // Reset form fields after successful submission so user can input next clump
+      setLocalName('');
+      setGps('');
+      setJmlRebung('');
+      setPemilik('');
+      setAlamatPemilik('');
+      setWaPemilik('');
+      setAksesJalan('');
+      setActiveTags([]);
+      setLainnyaText('');
+      setUploadedFiles({});
+
       alert(t('tw_alert_data_sent'));
     }, 1500);
   };

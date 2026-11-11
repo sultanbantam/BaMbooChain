@@ -90,7 +90,7 @@ export default function LeafletLocationPickerModal({
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Reset when opened
+  // Reset and auto-detect GPS on open
   useEffect(() => {
     if (isOpen) {
       const init = parseInitial();
@@ -99,10 +99,15 @@ export default function LeafletLocationPickerModal({
       setSearchQuery('');
       setSearchResults([]);
       setGpsError(null);
-    }
-  }, [isOpen, initialCoords]);
 
-  // Search logic (Preset locations + OpenStreetMap Nominatim with debouncing)
+      // Auto-detect current device GPS immediately when opened without manual typing
+      if (navigator.geolocation) {
+        handleDetectDeviceGps();
+      }
+    }
+  }, [isOpen]);
+
+  // Search logic (Preset locations + Photon Komoot OSM + Nominatim OpenStreetMap with debouncing)
   useEffect(() => {
     if (!searchQuery || searchQuery.trim().length < 2) {
       setSearchResults([]);
@@ -125,37 +130,60 @@ export default function LeafletLocationPickerModal({
           source: 'Preset Eco-Location'
         }));
 
-      // 2. Fetch from Nominatim OpenStreetMap (Indonesia prioritized)
-      try {
-        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=id&limit=5&addressdetails=1`, {
-          headers: { 'Accept-Language': 'id,en' }
-        });
-        if (res.ok) {
-          const data = await res.json();
-          const remoteMatches = data.map(item => ({
-            name: item.display_name,
-            lat: parseFloat(item.lat),
-            lng: parseFloat(item.lon),
-            source: 'OpenStreetMap'
-          }));
+      let results = [...localMatches];
 
-          // Merge without duplicates
-          const combined = [...localMatches];
-          remoteMatches.forEach(rm => {
-            if (!combined.some(c => Math.abs(c.lat - rm.lat) < 0.001 && Math.abs(c.lng - rm.lng) < 0.001)) {
-              combined.push(rm);
-            }
-          });
-          setSearchResults(combined.slice(0, 6));
-        } else {
-          setSearchResults(localMatches);
+      // 2. Fetch from Photon by Komoot (super fast OSM search with fuzzy matching for villages, hotels & tourist spots)
+      try {
+        const photonRes = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=6`);
+        if (photonRes.ok) {
+          const photonData = await photonRes.json();
+          if (photonData.features && photonData.features.length > 0) {
+            const photonMatches = photonData.features.map(f => {
+              const p = f.properties || {};
+              const coords = f.geometry?.coordinates || [0, 0];
+              const labelParts = [p.name, p.street, p.district || p.city, p.state, p.country].filter(Boolean);
+              return {
+                name: labelParts.join(', ') || p.name || 'Lokasi',
+                lat: coords[1],
+                lng: coords[0],
+                source: 'Peta Wisata & Lokasi (OSM)'
+              };
+            });
+            results = [...results, ...photonMatches];
+          }
         }
       } catch (err) {
-        setSearchResults(localMatches);
-      } finally {
-        setIsSearching(false);
+        console.warn("Photon search error:", err);
       }
-    }, 350);
+
+      // 3. Fallback to Nominatim if results are still low
+      if (results.length < 3) {
+        try {
+          const nomRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=id&limit=5&addressdetails=1`, {
+            headers: { 'Accept-Language': 'id,en' }
+          });
+          if (nomRes.ok) {
+            const nomData = await nomRes.json();
+            const nomMatches = nomData.map(item => ({
+              name: item.display_name,
+              lat: parseFloat(item.lat),
+              lng: parseFloat(item.lon),
+              source: 'OpenStreetMap'
+            }));
+            nomMatches.forEach(nm => {
+              if (!results.some(r => Math.abs(r.lat - nm.lat) < 0.001 && Math.abs(r.lng - nm.lng) < 0.001)) {
+                results.push(nm);
+              }
+            });
+          }
+        } catch (nomErr) {
+          console.warn("Nominatim search error:", nomErr);
+        }
+      }
+
+      setSearchResults(results.slice(0, 7));
+      setIsSearching(false);
+    }, 300);
 
     return () => clearTimeout(timer);
   }, [searchQuery]);
