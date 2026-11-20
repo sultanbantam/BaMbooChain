@@ -117,14 +117,14 @@ export const useBoomBoomStore = create((set, get) => ({
   activeBooking: {
     step: 'IDLE', // 'IDLE' | 'SEARCHING' | 'DRIVER_ASSIGNED' | 'DRIVER_ARRIVING' | 'DRIVER_ARRIVED' | 'ON_TRIP' | 'COMPLETED' | 'CANCELLED'
     instantCode: '482915',
-    pickupAddress: 'Balaikota Tangerang Selatan, Jl. Benda Raya No. 1',
-    pickupCoords: { lat: -6.3198, lng: 106.7069 },
-    destinationAddress: 'Stasiun Sudimara Tangsel',
-    destinationCoords: { lat: -6.2966, lng: 106.7128 },
+    pickupAddress: '',
+    pickupCoords: null,
+    destinationAddress: '',
+    destinationCoords: null,
     serviceType: 'BoomRide',
     routeOptimizationMode: 'FASTEST',
     isEvVehicle: false,
-    fareCalc: calculateFare({ serviceType: 'BoomRide', distanceKm: 3.4, durationMin: 10 }),
+    fareCalc: calculateFare({ serviceType: 'BoomRide', distanceKm: 0, durationMin: 0 }),
     pilotGeofence: checkGeofencePilotZone({ lat: -6.3198, lng: 106.7069 }, INITIAL_OPERATING_REGIONS),
     assignedDriver: null,
     matchedCandidates: [],
@@ -234,11 +234,12 @@ export const useBoomBoomStore = create((set, get) => ({
   setPickup: (address, coords) => {
     set((state) => {
       const active = state.activeBooking;
-      const pickupCoords = coords || resolveCoordsSync(address, active.pickupCoords);
+      const defaultLoc = { lat: -6.3198, lng: 106.7069 };
+      const pickupCoords = coords || (address ? resolveCoordsSync(address, active.pickupCoords || defaultLoc) : null);
       const destCoords = active.destinationCoords;
 
-      const distance = calculateRealisticRoadDistance(pickupCoords, destCoords);
-      const duration = calculateRealisticEta(distance, active.serviceType);
+      const distance = (pickupCoords && destCoords) ? calculateRealisticRoadDistance(pickupCoords, destCoords) : 0;
+      const duration = distance > 0 ? calculateRealisticEta(distance, active.serviceType) : 0;
 
       const fareCalc = calculateFare({
         serviceType: active.serviceType,
@@ -248,8 +249,8 @@ export const useBoomBoomStore = create((set, get) => ({
         isEvVehicle: active.isEvVehicle
       });
 
-      const matchResult = findBestMatchingDriver(pickupCoords, active.serviceType, state.drivers);
-      const pilotGeofence = checkGeofencePilotZone(pickupCoords, state.regions);
+      const matchResult = pickupCoords ? findBestMatchingDriver(pickupCoords, active.serviceType, state.drivers) : { bestDriver: null, rankedCandidates: [] };
+      const pilotGeofence = pickupCoords ? checkGeofencePilotZone(pickupCoords, state.regions) : null;
 
       return {
         activeBooking: {
@@ -267,11 +268,12 @@ export const useBoomBoomStore = create((set, get) => ({
   setDestination: (address, coords) => {
     set((state) => {
       const active = state.activeBooking;
-      const destCoords = coords || resolveCoordsSync(address, active.destinationCoords);
+      const defaultDest = { lat: -6.2966, lng: 106.7128 };
+      const destCoords = coords || (address ? resolveCoordsSync(address, active.destinationCoords || defaultDest) : null);
       const pickupCoords = active.pickupCoords;
 
-      const distance = calculateRealisticRoadDistance(pickupCoords, destCoords);
-      const duration = calculateRealisticEta(distance, active.serviceType);
+      const distance = (pickupCoords && destCoords) ? calculateRealisticRoadDistance(pickupCoords, destCoords) : 0;
+      const duration = distance > 0 ? calculateRealisticEta(distance, active.serviceType) : 0;
 
       const fareCalc = calculateFare({
         serviceType: active.serviceType,
@@ -298,8 +300,15 @@ export const useBoomBoomStore = create((set, get) => ({
     const serviceType = state.activeBooking.serviceType;
     const isEvVehicle = state.activeBooking.isEvVehicle;
 
-    const pickupGeo = await geocodeLocation(pickupAddress || state.activeBooking.pickupAddress);
-    const destGeo = await geocodeLocation(destinationAddress || state.activeBooking.destinationAddress);
+    const pAddr = pickupAddress || state.activeBooking.pickupAddress;
+    const dAddr = destinationAddress || state.activeBooking.destinationAddress;
+
+    if (!pAddr || !dAddr) {
+      return null;
+    }
+
+    const pickupGeo = await geocodeLocation(pAddr);
+    const destGeo = await geocodeLocation(dAddr);
 
     const pickupCoords = { lat: pickupGeo.lat, lng: pickupGeo.lng };
     const destCoords = { lat: destGeo.lat, lng: destGeo.lng };
@@ -322,9 +331,9 @@ export const useBoomBoomStore = create((set, get) => ({
     set((s) => ({
       activeBooking: {
         ...s.activeBooking,
-        pickupAddress: pickupAddress || s.activeBooking.pickupAddress,
+        pickupAddress: pAddr,
         pickupCoords,
-        destinationAddress: destinationAddress || s.activeBooking.destinationAddress,
+        destinationAddress: dAddr,
         destinationCoords: destCoords,
         fareCalc,
         pilotGeofence,

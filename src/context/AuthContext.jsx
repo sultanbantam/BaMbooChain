@@ -271,7 +271,9 @@ export const AuthProvider = ({ children }) => {
         console.error("Redirect Auth Error:", err);
       }
     };
-    handleRedirectResult();
+    if (!Capacitor.isNativePlatform()) {
+      handleRedirectResult();
+    }
 
     console.log("🚀 Firebase Auth Initializing...");
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {

@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { 
-  Car, Bike, Clock, Users, Sparkles, ShieldCheck, ChevronRight,
-  MapPin, Award, ArrowRight, Package, Compass, Home, HeartPulse
+  Bike, Car, Package, Clock, Users, MapPin, ArrowRight,
+  Crosshair, ShieldCheck, UserCheck, Wallet, Sparkles, Navigation
 } from 'lucide-react';
 import BoomBoomNavHeader from '../../components/boomboom/BoomBoomNavHeader';
 import MapViewComponent from '../../components/boomboom/MapViewComponent';
 import SosButton from '../../components/boomboom/SosButton';
 import { useBoomBoomStore } from '../../services/boomboom/boomboomStore';
+import { useAuth } from '../../context/AuthContext';
+import { reverseGeocodeCoords } from '../../services/boomboom/geoService';
 
-/* ---------- Responsive hook ---------- */
 const useIsMobile = () => {
   const [w, setW] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
   useEffect(() => {
@@ -20,64 +21,127 @@ const useIsMobile = () => {
   return w <= 768;
 };
 
-/* ---------- Page ---------- */
 const BoomBoomPage = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { user } = useAuth();
   const { activeBooking, setServiceType, setPickup, setDestination, recalculateRouteAndFare } = useBoomBoomStore();
 
-  const [pickupInput, setPickupInput] = useState(activeBooking.pickupAddress);
-  const [destInput, setDestInput] = useState(activeBooking.destinationAddress);
+  const [pickupInput, setPickupInput] = useState(activeBooking.pickupAddress || '');
+  const [destInput, setDestInput] = useState(activeBooking.destinationAddress || '');
+  const [isLocating, setIsLocating] = useState(false);
 
-  // Sinkronisasi responsif saat teks alamat diubah di beranda BoomBoom
+  // Sinkronisasi otomatis saat user memilih dari pin peta
+  useEffect(() => {
+    if (activeBooking.pickupAddress && activeBooking.pickupAddress !== pickupInput) {
+      setPickupInput(activeBooking.pickupAddress);
+    }
+  }, [activeBooking.pickupAddress]);
+
+  useEffect(() => {
+    if (activeBooking.destinationAddress && activeBooking.destinationAddress !== destInput) {
+      setDestInput(activeBooking.destinationAddress);
+    }
+  }, [activeBooking.destinationAddress]);
+
+  // Recalculate route debounced saat user mengetik
   useEffect(() => {
     if (!pickupInput || !destInput) return;
-    if (
-      pickupInput === activeBooking.pickupAddress &&
-      destInput === activeBooking.destinationAddress
-    ) {
-      return;
-    }
     const timer = setTimeout(() => {
       recalculateRouteAndFare(pickupInput, destInput);
-    }, 650);
+    }, 600);
     return () => clearTimeout(timer);
   }, [pickupInput, destInput]);
 
   const handleQuickBook = async (e) => {
-    e.preventDefault();
-    await recalculateRouteAndFare(pickupInput, destInput);
+    if (e) e.preventDefault();
+    if (pickupInput && destInput) {
+      await recalculateRouteAndFare(pickupInput, destInput);
+    } else if (pickupInput) {
+      setPickup(pickupInput);
+    }
     navigate('/boomboom/book');
   };
 
-  const services = [
+  // Tombol GPS Lokasi Saya untuk menjemput di titik saat ini
+  const handleUseMyLocation = () => {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+      alert('Perangkat Anda tidak mendukung fitur lokasi GPS.');
+      return;
+    }
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        setIsLocating(false);
+        const { latitude, longitude } = pos.coords;
+        const quickLabel = `Lokasi Saya (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`;
+        setPickupInput(quickLabel);
+        setPickup(quickLabel, { lat: latitude, lng: longitude });
+
+        try {
+          const addr = await reverseGeocodeCoords(latitude, longitude);
+          setPickupInput(addr);
+          setPickup(addr, { lat: latitude, lng: longitude });
+        } catch {}
+      },
+      () => {
+        setIsLocating(false);
+        alert('Gagal membaca GPS. Pastikan izin lokasi perangkat telah diaktifkan.');
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  };
+
+  // 5 Layanan Utama Simbolik Bergaya Gojek / Green SM
+  const mainServices = [
     {
-      type: 'BoomRide', label: 'BoomRide', sub: 'Ojek Motor Asik',
-      icon: <Bike size={24} />, bg: '#d1fae5', color: '#059669', accent: '#10b981',
-      btnBg: 'rgba(16,185,129,0.15)', btnColor: '#047857', btnText: 'Pesan BoomRide'
+      type: 'BoomRide',
+      title: 'BoomRide',
+      icon: <Bike size={26} />,
+      badge: 'Motor EV',
+      color: '#10b981',
+      bg: 'rgba(16, 185, 129, 0.12)'
     },
     {
-      type: 'BoomCar', label: 'BoomCar', sub: 'Mobil Nyaman',
-      icon: <Car size={24} />, bg: '#d1fae5', color: '#059669', accent: '#10b981',
-      btnBg: 'rgba(16,185,129,0.15)', btnColor: '#047857', btnText: 'Pesan BoomCar'
+      type: 'BoomCar',
+      title: 'BoomCar',
+      icon: <Car size={26} />,
+      badge: 'Mobil Hijau',
+      color: '#059669',
+      bg: 'rgba(5, 150, 105, 0.12)'
     },
     {
-      type: 'BoomSchedule', label: 'BoomSchedule', sub: 'Perjalanan Terjadwal',
-      icon: <Clock size={24} />, bg: '#fef3c7', color: '#b45309', accent: '#f59f00',
-      btnBg: 'rgba(245,159,0,0.15)', btnColor: '#b45309', btnText: 'Buat Jadwal'
+      type: 'BoomSend',
+      title: 'BoomSend',
+      icon: <Package size={26} />,
+      badge: 'Kirim Cepat',
+      color: '#0284c7',
+      bg: 'rgba(2, 132, 199, 0.12)'
     },
     {
-      type: 'BoomTogether', label: 'BoomTogether', sub: 'Tumpangan Komunitas',
-      icon: <Users size={24} />, bg: '#cff4fc', color: '#0891b2', accent: '#06b6d4',
-      btnBg: 'rgba(6,182,212,0.15)', btnColor: '#0891b2', btnText: 'Tumpangan Bareng'
+      type: 'BoomSchedule',
+      title: 'Jadwal',
+      icon: <Clock size={26} />,
+      badge: 'Terencana',
+      color: '#d97706',
+      bg: 'rgba(217, 119, 6, 0.12)'
     },
+    {
+      type: 'BoomTogether',
+      title: 'Tumpangan',
+      icon: <Users size={26} />,
+      badge: 'Komunitas',
+      color: '#7c3aed',
+      bg: 'rgba(124, 58, 237, 0.12)'
+    }
   ];
 
-  const futureMods = [
-    { icon: <Package size={15} color="#059669" />, label: 'BoomSend — Kurir & Logistik Desa (Aktif)', svc: 'BoomSend' },
-    { icon: <Compass size={15} color="#059669" />, label: 'BoomTour — Wisata Bambu (Aktif)', svc: 'BoomTour' },
-    { icon: <Home size={15} color="#059669" />, label: 'BoomVillage — Ekonomi Desa (Aktif)', svc: 'BoomRide' },
-    { icon: <HeartPulse size={15} color="#059669" />, label: 'BoomCare — Kesehatan Warga (Aktif)', svc: 'BoomCar' },
+  const quickChips = [
+    'Stasiun Cisauk',
+    'Pasar Cibarani Subang',
+    'Balaikota Tangerang Selatan',
+    'Sentra Bibit Bambu Cibarani',
+    'Kawasan Wisata Bambu'
   ];
 
   return (
@@ -85,13 +149,12 @@ const BoomBoomPage = () => {
       background: 'var(--bg-color, #f8fafc)',
       color: 'var(--text-main, #0f172a)',
       minHeight: '100vh',
-      paddingBottom: '64px'
+      paddingBottom: '80px'
     }}>
       <BoomBoomNavHeader />
 
-      {/* ─── Inject scoped CSS for dark-mode awareness ─── */}
       <style>{`
-        .boom-input-field {
+        .boomboom-modern-input {
           border: none;
           outline: none;
           background: transparent;
@@ -100,506 +163,425 @@ const BoomBoomPage = () => {
           font-weight: 700;
           color: var(--text-main, #0f172a);
         }
-        .boom-input-field::placeholder { color: var(--text-muted, #94a3b8); font-weight: 500; }
-        .boom-svc-btn:hover { opacity: 0.85; transform: translateY(-1px); }
-        .boom-action-btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
-        @media (max-width: 480px) {
-          .boom-hero-h1 { font-size: 1.9rem !important; }
-          .boom-hero-tagline { font-size: 1rem !important; }
-          .boom-hero-desc { font-size: 0.88rem !important; }
+        .boomboom-modern-input::placeholder {
+          color: var(--text-muted, #94a3b8);
+          font-weight: 500;
+        }
+        .svc-card-touch {
+          transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .svc-card-touch:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 20px rgba(0,0,0,0.08);
         }
       `}</style>
 
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: isMobile ? '16px 12px' : '24px 16px' }}>
-
-        {/* ══ HERO + BOOKING CARD ══ */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(280px, 1fr))',
-          gap: '20px',
-          marginBottom: '28px'
-        }}>
-
-          {/* ── Hero Banner ── */}
-          <div style={{
-            background: 'linear-gradient(135deg, #064e3b 0%, #047857 60%, #059669 100%)',
-            color: '#ffffff',
-            padding: isMobile ? '22px 18px' : '28px',
-            borderRadius: '24px',
-            boxShadow: '0 12px 32px rgba(6,78,59,0.22)',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            gap: '20px',
-            position: 'relative',
-            overflow: 'hidden',
-            minHeight: isMobile ? 'auto' : '280px'
-          }}>
-            {/* bg decoration */}
-            <div style={{ position: 'absolute', right: '-20px', bottom: '-20px', opacity: 0.07, pointerEvents: 'none' }}>
-              <Car size={200} color="#ffffff" />
-            </div>
-
-            <div>
-              <div style={{
-                display: 'inline-flex', alignItems: 'center', gap: '6px',
-                background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(6px)',
-                padding: '5px 12px', borderRadius: '20px',
-                fontSize: '0.75rem', fontWeight: '700', color: '#fef08a', marginBottom: '12px'
-              }}>
-                <Sparkles size={13} /> Modul Mobilitas BaMbooChain
-              </div>
-
-              <h1 className="boom-hero-h1" style={{
-                fontSize: isMobile ? '2rem' : '2.4rem',
-                fontWeight: '900', margin: '0 0 10px',
-                lineHeight: 1.1, letterSpacing: '-0.5px', color: '#ffffff'
-              }}>
-                BOOMBOOM
-              </h1>
-
-              <div className="boom-hero-tagline" style={{
-                fontSize: isMobile ? '1.05rem' : '1.15rem',
-                fontWeight: '700', color: '#a7f3d0', marginBottom: '8px'
-              }}>
-                "Dari Desa, Menghubungkan Nusantara."
-              </div>
-
-              <p className="boom-hero-desc" style={{
-                fontSize: isMobile ? '0.88rem' : '0.93rem',
-                color: '#ecfdf5', lineHeight: '1.65',
-                maxWidth: '480px', margin: 0
-              }}>
-                Transportasi komunitas yang mudah, aman, transparan dan terhubung dengan ekosistem ekonomi hijau BaMbooChain.
-              </p>
-            </div>
-
-            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
-              <SosButton />
-              <Link to="/boomboom/safety" style={{
-                background: 'rgba(255,255,255,0.18)', color: '#ffffff',
-                textDecoration: 'none', padding: '9px 16px',
-                borderRadius: '24px', fontSize: '0.83rem', fontWeight: '700',
-                display: 'inline-flex', alignItems: 'center', gap: '6px'
-              }}>
-                <ShieldCheck size={16} /> Panduan BoomSafe
-              </Link>
-            </div>
-          </div>
-
-          {/* ── Booking Card ── */}
-          <div style={{
-            background: 'var(--bg-card, #ffffff)',
-            borderRadius: '24px',
-            padding: isMobile ? '18px' : '26px',
-            boxShadow: '0 8px 28px rgba(0,0,0,0.06)',
-            border: '1px solid var(--border-color, #e2e8f0)'
-          }}>
-            <div style={{
-              display: 'flex', justifyContent: 'space-between',
-              alignItems: 'flex-start', marginBottom: '18px', gap: '8px', flexWrap: 'wrap'
-            }}>
-              <h2 style={{ fontSize: '1.2rem', fontWeight: '800', margin: 0, color: 'var(--text-main, #0f172a)' }}>
-                Pesan Perjalanan
-              </h2>
-              <span style={{
-                fontSize: '0.72rem', background: 'rgba(16,185,129,0.12)',
-                color: '#047857', padding: '4px 10px', borderRadius: '10px', fontWeight: '700',
-                whiteSpace: 'nowrap'
-              }}>
-                Zona Pilot: 1. JaBoDeTaBek • 2. SeCiPaLe • 3. Lainnya
-              </span>
-            </div>
-
-            <form onSubmit={handleQuickBook} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              {/* Pickup */}
-              <div>
-                <label style={{
-                  fontSize: '0.72rem', fontWeight: '800',
-                  color: 'var(--text-muted, #64748b)',
-                  display: 'block', marginBottom: '6px', letterSpacing: '0.5px'
-                }}>LOKASI JEMPUT</label>
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: '10px',
-                  background: 'var(--bg-secondary, #f8fafc)',
-                  border: '1.5px solid var(--border-color, #e2e8f0)',
-                  borderRadius: '14px', padding: '11px 14px'
-                }}>
-                  <MapPin size={18} color="#10b981" style={{ flexShrink: 0 }} />
-                  <input
-                    type="text" value={pickupInput}
-                    onChange={(e) => setPickupInput(e.target.value)}
-                    placeholder="Masukkan lokasi penjemputan..."
-                    className="boom-input-field"
-                  />
-                </div>
-              </div>
-
-              {/* Destination */}
-              <div>
-                <label style={{
-                  fontSize: '0.72rem', fontWeight: '800',
-                  color: 'var(--text-muted, #64748b)',
-                  display: 'block', marginBottom: '6px', letterSpacing: '0.5px'
-                }}>LOKASI TUJUAN</label>
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: '10px',
-                  background: 'var(--bg-secondary, #f8fafc)',
-                  border: '1.5px solid var(--border-color, #e2e8f0)',
-                  borderRadius: '14px', padding: '11px 14px'
-                }}>
-                  <MapPin size={18} color="#ef4444" style={{ flexShrink: 0 }} />
-                  <input
-                    type="text" value={destInput}
-                    onChange={(e) => setDestInput(e.target.value)}
-                    placeholder="Masukkan tujuan perjalanan..."
-                    className="boom-input-field"
-                  />
-                </div>
-              </div>
-
-              {/* Service Selection */}
-              <div>
-                <label style={{
-                  fontSize: '0.72rem', fontWeight: '800',
-                  color: 'var(--text-muted, #64748b)',
-                  display: 'block', marginBottom: '8px', letterSpacing: '0.5px'
-                }}>PILIH LAYANAN</label>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                  {['BoomRide', 'BoomCar'].map((svc, i) => {
-                    const active = activeBooking.serviceType === svc;
-                    return (
-                      <button key={svc} type="button"
-                        onClick={() => setServiceType(svc)}
-                        style={{
-                          display: 'flex', alignItems: 'center', gap: '8px',
-                          padding: '10px 12px', borderRadius: '14px', textAlign: 'left',
-                          border: active ? '2px solid #10b981' : '1.5px solid var(--border-color, #e2e8f0)',
-                          background: active ? 'rgba(16,185,129,0.12)' : 'var(--bg-secondary, #f8fafc)',
-                          cursor: 'pointer', transition: 'all 0.15s'
-                        }}>
-                        {i === 0
-                          ? <Bike size={20} color={active ? '#10b981' : 'var(--text-muted, #94a3b8)'} />
-                          : <Car size={20} color={active ? '#10b981' : 'var(--text-muted, #94a3b8)'} />
-                        }
-                        <div>
-                          <div style={{ fontWeight: '800', fontSize: '0.85rem', color: 'var(--text-main, #0f172a)' }}>{svc}</div>
-                          <div style={{ fontSize: '0.68rem', fontWeight: '600', color: 'var(--text-muted, #64748b)' }}>
-                            {i === 0 ? 'Motor Asik' : 'Mobil Nyaman'}
-                          </div>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Action */}
-              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '10px' }}>
-                <button type="submit" className="boom-action-btn-primary" style={{
-                  background: 'linear-gradient(135deg, #10b981, #059669)',
-                  color: '#ffffff', border: 'none',
-                  padding: '13px 16px', borderRadius: '14px',
-                  fontWeight: '800', fontSize: '0.95rem', cursor: 'pointer',
-                  boxShadow: '0 6px 16px rgba(16,185,129,0.3)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-                  transition: 'all 0.15s'
-                }}>
-                  PESAN <ArrowRight size={16} />
-                </button>
-                <button type="button"
-                  onClick={() => { setServiceType('BoomSchedule'); navigate('/boomboom/book'); }}
-                  style={{
-                    background: 'var(--bg-secondary, #f8fafc)',
-                    color: 'var(--text-main, #0f172a)',
-                    border: '1.5px solid var(--border-color, #e2e8f0)',
-                    padding: '13px 10px', borderRadius: '14px',
-                    fontWeight: '700', fontSize: '0.82rem', cursor: 'pointer',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px'
-                  }}>
-                  <Clock size={15} /> JADWAL
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-
-        {/* ══ MAP PREVIEW ══ */}
+      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: isMobile ? '12px 14px' : '20px 18px' }}>
+        
+        {/* ══ TOP QUICK WALLET & NGOPI.TOP BAR ══ */}
         <div style={{
           background: 'var(--bg-card, #ffffff)',
-          borderRadius: '24px', padding: isMobile ? '16px' : '24px',
-          boxShadow: '0 8px 28px rgba(0,0,0,0.04)',
+          borderRadius: '20px',
+          padding: '12px 18px',
+          marginBottom: '16px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '12px',
           border: '1px solid var(--border-color, #e2e8f0)',
-          marginBottom: '32px'
+          boxShadow: '0 4px 14px rgba(0,0,0,0.03)'
         }}>
-          <div style={{
-            display: 'flex', justifyContent: 'space-between',
-            alignItems: 'flex-start', marginBottom: '14px',
-            flexWrap: 'wrap', gap: '10px'
-          }}>
-            <div>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: '800', margin: '0 0 3px', color: 'var(--text-main, #0f172a)' }}>
-                Peta Geospasial Sekitar
-              </h3>
-              <p style={{ fontSize: '0.82rem', color: 'var(--text-muted, #64748b)', margin: 0 }}>
-                Pengemudi lokal terverifikasi & zona operasional mitra.
-              </p>
+          {/* Saldo BMC & Rupiah */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{
+              width: '38px',
+              height: '38px',
+              borderRadius: '12px',
+              background: '#ecfdf5',
+              color: '#059669',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <Wallet size={20} />
             </div>
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              <span style={{
-                fontSize: '0.8rem', fontWeight: '700', color: '#047857',
-                background: 'rgba(16,185,129,0.12)', padding: '5px 10px', borderRadius: '10px', whiteSpace: 'nowrap'
-              }}>
-                Est: ~{activeBooking.fareCalc.formatted.grossFare}
-              </span>
-              <span style={{
-                fontSize: '0.8rem', fontWeight: '700', color: '#b45309',
-                background: 'rgba(245,159,0,0.12)', padding: '5px 10px', borderRadius: '10px', whiteSpace: 'nowrap'
-              }}>
-                ~{activeBooking.fareCalc.durationMin} Menit
-              </span>
+            <div>
+              <div style={{ fontSize: '0.72rem', fontWeight: '800', color: 'var(--text-muted, #64748b)' }}>
+                DOMPET HIJAU
+              </div>
+              <div style={{ fontSize: '0.92rem', fontWeight: '900', color: '#047857' }}>
+                {user?.bmcBalance !== undefined ? `${user.bmcBalance} BMC` : '100 BMC'} • QRIS Aktif
+              </div>
             </div>
           </div>
-          <MapViewComponent height={isMobile ? '260px' : '360px'} showNearbyDrivers={true} />
+
+          {/* Identity ngopi.top Status */}
+          <a
+            href="https://ngopi.top"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              textDecoration: 'none',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              background: 'rgba(217, 119, 6, 0.1)',
+              color: '#b45309',
+              padding: '6px 12px',
+              borderRadius: '14px',
+              fontSize: '0.78rem',
+              fontWeight: '800',
+              border: '1px solid rgba(217, 119, 6, 0.25)'
+            }}
+          >
+            <span>☕</span>
+            <span>Identity ngopi.top Terhubung</span>
+            <span style={{ fontSize: '0.7rem', color: '#059669' }}>● Online</span>
+          </a>
         </div>
 
-        {/* ══ SERVICES ══ */}
-        <div style={{ marginBottom: '40px' }}>
-          <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-            <h2 style={{ fontSize: isMobile ? '1.5rem' : '1.75rem', fontWeight: '800', color: 'var(--text-main, #0f172a)', margin: '0 0 8px' }}>
-              Layanan Mobilitas Komunitas
-            </h2>
-            <p style={{ fontSize: '0.88rem', color: 'var(--text-muted, #64748b)', maxWidth: '580px', margin: '0 auto', lineHeight: 1.6 }}>
-              Empat layanan MVP siap pakai, terintegrasi dengan ekosistem BaMbooChain.
-            </p>
-          </div>
-
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: isMobile ? 'repeat(2, minmax(0, 1fr))' : 'repeat(4, minmax(0, 1fr))',
-            gap: isMobile ? '8px' : '14px'
-          }}>
-            {services.map((svc) => (
-              <div key={svc.type} style={{
-                background: 'var(--bg-card, #ffffff)',
-                borderRadius: isMobile ? '16px' : '20px',
-                padding: isMobile ? '12px 10px' : '22px',
-                boxShadow: '0 4px 16px rgba(0,0,0,0.04)',
-                border: `1.5px solid ${svc.accent}`,
-                display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-                gap: '8px',
-                minHeight: isMobile ? '148px' : 'auto',
-                boxSizing: 'border-box',
-                minWidth: 0,
-                overflow: 'hidden'
-              }}>
-                <div style={{ minWidth: 0 }}>
-                  <div style={{
-                    width: isMobile ? '32px' : '38px',
-                    height: isMobile ? '32px' : '38px',
-                    borderRadius: '10px',
-                    background: svc.bg, color: svc.color,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    marginBottom: '6px'
-                  }}>
-                    {svc.icon}
-                  </div>
-                  <h3 style={{
-                    fontSize: isMobile ? '0.84rem' : '1.05rem',
-                    fontWeight: '800',
-                    margin: '0 0 2px',
-                    color: 'var(--text-main, #0f172a)',
-                    whiteSpace: 'nowrap',
-                    letterSpacing: '-0.3px',
-                    lineHeight: 1.2
-                  }}>
-                    {svc.label}
-                  </h3>
-                  <p style={{
-                    fontSize: isMobile ? '0.72rem' : '0.78rem',
-                    color: 'var(--text-muted, #64748b)',
-                    lineHeight: '1.35',
-                    margin: 0,
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis'
-                  }}>
-                    {svc.sub}
-                  </p>
+        {/* ══ GOJEK / GREEN SM ICONIC SERVICE GRID ══ */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(5, 1fr)',
+          gap: isMobile ? '8px' : '14px',
+          marginBottom: '20px'
+        }}>
+          {mainServices.map((svc) => {
+            const isSelected = activeBooking.serviceType === svc.type;
+            return (
+              <button
+                key={svc.type}
+                type="button"
+                onClick={() => {
+                  setServiceType(svc.type);
+                  navigate('/boomboom/book');
+                }}
+                className="svc-card-touch"
+                style={{
+                  background: isSelected ? 'var(--bg-card, #ffffff)' : 'var(--bg-card, #ffffff)',
+                  border: isSelected ? `2.5px solid ${svc.color}` : '1.5px solid var(--border-color, #e2e8f0)',
+                  borderRadius: isMobile ? '16px' : '20px',
+                  padding: isMobile ? '12px 6px' : '16px 10px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                  cursor: 'pointer',
+                  textAlign: 'center',
+                  boxShadow: isSelected ? `0 6px 18px ${svc.color}25` : '0 2px 8px rgba(0,0,0,0.02)'
+                }}
+              >
+                <div style={{
+                  width: isMobile ? '44px' : '52px',
+                  height: isMobile ? '44px' : '52px',
+                  borderRadius: isMobile ? '14px' : '18px',
+                  background: svc.bg,
+                  color: svc.color,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: `0 4px 10px ${svc.color}20`
+                }}>
+                  {svc.icon}
                 </div>
-                <button
-                  className="boom-svc-btn"
-                  onClick={() => { setServiceType(svc.type); navigate('/boomboom/book'); }}
-                  style={{
-                    background: svc.btnBg, color: svc.btnColor,
-                    border: 'none',
-                    padding: isMobile ? '7px 8px' : '9px 10px',
-                    borderRadius: '8px',
-                    fontWeight: '800',
-                    fontSize: isMobile ? '0.7rem' : '0.78rem',
-                    cursor: 'pointer',
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    transition: 'all 0.15s',
-                    width: '100%',
-                    whiteSpace: 'nowrap'
-                  }}>
-                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{svc.btnText}</span>
-                  <ChevronRight size={13} style={{ flexShrink: 0 }} />
-                </button>
-              </div>
-            ))}
-          </div>
+                <div style={{
+                  fontSize: isMobile ? '0.75rem' : '0.86rem',
+                  fontWeight: '900',
+                  color: 'var(--text-main, #0f172a)',
+                  lineHeight: 1.2
+                }}>
+                  {svc.title}
+                </div>
+                <span style={{
+                  fontSize: isMobile ? '0.62rem' : '0.68rem',
+                  fontWeight: '700',
+                  color: svc.color,
+                  background: svc.bg,
+                  padding: '2px 6px',
+                  borderRadius: '6px',
+                  whiteSpace: 'nowrap'
+                }}>
+                  {svc.badge}
+                </span>
+              </button>
+            );
+          })}
+        </div>
 
-          {/* Expansion Modules (Tahap IV Production Scaling) */}
-          <div style={{
-            marginTop: '20px', background: 'rgba(16,185,129,0.06)',
-            borderRadius: '20px', padding: '16px 20px',
-            border: '1.5px solid #10b981'
-          }}>
-            <div style={{
-              fontSize: '0.72rem', fontWeight: '900', color: '#047857',
-              textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '10px'
-            }}>
-              🚀 Modul Ekspansi Tahap IV (Production Scaling — Aktif)
-            </div>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(auto-fit, minmax(180px, 1fr))',
-              gap: '8px'
-            }}>
-              {futureMods.map((m, i) => (
+        {/* ══ BOOKING SEARCH CARD (Dikosongkan Secara Default) ══ */}
+        <div style={{
+          background: 'var(--bg-card, #ffffff)',
+          borderRadius: '24px',
+          padding: isMobile ? '18px' : '24px',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.05)',
+          border: '1.5px solid var(--border-color, #e2e8f0)',
+          marginBottom: '20px'
+        }}>
+          <form onSubmit={handleQuickBook} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            
+            {/* Input Lokasi Jemput */}
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                <label style={{ fontSize: '0.72rem', fontWeight: '900', color: 'var(--text-muted, #64748b)', letterSpacing: '0.5px' }}>
+                  🟢 LOKASI JEMPUT
+                </label>
                 <button
-                  key={i}
                   type="button"
-                  onClick={() => { setServiceType(m.svc); navigate('/boomboom/book'); }}
+                  onClick={handleUseMyLocation}
                   style={{
-                    display: 'flex', alignItems: 'center', gap: '7px',
-                    fontSize: '0.8rem', fontWeight: '800',
-                    color: '#065f46', background: 'var(--bg-card, #ffffff)',
-                    border: '1px solid #a7f3d0', borderRadius: '10px',
-                    padding: '8px 10px', cursor: 'pointer', textAlign: 'left'
+                    background: 'none',
+                    border: 'none',
+                    color: '#059669',
+                    fontSize: '0.74rem',
+                    fontWeight: '800',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: 0
                   }}
                 >
-                  {m.icon} <span>{m.label}</span>
+                  <Crosshair size={13} className={isLocating ? 'animate-spin' : ''} />
+                  <span>{isLocating ? 'Mendeteksi...' : 'Lokasi Saya'}</span>
+                </button>
+              </div>
+
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                background: 'var(--bg-secondary, #f8fafc)',
+                border: '1.5px solid var(--border-color, #e2e8f0)',
+                borderRadius: '14px',
+                padding: '12px 14px'
+              }}>
+                <div style={{
+                  width: '12px',
+                  height: '12px',
+                  borderRadius: '50%',
+                  background: '#10b981',
+                  flexShrink: 0,
+                  boxShadow: '0 0 6px #10b981'
+                }} />
+                <input
+                  type="text"
+                  value={pickupInput}
+                  onChange={(e) => setPickupInput(e.target.value)}
+                  placeholder="Mau dijemput di mana? (Ketik atau klik Lokasi Saya)"
+                  className="boomboom-modern-input"
+                />
+              </div>
+            </div>
+
+            {/* Input Lokasi Tujuan */}
+            <div>
+              <label style={{
+                fontSize: '0.72rem',
+                fontWeight: '900',
+                color: 'var(--text-muted, #64748b)',
+                display: 'block',
+                marginBottom: '6px',
+                letterSpacing: '0.5px'
+              }}>
+                🏁 LOKASI TUJUAN
+              </label>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                background: 'var(--bg-secondary, #f8fafc)',
+                border: '1.5px solid var(--border-color, #e2e8f0)',
+                borderRadius: '14px',
+                padding: '12px 14px'
+              }}>
+                <div style={{
+                  width: '12px',
+                  height: '12px',
+                  borderRadius: '50%',
+                  background: '#ef4444',
+                  flexShrink: 0,
+                  boxShadow: '0 0 6px #ef4444'
+                }} />
+                <input
+                  type="text"
+                  value={destInput}
+                  onChange={(e) => setDestInput(e.target.value)}
+                  placeholder="Mau pergi ke mana hari ini? (Ketik atau klik peta)"
+                  className="boomboom-modern-input"
+                />
+              </div>
+            </div>
+
+            {/* Rekomendasi Titik Populer Cepat (Chips) */}
+            <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px' }}>
+              {quickChips.map((chip, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => setDestInput(chip)}
+                  style={{
+                    background: 'var(--bg-secondary, #f1f5f9)',
+                    border: '1px solid var(--border-color, #e2e8f0)',
+                    color: 'var(--text-muted, #475569)',
+                    padding: '5px 11px',
+                    borderRadius: '20px',
+                    fontSize: '0.73rem',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  📍 {chip}
                 </button>
               ))}
             </div>
-          </div>
 
-          {/* ══ ROADMAP PELAKSANAAN BERTAHAP BOOMBOOM ══ */}
+            {/* Tombol Aksi Pesan & SOS */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '10px', marginTop: '6px' }}>
+              <button
+                type="submit"
+                style={{
+                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  color: '#ffffff',
+                  border: 'none',
+                  padding: '14px 20px',
+                  borderRadius: '16px',
+                  fontWeight: '900',
+                  fontSize: '1rem',
+                  cursor: 'pointer',
+                  boxShadow: '0 6px 18px rgba(16, 185, 129, 0.35)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px'
+                }}
+              >
+                <span>Pesan Sekarang</span>
+                <ArrowRight size={18} />
+              </button>
+              <SosButton />
+            </div>
+          </form>
+        </div>
+
+        {/* ══ LIVE RESPONSIVE MAP (Tanpa Tulisan Berbelit-belit) ══ */}
+        <div style={{
+          background: 'var(--bg-card, #ffffff)',
+          borderRadius: '24px',
+          padding: isMobile ? '14px' : '18px',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.04)',
+          border: '1px solid var(--border-color, #e2e8f0)',
+          marginBottom: '20px'
+        }}>
           <div style={{
-            marginTop: '28px',
-            background: 'var(--bg-card, #ffffff)',
-            borderRadius: '24px',
-            padding: isMobile ? '20px 16px' : '26px',
-            boxShadow: '0 8px 28px rgba(0,0,0,0.04)',
-            border: '1px solid var(--border-color, #e2e8f0)'
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: '12px',
+            flexWrap: 'wrap',
+            gap: '8px'
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '18px' }}>
-              <div>
-                <h3 style={{ fontSize: '1.2rem', fontWeight: '900', margin: '0 0 4px', color: 'var(--text-main, #0f172a)' }}>
-                  Roadmap Pelaksanaan Bertahap BoomBoom
-                </h3>
-                <p style={{ fontSize: '0.82rem', color: 'var(--text-muted, #64748b)', margin: 0 }}>
-                  Seluruh 4 Tahap Pengembangan Ekosistem Mobilitas Hijau Komunitas BaMbooChain Telah Aktif.
-                </p>
-              </div>
-              <span style={{
-                background: 'rgba(16,185,129,0.15)',
-                color: '#047857',
-                padding: '5px 12px',
-                borderRadius: '12px',
-                fontSize: '0.75rem',
-                fontWeight: '900'
-              }}>
-                🚀 TAHAP I–IV (PRODUCTION SCALING) AKTIF 100%
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Navigation size={18} color="#10b981" />
+              <span style={{ fontSize: '0.95rem', fontWeight: '900', color: 'var(--text-main, #0f172a)' }}>
+                Radar Pengemudi & Peta Rute
               </span>
             </div>
+            <span style={{ fontSize: '0.74rem', color: '#047857', background: '#ecfdf5', padding: '3px 8px', borderRadius: '8px', fontWeight: '800' }}>
+              🟢 Klik peta untuk tentukan titik jemput / tujuan
+            </span>
+          </div>
 
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(230px, 1fr))',
-              gap: '14px'
-            }}>
-              {[
-                {
-                  phase: 'TAHAP I — UI/Prototype & Uji Lapangan Awal',
-                  status: 'SELESAI 100%',
-                  active: false,
-                  done: true,
-                  items: [
-                    '11 Rute Halaman & Peta Responsif OSM',
-                    'Modal Wajib GPS & Rute Jalan Raya Nyata',
-                    'Pendaftaran Driver, Operator BUMDes/Koperasi',
-                    'Notifikasi Order ngopi.top & WhatsApp'
-                  ]
-                },
-                {
-                  phase: 'TAHAP II — Backend Pilot & Matching Engine',
-                  status: 'SELESAI 100%',
-                  active: false,
-                  done: true,
-                  items: [
-                    'Autentikasi Riil & Multi-Role Firestore',
-                    'Sistem Kode BoomInstan (Ala Gojek Instan)',
-                    'Geospatial Matching Engine & Rute OSRM',
-                    'Server-Validated Fare, Payment Sandbox & Audit Logs'
-                  ]
-                },
-                {
-                  phase: 'TAHAP III — Closed Regional Pilot',
-                  status: 'SELESAI 100%',
-                  active: false,
-                  done: true,
-                  items: [
-                    'Geofence Zona: 1. JaBoDeTaBek, 2. SeCiPaLe, 3. Lainnya (Kab/Kota & Prov)',
-                    'Dropdown Mitra: BUMDes, Yayasan, Perusahaan, Organisasi & Lain-lain',
-                    '7 Metrik Telemetry: Completion, Respon, CSAT & Cancel',
-                    'Kepatuhan Regulasi, KODIBA Sukarela & Marketplace'
-                  ]
-                },
-                {
-                  phase: 'TAHAP IV — Production Scaling',
-                  status: 'AKTIF SEKARANG (100%)',
-                  active: true,
-                  done: true,
-                  items: [
-                    'Manajemen Operator Nasional (JaBoDeTaBek, SeCiPaLe & Lainnya)',
-                    'Payment Production & Immutable Financial Ledger (85/5/10%)',
-                    'Optimasi Rute Cerdas (OSRM Tercepat, Eco Green EV, BoomSafe)',
-                    'Fraud Detection Shield & Modul Ekspansi BoomSend / BoomTour'
-                  ]
-                }
-              ].map((rm, idx) => (
-                <div key={idx} style={{
-                  background: rm.active ? 'rgba(16,185,129,0.08)' : 'var(--bg-secondary, #f8fafc)',
-                  border: rm.active ? '2px solid #10b981' : '1px solid var(--border-color, #e2e8f0)',
-                  borderRadius: '18px',
-                  padding: '16px'
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', gap: '6px' }}>
-                    <span style={{
-                      fontSize: '0.68rem',
-                      fontWeight: '900',
-                      padding: '3px 8px',
-                      borderRadius: '8px',
-                      background: rm.active ? '#10b981' : rm.done ? '#d1fae5' : 'rgba(148,163,184,0.2)',
-                      color: rm.active ? '#ffffff' : rm.done ? '#047857' : 'var(--text-muted, #64748b)'
-                    }}>
-                      {rm.status}
-                    </span>
-                  </div>
-                  <div style={{ fontSize: '0.9rem', fontWeight: '800', color: 'var(--text-main, #0f172a)', marginBottom: '10px', lineHeight: 1.35 }}>
-                    {rm.phase}
-                  </div>
-                  <ul style={{ margin: 0, paddingLeft: '16px', fontSize: '0.78rem', color: 'var(--text-muted, #64748b)', lineHeight: 1.6 }}>
-                    {rm.items.map((it, j) => (
-                      <li key={j}>{it}</li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
+          <MapViewComponent height={isMobile ? '300px' : '380px'} showNearbyDrivers={true} />
+        </div>
+
+        {/* ══ DRIVER & PARTNER QUICK BAR (Syarat Utama ngopi.top) ══ */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)',
+          gap: '12px'
+        }}>
+          {/* Dasbor Driver Online */}
+          <div
+            onClick={() => navigate('/boomboom/driver/dashboard')}
+            style={{
+              background: 'linear-gradient(135deg, #064e3b 0%, #047857 100%)',
+              color: '#ffffff',
+              borderRadius: '20px',
+              padding: '16px 20px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              boxShadow: '0 6px 18px rgba(6, 78, 59, 0.2)'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{
+                width: '42px',
+                height: '42px',
+                borderRadius: '12px',
+                background: 'rgba(255,255,255,0.18)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '20px'
+              }}>
+                🛵
+              </div>
+              <div>
+                <div style={{ fontWeight: '900', fontSize: '0.95rem' }}>Dasbor Pengemudi</div>
+                <div style={{ fontSize: '0.75rem', color: '#a7f3d0' }}>Mode Narik & Terima Pesanan Masuk ➔</div>
+              </div>
             </div>
+            <span style={{ background: '#10b981', color: '#ffffff', padding: '4px 10px', borderRadius: '10px', fontSize: '0.72rem', fontWeight: '900' }}>
+              ONLINE
+            </span>
+          </div>
+
+          {/* Gabung Mitra Pengemudi (Wajib Akun ngopi.top) */}
+          <div
+            onClick={() => navigate('/boomboom/driver')}
+            style={{
+              background: 'var(--bg-card, #ffffff)',
+              color: 'var(--text-main, #0f172a)',
+              borderRadius: '20px',
+              padding: '16px 20px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              border: '2px solid #10b981',
+              boxShadow: '0 4px 14px rgba(16, 185, 129, 0.1)'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{
+                width: '42px',
+                height: '42px',
+                borderRadius: '12px',
+                background: 'rgba(217, 119, 6, 0.12)',
+                color: '#b45309',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '20px'
+              }}>
+                ☕
+              </div>
+              <div>
+                <div style={{ fontWeight: '900', fontSize: '0.95rem' }}>Daftar Driver BoomBoom</div>
+                <div style={{ fontSize: '0.74rem', color: '#047857', fontWeight: '700' }}>
+                  Wajib Terdaftar di ngopi.top ➔
+                </div>
+              </div>
+            </div>
+            <span style={{ background: 'rgba(217, 119, 6, 0.15)', color: '#b45309', padding: '4px 10px', borderRadius: '10px', fontSize: '0.72rem', fontWeight: '900' }}>
+              Daftar
+            </span>
           </div>
         </div>
 

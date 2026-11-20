@@ -7,6 +7,7 @@ import { db, storage } from '../../firebase/config';
 import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 import { collection, onSnapshot, doc, addDoc, updateDoc, setDoc, deleteDoc, query, orderBy, serverTimestamp, arrayUnion, arrayRemove, increment, getDoc, getDocs, where } from 'firebase/firestore';
 import ShareModal from '../../components/ShareModal';
+import { getPublicProductionOrigin } from '../../utils/shareUrl';
 import { useArticles } from '../../hooks/useFirestoreQueries';
 import { getAssetUrl } from '../../utils/assets';
 import { createKnowledgeItem } from '../../utils/knowledgeService';
@@ -869,7 +870,7 @@ const AcademyPage = () => {
   const handleShareMat = async (mat) => {
     setShareModalData({
       isOpen: true,
-      url: `${window.location.origin}/#/bamboochain/academy?ebook=${mat.id}`,
+      url: `${getPublicProductionOrigin()}/#/bamboochain/academy?ebook=${mat.id}`,
       title: `Unduh & baca riset premium "${mat.title}" di BaMbooChain Academy!`
     });
     const matRef = doc(db, "premium_materials", mat.id);
@@ -1191,7 +1192,7 @@ const AcademyPage = () => {
 
   const handleShare = async (articleId, title, e) => {
     if (e) e.stopPropagation();
-    const shareUrl = `${window.location.origin}/article/${articleId}`;
+    const shareUrl = `${getPublicProductionOrigin()}/article/${articleId}`;
     setShareModalData({
       isOpen: true,
       url: shareUrl,

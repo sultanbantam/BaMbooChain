@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ShareModal from '../components/ShareModal';
+import { getPublicProductionOrigin } from '../utils/shareUrl';
 import { db } from '../firebase/config';
 import { 
   collection, query, where, getDocs, doc, getDoc, updateDoc, 
@@ -368,7 +369,7 @@ const PublicPortfolioPage = () => {
   };
 
   const handleShare = async (status) => {
-    const canonicalShareUrl = `${window.location.origin}/u/${encodeURIComponent(targetUser?.username || username)}`;
+    const canonicalShareUrl = `${getPublicProductionOrigin()}/u/${encodeURIComponent(targetUser?.username || username)}`;
     setShareModalData({
       isOpen: true,
       url: canonicalShareUrl,
@@ -567,7 +568,7 @@ const PublicPortfolioPage = () => {
                   )}
                   <button 
                     onClick={() => {
-                      const canonicalShareUrl = `${window.location.origin}/u/${encodeURIComponent(targetUser.username || targetUser.id)}`;
+                      const canonicalShareUrl = `${getPublicProductionOrigin()}/u/${encodeURIComponent(targetUser.username || targetUser.id)}`;
                       setShareModalData({
                         isOpen: true,
                         url: canonicalShareUrl,

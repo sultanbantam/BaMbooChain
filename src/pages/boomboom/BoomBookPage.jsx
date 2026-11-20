@@ -18,8 +18,10 @@ import {
   Receipt,
   Leaf,
   QrCode,
-  CreditCard
+  CreditCard,
+  Crosshair
 } from 'lucide-react';
+import { reverseGeocodeCoords } from '../../services/boomboom/geoService';
 import BoomBoomNavHeader from '../../components/boomboom/BoomBoomNavHeader';
 import MapViewComponent from '../../components/boomboom/MapViewComponent';
 import SosButton from '../../components/boomboom/SosButton';
@@ -281,7 +283,40 @@ const BoomBookPage = () => {
     }
   };
 
+  const handleUseMyLocation = () => {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+      alert('Perangkat Anda tidak mendukung fitur lokasi GPS.');
+      return;
+    }
+    setIsCalculating(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        setIsCalculating(false);
+        const { latitude, longitude } = pos.coords;
+        const quickLabel = `Lokasi Saya (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`;
+        setPickupInput(quickLabel);
+        setPickup(quickLabel, { lat: latitude, lng: longitude });
+
+        try {
+          const addr = await reverseGeocodeCoords(latitude, longitude);
+          setPickupInput(addr);
+          setPickup(addr, { lat: latitude, lng: longitude });
+        } catch {}
+      },
+      () => {
+        setIsCalculating(false);
+        alert('Gagal mendeteksi lokasi GPS. Pastikan izin lokasi perangkat telah diaktifkan.');
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  };
+
   const handleConfirmOrder = async () => {
+    if (!pickupInput || !pickupInput.trim() || !destInput || !destInput.trim()) {
+      alert('⚠️ Silakan tentukan lokasi penjemputan dan tujuan terlebih dahulu sebelum memesan!');
+      return;
+    }
+
     const activeCode = activeBooking.instantCode || regenerateInstantCode();
     
     // Validasi saldo jika pembayaran menggunakan BMC Token
@@ -1114,13 +1149,34 @@ const BoomBookPage = () => {
 
                 <form onSubmit={handleUpdateAddresses} style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '20px' }}>
                   <div>
-                    <label style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--text-muted, #64748b)' }}>PENJEMPUTAN</label>
-                    <div style={{ marginTop: '4px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                      <label style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--text-muted, #64748b)' }}>🟢 LOKASI JEMPUT</label>
+                      <button
+                        type="button"
+                        onClick={handleUseMyLocation}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#059669',
+                          fontSize: '0.74rem',
+                          fontWeight: '800',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          padding: 0
+                        }}
+                      >
+                        <Crosshair size={13} className={isCalculating ? 'animate-spin' : ''} />
+                        <span>Lokasi Saya (GPS)</span>
+                      </button>
+                    </div>
+                    <div>
                       <input
                         type="text"
                         value={pickupInput}
                         onChange={e => setPickupInput(e.target.value)}
-                        placeholder="Ketik lokasi penjemputan..."
+                        placeholder="Mau dijemput di mana? (Ketik atau klik Lokasi Saya)"
                         style={{
                           width: '100%',
                           padding: '12px 14px',

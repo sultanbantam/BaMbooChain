@@ -1,4 +1,25 @@
 const DEFAULT_GITHUB_PAGES_BASE = '/BaMbooChain/';
+export const PUBLIC_PRODUCTION_ORIGIN = 'https://www.bamboochain.id';
+
+export const getPublicProductionOrigin = () => {
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    const origin = window.location.origin;
+    const hostname = window.location.hostname || '';
+    const isLocal = !origin || 
+                    origin.includes('localhost') || 
+                    origin.includes('127.0.0.1') || 
+                    origin.startsWith('capacitor:') || 
+                    origin.startsWith('file:') ||
+                    origin.startsWith('ionic:') ||
+                    hostname === 'localhost' ||
+                    hostname === '127.0.0.1';
+
+    if (!isLocal && !hostname.endsWith('github.io')) {
+      return origin;
+    }
+  }
+  return PUBLIC_PRODUCTION_ORIGIN;
+};
 
 export const getAppBasePath = () => {
   if (typeof window === 'undefined') return '/';
@@ -18,14 +39,13 @@ export const getAppBasePath = () => {
 };
 
 export const buildShareUrl = (hashPath = '') => {
-  if (typeof window === 'undefined') return hashPath;
-
+  const publicOrigin = getPublicProductionOrigin();
   const cleanHash = hashPath.startsWith('/') ? hashPath : `/${hashPath}`;
-  return `${window.location.origin}${getAppBasePath()}#${cleanHash}`;
+  return `${publicOrigin}${getAppBasePath()}#${cleanHash}`;
 };
 
 export const getCurrentShareUrl = () => {
-  if (typeof window === 'undefined') return '';
+  if (typeof window === 'undefined') return PUBLIC_PRODUCTION_ORIGIN;
 
   const hash = window.location.hash?.replace(/^#/, '');
   if (hash) return buildShareUrl(hash);
@@ -39,10 +59,29 @@ export const getCurrentShareUrl = () => {
 };
 
 export const normalizeShareUrl = (url = '') => {
-  if (typeof window === 'undefined' || !url) return url;
+  const publicOrigin = getPublicProductionOrigin();
+  if (!url) return publicOrigin;
 
   try {
-    const parsedUrl = new URL(url, window.location.origin);
+    let cleanUrl = String(url).trim();
+
+    // Replace any localhost, 127.0.0.1, or capacitor schemes with public production domain
+    cleanUrl = cleanUrl
+      .replace(/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i, publicOrigin)
+      .replace(/^capacitor:\/\/[^/]+/i, publicOrigin)
+      .replace(/^ionic:\/\/[^/]+/i, publicOrigin);
+
+    if (cleanUrl.startsWith('/')) {
+      cleanUrl = `${publicOrigin}${cleanUrl}`;
+    }
+
+    const parsedUrl = new URL(cleanUrl, publicOrigin);
+
+    if (parsedUrl.hostname === 'localhost' || parsedUrl.hostname === '127.0.0.1') {
+      parsedUrl.protocol = 'https:';
+      parsedUrl.host = 'www.bamboochain.id';
+    }
+
     const basePath = getAppBasePath();
     const hashPath = parsedUrl.hash?.replace(/^#/, '');
 
@@ -56,6 +95,6 @@ export const normalizeShareUrl = (url = '') => {
 
     return parsedUrl.toString();
   } catch {
-    return url;
+    return String(url).replace(/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i, publicOrigin);
   }
 };

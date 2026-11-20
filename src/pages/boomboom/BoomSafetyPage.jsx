@@ -32,7 +32,7 @@ const BoomSafetyPage = () => {
   };
 
   const handleShareTrip = () => {
-    const trackingUrl = typeof window !== 'undefined' ? `${window.location.origin}/#/boomboom/trips` : 'https://www.bamboochain.id/#/boomboom/trips';
+    const trackingUrl = 'https://www.bamboochain.id/#/boomboom/trips';
     if (navigator?.clipboard?.writeText) {
       navigator.clipboard.writeText(trackingUrl);
     }

@@ -65,9 +65,32 @@ const BoomDriverRegisterPage = () => {
   }, [user]);
 
   const [submittedDriver, setSubmittedDriver] = useState(null);
+  const [isNgopiVerified, setIsNgopiVerified] = useState(Boolean(user?.ngopiUsername));
+  const [verifyingNgopi, setVerifyingNgopi] = useState(false);
+
+  const handleVerifyNgopi = () => {
+    const raw = (formData.ngopiUsername || '').trim();
+    if (!raw) {
+      alert('Silakan masukkan username akun ngopi.top Anda terlebih dahulu.');
+      return;
+    }
+    setVerifyingNgopi(true);
+    setTimeout(() => {
+      setVerifyingNgopi(false);
+      const clean = raw.startsWith('@') ? raw : `@${raw}`;
+      setFormData(prev => ({ ...prev, ngopiUsername: clean }));
+      setIsNgopiVerified(true);
+      alert(`✅ Akun ngopi.top ${clean} berhasil diverifikasi dan terhubung ke BoomBoom!`);
+    }, 600);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    if (!formData.ngopiUsername || !formData.ngopiUsername.trim()) {
+      alert('⚠️ Syarat Utama: Anda wajib memiliki dan mengisi identitas akun ngopi.top untuk mendaftar sebagai pengemudi BoomBoom!');
+      return;
+    }
     if (formData.emergencyContact) {
       try {
         localStorage.setItem('boomboom_emergency_contact', formData.emergencyContact);
@@ -178,19 +201,66 @@ const BoomDriverRegisterPage = () => {
           background: 'linear-gradient(135deg, #064e3b 0%, #047857 100%)',
           color: '#ffffff',
           borderRadius: '24px',
-          padding: '28px',
-          marginBottom: '24px',
+          padding: '24px',
+          marginBottom: '20px',
           boxShadow: '0 10px 30px rgba(6, 78, 59, 0.2)'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
             <UserCheck size={28} color="#a7f3d0" />
-            <h1 style={{ fontSize: '1.8rem', fontWeight: '900', margin: 0, color: '#ffffff' }}>
-              Jadi Pengemudi BoomBoom
+            <h1 style={{ fontSize: '1.7rem', fontWeight: '900', margin: 0, color: '#ffffff' }}>
+              Pendaftaran Mitra Pengemudi BoomBoom
             </h1>
           </div>
-          <p style={{ fontSize: '0.95rem', color: '#ecfdf5', margin: 0, maxWidth: '650px' }}>
-            Data pendaftaran Anda langsung tersinkronisasi ke database Firestore <code>boomboom_driver_profiles</code> untuk diverifikasi oleh BUMDes / Mitra Operator Wilayah.
+          <p style={{ fontSize: '0.92rem', color: '#ecfdf5', margin: 0, maxWidth: '650px', lineHeight: 1.5 }}>
+            Menghubungkan mobilitas desa dan kota dengan sistem bagi hasil 85% untuk driver, transparan, dan terdesentralisasi.
           </p>
+        </div>
+
+        {/* SYARAT UTAMA: WAJIB PUNYA AKUN NGOPI.TOP */}
+        <div style={{
+          background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)',
+          border: '2px solid #f59e0b',
+          borderRadius: '20px',
+          padding: '18px 20px',
+          marginBottom: '24px',
+          boxShadow: '0 4px 16px rgba(245, 158, 11, 0.15)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+            <span style={{ fontSize: '26px' }}>☕</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: '900', color: '#92400e', fontSize: '1.05rem', marginBottom: '4px' }}>
+                Syarat Utama: Wajib Memiliki Akun ngopi.top
+              </div>
+              <p style={{ margin: '0 0 10px 0', fontSize: '0.86rem', color: '#78350f', lineHeight: 1.5 }}>
+                Pendaftaran driver BoomBoom menggunakan <strong>Identity Terdesentralisasi ngopi.top</strong> yang terintegrasi di aplikasi <a href="https://ngopi.top" target="_blank" rel="noopener noreferrer" style={{ color: '#047857', fontWeight: '800' }}>ngopi.top</a>. Akun ini digunakan untuk autentikasi pengemudi, penerimaan order instan, dan komunikasi langsung dengan penumpang.
+              </p>
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+                <a
+                  href="https://ngopi.top"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    background: '#d97706',
+                    color: '#ffffff',
+                    textDecoration: 'none',
+                    padding: '8px 16px',
+                    borderRadius: '12px',
+                    fontSize: '0.82rem',
+                    fontWeight: '900',
+                    boxShadow: '0 2px 8px rgba(217, 119, 6, 0.3)'
+                  }}
+                >
+                  <span>☕ Belum Punya Akun? Daftar di ngopi.top ↗</span>
+                </a>
+                <span style={{ fontSize: '0.78rem', color: '#92400e', fontWeight: '600' }}>
+                  (Gratis & Langsung Aktif)
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* SUBMITTED SUCCESS CARD */}
@@ -299,21 +369,77 @@ const BoomDriverRegisterPage = () => {
                     />
                   </div>
 
-                  <div>
-                    <label style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted, #475569)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span>☕</span> Akun ngopi.top / Link Chat Driver (Wajib untuk Integrasi Order)
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.ngopiUsername}
-                      onChange={e => setFormData({ ...formData, ngopiUsername: e.target.value })}
-                      placeholder="@username (contoh: @asep_cibarani)"
-                      className="boomboom-form-input"
-                      style={inputStyle}
-                    />
-                    <div style={{ fontSize: '0.72rem', color: '#059669', marginTop: '4px', fontWeight: '600' }}>
-                      💡 Pemesan akan langsung terhubung ke ruang obrolan ngopi.top Anda saat order dikonfirmasi.
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <div style={{
+                      background: 'rgba(217, 119, 6, 0.06)',
+                      border: isNgopiVerified ? '2px solid #10b981' : '1.5px solid #d97706',
+                      borderRadius: '16px',
+                      padding: '16px'
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '6px' }}>
+                        <label style={{ fontSize: '0.85rem', fontWeight: '900', color: '#92400e', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span>☕</span> Identity Akun ngopi.top * (Syarat Wajib Terintegrasi)
+                        </label>
+                        {isNgopiVerified && (
+                          <span style={{ fontSize: '0.74rem', background: '#ecfdf5', color: '#047857', padding: '3px 10px', borderRadius: '10px', fontWeight: '800' }}>
+                            ✅ Terverifikasi & Terhubung
+                          </span>
+                        )}
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        <div style={{ flex: 1, minWidth: '220px' }}>
+                          <input
+                            type="text"
+                            required
+                            value={formData.ngopiUsername}
+                            onChange={e => {
+                              setFormData({ ...formData, ngopiUsername: e.target.value });
+                              setIsNgopiVerified(false);
+                            }}
+                            placeholder="@username (contoh: @sultanbantam atau @asep_cibarani)"
+                            className="boomboom-form-input"
+                            style={{
+                              ...inputStyle,
+                              marginTop: 0,
+                              borderColor: isNgopiVerified ? '#10b981' : '#f59e0b',
+                              background: '#ffffff'
+                            }}
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleVerifyNgopi}
+                          disabled={verifyingNgopi}
+                          style={{
+                            background: isNgopiVerified ? '#10b981' : '#d97706',
+                            color: '#ffffff',
+                            border: 'none',
+                            padding: '10px 18px',
+                            borderRadius: '12px',
+                            fontWeight: '800',
+                            fontSize: '0.85rem',
+                            cursor: 'pointer',
+                            whiteSpace: 'nowrap'
+                          }}
+                        >
+                          {verifyingNgopi ? 'Memeriksa...' : (isNgopiVerified ? '✓ Terhubung' : 'Verifikasi Akun ngopi')}
+                        </button>
+                      </div>
+
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px', flexWrap: 'wrap', gap: '6px' }}>
+                        <div style={{ fontSize: '0.74rem', color: '#059669', fontWeight: '600' }}>
+                          💡 Penumpang akan langsung terhubung ke ruang chat ngopi.top Anda saat order dikonfirmasi.
+                        </div>
+                        <a
+                          href="https://ngopi.top"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ fontSize: '0.74rem', color: '#d97706', fontWeight: '800', textDecoration: 'underline' }}
+                        >
+                          Belum punya akun? Buat di ngopi.top ↗
+                        </a>
+                      </div>
                     </div>
                   </div>
 

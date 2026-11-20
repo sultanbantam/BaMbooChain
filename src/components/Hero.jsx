@@ -28,16 +28,38 @@ const Hero = () => {
         backgroundRepeat: 'no-repeat',
         color: 'white',
         paddingTop: 'calc(var(--navbar-height) + 40px)',
+        paddingBottom: '40px',
         textAlign: 'center',
-        paddingLeft: '20px',
-        paddingRight: '20px'
+        paddingLeft: '16px',
+        paddingRight: '16px',
+        boxSizing: 'border-box',
+        overflow: 'hidden',
+        width: '100%'
       }}
     >
-      <div className="container animate-slide-up" style={{ maxWidth: '900px' }}>
-        <h1 style={{ fontSize: 'clamp(1.2rem, 4vw, 2.8rem)', marginBottom: '24px', fontWeight: '800', lineHeight: '1.2', whiteSpace: 'nowrap' }}>
+      <div className="container animate-slide-up" style={{ maxWidth: '850px', width: '100%', margin: '0 auto', padding: '0 8px', boxSizing: 'border-box' }}>
+        <h1 style={{ 
+          fontSize: 'clamp(1.5rem, 6vw, 2.8rem)', 
+          marginBottom: '20px', 
+          fontWeight: '800', 
+          lineHeight: '1.25',
+          maxWidth: '100%',
+          wordBreak: 'break-word',
+          overflowWrap: 'break-word',
+          letterSpacing: '-0.5px'
+        }}>
           Yayasan Sabumi Nusantara Jaya
         </h1>
-        <p style={{ fontSize: 'clamp(1rem, 4vw, 1.25rem)', marginBottom: '40px', opacity: '0.9', lineHeight: '1.6' }}>
+        <p style={{ 
+          fontSize: 'clamp(0.92rem, 3.8vw, 1.2rem)', 
+          marginBottom: '36px', 
+          opacity: '0.92', 
+          lineHeight: '1.65',
+          maxWidth: '720px',
+          margin: '0 auto 36px auto',
+          wordBreak: 'break-word',
+          overflowWrap: 'break-word'
+        }}>
           {t('hero_desc')}
         </p>
         

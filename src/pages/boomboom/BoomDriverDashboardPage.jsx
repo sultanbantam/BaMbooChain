@@ -616,7 +616,7 @@ const BoomDriverDashboardPage = () => {
           <h2 style={{ fontSize: '1.25rem', fontWeight: '800', margin: '0 0 16px', color: 'var(--text-main, #0f172a)' }}>
             Navigasi Layar Pengemudi & Peta
           </h2>
-          <MapViewComponent height="380px" showNearbyDrivers={isOnline} />
+          <MapViewComponent height="380px" showNearbyDrivers={isOnline} driverMode={true} />
 
           {activeJob && (
             <div style={{ marginTop: '20px', background: '#f0fdf4', borderRadius: '24px', padding: '22px', border: '2px solid #10b981', boxShadow: '0 8px 20px rgba(16, 185, 129, 0.15)' }}>

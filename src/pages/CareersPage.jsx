@@ -11,6 +11,7 @@ import { db } from '../firebase/config';
 import { collection, addDoc, serverTimestamp, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
 import { useCareerJobPosts, useCareerDemandPosts } from '../hooks/useFirestoreQueries';
+import { getPublicProductionOrigin } from '../utils/shareUrl';
 
 const CareersPage = () => {
   const navigate = useNavigate();
@@ -567,7 +568,7 @@ const CareersPage = () => {
                       style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '12px 24px', borderRadius: '16px', fontWeight: 'bold', cursor: 'pointer' }}>Lamar</button>
                     <button 
                       onClick={() => {
-                        navigator.clipboard.writeText(`${window.location.origin}/#/careers?job=${job.id}`);
+                        navigator.clipboard.writeText(`${getPublicProductionOrigin()}/#/careers?job=${job.id}`);
                         alert('Link lowongan berhasil disalin! Bagikan ke teman Anda untuk mendapatkan Finder\'s Fee.');
                       }}
                       style={{ background: 'var(--bg-secondary)', color: 'var(--text-main)', border: '1px solid var(--border-color)', width: '45px', height: '45px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} title="Refer a Friend">

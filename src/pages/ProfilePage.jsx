@@ -9,6 +9,7 @@ import { useArticles, usePlantationDonations, useEventTransactions, useUserEvent
 import { doc, onSnapshot, updateDoc, setDoc, collection, query, where, getDoc, getDocs, addDoc, deleteDoc, arrayUnion, arrayRemove, increment } from 'firebase/firestore';
 import { requestForToken } from '../utils/NotificationService';
 import ShareModal from '../components/ShareModal';
+import { getPublicProductionOrigin } from '../utils/shareUrl';
 import { 
   User, Camera, Save, Copy, Share2, Award, Shield, CheckCircle, 
   TreeDeciduous, GraduationCap, Heart, MessageSquare, Gift, Edit3, X, Eye,
@@ -569,7 +570,7 @@ const ProfilePage = () => {
   };
 
   const handleShare = async (status) => {
-    const shareUrl = `${window.location.origin}/u/${encodeURIComponent(user.username || user.id)}`;
+    const shareUrl = `${getPublicProductionOrigin()}/u/${encodeURIComponent(user.username || user.id)}`;
     setShareModalData({
       isOpen: true,
       url: shareUrl,
@@ -834,8 +835,8 @@ const ProfilePage = () => {
   };
 
   // Passport Link Calculation (Canonical clean URL for social sharing & crawlers)
-  const passportLink = `${window.location.origin}/u/${encodeURIComponent(user.username || user.id)}`;
-  const passportSpaLink = `${window.location.origin}/#/portfolio/${encodeURIComponent(user.username || user.id)}`;
+  const passportLink = `${getPublicProductionOrigin()}/u/${encodeURIComponent(user.username || user.id)}`;
+  const passportSpaLink = `${getPublicProductionOrigin()}/#/portfolio/${encodeURIComponent(user.username || user.id)}`;
   const copyPassportLink = () => {
     navigator.clipboard.writeText(passportLink);
     setCopiedPassport(true);
