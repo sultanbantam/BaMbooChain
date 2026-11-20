@@ -1,1 +1,0 @@
-import{l as e}from"./vendor-others-RdHVI4F2.js";export{e as AppWeb};

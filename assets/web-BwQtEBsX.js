@@ -1,1 +1,0 @@
-import{t as e}from"./vendor-firebase-C13Lk2ob.js";export{e as FirebaseAuthenticationWeb};
