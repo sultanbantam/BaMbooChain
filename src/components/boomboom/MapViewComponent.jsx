@@ -3,6 +3,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useBoomBoomStore } from '../../services/boomboom/boomboomStore';
 import { fetchOsrmRoadRoute, reverseGeocodeCoords } from '../../services/boomboom/geoService';
+import { subscribeFirestoreDrivers } from '../../services/boomboom/boomboomPilotService';
 import { Navigation, MapPin, Crosshair, Compass, ExternalLink, Bike, Car } from 'lucide-react';
 
 const DEFAULT_CENTER = { lat: -6.3198, lng: 106.7069 }; // default view (Tangsel / Jabodetabek)
@@ -29,6 +30,16 @@ const MapViewComponent = ({
   useEffect(() => {
     clickPinModeRef.current = clickPinMode;
   }, [clickPinMode]);
+
+  // Sinkronisasi otomatis daftar pengemudi resmi & online dari Firestore
+  useEffect(() => {
+    const unsub = subscribeFirestoreDrivers((list) => {
+      if (Array.isArray(list) && list.length > 0) {
+        useBoomBoomStore.getState().syncFirestoreDriversList(list);
+      }
+    });
+    return () => unsub && unsub();
+  }, []);
 
   const pickupCoords = activeBooking.pickupCoords;
   const destCoords = activeBooking.destinationCoords;
@@ -235,28 +246,33 @@ const MapViewComponent = ({
       }
     }
 
-    // 4. IKON DRIVER SEKITAR (Simbol Kendaraan 🛵 / 🚗 Hijau Canggih)
+    // 4. IKON DRIVER SEKITAR (Hanya pengemudi terdaftar, terverifikasi, dan online secara riil)
     driverMarkersRef.current.forEach(m => m.remove());
     driverMarkersRef.current = [];
 
     if (showNearbyDrivers) {
-      const activeDrivers = drivers.filter(d => d.isOnline);
-      const centerPoint = pickupCoords || DEFAULT_CENTER;
+      const activeDrivers = drivers.filter(d => 
+        Boolean(d.isOnline) && 
+        (d.status === 'VERIFIED' || d.is_verified) &&
+        ((d.currentLat && d.currentLng) || (d.lat && d.lng) || (d.coords && d.coords.lat && d.coords.lng))
+      );
 
-      activeDrivers.forEach((driver, idx) => {
-        const offsetLat = ((idx % 2 === 0 ? 1 : -1) * (0.0022 + idx * 0.0012));
-        const offsetLng = ((idx % 3 === 0 ? -1 : 1) * (0.0025 + idx * 0.001));
-        const dLat = centerPoint.lat + offsetLat;
-        const dLng = centerPoint.lng + offsetLng;
-        const isCar = (driver.vehicle_brand || '').toLowerCase().includes('mobil') || (driver.service_type || '').includes('Car');
+      activeDrivers.forEach((driver) => {
+        const dLat = Number(driver.currentLat || driver.lat || driver.coords?.lat);
+        const dLng = Number(driver.currentLng || driver.lng || driver.coords?.lng);
+        if (isNaN(dLat) || isNaN(dLng)) return;
 
+        const isCar = (driver.vehicle_brand || driver.vehicle_model || '').toLowerCase().includes('mobil') || 
+                      (driver.service_type || driver.vehicle_type || '').includes('Car');
+
+        const driverShortName = (driver.name || 'Driver').split(' ')[0];
         const dHtml = `
           <div style="display:flex; flex-direction:column; align-items:center; transform: translate(-50%, -50%);">
             <div style="width:32px; height:32px; background:#064e3b; border:2px solid #34d399; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 10px rgba(0,0,0,0.35); font-size:16px;">
               ${isCar ? '🚗' : '🛵'}
             </div>
             <div style="background:#0f172a; color:#a7f3d0; font-size:9px; font-weight:800; padding:1px 5px; border-radius:6px; margin-top:1px; white-space:nowrap; box-shadow:0 2px 4px rgba(0,0,0,0.3);">
-              ${driver.name.split(' ')[0]}
+              ${driverShortName}
             </div>
           </div>
         `;
@@ -542,10 +558,12 @@ const MapViewComponent = ({
           width: '8px',
           height: '8px',
           borderRadius: '50%',
-          background: '#10b981',
-          boxShadow: '0 0 8px #10b981'
+          background: drivers.filter(d => Boolean(d.isOnline) && (d.status === 'VERIFIED' || d.is_verified)).length > 0 ? '#10b981' : '#f59f00',
+          boxShadow: drivers.filter(d => Boolean(d.isOnline) && (d.status === 'VERIFIED' || d.is_verified)).length > 0 ? '0 0 8px #10b981' : 'none'
         }} />
-        <span>{drivers.filter(d => d.isOnline).length} Driver Sekitar Aktif</span>
+        <span>{drivers.filter(d => Boolean(d.isOnline) && (d.status === 'VERIFIED' || d.is_verified)).length > 0 
+          ? `${drivers.filter(d => Boolean(d.isOnline) && (d.status === 'VERIFIED' || d.is_verified)).length} Driver Online Aktif`
+          : 'Mencari Driver Online...'}</span>
       </div>
     </div>
   );

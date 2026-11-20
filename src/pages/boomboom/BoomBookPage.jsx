@@ -21,7 +21,7 @@ import {
   CreditCard,
   Crosshair
 } from 'lucide-react';
-import { reverseGeocodeCoords } from '../../services/boomboom/geoService';
+import { reverseGeocodeCoords, searchAddressSuggestions } from '../../services/boomboom/geoService';
 import BoomBoomNavHeader from '../../components/boomboom/BoomBoomNavHeader';
 import MapViewComponent from '../../components/boomboom/MapViewComponent';
 import SosButton from '../../components/boomboom/SosButton';
@@ -146,6 +146,31 @@ const BoomBookPage = () => {
   const [pickupInput, setPickupInput] = useState(activeBooking.pickupAddress);
   const [destInput, setDestInput] = useState(activeBooking.destinationAddress);
   const [selectedPayment, setSelectedPayment] = useState('QRIS / Rupiah');
+  const [destSuggestions, setDestSuggestions] = useState([]);
+  const [isSearchingDest, setIsSearchingDest] = useState(false);
+  const [showDestSuggestions, setShowDestSuggestions] = useState(false);
+
+  // Autocomplete tujuan saat ketik minimal 3 huruf
+  useEffect(() => {
+    if (!destInput || destInput.trim().length < 3) {
+      setDestSuggestions([]);
+      setShowDestSuggestions(false);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      setIsSearchingDest(true);
+      try {
+        const results = await searchAddressSuggestions(destInput);
+        setDestSuggestions(results);
+        setShowDestSuggestions(results.length > 0);
+      } catch {
+        setDestSuggestions([]);
+      } finally {
+        setIsSearchingDest(false);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [destInput]);
 
   // Auto-recalculate rute & peta secara responsif (debounced 650ms) saat teks jemput/tujuan diketik
   useEffect(() => {
@@ -196,7 +221,7 @@ const BoomBookPage = () => {
           ngopi_username: trip.driver_ngopi_username || '@majelisngopi',
           ngopi_chat_url: trip.driver_ngopi_chat_url || 'https://ngopi.top/chat/f1c8c427-21bf-4fc1-8e99-9e651114d615?name=Ade%20Gunawan',
           plate_number: trip.plate_number || 'D 4892 BB',
-          vehicle_brand: trip.vehicle_model || 'Motor EV',
+          vehicle_brand: trip.vehicle_model || 'Motor Asseek',
           rating: 4.9
         };
         useBoomBoomStore.setState(state => ({
@@ -552,44 +577,62 @@ const BoomBookPage = () => {
             }}>
               <MapViewComponent height={isMobile ? '320px' : '460px'} showNearbyDrivers={true} />
 
-              {/* GEOSPATIAL MATCHING ENGINE RADAR (Tahap II) */}
-              {topMatchedDriver && activeBooking.step === 'IDLE' && (
-                <div style={{
-                  marginTop: '14px',
-                  background: 'rgba(16, 185, 129, 0.1)',
-                  border: '1px solid #10b981',
-                  borderRadius: '16px',
-                  padding: '12px 14px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  flexWrap: 'wrap',
-                  gap: '10px'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <img
-                      src={topMatchedDriver.avatarUrl}
-                      alt={topMatchedDriver.name}
-                      style={{ width: '38px', height: '38px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #10b981' }}
-                    />
-                    <div>
-                      <div style={{ fontSize: '0.7rem', fontWeight: '900', color: '#047857', textTransform: 'uppercase' }}>
-                        ⚡ Matching Engine: Driver Terdekat Siap
+              {/* GEOSPATIAL MATCHING ENGINE RADAR (Responsif Riil) */}
+              {activeBooking.step === 'IDLE' && (
+                topMatchedDriver ? (
+                  <div style={{
+                    marginTop: '14px',
+                    background: 'rgba(16, 185, 129, 0.1)',
+                    border: '1px solid #10b981',
+                    borderRadius: '16px',
+                    padding: '12px 14px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    flexWrap: 'wrap',
+                    gap: '10px'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <img
+                        src={topMatchedDriver.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}
+                        alt={topMatchedDriver.name}
+                        style={{ width: '38px', height: '38px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #10b981' }}
+                      />
+                      <div>
+                        <div style={{ fontSize: '0.7rem', fontWeight: '900', color: '#047857', textTransform: 'uppercase' }}>
+                          ⚡ Matching Engine: Driver Terdekat Siap
+                        </div>
+                        <div style={{ fontSize: '0.88rem', fontWeight: '800', color: 'var(--text-main, #0f172a)' }}>
+                          {topMatchedDriver.name} • {topMatchedDriver.plate_number || 'Mitra Driver'}
+                        </div>
                       </div>
-                      <div style={{ fontSize: '0.88rem', fontWeight: '800', color: 'var(--text-main, #0f172a)' }}>
-                        {topMatchedDriver.name} • {topMatchedDriver.plate_number}
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: '0.8rem', fontWeight: '900', color: '#047857' }}>
+                        ±{topMatchedDriver.pickupDistanceKm} km dari Jemput
+                      </div>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--text-muted, #64748b)', fontWeight: '700' }}>
+                        ETA Jemput ~{topMatchedDriver.pickupEtaMin} mnt • ⭐ {topMatchedDriver.rating || '5.0'}
                       </div>
                     </div>
                   </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '0.8rem', fontWeight: '900', color: '#047857' }}>
-                      ±{topMatchedDriver.pickupDistanceKm} km dari Jemput
-                    </div>
-                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted, #64748b)', fontWeight: '700' }}>
-                      ETA Jemput ~{topMatchedDriver.pickupEtaMin} mnt • ⭐ {topMatchedDriver.rating}
+                ) : (
+                  <div style={{
+                    marginTop: '14px',
+                    background: 'rgba(15, 23, 42, 0.03)',
+                    border: '1px dashed var(--border-color, #cbd5e1)',
+                    borderRadius: '16px',
+                    padding: '12px 14px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px'
+                  }}>
+                    <span style={{ fontSize: '18px' }}>📡</span>
+                    <div style={{ fontSize: '0.78rem', color: 'var(--text-muted, #64748b)', fontWeight: '600' }}>
+                      Radar aktif: Mendeteksi pengemudi resmi terdekat yang sedang online...
                     </div>
                   </div>
-                </div>
+                )
               )}
 
               {/* KARTU BOOM-INSTAN (SISTEM GOJEK INSTAN: KODE PEMESAN KE DRIVER) */}
@@ -680,225 +723,6 @@ const BoomBookPage = () => {
                 </div>
               )}
 
-              {/* TAHAP III: GEOFENCE ZONA PILOT TERBATAS & INTEGRASI PROYEK DESA (1. JaBoDeTaBek, 2. SeCiPaLe, 3. Lainnya + Dropdown Mitra) */}
-              {(() => {
-                const currentZoneObj = regions.find((r) => r.id === selectedPilotZoneId) || activeBooking.pilotGeofence?.nearestRegion || regions[0];
-                return (
-                  <div style={{
-                    marginTop: '12px',
-                    background: 'rgba(16, 185, 129, 0.08)',
-                    border: '1.5px solid rgba(16, 185, 129, 0.38)',
-                    borderRadius: '18px',
-                    padding: '14px 16px'
-                  }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '10px' }}>
-                      <span style={{ fontSize: '0.74rem', fontWeight: '900', color: '#059669', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <ShieldCheck size={16} />
-                        GEOFENCE ZONA PILOT TERBATAS & INTEGRASI PROYEK DESA
-                      </span>
-                      <span style={{
-                        fontSize: '0.66rem',
-                        fontWeight: '800',
-                        background: 'rgba(6, 78, 59, 0.14)',
-                        color: 'var(--primary, #047857)',
-                        padding: '3px 9px',
-                        borderRadius: '999px'
-                      }}>
-                        {currentZoneObj?.project_id || 'PRJ-JABODETABEK-01'}
-                      </span>
-                    </div>
-
-                    {/* PILIH ZONA PILOT: 1. JaBoDeTaBek | 2. SeCiPaLe | 3. Lainnya */}
-                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
-                      <div>
-                        <label style={{ display: 'block', fontSize: '0.68rem', fontWeight: '800', color: 'var(--text-muted, #64748b)', marginBottom: '4px' }}>
-                          Pilih Zona Pilot Terbatas:
-                        </label>
-                        <select
-                          value={selectedPilotZoneId}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            setSelectedPilotZoneId(val);
-                            const found = regions.find((r) => r.id === val);
-                            if (found) {
-                              setSelectedMitraType(found.operatorType || 'BUMDes');
-                            }
-                          }}
-                          style={{
-                            width: '100%',
-                            padding: '8px 10px',
-                            borderRadius: '10px',
-                            border: '1px solid var(--border-color, #cbd5e1)',
-                            background: 'var(--bg-card, #ffffff)',
-                            color: 'var(--text-main, #0f172a)',
-                            fontSize: '0.76rem',
-                            fontWeight: '800'
-                          }}
-                        >
-                          {PILOT_ZONE_OPTIONS.map((opt) => (
-                            <option key={opt.id} value={opt.id}>
-                              {opt.label}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div>
-                        <label style={{ display: 'block', fontSize: '0.68rem', fontWeight: '800', color: 'var(--text-muted, #64748b)', marginBottom: '4px' }}>
-                          Mitra Pengelola (Dropdown):
-                        </label>
-                        <select
-                          value={selectedMitraType}
-                          onChange={(e) => {
-                            const nextType = e.target.value;
-                            setSelectedMitraType(nextType);
-                            updatePilotRegionConfig(selectedPilotZoneId, { operatorType: nextType });
-                          }}
-                          style={{
-                            width: '100%',
-                            padding: '8px 10px',
-                            borderRadius: '10px',
-                            border: '1px solid var(--border-color, #cbd5e1)',
-                            background: 'var(--bg-card, #ffffff)',
-                            color: 'var(--text-main, #0f172a)',
-                            fontSize: '0.76rem',
-                            fontWeight: '800'
-                          }}
-                        >
-                          {PARTNER_ENTITY_TYPES.map((pt) => (
-                            <option key={pt.value} value={pt.value}>
-                              {pt.label}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-
-                    {/* JIKA PILIH 3. LAINNYA: SEBUTKAN KABUPATEN/KOTA & PROVINSI */}
-                    {selectedPilotZoneId === 'REG-LAINNYA' && (
-                      <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
-                        gap: '8px',
-                        marginBottom: '10px',
-                        padding: '10px',
-                        borderRadius: '12px',
-                        background: 'rgba(245, 159, 0, 0.1)',
-                        border: '1px dashed #f59f00'
-                      }}>
-                        <div>
-                          <label style={{ display: 'block', fontSize: '0.68rem', fontWeight: '900', color: '#b45309', marginBottom: '3px' }}>
-                            Sebutkan Kabupaten / Kota (Lainnya) *
-                          </label>
-                          <input
-                            type="text"
-                            value={customZoneRegency}
-                            onChange={(e) => {
-                              setCustomZoneRegency(e.target.value);
-                              updatePilotRegionConfig('REG-LAINNYA', { regency: e.target.value, province: customZoneProvince });
-                            }}
-                            placeholder="Contoh: Kab. Subang / Kota Bandung"
-                            style={{
-                              width: '100%',
-                              padding: '7px 10px',
-                              borderRadius: '8px',
-                              border: '1px solid #f59f00',
-                              background: 'var(--bg-card, #ffffff)',
-                              color: 'var(--text-main, #0f172a)',
-                              fontSize: '0.75rem',
-                              fontWeight: '700',
-                              boxSizing: 'border-box'
-                            }}
-                          />
-                        </div>
-                        <div>
-                          <label style={{ display: 'block', fontSize: '0.68rem', fontWeight: '900', color: '#b45309', marginBottom: '3px' }}>
-                            Sebutkan Provinsi (Lainnya) *
-                          </label>
-                          <input
-                            type="text"
-                            value={customZoneProvince}
-                            onChange={(e) => {
-                              setCustomZoneProvince(e.target.value);
-                              updatePilotRegionConfig('REG-LAINNYA', { regency: customZoneRegency, province: e.target.value });
-                            }}
-                            placeholder="Contoh: Jawa Barat / Jawa Tengah"
-                            style={{
-                              width: '100%',
-                              padding: '7px 10px',
-                              borderRadius: '8px',
-                              border: '1px solid #f59f00',
-                              background: 'var(--bg-card, #ffffff)',
-                              color: 'var(--text-main, #0f172a)',
-                              fontSize: '0.75rem',
-                              fontWeight: '700',
-                              boxSizing: 'border-box'
-                            }}
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    {/* JIKA PILIH MITRA "LAIN-LAIN" ATAU ISIAN KETERANGAN MITRA */}
-                    {selectedMitraType === 'Lain-lain' && (
-                      <div style={{ marginBottom: '8px' }}>
-                        <label style={{ display: 'block', fontSize: '0.68rem', fontWeight: '900', color: '#b45309', marginBottom: '3px' }}>
-                          Sebutkan Jenis Mitra Lain-lain & Apa yang Harus Diisi *
-                        </label>
-                        <input
-                          type="text"
-                          value={customMitraTypeDetail}
-                          onChange={(e) => {
-                            setCustomMitraTypeDetail(e.target.value);
-                            updatePilotRegionConfig(selectedPilotZoneId, { operatorCustomType: e.target.value });
-                          }}
-                          placeholder="Contoh: Kasepuhan Adat / Kelompok Tani Hutan / Pokdarwis / Kampus"
-                          style={{
-                            width: '100%',
-                            padding: '7px 10px',
-                            borderRadius: '8px',
-                            border: '1px solid #f59f00',
-                            background: 'var(--bg-card, #ffffff)',
-                            color: 'var(--text-main, #0f172a)',
-                            fontSize: '0.75rem',
-                            fontWeight: '700',
-                            boxSizing: 'border-box'
-                          }}
-                        />
-                      </div>
-                    )}
-
-                    <div style={{ marginBottom: '6px' }}>
-                      <label style={{ display: 'block', fontSize: '0.67rem', fontWeight: '800', color: 'var(--text-muted, #64748b)', marginBottom: '3px' }}>
-                        Keterangan Mitra & Lain-lainnya (Nama Entitas, Cakupan Desa/Kota, Peran):
-                      </label>
-                      <input
-                        type="text"
-                        value={mitraOtherDetails}
-                        onChange={(e) => {
-                          setMitraOtherDetails(e.target.value);
-                          updatePilotRegionConfig(selectedPilotZoneId, { operatorOtherDetails: e.target.value });
-                        }}
-                        placeholder="Isi nama BUMDes/Yayasan/Perusahaan/Organisasi & cakupan layanannya..."
-                        style={{
-                          width: '100%',
-                          padding: '7px 10px',
-                          borderRadius: '8px',
-                          border: '1px solid var(--border-color, #cbd5e1)',
-                          background: 'var(--bg-card, #ffffff)',
-                          color: 'var(--text-main, #0f172a)',
-                          fontSize: '0.74rem',
-                          boxSizing: 'border-box'
-                        }}
-                      />
-                    </div>
-
-                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted, #64748b)', lineHeight: 1.4 }}>
-                      Wilayah Aktif: <strong>{selectedPilotZoneId === 'REG-LAINNYA' ? `${customZoneRegency || 'Kabupaten/Kota'}, ${customZoneProvince || 'Provinsi'}` : currentZoneObj?.regency}</strong> • Kategori Mitra: <strong>{selectedMitraType}{selectedMitraType === 'Lain-lain' && customMitraTypeDetail ? ` (${customMitraTypeDetail})` : ''}</strong>
-                    </div>
-                  </div>
-                );
-              })()}
             </div>
 
             {/* PAYMENT SANDBOX SIMULATOR CARD (Tahap II) */}
@@ -1142,9 +966,6 @@ const BoomBookPage = () => {
                   <h2 style={{ fontSize: '1.2rem', fontWeight: '800', margin: 0, color: 'var(--text-main, #0f172a)', wordBreak: 'break-word' }}>
                     Konfirmasi Detail Pesanan
                   </h2>
-                  <span style={{ fontSize: '0.72rem', fontWeight: '800', background: 'rgba(16,185,129,0.12)', color: '#047857', padding: '4px 10px', borderRadius: '10px' }}>
-                    {user ? (user.ngopiUsername ? `Akun ngopi: ${user.ngopiUsername}` : `Akun: ${user.displayName || user.email}`) : 'Akun: https://ngopi.top'}
-                  </span>
                 </div>
 
                 <form onSubmit={handleUpdateAddresses} style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '20px' }}>
@@ -1191,14 +1012,27 @@ const BoomBookPage = () => {
                     </div>
                   </div>
 
-                  <div>
-                    <label style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--text-muted, #64748b)' }}>TUJUAN</label>
+                  <div style={{ position: 'relative' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <label style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--text-muted, #64748b)' }}>TUJUAN</label>
+                      {isSearchingDest && (
+                        <span style={{ fontSize: '0.68rem', color: '#10b981', fontWeight: '700' }}>
+                          Mencari lokasi...
+                        </span>
+                      )}
+                    </div>
                     <div style={{ marginTop: '4px' }}>
                       <input
                         type="text"
                         value={destInput}
-                        onChange={e => setDestInput(e.target.value)}
-                        placeholder="Ketik lokasi tujuan..."
+                        onChange={e => {
+                          setDestInput(e.target.value);
+                          setShowDestSuggestions(true);
+                        }}
+                        onFocus={() => {
+                          if (destSuggestions.length > 0) setShowDestSuggestions(true);
+                        }}
+                        placeholder="Ketik lokasi tujuan (min. 3 huruf)..."
                         style={{
                           width: '100%',
                           padding: '12px 14px',
@@ -1207,10 +1041,64 @@ const BoomBookPage = () => {
                           background: 'var(--bg-secondary, #f8fafc)',
                           fontSize: '0.9rem',
                           fontWeight: '700',
-                          color: 'var(--text-main, #0f172a)'
+                          color: 'var(--text-main, #0f172a)',
+                          boxSizing: 'border-box'
                         }}
                       />
                     </div>
+
+                    {/* Autocomplete Dropdown */}
+                    {showDestSuggestions && destSuggestions.length > 0 && (
+                      <div style={{
+                        position: 'absolute',
+                        top: '100%',
+                        left: 0,
+                        right: 0,
+                        zIndex: 1000,
+                        background: 'var(--bg-card, #ffffff)',
+                        border: '1.5px solid #10b981',
+                        borderRadius: '14px',
+                        boxShadow: '0 10px 25px rgba(0,0,0,0.12)',
+                        marginTop: '4px',
+                        overflow: 'hidden'
+                      }}>
+                        {destSuggestions.map((item, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => {
+                              setDestInput(item.label);
+                              setShowDestSuggestions(false);
+                              if (item.lat && item.lng) {
+                                setDestination(item.label, { lat: item.lat, lng: item.lng });
+                              }
+                            }}
+                            style={{
+                              width: '100%',
+                              textAlign: 'left',
+                              padding: '10px 14px',
+                              background: 'none',
+                              border: 'none',
+                              borderBottom: idx < destSuggestions.length - 1 ? '1px solid var(--border-color, #e2e8f0)' : 'none',
+                              color: 'var(--text-main, #0f172a)',
+                              fontSize: '0.85rem',
+                              fontWeight: '700',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px'
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(16, 185, 129, 0.08)'}
+                            onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
+                          >
+                            <MapPin size={15} color="#10b981" style={{ flexShrink: 0 }} />
+                            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {item.label}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   <button
@@ -1263,7 +1151,7 @@ const BoomBookPage = () => {
                       }}
                     >
                       <div style={{ fontWeight: '800', color: 'var(--text-main, #0f172a)', fontSize: '0.9rem' }}>🛵 BoomRide</div>
-                      <div style={{ fontSize: '0.72rem', fontWeight: '600', color: 'var(--text-muted, #64748b)' }}>Motor Asik</div>
+                      <div style={{ fontSize: '0.72rem', fontWeight: '600', color: 'var(--text-muted, #64748b)' }}>Motor Asseek</div>
                     </button>
 
                     <button
@@ -1278,7 +1166,7 @@ const BoomBookPage = () => {
                       }}
                     >
                       <div style={{ fontWeight: '800', color: 'var(--text-main, #0f172a)', fontSize: '0.9rem' }}>🚗 BoomCar</div>
-                      <div style={{ fontSize: '0.72rem', fontWeight: '600', color: 'var(--text-muted, #64748b)' }}>Mobil Nyaman</div>
+                      <div style={{ fontSize: '0.72rem', fontWeight: '600', color: 'var(--text-muted, #64748b)' }}>Mobil Asseek</div>
                     </button>
 
                     <button
@@ -1464,12 +1352,8 @@ const BoomBookPage = () => {
                       <span>{activeBooking.fareCalc.formatted.driverEarnings}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', opacity: 0.9 }}>
-                      <span>• Bagi Hasil Mitra Wilayah/BUMDes (5%)</span>
-                      <span>{activeBooking.fareCalc.formatted.operatorShare}</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', opacity: 0.9 }}>
-                      <span>• Layanan Platform & Asuransi</span>
-                      <span>{activeBooking.fareCalc.formatted.platformShare}</span>
+                      <span>• Bagi Hasil Mitra dan Layanan Platform (15%)</span>
+                      <span>Rp {Math.round(activeBooking.fareCalc.grossFare * 0.15).toLocaleString('id-ID')}</span>
                     </div>
 
                     <div style={{ borderTop: '1px dashed var(--border-color, #cbd5e1)', paddingTop: '10px', marginTop: '6px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -1483,61 +1367,10 @@ const BoomBookPage = () => {
                   </div>
                 </div>
 
-                {/* DUAL-PARTY BMC REWARD ENGINE TRANSPARENCY CARD */}
-                <div style={{
-                  background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
-                  borderRadius: '18px',
-                  padding: '14px 16px',
-                  marginBottom: '20px',
-                  border: '1.5px solid #10b981'
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <span style={{ fontSize: '0.8rem', fontWeight: '900', color: '#047857', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <Award size={15} color="#059669" /> ALOKASI REWARD BMC (DUA PIHAK)
-                    </span>
-                    <span style={{ fontSize: '0.68rem', fontWeight: '800', background: '#059669', color: '#ffffff', padding: '2px 8px', borderRadius: '8px' }}>
-                      Transparan
-                    </span>
-                  </div>
-
-                  {(() => {
-                    const drvRwd = calculateDriverReward({
-                      distanceKm: activeBooking.fareCalc.distanceKm,
-                      isEv: activeBooking.isEvVehicle,
-                      rating: 5
-                    });
-                    const psgRwd = calculatePassengerReward({
-                      distanceKm: activeBooking.fareCalc.distanceKm,
-                      fare: activeBooking.fareCalc.grossFare,
-                      isEv: activeBooking.isEvVehicle,
-                      isShared: activeBooking.serviceType === 'BoomTogether'
-                    });
-                    return (
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '0.75rem' }}>
-                        <div style={{ background: 'rgba(255,255,255,0.7)', padding: '10px', borderRadius: '12px' }}>
-                          <div style={{ fontWeight: '800', color: '#047857', marginBottom: '2px' }}>🛵 Mitra Driver</div>
-                          <div style={{ fontSize: '1rem', fontWeight: '900', color: '#065f46' }}>+{drvRwd.totalBmc} BMC</div>
-                          <div style={{ fontSize: '0.68rem', color: '#047857' }}>
-                            (1.0 trip + {(activeBooking.fareCalc.distanceKm * 0.25).toFixed(2)} km{activeBooking.isEvVehicle ? ' + 0.5 EV' : ''})
-                          </div>
-                        </div>
-
-                        <div style={{ background: 'rgba(255,255,255,0.7)', padding: '10px', borderRadius: '12px' }}>
-                          <div style={{ fontWeight: '800', color: '#b45309', marginBottom: '2px' }}>👤 Pemesan</div>
-                          <div style={{ fontSize: '1rem', fontWeight: '900', color: '#92400e' }}>+{psgRwd.totalBmc} BMC</div>
-                          <div style={{ fontSize: '0.68rem', color: '#78350f' }}>
-                            (0.5 loyalty + {(activeBooking.fareCalc.distanceKm * 0.10).toFixed(2)} km{activeBooking.isEvVehicle ? ' + 0.25 EV' : ''})
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })()}
-                </div>
-
-                {/* PAYMENT SELECTOR (QRIS, USDT, BMC, BANK, CASH) */}
+                {/* PAYMENT SELECTOR */}
                 <div style={{ marginBottom: '24px' }}>
                   <label style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--text-muted, #64748b)', display: 'block', marginBottom: '8px' }}>
-                    METODE PEMBAYARAN (RUPIAH / USDT / BMC)
+                    METODE PEMBAYARAN
                   </label>
                   <select
                     value={selectedPayment}
@@ -1554,39 +1387,9 @@ const BoomBookPage = () => {
                     }}
                   >
                     <option value="QRIS / Rupiah">QRIS Instant (Semua E-Wallet / Bank)</option>
-                    <option value="USDT">USDT (Tether USD - Web3 / Kurs Pasar Real-Time)</option>
-                    <option value="BMC">BMC (BaMbooChain Token - Paritas 1 BMC = 1 USDT)</option>
                     <option value="Bank Transfer">Virtual Account / Transfer Bank Mandiri / BCA / BRI</option>
                     <option value="Tunai / Cash">Tunai Langsung Ke Pengemudi (Cash)</option>
                   </select>
-
-                  {/* KETERANGAN KONVERSI PEMBAYARAN USDT / BMC */}
-                  {(selectedPayment === 'USDT' || selectedPayment === 'BMC') && (
-                    <div style={{
-                      marginTop: '10px',
-                      background: selectedPayment === 'BMC' ? 'rgba(16, 185, 129, 0.12)' : 'rgba(14, 165, 233, 0.12)',
-                      border: `1.5px solid ${selectedPayment === 'BMC' ? '#10b981' : '#0ea5e9'}`,
-                      borderRadius: '14px',
-                      padding: '12px 14px'
-                    }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                        <span style={{ fontSize: '0.8rem', fontWeight: '900', color: selectedPayment === 'BMC' ? '#047857' : '#0284c7' }}>
-                          Konversi {selectedPayment}:
-                        </span>
-                        <span style={{ fontSize: '1rem', fontWeight: '900', color: selectedPayment === 'BMC' ? '#065f46' : '#0369a1' }}>
-                          {(activeBooking.fareCalc.grossFare / (selectedPayment === 'BMC' ? bmcRate : usdtRate)).toFixed(2)} {selectedPayment}
-                        </span>
-                      </div>
-                      <div style={{ fontSize: '0.72rem', color: 'var(--text-muted, #64748b)' }}>
-                        Kurs Acuan Standar: 1 USDT = 1 BMC = Rp {usdtRate.toLocaleString('id-ID')} {isLive ? '(Harga Pasar Dinamis)' : '(Acuan Standar)'}
-                        {selectedPayment === 'BMC' && (
-                          <span style={{ display: 'block', marginTop: '2px', color: (user?.bmcBalance || 0) >= (activeBooking.fareCalc.grossFare / bmcRate) ? '#059669' : '#dc2626', fontWeight: '700' }}>
-                            Saldo BMC Anda: {user?.bmcBalance || 0} BMC {(user?.bmcBalance || 0) >= (activeBooking.fareCalc.grossFare / bmcRate) ? '✓ Saldo Mencukupi' : '⚠️ Saldo Tidak Cukup'}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  )}
                 </div>
 
                 {/* CONFIRM ORDER BUTTON */}

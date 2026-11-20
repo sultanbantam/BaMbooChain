@@ -101,7 +101,7 @@ export const useBoomBoomStore = create((set, get) => ({
   regions: [...INITIAL_OPERATING_REGIONS],
 
   // Datasets
-  drivers: [...MOCK_DRIVERS],
+  drivers: [],
   operators: [...MOCK_OPERATORS],
   trips: [...MOCK_TRIPS],
   rewards: [...MOCK_REWARDS],
@@ -620,7 +620,7 @@ export const useBoomBoomStore = create((set, get) => ({
       driver_ngopi_username: activeBooking.assignedDriver?.ngopi_username || '@majelisngopi',
       driver_ngopi_chat_url: activeBooking.assignedDriver?.ngopi_chat_url || 'https://ngopi.top/chat/f1c8c427-21bf-4fc1-8e99-9e651114d615?name=Ade%20Gunawan',
       plate_number: activeBooking.assignedDriver?.plate_number || 'D 4892 BB',
-      vehicle_model: activeBooking.assignedDriver?.vehicle_brand || 'Motor EV',
+      vehicle_model: activeBooking.assignedDriver?.vehicle_brand || 'Motor Asseek',
       service_type: activeBooking.serviceType,
       pickup_address: activeBooking.pickupAddress,
       destination_address: activeBooking.destinationAddress,

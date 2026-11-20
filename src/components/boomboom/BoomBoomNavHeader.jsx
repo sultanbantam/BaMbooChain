@@ -51,8 +51,7 @@ const BoomBoomNavHeader = () => {
     { path: '/boomboom/rewards', label: 'Reward', icon: <Award size={15} />, highlight: true },
     { path: '/boomboom/safety', label: 'BoomSafe', icon: <Shield size={15} /> },
     { path: '/boomboom/help', label: 'Bantuan', icon: <HelpCircle size={15} /> },
-    { path: '/boomboom/admin', label: 'Admin & Audit', icon: <Settings size={15} /> },
-    { path: 'https://ngopi.top/contacts?join=BoomBoom', label: 'ngopi.top', isExternal: true, badge: 'Chat WA', icon: <span>☕</span> }
+    { path: '/boomboom/admin', label: 'Admin & Audit', icon: <Settings size={15} /> }
   ];
 
   const navScrollRef = useRef(null);
@@ -227,40 +226,6 @@ const BoomBoomNavHeader = () => {
               }}>
                 <Flame size={isMobile ? 15 : 18} color="#000000" /> BOOMBOOM
               </div>
-              {!isMobile && (
-                <div>
-                  <div style={{ fontSize: '0.85rem', fontWeight: '700', color: '#a7f3d0' }}>
-                    Green Community Mobility
-                  </div>
-                  <div style={{ fontSize: '0.72rem', opacity: 0.85, color: '#ecfdf5' }}>
-                    {user ? `Terautentikasi: ${user.displayName || user.email || 'Anggota BaMbooChain'}` : '"Dari Desa, Menghubungkan Nusantara."'}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <a
-                href="https://ngopi.top/contacts?join=BoomBoom"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  background: '#451a03',
-                  border: '1px solid #92400e',
-                  color: '#fef3c7',
-                  padding: isMobile ? '3px 8px' : '4px 10px',
-                  borderRadius: '20px',
-                  fontSize: isMobile ? '0.65rem' : '0.72rem',
-                  fontWeight: '800',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  textDecoration: 'none',
-                  whiteSpace: 'nowrap'
-                }}
-              >
-                ☕ ngopi.top
-              </a>
             </div>
           </div>
 

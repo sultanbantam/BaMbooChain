@@ -352,3 +352,65 @@ export async function reverseGeocodeCoords(lat, lng) {
 
   return `Titik Peta (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
 }
+
+/**
+ * Autocomplete / saran pencarian lokasi responsif saat mengetik minimal 3 karakter
+ * Memanfaatkan preset landmark lokal yang cepat + API geocoding bebas hambatan
+ */
+export async function searchAddressSuggestions(query) {
+  if (!query || typeof query !== 'string' || query.trim().length < 3) return [];
+  const q = query.trim().toLowerCase();
+  const results = [];
+
+  // 1. Cek kamus lokal landmark spesifik (instan tanpa jeda jaringan)
+  for (const [key, val] of Object.entries(SPECIFIC_LANDMARKS)) {
+    if (key.includes(q) || val.label.toLowerCase().includes(q)) {
+      results.push({
+        label: val.label,
+        lat: val.lat,
+        lng: val.lng
+      });
+    }
+  }
+
+  // 2. Cek kota & wilayah penyangga
+  for (const [key, val] of Object.entries(CITY_FALLBACKS)) {
+    if (key.includes(q) || val.label.toLowerCase().includes(q)) {
+      if (!results.some(r => r.label === val.label)) {
+        results.push({
+          label: val.label,
+          lat: val.lat,
+          lng: val.lng
+        });
+      }
+    }
+  }
+
+  // 3. Jika belum cukup, cari ke API Photon (OSM geocoding gratis & sangat cepat)
+  if (results.length < 5) {
+    try {
+      const resp = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=5&lat=-6.3&lon=106.8`);
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data && data.features) {
+          data.features.forEach((f) => {
+            const props = f.properties || {};
+            const name = props.name || props.street || '';
+            const city = props.city || props.district || props.state || '';
+            const fullLabel = [name, city].filter(Boolean).join(', ');
+            if (fullLabel && !results.some((r) => r.label.toLowerCase() === fullLabel.toLowerCase())) {
+              results.push({
+                label: fullLabel,
+                lat: f.geometry.coordinates[1],
+                lng: f.geometry.coordinates[0]
+              });
+            }
+          });
+        }
+      }
+    } catch {}
+  }
+
+  return results.slice(0, 6);
+}
+

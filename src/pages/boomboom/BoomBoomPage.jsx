@@ -9,7 +9,7 @@ import MapViewComponent from '../../components/boomboom/MapViewComponent';
 import SosButton from '../../components/boomboom/SosButton';
 import { useBoomBoomStore } from '../../services/boomboom/boomboomStore';
 import { useAuth } from '../../context/AuthContext';
-import { reverseGeocodeCoords } from '../../services/boomboom/geoService';
+import { reverseGeocodeCoords, searchAddressSuggestions } from '../../services/boomboom/geoService';
 
 const useIsMobile = () => {
   const [w, setW] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
@@ -25,11 +25,45 @@ const BoomBoomPage = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { user } = useAuth();
-  const { activeBooking, setServiceType, setPickup, setDestination, recalculateRouteAndFare } = useBoomBoomStore();
+  const { activeBooking, setServiceType, setPickup, setDestination, recalculateRouteAndFare, trips } = useBoomBoomStore();
 
   const [pickupInput, setPickupInput] = useState(activeBooking.pickupAddress || '');
   const [destInput, setDestInput] = useState(activeBooking.destinationAddress || '');
   const [isLocating, setIsLocating] = useState(false);
+  const [destSuggestions, setDestSuggestions] = useState([]);
+  const [isSearchingDest, setIsSearchingDest] = useState(false);
+  const [showDestSuggestions, setShowDestSuggestions] = useState(false);
+
+  // Ambil riwayat perjalanan user untuk rekomendasi personal
+  const userRecentTrips = (trips || []).filter((t) => 
+    !user || (user.email && (t.passenger_email === user.email || t.passenger_id === user.uid)) ||
+    (user.displayName && t.passenger_name === user.displayName)
+  );
+  const recentDestinations = Array.from(new Set(
+    userRecentTrips.map((t) => t.destination_address || t.destination).filter(Boolean)
+  )).slice(0, 5);
+
+  // Autocomplete tujuan responsif saat mengetik minimal 3 huruf
+  useEffect(() => {
+    if (!destInput || destInput.trim().length < 3) {
+      setDestSuggestions([]);
+      setShowDestSuggestions(false);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      setIsSearchingDest(true);
+      try {
+        const results = await searchAddressSuggestions(destInput);
+        setDestSuggestions(results);
+        setShowDestSuggestions(results.length > 0);
+      } catch {
+        setDestSuggestions([]);
+      } finally {
+        setIsSearchingDest(false);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [destInput]);
 
   // Sinkronisasi otomatis saat user memilih dari pin peta
   useEffect(() => {
@@ -98,7 +132,7 @@ const BoomBoomPage = () => {
       type: 'BoomRide',
       title: 'BoomRide',
       icon: <Bike size={26} />,
-      badge: 'Motor EV',
+      badge: 'Motor Asseek',
       color: '#10b981',
       bg: 'rgba(16, 185, 129, 0.12)'
     },
@@ -106,7 +140,7 @@ const BoomBoomPage = () => {
       type: 'BoomCar',
       title: 'BoomCar',
       icon: <Car size={26} />,
-      badge: 'Mobil Hijau',
+      badge: 'Mobil Asseek',
       color: '#059669',
       bg: 'rgba(5, 150, 105, 0.12)'
     },
@@ -134,14 +168,6 @@ const BoomBoomPage = () => {
       color: '#7c3aed',
       bg: 'rgba(124, 58, 237, 0.12)'
     }
-  ];
-
-  const quickChips = [
-    'Stasiun Cisauk',
-    'Pasar Cibarani Subang',
-    'Balaikota Tangerang Selatan',
-    'Sentra Bibit Bambu Cibarani',
-    'Kawasan Wisata Bambu'
   ];
 
   return (
@@ -177,70 +203,6 @@ const BoomBoomPage = () => {
       `}</style>
 
       <div style={{ maxWidth: '1100px', margin: '0 auto', padding: isMobile ? '12px 14px' : '20px 18px' }}>
-        
-        {/* ══ TOP QUICK WALLET & NGOPI.TOP BAR ══ */}
-        <div style={{
-          background: 'var(--bg-card, #ffffff)',
-          borderRadius: '20px',
-          padding: '12px 18px',
-          marginBottom: '16px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: '12px',
-          border: '1px solid var(--border-color, #e2e8f0)',
-          boxShadow: '0 4px 14px rgba(0,0,0,0.03)'
-        }}>
-          {/* Saldo BMC & Rupiah */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{
-              width: '38px',
-              height: '38px',
-              borderRadius: '12px',
-              background: '#ecfdf5',
-              color: '#059669',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <Wallet size={20} />
-            </div>
-            <div>
-              <div style={{ fontSize: '0.72rem', fontWeight: '800', color: 'var(--text-muted, #64748b)' }}>
-                DOMPET HIJAU
-              </div>
-              <div style={{ fontSize: '0.92rem', fontWeight: '900', color: '#047857' }}>
-                {user?.bmcBalance !== undefined ? `${user.bmcBalance} BMC` : '100 BMC'} • QRIS Aktif
-              </div>
-            </div>
-          </div>
-
-          {/* Identity ngopi.top Status */}
-          <a
-            href="https://ngopi.top"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              textDecoration: 'none',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              background: 'rgba(217, 119, 6, 0.1)',
-              color: '#b45309',
-              padding: '6px 12px',
-              borderRadius: '14px',
-              fontSize: '0.78rem',
-              fontWeight: '800',
-              border: '1px solid rgba(217, 119, 6, 0.25)'
-            }}
-          >
-            <span>☕</span>
-            <span>Identity ngopi.top Terhubung</span>
-            <span style={{ fontSize: '0.7rem', color: '#059669' }}>● Online</span>
-          </a>
-        </div>
-
         {/* ══ GOJEK / GREEN SM ICONIC SERVICE GRID ══ */}
         <div style={{
           display: 'grid',
@@ -376,18 +338,23 @@ const BoomBoomPage = () => {
               </div>
             </div>
 
-            {/* Input Lokasi Tujuan */}
-            <div>
-              <label style={{
-                fontSize: '0.72rem',
-                fontWeight: '900',
-                color: 'var(--text-muted, #64748b)',
-                display: 'block',
-                marginBottom: '6px',
-                letterSpacing: '0.5px'
-              }}>
-                🏁 LOKASI TUJUAN
-              </label>
+            {/* Input Lokasi Tujuan & Autocomplete Responsif (>= 3 Huruf) */}
+            <div style={{ position: 'relative' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                <label style={{
+                  fontSize: '0.72rem',
+                  fontWeight: '900',
+                  color: 'var(--text-muted, #64748b)',
+                  letterSpacing: '0.5px'
+                }}>
+                  🏁 LOKASI TUJUAN
+                </label>
+                {isSearchingDest && (
+                  <span style={{ fontSize: '0.7rem', color: '#10b981', fontWeight: '700' }}>
+                    Mencari lokasi...
+                  </span>
+                )}
+              </div>
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -408,36 +375,100 @@ const BoomBoomPage = () => {
                 <input
                   type="text"
                   value={destInput}
-                  onChange={(e) => setDestInput(e.target.value)}
-                  placeholder="Mau pergi ke mana hari ini? (Ketik atau klik peta)"
+                  onChange={(e) => {
+                    setDestInput(e.target.value);
+                    setShowDestSuggestions(true);
+                  }}
+                  onFocus={() => {
+                    if (destSuggestions.length > 0) setShowDestSuggestions(true);
+                  }}
+                  placeholder="Ketik lokasi tujuan (min. 3 huruf) atau klik di peta"
                   className="boomboom-modern-input"
                 />
               </div>
+
+              {/* Dropdown Hasil Autocomplete Pencarian */}
+              {showDestSuggestions && destSuggestions.length > 0 && (
+                <div style={{
+                  position: 'absolute',
+                  top: '100%',
+                  left: 0,
+                  right: 0,
+                  zIndex: 1000,
+                  background: 'var(--bg-card, #ffffff)',
+                  border: '1.5px solid #10b981',
+                  borderRadius: '14px',
+                  boxShadow: '0 10px 25px rgba(0,0,0,0.12)',
+                  marginTop: '6px',
+                  overflow: 'hidden'
+                }}>
+                  {destSuggestions.map((item, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => {
+                        setDestInput(item.label);
+                        setShowDestSuggestions(false);
+                        if (item.lat && item.lng) {
+                          setDestination(item.label, { lat: item.lat, lng: item.lng });
+                        }
+                      }}
+                      style={{
+                        width: '100%',
+                        textAlign: 'left',
+                        padding: '10px 14px',
+                        background: 'none',
+                        border: 'none',
+                        borderBottom: idx < destSuggestions.length - 1 ? '1px solid var(--border-color, #e2e8f0)' : 'none',
+                        color: 'var(--text-main, #0f172a)',
+                        fontSize: '0.85rem',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(16, 185, 129, 0.08)'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
+                    >
+                      <MapPin size={15} color="#10b981" style={{ flexShrink: 0 }} />
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {item.label}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
-            {/* Rekomendasi Titik Populer Cepat (Chips) */}
-            <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px' }}>
-              {quickChips.map((chip, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => setDestInput(chip)}
-                  style={{
-                    background: 'var(--bg-secondary, #f1f5f9)',
-                    border: '1px solid var(--border-color, #e2e8f0)',
-                    color: 'var(--text-muted, #475569)',
-                    padding: '5px 11px',
-                    borderRadius: '20px',
-                    fontSize: '0.73rem',
-                    fontWeight: '700',
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap'
-                  }}
-                >
-                  📍 {chip}
-                </button>
-              ))}
-            </div>
+            {/* Riwayat Perjalanan Pemesan (Hanya tampil jika ada riwayat riil pemesan) */}
+            {recentDestinations.length > 0 && (
+              <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px' }}>
+                {recentDestinations.map((chip, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => {
+                      setDestInput(chip);
+                      setShowDestSuggestions(false);
+                    }}
+                    style={{
+                      background: 'var(--bg-secondary, #f1f5f9)',
+                      border: '1px solid var(--border-color, #e2e8f0)',
+                      color: 'var(--text-muted, #475569)',
+                      padding: '5px 11px',
+                      borderRadius: '20px',
+                      fontSize: '0.73rem',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    🕒 {chip}
+                  </button>
+                ))}
+              </div>
+            )}
 
             {/* Tombol Aksi Pesan & SOS */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '10px', marginTop: '6px' }}>
