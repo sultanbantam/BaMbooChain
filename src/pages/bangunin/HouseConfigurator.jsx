@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { 
-  SlidersHorizontal, Home, Shield, Calculator, FileCheck, 
+  SlidersHorizontal, Home, Shield, ShieldCheck, Calculator, FileCheck, 
   CreditCard, Check, Sparkles, Sun, Droplets, Zap, Cpu, 
   Calendar, Layers, ArrowRight, CheckCircle2, AlertCircle, FileText
 } from 'lucide-react';

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { 
-  HardHat, MapPin, CheckCircle2, Clock, Camera, ShieldCheck, 
+  HardHat, MapPin, CheckCircle2, Clock, Camera, ShieldCheck, ShieldAlert, 
   ExternalLink, Download, FileText, Upload, AlertCircle, Eye, 
   ChevronRight, Sparkles, Check, Hash, RefreshCw, BarChart3, 
   Wrench, TrendingUp, AlertTriangle, Shield, Plus, X
