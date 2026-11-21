@@ -573,8 +573,9 @@ const BoomAdminDashboardPage = () => {
                 const docEntries = [
                   { label: 'KTP', url: docs.ktp_photo_url },
                   { label: 'SIM', url: docs.sim_photo_url },
-                  { label: 'BoomRide', url: docs.boomride_photo_url },
-                  { label: 'BoomCar', url: docs.boomcar_photo_url },
+                  { label: 'Kendaraan (Depan)', url: docs.vehicle_front_photo_url || docs.boomride_photo_url },
+                  { label: 'Kendaraan (Samping)', url: docs.vehicle_side_photo_url || docs.boomcar_photo_url },
+                  { label: 'Kendaraan (Belakang)', url: docs.vehicle_back_photo_url },
                   { label: 'Buku Rekening', url: docs.bank_book_photo_url }
                 ];
                 return (

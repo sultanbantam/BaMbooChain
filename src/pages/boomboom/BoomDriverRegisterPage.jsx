@@ -50,8 +50,9 @@ const BoomDriverRegisterPage = () => {
     vehiclePhotoUrl: '',
     ktpPhotoUrl: '',
     simPhotoUrl: '',
-    boomridePhotoUrl: '',
-    boomcarPhotoUrl: '',
+    vehicleFrontPhotoUrl: '',
+    vehicleSidePhotoUrl: '',
+    vehicleBackPhotoUrl: '',
     bankBookPhotoUrl: ''
   });
 
@@ -130,12 +131,8 @@ const BoomDriverRegisterPage = () => {
       alert('⚠️ Mohon unggah Foto KTP, Foto SIM, dan Foto Buku Rekening Bank untuk proses validasi Admin/Validator.');
       return;
     }
-    if (formData.vehicleType === 'BoomRide' && !formData.boomridePhotoUrl && !formData.boomcarPhotoUrl) {
-      alert('⚠️ Mohon unggah Foto Kendaraan BoomRide (atau BoomCar) untuk proses validasi.');
-      return;
-    }
-    if (formData.vehicleType === 'BoomCar' && !formData.boomcarPhotoUrl && !formData.boomridePhotoUrl) {
-      alert('⚠️ Mohon unggah Foto Kendaraan BoomCar (atau BoomRide) untuk proses validasi.');
+    if (!formData.vehicleFrontPhotoUrl || !formData.vehicleSidePhotoUrl || !formData.vehicleBackPhotoUrl) {
+      alert(`⚠️ Mohon unggah 3 foto kendaraan ${formData.vehicleType} (Tampak Depan, Tampak Samping, dan Tampak Belakang/Plat) untuk proses validasi.`);
       return;
     }
     if (formData.emergencyContact) {
@@ -201,6 +198,19 @@ const BoomDriverRegisterPage = () => {
         [data-theme="dark"] .boomboom-form-input::placeholder {
           color: #64748b !important;
           opacity: 1 !important;
+        }
+        .ngopi-req-card,
+        .ngopi-req-card p,
+        .ngopi-req-card strong,
+        .ngopi-req-card span {
+          color: #451a03 !important;
+        }
+        .ngopi-req-card a.ngopi-inline-link {
+          color: #065f46 !important;
+        }
+        .ngopi-req-card a.ngopi-cta-btn,
+        .ngopi-req-card a.ngopi-cta-btn span {
+          color: #ffffff !important;
         }
       `}</style>
 
@@ -268,7 +278,7 @@ const BoomDriverRegisterPage = () => {
         </div>
 
         {/* SYARAT UTAMA: WAJIB PUNYA AKUN NGOPI.TOP */}
-        <div style={{
+        <div className="ngopi-req-card" style={{
           background: '#fef3c7',
           border: '2px solid #d97706',
           borderRadius: '20px',
@@ -283,10 +293,11 @@ const BoomDriverRegisterPage = () => {
                 Syarat Utama: Wajib Memiliki Akun ngopi.top
               </div>
               <p style={{ margin: '0 0 10px 0', fontSize: '0.86rem', color: '#451a03', fontWeight: '600', lineHeight: 1.55 }}>
-                Pendaftaran driver BoomBoom menggunakan <strong>Identity Terdesentralisasi ngopi.top</strong> yang terintegrasi di aplikasi <a href="https://ngopi.top" target="_blank" rel="noopener noreferrer" style={{ color: '#065f46', fontWeight: '900', textDecoration: 'underline' }}>ngopi.top</a>. Akun ini digunakan untuk autentikasi pengemudi, penerimaan order instan, dan komunikasi langsung dengan penumpang.
+                Pendaftaran driver BoomBoom menggunakan <strong>Identity Terdesentralisasi ngopi.top</strong> yang terintegrasi di aplikasi <a className="ngopi-inline-link" href="https://ngopi.top" target="_blank" rel="noopener noreferrer" style={{ color: '#065f46', fontWeight: '900', textDecoration: 'underline' }}>ngopi.top</a>. Akun ini digunakan untuk autentikasi pengemudi, penerimaan order instan, dan komunikasi langsung dengan penumpang.
               </p>
               <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
                 <a
+                  className="ngopi-cta-btn"
                   href="https://ngopi.top"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -538,11 +549,12 @@ const BoomDriverRegisterPage = () => {
 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
                     {[
-                      { key: 'ktpPhotoUrl', label: 'Foto KTP *', required: true },
-                      { key: 'simPhotoUrl', label: 'Foto SIM *', required: true },
-                      { key: 'boomridePhotoUrl', label: 'Foto Kendaraan BoomRide', required: false },
-                      { key: 'boomcarPhotoUrl', label: 'Foto Kendaraan BoomCar', required: false },
-                      { key: 'bankBookPhotoUrl', label: 'Foto Buku Rekening Bank *', required: true }
+                      { key: 'ktpPhotoUrl', label: 'Foto KTP *' },
+                      { key: 'simPhotoUrl', label: 'Foto SIM *' },
+                      { key: 'bankBookPhotoUrl', label: 'Foto Buku Rekening Bank *' },
+                      { key: 'vehicleFrontPhotoUrl', label: `Foto ${formData.vehicleType} (Tampak Depan) *` },
+                      { key: 'vehicleSidePhotoUrl', label: `Foto ${formData.vehicleType} (Tampak Samping) *` },
+                      { key: 'vehicleBackPhotoUrl', label: `Foto ${formData.vehicleType} (Tampak Belakang/Plat) *` }
                     ].map((docItem) => {
                       const previewUrl = formData[docItem.key];
                       return (
@@ -704,37 +716,23 @@ const BoomDriverRegisterPage = () => {
                 )}
 
                 {/* JIKA PILIH MITRA "LAIN-LAIN" ATAU RINCIAN TAMBAHAN MITRA */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px', marginTop: '14px' }}>
-                  {formData.partnerType === 'Lain-lain' && (
-                    <div>
-                      <label style={{ fontSize: '0.78rem', fontWeight: '800', color: '#b45309' }}>
-                        Sebutkan Jenis Mitra Lain-lain (Apa Bentuk Lembaganya?) *
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={formData.customPartnerType}
-                        onChange={e => setFormData({ ...formData, customPartnerType: e.target.value })}
-                        placeholder="Contoh: Kasepuhan Adat / Kelompok Tani / Pokdarwis"
-                        className="boomboom-form-input"
-                        style={inputStyle}
-                      />
-                    </div>
-                  )}
-                  <div>
-                    <label style={{ fontSize: '0.78rem', fontWeight: '700', color: 'var(--text-muted, #475569)' }}>
-                      Nama Mitra / Keterangan Lain-lainnya (Opsional/Wajib diisi jika Lain-lain)
-                    </label>
-                    <input
-                      type="text"
-                      required={formData.partnerType === 'Lain-lain'}
-                      value={formData.otherPartnerDetails}
-                      onChange={e => setFormData({ ...formData, otherPartnerDetails: e.target.value })}
-                      placeholder="Contoh: Nama BUMDes / Yayasan / PT / Organisasi pengelola"
-                      className="boomboom-form-input"
-                      style={inputStyle}
-                    />
-                  </div>
+                <div style={{ marginTop: '14px' }}>
+                  <label style={{ fontSize: '0.78rem', fontWeight: formData.partnerType === 'Lain-lain' ? '800' : '700', color: formData.partnerType === 'Lain-lain' ? '#b45309' : 'var(--text-muted, #475569)' }}>
+                    {formData.partnerType === 'Lain-lain'
+                      ? 'Sebutkan Jenis & Nama Mitra Lain-lain *'
+                      : 'Nama Mitra / Keterangan Tambahan (Opsional)'}
+                  </label>
+                  <input
+                    type="text"
+                    required={formData.partnerType === 'Lain-lain'}
+                    value={formData.otherPartnerDetails}
+                    onChange={e => setFormData({ ...formData, otherPartnerDetails: e.target.value })}
+                    placeholder={formData.partnerType === 'Lain-lain'
+                      ? 'Contoh: Kasepuhan Adat / Kelompok Tani / Pokdarwis'
+                      : 'Contoh: Nama BUMDes / Yayasan / PT / Organisasi pengelola'}
+                    className="boomboom-form-input"
+                    style={inputStyle}
+                  />
                 </div>
               </div>
 

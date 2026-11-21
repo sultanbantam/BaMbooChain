@@ -826,8 +826,9 @@ export const useBoomBoomStore = create((set, get) => ({
       documents: {
         ktp_photo_url: driverFormData.ktpPhotoUrl || '',
         sim_photo_url: driverFormData.simPhotoUrl || '',
-        boomride_photo_url: driverFormData.boomridePhotoUrl || '',
-        boomcar_photo_url: driverFormData.boomcarPhotoUrl || '',
+        vehicle_front_photo_url: driverFormData.vehicleFrontPhotoUrl || '',
+        vehicle_side_photo_url: driverFormData.vehicleSidePhotoUrl || '',
+        vehicle_back_photo_url: driverFormData.vehicleBackPhotoUrl || '',
         bank_book_photo_url: driverFormData.bankBookPhotoUrl || ''
       },
       created_at: new Date().toISOString()

@@ -49,19 +49,19 @@ const BoomOperatorDashboardPage = () => {
     monthly_revenue: 12600000
   };
 
-  const filteredDrivers = drivers.filter(d => 
-    d.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    d.plate_number.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredDrivers = (drivers || []).filter(d => 
+    (d?.name || '').toLowerCase().includes((searchTerm || '').toLowerCase()) ||
+    (d?.plate_number || '').toLowerCase().includes((searchTerm || '').toLowerCase())
   );
 
   const handleExportCsv = () => {
     const csvHeader = "ID Pengemudi,Nama,Jenis Kendaraan,Plat Nomor,Status,Anggota KODIBA,Trips,Rating\n";
-    const csvRows = drivers.map(d => `${d.driver_id},"${d.name}",${d.vehicle_type},${d.plate_number},${d.status},${d.kodiba_member ? d.kodiba_member_id : 'Non-Anggota'},${d.completed_trips},${d.rating}`).join("\n");
+    const csvRows = (drivers || []).map(d => `${d.driver_id || ''},"${d.name || ''}",${d.vehicle_type || ''},${d.plate_number || ''},${d.status || ''},${d.kodiba_member ? d.kodiba_member_id : 'Non-Anggota'},${d.completed_trips || 0},${d.rating || '-'}`).join("\n");
     const blob = new Blob([csvHeader + csvRows], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `Laporan_Keuangan_Tahap3_${operatorInfo.name.replace(/\s+/g, '_')}.csv`;
+    a.download = `Laporan_Keuangan_Tahap3_${(operatorInfo.name || 'Operator').replace(/\s+/g, '_')}.csv`;
     a.click();
   };
 
@@ -187,10 +187,10 @@ const BoomOperatorDashboardPage = () => {
           <div style={cardStyle}>
             <div style={{ fontSize: '0.78rem', fontWeight: '800', color: 'var(--text-muted, #64748b)', marginBottom: '4px' }}>PENDAPATAN PENGEMUDI (85%)</div>
             <div style={{ fontSize: '1.5rem', fontWeight: '900', color: '#b45309' }}>
-              Rp {Math.round(operatorInfo.monthly_revenue * 0.85).toLocaleString('id-ID')}
+              Rp {Math.round((operatorInfo.monthly_revenue || 0) * 0.85).toLocaleString('id-ID')}
             </div>
             <div style={{ fontSize: '0.75rem', color: 'var(--text-muted, #64748b)', marginTop: '4px' }}>
-              Komisi BUMDes/Koperasi (5%): Rp {(operatorInfo.monthly_revenue * 0.05).toLocaleString('id-ID')}
+              Komisi BUMDes/Koperasi (5%): Rp {((operatorInfo.monthly_revenue || 0) * 0.05).toLocaleString('id-ID')}
             </div>
           </div>
 
@@ -290,8 +290,9 @@ const BoomOperatorDashboardPage = () => {
                             {[
                               { label: 'KTP', url: d.documents.ktp_photo_url },
                               { label: 'SIM', url: d.documents.sim_photo_url },
-                              { label: 'BoomRide', url: d.documents.boomride_photo_url },
-                              { label: 'BoomCar', url: d.documents.boomcar_photo_url },
+                              { label: 'Kendaraan 1', url: d.documents.vehicle_front_photo_url || d.documents.boomride_photo_url },
+                              { label: 'Kendaraan 2', url: d.documents.vehicle_side_photo_url || d.documents.boomcar_photo_url },
+                              { label: 'Kendaraan 3', url: d.documents.vehicle_back_photo_url },
                               { label: 'Rekening', url: d.documents.bank_book_photo_url }
                             ].filter((docItem) => docItem.url).map((docItem) => (
                               <a
