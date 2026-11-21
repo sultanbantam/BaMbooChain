@@ -285,6 +285,35 @@ const BoomOperatorDashboardPage = () => {
                       <td style={{ padding: '12px', fontWeight: '700', color: 'var(--text-main, #0f172a)' }}>
                         <div>{d.name}</div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted, #64748b)', fontWeight: 'normal' }}>{d.phone}</div>
+                        {d.documents && (
+                          <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '4px' }}>
+                            {[
+                              { label: 'KTP', url: d.documents.ktp_photo_url },
+                              { label: 'SIM', url: d.documents.sim_photo_url },
+                              { label: 'BoomRide', url: d.documents.boomride_photo_url },
+                              { label: 'BoomCar', url: d.documents.boomcar_photo_url },
+                              { label: 'Rekening', url: d.documents.bank_book_photo_url }
+                            ].filter((docItem) => docItem.url).map((docItem) => (
+                              <a
+                                key={docItem.label}
+                                href={docItem.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                  fontSize: '0.65rem',
+                                  fontWeight: '800',
+                                  background: 'rgba(16, 185, 129, 0.14)',
+                                  color: '#047857',
+                                  padding: '2px 6px',
+                                  borderRadius: '6px',
+                                  textDecoration: 'none'
+                                }}
+                              >
+                                📎 {docItem.label}
+                              </a>
+                            ))}
+                          </div>
+                        )}
                       </td>
                       <td style={{ padding: '12px' }}>
                         <div>{d.vehicle_brand}</div>

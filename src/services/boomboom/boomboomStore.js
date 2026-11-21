@@ -823,6 +823,13 @@ export const useBoomBoomStore = create((set, get) => ({
       currentLat: -6.2945,
       currentLng: 106.7124,
       avatarUrl: driverFormData.profilePhotoUrl || userProfile?.photoURL || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150',
+      documents: {
+        ktp_photo_url: driverFormData.ktpPhotoUrl || '',
+        sim_photo_url: driverFormData.simPhotoUrl || '',
+        boomride_photo_url: driverFormData.boomridePhotoUrl || '',
+        boomcar_photo_url: driverFormData.boomcarPhotoUrl || '',
+        bank_book_photo_url: driverFormData.bankBookPhotoUrl || ''
+      },
       created_at: new Date().toISOString()
     };
 

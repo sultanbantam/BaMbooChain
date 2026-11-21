@@ -34,10 +34,11 @@ const BoomAdminDashboardPage = () => {
     fraudAlerts,
     financialLedger,
     verifyOperatorStatus,
+    verifyDriverStatus,
     resolveFraudAlert
   } = useBoomBoomStore();
 
-  const [activeTab, setActiveTab] = useState('PHASE4_PROD'); // 'PHASE4_PROD' | 'PHASE3_KPI' | 'AUDIT' | 'FLAGS' | 'FARES'
+  const [activeTab, setActiveTab] = useState('PHASE4_PROD'); // 'PHASE4_PROD' | 'DRIVERS' | 'PHASE3_KPI' | 'AUDIT' | 'FLAGS' | 'FARES'
   const [editingFare, setEditingFare] = useState({ ...fareSettings.BoomRide });
   const [saveSuccess, setSaveSuccess] = useState(false);
 
@@ -110,6 +111,21 @@ const BoomAdminDashboardPage = () => {
             }}
           >
             📊 Evaluasi 7 Metrik Pilot Tahap III
+          </button>
+
+          <button
+            onClick={() => setActiveTab('DRIVERS')}
+            style={{
+              padding: '10px 20px',
+              borderRadius: '14px',
+              fontWeight: '800',
+              border: '1px solid var(--border-color, #cbd5e1)',
+              cursor: 'pointer',
+              background: activeTab === 'DRIVERS' ? '#047857' : 'var(--bg-card, #ffffff)',
+              color: activeTab === 'DRIVERS' ? '#ffffff' : 'var(--text-main, #475569)'
+            }}
+          >
+            🪪 Validasi Driver & Dokumen ({drivers.filter(d => d.status === 'SUBMITTED' || d.status === 'UNDER_REVIEW').length} Menunggu)
           </button>
 
           <button
@@ -529,6 +545,138 @@ const BoomAdminDashboardPage = () => {
                   ))}
                 </div>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB DRIVERS: VALIDASI DRIVER & FOTO DOKUMEN (ADMIN / VALIDATOR) */}
+        {activeTab === 'DRIVERS' && (
+          <div style={{
+            background: 'var(--bg-card, #ffffff)',
+            borderRadius: '24px',
+            padding: '24px',
+            boxShadow: '0 8px 25px rgba(0,0,0,0.04)',
+            border: '1px solid var(--border-color, #cbd5e1)'
+          }}>
+            <div style={{ marginBottom: '18px' }}>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: '800', margin: '0 0 4px', color: 'var(--text-main, #0f172a)' }}>
+                🪪 Validasi Pendaftaran Driver &amp; Kelengkapan Dokumen
+              </h3>
+              <p style={{ fontSize: '0.82rem', color: 'var(--text-muted, #64748b)', margin: 0 }}>
+                Periksa foto KTP, SIM, Kendaraan (BoomRide/BoomCar), dan Buku Rekening Bank sebelum menyetujui mitra pengemudi.
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              {drivers.map((d) => {
+                const docs = d.documents || {};
+                const docEntries = [
+                  { label: 'KTP', url: docs.ktp_photo_url },
+                  { label: 'SIM', url: docs.sim_photo_url },
+                  { label: 'BoomRide', url: docs.boomride_photo_url },
+                  { label: 'BoomCar', url: docs.boomcar_photo_url },
+                  { label: 'Buku Rekening', url: docs.bank_book_photo_url }
+                ];
+                return (
+                  <div key={d.driver_id} style={{
+                    padding: '16px',
+                    borderRadius: '18px',
+                    background: 'var(--bg-secondary, #f8fafc)',
+                    border: d.status === 'VERIFIED' ? '1.5px solid #10b981' : '1.5px solid var(--border-color, #cbd5e1)'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px', marginBottom: '12px' }}>
+                      <div>
+                        <div style={{ fontWeight: '900', fontSize: '1rem', color: 'var(--text-main, #0f172a)' }}>
+                          {d.name} <span style={{ fontSize: '0.78rem', fontWeight: '700', color: '#059669' }}>({d.ngopi_username || '-'})</span>
+                        </div>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted, #64748b)' }}>
+                          {d.phone} • NIK: {d.identity_number || '-'} • SIM: {d.license_number || '-'}
+                        </div>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted, #64748b)' }}>
+                          {d.vehicle_type}: {d.vehicle_brand} ({d.plate_number}) • Rekening: {d.bank_account || '-'}
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                        <span style={{
+                          padding: '4px 10px',
+                          borderRadius: '10px',
+                          fontSize: '0.75rem',
+                          fontWeight: '800',
+                          background: d.status === 'VERIFIED' ? 'rgba(16, 185, 129, 0.18)' : d.status === 'REJECTED' ? 'rgba(239, 68, 68, 0.18)' : 'rgba(245, 158, 11, 0.2)',
+                          color: d.status === 'VERIFIED' ? '#047857' : d.status === 'REJECTED' ? '#dc2626' : '#b45309'
+                        }}>
+                          {d.status}
+                        </span>
+                        {d.status !== 'VERIFIED' && (
+                          <button
+                            type="button"
+                            onClick={() => verifyDriverStatus(d.driver_id, 'VERIFIED', 'Admin / Validator')}
+                            style={{
+                              background: '#10b981',
+                              color: '#ffffff',
+                              border: 'none',
+                              padding: '7px 14px',
+                              borderRadius: '10px',
+                              fontWeight: '800',
+                              fontSize: '0.78rem',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            ✓ Validasi &amp; Setujui
+                          </button>
+                        )}
+                        {d.status !== 'REJECTED' && (
+                          <button
+                            type="button"
+                            onClick={() => verifyDriverStatus(d.driver_id, 'REJECTED', 'Admin / Validator')}
+                            style={{
+                              background: '#ef4444',
+                              color: '#ffffff',
+                              border: 'none',
+                              padding: '7px 12px',
+                              borderRadius: '10px',
+                              fontWeight: '800',
+                              fontSize: '0.78rem',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            ✕ Tolak
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                      {docEntries.map((docItem) => (
+                        <div key={docItem.label} style={{
+                          padding: '8px 10px',
+                          borderRadius: '10px',
+                          background: 'var(--bg-card, #ffffff)',
+                          border: '1px solid var(--border-color, #e2e8f0)',
+                          minWidth: '105px',
+                          textAlign: 'center'
+                        }}>
+                          <div style={{ fontSize: '0.7rem', fontWeight: '800', color: 'var(--text-muted, #64748b)', marginBottom: '4px' }}>
+                            {docItem.label}
+                          </div>
+                          {docItem.url ? (
+                            <a href={docItem.url} target="_blank" rel="noopener noreferrer" title={`Lihat ${docItem.label}`}>
+                              <img
+                                src={docItem.url}
+                                alt={docItem.label}
+                                style={{ width: '76px', height: '52px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #10b981' }}
+                              />
+                            </a>
+                          ) : (
+                            <div style={{ fontSize: '0.68rem', color: '#94a3b8', padding: '14px 4px' }}>Belum unggah</div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}

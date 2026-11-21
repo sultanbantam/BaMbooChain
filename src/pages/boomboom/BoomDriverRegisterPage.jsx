@@ -47,8 +47,43 @@ const BoomDriverRegisterPage = () => {
     walletUsdt: user?.usdtWallet || '',
     emergencyContact: typeof window !== 'undefined' ? (localStorage.getItem('boomboom_emergency_contact') || '') : '',
     profilePhotoUrl: user?.photoURL || '',
-    vehiclePhotoUrl: ''
+    vehiclePhotoUrl: '',
+    ktpPhotoUrl: '',
+    simPhotoUrl: '',
+    boomridePhotoUrl: '',
+    boomcarPhotoUrl: '',
+    bankBookPhotoUrl: ''
   });
+
+  const handleDocumentUpload = (fieldKey, file) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = new Image();
+      img.onload = () => {
+        const maxDim = 800;
+        let { width, height } = img;
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        const compressed = canvas.toDataURL('image/jpeg', 0.72);
+        setFormData((prev) => ({ ...prev, [fieldKey]: compressed }));
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
 
   useEffect(() => {
     if (user) {
@@ -89,6 +124,18 @@ const BoomDriverRegisterPage = () => {
 
     if (!formData.ngopiUsername || !formData.ngopiUsername.trim()) {
       alert('⚠️ Syarat Utama: Anda wajib memiliki dan mengisi identitas akun ngopi.top untuk mendaftar sebagai pengemudi BoomBoom!');
+      return;
+    }
+    if (!formData.ktpPhotoUrl || !formData.simPhotoUrl || !formData.bankBookPhotoUrl) {
+      alert('⚠️ Mohon unggah Foto KTP, Foto SIM, dan Foto Buku Rekening Bank untuk proses validasi Admin/Validator.');
+      return;
+    }
+    if (formData.vehicleType === 'BoomRide' && !formData.boomridePhotoUrl && !formData.boomcarPhotoUrl) {
+      alert('⚠️ Mohon unggah Foto Kendaraan BoomRide (atau BoomCar) untuk proses validasi.');
+      return;
+    }
+    if (formData.vehicleType === 'BoomCar' && !formData.boomcarPhotoUrl && !formData.boomridePhotoUrl) {
+      alert('⚠️ Mohon unggah Foto Kendaraan BoomCar (atau BoomRide) untuk proses validasi.');
       return;
     }
     if (formData.emergencyContact) {
@@ -222,21 +269,21 @@ const BoomDriverRegisterPage = () => {
 
         {/* SYARAT UTAMA: WAJIB PUNYA AKUN NGOPI.TOP */}
         <div style={{
-          background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)',
-          border: '2px solid #f59e0b',
+          background: '#fef3c7',
+          border: '2px solid #d97706',
           borderRadius: '20px',
           padding: '18px 20px',
           marginBottom: '24px',
-          boxShadow: '0 4px 16px rgba(245, 158, 11, 0.15)'
+          boxShadow: '0 4px 16px rgba(217, 119, 6, 0.18)'
         }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
             <span style={{ fontSize: '26px' }}>☕</span>
             <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: '900', color: '#92400e', fontSize: '1.05rem', marginBottom: '4px' }}>
+              <div style={{ fontWeight: '900', color: '#451a03', fontSize: '1.05rem', marginBottom: '4px' }}>
                 Syarat Utama: Wajib Memiliki Akun ngopi.top
               </div>
-              <p style={{ margin: '0 0 10px 0', fontSize: '0.86rem', color: '#78350f', lineHeight: 1.5 }}>
-                Pendaftaran driver BoomBoom menggunakan <strong>Identity Terdesentralisasi ngopi.top</strong> yang terintegrasi di aplikasi <a href="https://ngopi.top" target="_blank" rel="noopener noreferrer" style={{ color: '#047857', fontWeight: '800' }}>ngopi.top</a>. Akun ini digunakan untuk autentikasi pengemudi, penerimaan order instan, dan komunikasi langsung dengan penumpang.
+              <p style={{ margin: '0 0 10px 0', fontSize: '0.86rem', color: '#451a03', fontWeight: '600', lineHeight: 1.55 }}>
+                Pendaftaran driver BoomBoom menggunakan <strong>Identity Terdesentralisasi ngopi.top</strong> yang terintegrasi di aplikasi <a href="https://ngopi.top" target="_blank" rel="noopener noreferrer" style={{ color: '#065f46', fontWeight: '900', textDecoration: 'underline' }}>ngopi.top</a>. Akun ini digunakan untuk autentikasi pengemudi, penerimaan order instan, dan komunikasi langsung dengan penumpang.
               </p>
               <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
                 <a
@@ -247,20 +294,20 @@ const BoomDriverRegisterPage = () => {
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '6px',
-                    background: '#d97706',
+                    background: '#78350f',
                     color: '#ffffff',
                     textDecoration: 'none',
                     padding: '8px 16px',
                     borderRadius: '12px',
                     fontSize: '0.82rem',
                     fontWeight: '900',
-                    boxShadow: '0 2px 8px rgba(217, 119, 6, 0.3)'
+                    boxShadow: '0 2px 8px rgba(120, 53, 15, 0.35)'
                   }}
                 >
                   <span>☕ Belum Punya Akun? Daftar di ngopi.top ↗</span>
                 </a>
-                <span style={{ fontSize: '0.78rem', color: '#92400e', fontWeight: '600' }}>
-                  (Gratis & Langsung Aktif)
+                <span style={{ fontSize: '0.78rem', color: '#451a03', fontWeight: '800' }}>
+                  (Gratis &amp; Langsung Aktif)
                 </span>
               </div>
             </div>
@@ -344,7 +391,7 @@ const BoomDriverRegisterPage = () => {
               {/* SECTION 1: PERSONAL DETAILS */}
               <div>
                 <h3 style={{ fontSize: '1.05rem', fontWeight: '800', color: 'var(--text-main, #0f172a)', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <FileText size={18} color="#10b981" /> 1. Data Diri & Kontak (Terhubung Akun BaMbooChain)
+                  <FileText size={18} color="#10b981" /> 1. Data Diri &amp; Kontak
                 </h3>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px' }}>
                   <div>
@@ -471,6 +518,62 @@ const BoomDriverRegisterPage = () => {
                       className="boomboom-form-input"
                       style={inputStyle}
                     />
+                  </div>
+                </div>
+
+                {/* UPLOAD FOTO DOKUMEN WAJIB VALIDASI */}
+                <div style={{
+                  marginTop: '16px',
+                  padding: '16px',
+                  borderRadius: '16px',
+                  background: 'var(--bg-secondary, #f8fafc)',
+                  border: '1.5px solid var(--border-color, #cbd5e1)'
+                }}>
+                  <div style={{ fontSize: '0.86rem', fontWeight: '800', color: 'var(--text-main, #0f172a)', marginBottom: '4px' }}>
+                    📎 Upload Foto Dokumen (Untuk Validasi Admin / Validator)
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted, #64748b)', marginBottom: '12px' }}>
+                    Unggah foto yang jelas agar dapat langsung divalidasi oleh Admin atau Validator.
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
+                    {[
+                      { key: 'ktpPhotoUrl', label: 'Foto KTP *', required: true },
+                      { key: 'simPhotoUrl', label: 'Foto SIM *', required: true },
+                      { key: 'boomridePhotoUrl', label: 'Foto Kendaraan BoomRide', required: false },
+                      { key: 'boomcarPhotoUrl', label: 'Foto Kendaraan BoomCar', required: false },
+                      { key: 'bankBookPhotoUrl', label: 'Foto Buku Rekening Bank *', required: true }
+                    ].map((docItem) => {
+                      const previewUrl = formData[docItem.key];
+                      return (
+                        <div key={docItem.key} style={{
+                          padding: '10px 12px',
+                          borderRadius: '12px',
+                          border: previewUrl ? '1.5px solid #10b981' : '1px dashed var(--border-color, #94a3b8)',
+                          background: 'var(--bg-card, #ffffff)'
+                        }}>
+                          <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: '800', color: 'var(--text-main, #0f172a)', marginBottom: '6px' }}>
+                            {docItem.label}
+                          </label>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleDocumentUpload(docItem.key, e.target.files?.[0])}
+                            style={{ width: '100%', fontSize: '0.72rem', color: 'var(--text-muted, #64748b)' }}
+                          />
+                          {previewUrl && (
+                            <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <img
+                                src={previewUrl}
+                                alt={docItem.label}
+                                style={{ width: '48px', height: '36px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #10b981' }}
+                              />
+                              <span style={{ fontSize: '0.7rem', fontWeight: '800', color: '#059669' }}>✓ Terunggah</span>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
