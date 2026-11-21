@@ -522,8 +522,8 @@ export const createPilotTripOrder = async (bookingData, userProfile = null) => {
     instant_code: String(instantCode).replace(/[^0-9]/g, ''),
     passenger_id: userProfile?.uid || userProfile?.id || 'GUEST-USER',
     passenger_name: userProfile?.displayName || userProfile?.name || 'Penumpang BoomBoom',
-    passenger_username: userProfile?.username || (userProfile?.email ? userProfile.email.split('@')[0] : '') || 'penumpang',
-    passenger_ngopi_username: userProfile?.ngopiUsername || userProfile?.username || (userProfile?.email ? userProfile.email.split('@')[0] : '') || '@penumpang',
+    passenger_username: bookingData.passengerNgopiUsername || userProfile?.username || (userProfile?.email ? userProfile.email.split('@')[0] : '') || 'penumpang',
+    passenger_ngopi_username: bookingData.passengerNgopiUsername || userProfile?.ngopiUsername || userProfile?.username || (userProfile?.email ? userProfile.email.split('@')[0] : '') || '@penumpang',
     passenger_phone: userProfile?.phoneNumber || userProfile?.phone || '',
     pickup_address: bookingData.pickupAddress || 'Titik Penjemputan Penumpang',
     pickup_coords: bookingData.pickupCoords || { lat: -6.3198, lng: 106.7069 },
@@ -657,6 +657,28 @@ export const subscribeIncomingOrders = (onNewOrders) => {
     console.warn('[BoomBoom Firestore] Gagal membuat query order:', err);
     return () => {};
   }
+};
+
+export const subscribeDriverStatsFromFirestore = (driverId, onTripsUpdate, onRatingsUpdate) => {
+  if (!driverId) return () => {};
+  const unsubs = [];
+  try {
+    const tripsQ = query(collection(db, 'boomboom_trips'), where('driver_id', '==', driverId), limit(50));
+    unsubs.push(onSnapshot(tripsQ, (snap) => {
+      const list = [];
+      snap.forEach((d) => list.push({ id: d.id, ...d.data() }));
+      onTripsUpdate?.(list);
+    }, () => {}));
+  } catch {}
+  try {
+    const ratingsQ = query(collection(db, 'boomboom_ratings'), where('driver_id', '==', driverId), limit(50));
+    unsubs.push(onSnapshot(ratingsQ, (snap) => {
+      const list = [];
+      snap.forEach((d) => list.push({ id: d.id, ...d.data() }));
+      onRatingsUpdate?.(list);
+    }, () => {}));
+  } catch {}
+  return () => unsubs.forEach((u) => typeof u === 'function' && u());
 };
 
 export const acceptPilotOrderInFirestore = async (tripId, driverInfo) => {

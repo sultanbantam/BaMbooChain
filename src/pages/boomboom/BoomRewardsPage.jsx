@@ -52,13 +52,13 @@ const BoomRewardsPage = () => {
           boxShadow: '0 10px 28px rgba(180,83,9,0.25)',
         }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.18)', padding: '4px 11px', borderRadius: '14px', fontSize: '0.72rem', fontWeight: '800', color: '#fef08a', marginBottom: '10px' }}>
-            <Sparkles size={13} /> LEDGER REWARD MOBILITAS BMC
+            <Sparkles size={13} /> LEDGER REWARD MOBILITAS POIN NGOPI
           </div>
           <h1 style={{ fontSize: isMobile ? '1.5rem' : '1.9rem', fontWeight: '900', margin: '0 0 6px', color: '#ffffff', lineHeight: 1.15 }}>
-            BMC Token Reward Hub
+            Poin Ngopi Reward Hub
           </h1>
           <p style={{ fontSize: '0.87rem', color: '#fef3c7', margin: '0 0 14px', lineHeight: 1.6, maxWidth: '520px' }}>
-            Kumpulkan insentif BMC setiap kali Anda menggunakan mobilitas hijau, berbagi tumpangan, atau berkontribusi dalam komunitas.
+            Kumpulkan Poin Ngopi setiap kali Anda menggunakan mobilitas hijau, berbagi tumpangan, atau berkontribusi dalam komunitas.
           </p>
 
           <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>

@@ -22,16 +22,16 @@ const faqs = [
     a: 'Bisa! Anda dapat memilih pembayaran tunai langsung kepada pengemudi atau menggunakan QRIS/Transfer Bank.'
   },
   {
-    q: 'Apa itu Token BMC dan bagaimana cara mendapatkannya?',
-    a: 'Token BMC adalah reward komunitas yang Anda dapatkan setiap menyelesaikan perjalanan atau memilih kendaraan ramah lingkungan. Token dapat diklaim di menu Reward BMC.'
+    q: 'Apa itu Poin Ngopi dan bagaimana cara mendapatkannya?',
+    a: 'Poin Ngopi adalah reward yang terintegrasi dengan akun ngopi.top setiap kali Anda menyelesaikan perjalanan atau memilih kendaraan listrik (EV). Poin dapat dicek dan ditukar melalui Ekosistem Marketplace Mitra.'
   },
   {
     q: 'Bagaimana cara mendaftar menjadi Pengemudi?',
-    a: 'Buka menu "Jadi Pengemudi", isi data KTP, SIM, dan kendaraan Anda. Pengurus BUMDes setempat akan memverifikasi dokumen Anda dalam 1–3 hari kerja.'
+    a: 'Buka menu "Daftar Driver", isi data KTP, SIM, akun ngopi.top, dan kendaraan Anda. Pengurus Mitra setempat akan memverifikasi dokumen Anda dalam 1–3 hari kerja.'
   },
   {
     q: 'Bagaimana jika pengemudi tidak muncul atau terlambat?',
-    a: 'Gunakan tombol SOS atau chat WhatsApp petugas. Kami akan merespons dalam 5 menit dan membantu Anda mendapatkan pengemudi pengganti.'
+    a: 'Gunakan tombol SOS atau hubungi petugas melalui ngopi.top. Kami akan merespons dengan cepat dan membantu Anda mendapatkan pengemudi pengganti.'
   },
 ];
 
@@ -79,19 +79,19 @@ const BoomHelpPage = () => {
           marginBottom: '20px'
         }}>
           <a
-            href="https://wa.me/6281234567890?text=Halo%20Petugas%20BoomBoom%20Saya%20Butuh%20Bantuan"
+            href="https://ngopi.top/contacts?join=BoomBoom"
             target="_blank" rel="noopener noreferrer"
             style={{
-              background: '#25d366', color: '#ffffff',
+              background: '#451a03', color: '#fef3c7',
               borderRadius: '16px', padding: isMobile ? '16px' : '18px 20px',
               textDecoration: 'none', fontWeight: '900',
               fontSize: isMobile ? '1rem' : '1.05rem',
               display: 'flex', alignItems: 'center',
               justifyContent: 'center', gap: '10px',
-              boxShadow: '0 6px 20px rgba(37,211,102,0.28)'
+              boxShadow: '0 6px 20px rgba(69,26,3,0.28)'
             }}
           >
-            <MessageCircle size={24} /> Chat WhatsApp Petugas
+            <MessageCircle size={24} /> Chat Petugas di ngopi.top
           </a>
 
           <a

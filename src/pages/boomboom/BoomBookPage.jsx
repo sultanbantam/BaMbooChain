@@ -63,6 +63,9 @@ const BoomBookPage = () => {
   const [createdTripData, setCreatedTripData] = useState(null);
   const [paymentSandbox, setPaymentSandbox] = useState(null);
   const [isPayingSandbox, setIsPayingSandbox] = useState(false);
+  const [passengerNgopiInput, setPassengerNgopiInput] = useState(
+    () => user?.ngopiUsername || user?.username || (typeof window !== 'undefined' && localStorage.getItem('boomboom_passenger_ngopi_username')) || ''
+  );
 
   const {
     activeBooking,
@@ -409,7 +412,8 @@ const BoomBookPage = () => {
           paymentMethod: selectedPayment,
           paymentStatus: paymentRecord.status,
           paymentId: paymentRecord.payment_id,
-          matchedDriver: topMatchedDriver
+          matchedDriver: topMatchedDriver,
+          passengerNgopiUsername: passengerNgopiInput.trim()
         }, user);
         setCreatedTripData(orderData);
         setPilotTripId(orderData.trip_id);
@@ -1353,6 +1357,32 @@ const BoomBookPage = () => {
                   </div>
                 </div>
 
+                {/* PASSENGER NGOPI.TOP USERNAME (OPTIONAL) */}
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--text-muted, #64748b)', display: 'block', marginBottom: '6px' }}>
+                    AKUN NGOPI.TOP ANDA (AGAR PENGEMUDI MUDAH MENGHUBUNGI)
+                  </label>
+                  <input
+                    type="text"
+                    value={passengerNgopiInput}
+                    onChange={(e) => {
+                      setPassengerNgopiInput(e.target.value);
+                      try { localStorage.setItem('boomboom_passenger_ngopi_username', e.target.value); } catch {}
+                    }}
+                    placeholder="Contoh: @username_ngopi (opsional)"
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      borderRadius: '12px',
+                      border: '1.5px solid var(--border-color, #cbd5e1)',
+                      fontSize: '0.86rem',
+                      fontWeight: '700',
+                      color: 'var(--text-main, #0f172a)',
+                      background: 'var(--bg-secondary, #ffffff)'
+                    }}
+                  />
+                </div>
+
                 {/* PAYMENT SELECTOR */}
                 <div style={{ marginBottom: '24px' }}>
                   <label style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--text-muted, #64748b)', display: 'block', marginBottom: '8px' }}>
@@ -1526,30 +1556,9 @@ const BoomBookPage = () => {
                 </div>
 
                 <div style={{ borderTop: '1px dashed var(--border-color, #cbd5e1)', paddingTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted, #64748b)' }}>
-                    Ingin menguji pencocokan otomatis (Auto-Match Engine)?
-                  </div>
-                  <button
-                    onClick={() => {
-                      setUseLivePilot(false);
-                      assignDriverAndStartSimulation();
-                    }}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: '#059669',
-                      fontSize: '0.78rem',
-                      fontWeight: '800',
-                      cursor: 'pointer',
-                      textDecoration: 'underline'
-                    }}
-                  >
-                    ⚡ Tugaskan Kandidat Pengemudi Terdekat Sekarang
-                  </button>
-
-                  <div style={{ width: '100%', maxWidth: '340px', marginTop: '8px' }}>
-                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '800', color: 'var(--text-muted, #64748b)', marginBottom: '4px' }}>
-                      Alasan Pembatalan (Metrik Evaluasi Tahap III):
+                  <div style={{ width: '100%', maxWidth: '340px' }}>
+                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: '800', color: 'var(--text-muted, #64748b)', marginBottom: '4px' }}>
+                      Alasan Pembatalan:
                     </label>
                     <select
                       value={selectedCancelReason}

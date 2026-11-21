@@ -6,7 +6,8 @@ import {
   updatePilotTripStep, 
   playOrderNotificationSound, 
   openNgopiChat, 
-  updateDriverLiveLocationInFirestore
+  updateDriverLiveLocationInFirestore,
+  subscribeDriverStatsFromFirestore
 } from '../../services/boomboom/boomboomPilotService';
 import { PhoneCall, ExternalLink, Power, MapPin, ShieldCheck, ShoppingBag, Wallet } from 'lucide-react';
 import BoomBoomNavHeader from '../../components/boomboom/BoomBoomNavHeader';
@@ -24,7 +25,6 @@ const BoomDriverDashboardPage = () => {
     trips,
     activeBooking,
     featureFlags,
-    syncFirestoreDrivers,
     recordDriverCompletedTrip,
     pairOrderByInstantCode,
     optInDriverKodiba
@@ -37,12 +37,8 @@ const BoomDriverDashboardPage = () => {
   const [instantSuccessMsg, setInstantSuccessMsg] = useState('');
   const [payoutViewFilter, setPayoutViewFilter] = useState('ALL');
   const [onlineMs, setOnlineMs] = useState(0);
-
-  useEffect(() => {
-    if (syncFirestoreDrivers) {
-      syncFirestoreDrivers();
-    }
-  }, [syncFirestoreDrivers]);
+  const [firestoreDriverTrips, setFirestoreDriverTrips] = useState([]);
+  const [firestoreDriverRatings, setFirestoreDriverRatings] = useState([]);
 
   const savedDriverId = typeof window !== 'undefined' ? localStorage.getItem('boomboom_driver_id') : null;
 
@@ -78,18 +74,46 @@ const BoomDriverDashboardPage = () => {
   const cleanNgopiHandle = driverNgopiUsername.replace(/^@/, '').replace(/[^a-zA-Z0-9._-]/g, '');
   const driverNgopiProfileUrl = currentDriverProfile.ngopi_chat_url || (cleanNgopiHandle ? `https://ngopi.top/@${encodeURIComponent(cleanNgopiHandle)}` : 'https://ngopi.top');
 
-  // Integrasi nilai rating dari penilaian penumpang
-  const driverRatedTrips = (trips || []).filter(
-    (t) => t.driver_id === currentDriverProfile.driver_id && Number(t.rating_given) > 0
-  );
-  const integratedDriverRating = driverRatedTrips.length > 0
-    ? (driverRatedTrips.reduce((sum, t) => sum + Number(t.rating_given), 0) / driverRatedTrips.length).toFixed(1)
+  useEffect(() => {
+    if (!currentDriverProfile?.driver_id) return;
+    const unsub = subscribeDriverStatsFromFirestore(
+      currentDriverProfile.driver_id,
+      (fsTrips) => setFirestoreDriverTrips(fsTrips || []),
+      (fsRatings) => setFirestoreDriverRatings(fsRatings || [])
+    );
+    return () => unsub && unsub();
+  }, [currentDriverProfile?.driver_id]);
+
+  // Gabungkan trip dari store lokal dan Firestore (hindari duplikat trip_id)
+  const mergedDriverTrips = React.useMemo(() => {
+    const map = new Map();
+    (trips || []).forEach((t) => {
+      if (t.driver_id === currentDriverProfile.driver_id) {
+        map.set(t.trip_id || t.id, t);
+      }
+    });
+    (firestoreDriverTrips || []).forEach((t) => {
+      map.set(t.trip_id || t.id, { ...map.get(t.trip_id || t.id), ...t });
+    });
+    return Array.from(map.values());
+  }, [trips, firestoreDriverTrips, currentDriverProfile.driver_id]);
+
+  // Integrasi nilai rating dari penilaian penumpang (store + Firestore boomboom_ratings)
+  const localRatedValues = mergedDriverTrips
+    .filter((t) => Number(t.rating_given) > 0)
+    .map((t) => Number(t.rating_given));
+  const fsRatedValues = (firestoreDriverRatings || [])
+    .filter((r) => Number(r.rating) > 0)
+    .map((r) => Number(r.rating));
+  const allRatingValues = fsRatedValues.length > 0 ? fsRatedValues : localRatedValues;
+  const integratedDriverRating = allRatingValues.length > 0
+    ? (allRatingValues.reduce((sum, val) => sum + val, 0) / allRatingValues.length).toFixed(1)
     : (currentDriverProfile.rating != null ? Number(currentDriverProfile.rating).toFixed(1) : (driverState.rating != null ? Number(driverState.rating).toFixed(1) : 'Baru'));
 
   // Integrasi data real hari ini (Pendapatan, Total Trip, Reward Poin Ngopi)
   const todayDateStr = new Date().toDateString();
-  const driverCompletedTrips = (trips || []).filter(
-    (t) => t.driver_id === currentDriverProfile.driver_id && (t.trip_status === 'COMPLETED' || t.status === 'COMPLETED')
+  const driverCompletedTrips = mergedDriverTrips.filter(
+    (t) => t.trip_status === 'COMPLETED' || t.status === 'COMPLETED'
   );
   const todayCompletedTrips = driverCompletedTrips.filter((t) => {
     const dt = t.completed_at || t.created_at;
@@ -97,7 +121,7 @@ const BoomDriverDashboardPage = () => {
   });
   const realTodayTrips = todayCompletedTrips.length;
   const realTodayEarnings = todayCompletedTrips.reduce((sum, t) => {
-    const share = t.splits?.driverShare ?? Math.round((Number(t.final_fare || t.estimated_fare || 0)) * 0.85);
+    const share = t.splits?.driverShare ?? Math.round((Number(t.final_fare || t.estimated_fare || t.fare || 0)) * 0.85);
     return sum + share;
   }, 0);
   const baseNgopiPoints = Number(user?.ngopiPoints || user?.ngopi_points || currentDriverProfile.ngopi_points || 0);
@@ -156,16 +180,7 @@ const BoomDriverDashboardPage = () => {
 
   const formattedOnlineHours = (onlineMs / 3600000).toFixed(1);
 
-  const [incomingOrder, setIncomingOrder] = useState({
-    id: 'ORDER-771',
-    passengerName: 'Neng Ani',
-    pickup: 'Stasiun Kereta Cisadane',
-    destination: 'Kawasan Wisata Hutan Bambu',
-    distanceKm: 7.8,
-    estFare: 28000,
-    driverEarnings: 23800,
-    serviceType: 'BoomCar'
-  });
+  const [incomingOrder, setIncomingOrder] = useState(null);
 
   const [activeJob, setActiveJob] = useState(null);
   const [jobStep, setJobStep] = useState('ASSIGNED'); // ASSIGNED | ARRIVED | ON_TRIP
@@ -206,10 +221,11 @@ const BoomDriverDashboardPage = () => {
         setIncomingOrder({
           id: latest.trip_id || latest.id,
           trip_id: latest.trip_id || latest.id,
-          passengerName: latest.passenger_name || 'Warga Cibarani',
+          passengerName: latest.passenger_name || 'Penumpang BoomBoom',
+          passengerUsername: latest.passenger_ngopi_username || latest.passenger_username || '',
           passengerPhone: latest.passenger_phone || '',
-          pickup: latest.pickup_address || 'Sentra Bibit Bambu Cibarani',
-          destination: latest.destination_address || 'Pasar Desa Cibarani, Subang',
+          pickup: latest.pickup_address || 'Titik Penjemputan',
+          destination: latest.destination_address || 'Titik Tujuan',
           distanceKm: latest.distance_km || 4.5,
           estFare: latest.fare || 18650,
           driverEarnings: Math.round((latest.fare || 18650) * 0.85),
@@ -218,6 +234,8 @@ const BoomDriverDashboardPage = () => {
           isRealFirestore: true,
           rawOrder: latest
         });
+      } else if (!orders || orders.length === 0) {
+        setIncomingOrder(null);
       }
     });
 
@@ -575,7 +593,32 @@ const BoomDriverDashboardPage = () => {
           </div>
         )}
 
-        {/* INCOMING ORDER NOTIFICATION POPUP SIMULATION */}
+        {/* EMPTY STATE SAAT BELUM ADA ORDER MASUK */}
+        {isOnline && !incomingOrder && !activeJob && (
+          <div style={{
+            background: 'var(--bg-card, #ffffff)',
+            borderRadius: '20px',
+            padding: '18px 22px',
+            border: '1.5px dashed #10b981',
+            marginBottom: '28px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '10px'
+          }}>
+            <div>
+              <div style={{ fontSize: '0.95rem', fontWeight: '800', color: 'var(--text-main, #0f172a)' }}>
+                📡 Menunggu Order Masuk dari Penumpang...
+              </div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted, #64748b)' }}>
+                Status Anda <strong>ONLINE (SIAP NARIK)</strong>. Order baru akan muncul otomatis dengan suara notifikasi, atau masukkan 6-digit Kode Langsung di atas.
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* INCOMING ORDER NOTIFICATION */}
         {isOnline && incomingOrder && !activeJob && (
           <div style={{
             background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)',

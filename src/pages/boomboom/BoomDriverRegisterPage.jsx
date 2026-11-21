@@ -122,6 +122,10 @@ const BoomDriverRegisterPage = () => {
       ...formData,
       bankAccount: finalBankAccount
     }, user);
+    try {
+      if (newDriver?.driver_id) localStorage.setItem('boomboom_driver_id', newDriver.driver_id);
+      if (newDriver?.ngopi_username) localStorage.setItem('boomboom_driver_ngopi_username', newDriver.ngopi_username);
+    } catch (e) {}
     setSubmittedDriver(newDriver);
   };
 
