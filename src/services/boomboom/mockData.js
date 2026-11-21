@@ -50,7 +50,7 @@ export const ROUTE_OPTIMIZATION_MODES = [
   {
     id: 'COMMUNITY_SAFE',
     label: '🛡️ Rute Pos Komunitas & BoomSafe',
-    desc: 'Melewati koridor pos pantau BUMDes/Yayasan/Mitra dengan pencahayaan penuh',
+    desc: 'Melewati koridor pos pantau Mitra dengan pencahayaan penuh',
     distanceMultiplier: 1.03,
     durationMultiplier: 1.05,
     co2BonusPct: 5

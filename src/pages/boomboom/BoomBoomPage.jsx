@@ -206,7 +206,7 @@ const BoomBoomPage = () => {
         {/* ══ GOJEK / GREEN SM ICONIC SERVICE GRID ══ */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(5, 1fr)',
+          gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(5, 1fr)',
           gap: isMobile ? '8px' : '14px',
           marginBottom: '20px'
         }}>
@@ -233,6 +233,8 @@ const BoomBoomPage = () => {
                   gap: '6px',
                   cursor: 'pointer',
                   textAlign: 'center',
+                  minWidth: 0,
+                  overflow: 'hidden',
                   boxShadow: isSelected ? `0 6px 18px ${svc.color}25` : '0 2px 8px rgba(0,0,0,0.02)'
                 }}
               >
@@ -264,7 +266,8 @@ const BoomBoomPage = () => {
                   background: svc.bg,
                   padding: '2px 6px',
                   borderRadius: '6px',
-                  whiteSpace: 'nowrap'
+                  whiteSpace: isMobile ? 'normal' : 'nowrap',
+                  maxWidth: '100%'
                 }}>
                   {svc.badge}
                 </span>

@@ -34,7 +34,6 @@ import {
   createPilotTripOrder, 
   subscribePilotTripStatus, 
   openNgopiChat, 
-  openWhatsAppDispatch, 
   updatePilotTripStep,
   generateNgopiMessage,
   findBestMatchingDriver,
@@ -844,10 +843,10 @@ const BoomBookPage = () => {
                   </div>
                 </div>
 
-                {/* CHAT ACTIONS: NGOPI.TOP & WHATSAPP */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '12px' }}>
+                {/* CHAT ACTIONS: NGOPI.TOP */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '8px', marginBottom: '12px' }}>
                   <button
-                    onClick={() => openNgopiChat(activeTripObj)}
+                    onClick={() => openNgopiChat(activeTripObj, activeBooking.assignedDriver?.ngopi_username || activeTripObj.driver_ngopi_username)}
                     style={{
                       background: '#451a03',
                       color: '#fef3c7',
@@ -864,25 +863,6 @@ const BoomBookPage = () => {
                     }}
                   >
                     <span>☕</span> Chat di ngopi.top
-                  </button>
-                  <button
-                    onClick={() => openWhatsAppDispatch(activeTripObj, activeBooking.assignedDriver.phone)}
-                    style={{
-                      background: '#128c7e',
-                      color: '#ffffff',
-                      border: 'none',
-                      padding: '10px 8px',
-                      borderRadius: '12px',
-                      fontWeight: '800',
-                      fontSize: '0.8rem',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '6px'
-                    }}
-                  >
-                    <MessageSquare size={14} /> Chat via WA
                   </button>
                 </div>
 
@@ -1212,7 +1192,7 @@ const BoomBookPage = () => {
                         }}
                       >
                         <div style={{ fontWeight: '800', color: 'var(--text-main, #0f172a)', fontSize: '0.9rem' }}>📦 BoomSend</div>
-                        <div style={{ fontSize: '0.72rem', fontWeight: '600', color: 'var(--text-muted, #64748b)' }}>Kurir & Logistik Desa</div>
+                        <div style={{ fontSize: '0.72rem', fontWeight: '600', color: 'var(--text-muted, #64748b)' }}>Kurir & Logistik</div>
                       </button>
                     )}
 
@@ -1229,7 +1209,7 @@ const BoomBookPage = () => {
                         }}
                       >
                         <div style={{ fontWeight: '800', color: 'var(--text-main, #0f172a)', fontSize: '0.9rem' }}>🎋 BoomTour</div>
-                        <div style={{ fontSize: '0.72rem', fontWeight: '600', color: 'var(--text-muted, #64748b)' }}>Ekowisata & Kebun Bambu</div>
+                        <div style={{ fontSize: '0.72rem', fontWeight: '600', color: 'var(--text-muted, #64748b)' }}>Wisata Assek</div>
                       </button>
                     )}
                   </div>
@@ -1238,7 +1218,7 @@ const BoomBookPage = () => {
                   {featureFlags.ENABLE_ROUTE_OPTIMIZATION && (
                     <div style={{ marginTop: '14px' }}>
                       <label style={{ fontSize: '0.72rem', fontWeight: '800', color: 'var(--text-muted, #64748b)', display: 'block', marginBottom: '6px' }}>
-                        OPTIMASI RUTE CERDAS (TAHAP IV ROUTE OPTIMIZATION)
+                        OPTIMASI RUTE CERDAS
                       </label>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                         {ROUTE_OPTIMIZATION_MODES.map((rm) => {
@@ -1295,7 +1275,7 @@ const BoomBookPage = () => {
                         KENDARAAN EV (LISTRIK)
                       </div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-muted, #047857)' }}>
-                        Diskon 5% Fares & Bonus Reward BMC ({greenScore.label}: +{greenScore.greenPoints} Poin)
+                        Diskon 5% Fares & Bonus Reward Poin Ngopi
                       </div>
                     </div>
                   </div>
@@ -1332,28 +1312,34 @@ const BoomBookPage = () => {
                     <Receipt size={16} color="var(--text-muted, #64748b)" />
                   </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.8rem', color: 'var(--text-muted, #475569)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <span style={{ lineHeight: 1.35 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.8rem', color: 'var(--text-muted, #475569)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
+                      <span style={{ flex: 1, lineHeight: 1.35 }}>
                         Jarak Jalan Raya {activeBooking.fareCalc.distanceKm} km<br />
                         &amp; Estimasi Waktu (~ {activeBooking.fareCalc.durationMin} Menit)
                       </span>
-                      <strong style={{ color: 'var(--text-main)', textAlign: 'right' }}>
+                      <strong style={{ color: 'var(--text-main)', textAlign: 'right', whiteSpace: 'nowrap', flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>
                         {activeBooking.fareCalc.distanceKm} km<br />
                         <span style={{ fontSize: '0.72rem', color: 'var(--text-muted, #64748b)' }}>~{activeBooking.fareCalc.durationMin} Menit</span>
                       </strong>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span>Tarif Dasar (Base + Per KM/Min)</span>
-                      <span style={{ color: 'var(--text-main)' }}>Rp {activeBooking.fareCalc.grossFare.toLocaleString('id-ID')}</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '12px' }}>
+                      <span style={{ flex: 1 }}>Tarif Dasar (Base + Per KM/Min)</span>
+                      <span style={{ color: 'var(--text-main)', fontWeight: '700', whiteSpace: 'nowrap', flexShrink: 0, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+                        Rp {activeBooking.fareCalc.grossFare.toLocaleString('id-ID')}
+                      </span>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', opacity: 0.9 }}>
-                      <span>• Hak Pengemudi (85%)</span>
-                      <span>{activeBooking.fareCalc.formatted.driverEarnings}</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '12px', fontSize: '0.75rem', opacity: 0.9 }}>
+                      <span style={{ flex: 1 }}>• Hak Pengemudi (85%)</span>
+                      <span style={{ whiteSpace: 'nowrap', flexShrink: 0, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+                        {activeBooking.fareCalc.formatted.driverEarnings}
+                      </span>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', opacity: 0.9 }}>
-                      <span>• Bagi Hasil Mitra dan Layanan Platform (15%)</span>
-                      <span>Rp {Math.round(activeBooking.fareCalc.grossFare * 0.15).toLocaleString('id-ID')}</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '12px', fontSize: '0.75rem', opacity: 0.9 }}>
+                      <span style={{ flex: 1 }}>• Bagi Hasil Mitra dan Layanan Platform (15%)</span>
+                      <span style={{ whiteSpace: 'nowrap', flexShrink: 0, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+                        Rp {Math.round(activeBooking.fareCalc.grossFare * 0.15).toLocaleString('id-ID')}
+                      </span>
                     </div>
 
                     <div style={{ borderTop: '1px dashed var(--border-color, #cbd5e1)', paddingTop: '10px', marginTop: '6px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -1491,13 +1477,13 @@ const BoomBookPage = () => {
                 )}
 
                 <p style={{ fontSize: '0.82rem', color: 'var(--text-muted, #64748b)', maxWidth: '340px', margin: '0 auto 16px', lineHeight: 1.5 }}>
-                  Kirim notifikasi langsung ke <strong>ngopi.top</strong> atau WhatsApp pengemudi:
+                  Kirim notifikasi langsung ke akun <strong>ngopi.top</strong> pengemudi:
                 </p>
 
-                {/* DISPATCH ACTION BUTTONS: NGOPI.TOP & WHATSAPP DENGAN KATA "ATAU" */}
+                {/* DISPATCH ACTION BUTTON: NGOPI.TOP */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxWidth: '360px', margin: '0 auto 24px' }}>
                   <button
-                    onClick={() => openNgopiChat(activeTripObj)}
+                    onClick={() => openNgopiChat(activeTripObj, activeBooking.assignedDriver?.ngopi_username || topMatchedDriver?.ngopi_username || activeTripObj.driver_ngopi_username)}
                     style={{
                       background: 'linear-gradient(135deg, #451a03 0%, #78350f 100%)',
                       color: '#fef3c7',
@@ -1515,35 +1501,6 @@ const BoomBookPage = () => {
                     }}
                   >
                     <span>☕</span> Kirim Notifikasi ke ngopi.top <ExternalLink size={15} />
-                  </button>
-
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', margin: '2px 0' }}>
-                    <div style={{ flex: 1, height: '1px', background: 'var(--border-color, #cbd5e1)' }} />
-                    <span style={{ fontSize: '0.72rem', fontWeight: '900', color: 'var(--text-muted, #64748b)', letterSpacing: '1px' }}>
-                      ATAU
-                    </span>
-                    <div style={{ flex: 1, height: '1px', background: 'var(--border-color, #cbd5e1)' }} />
-                  </div>
-
-                  <button
-                    onClick={() => openWhatsAppDispatch(activeTripObj, activeBooking.assignedDriver?.phone || topMatchedDriver?.phone)}
-                    style={{
-                      background: 'linear-gradient(135deg, #128c7e 0%, #075e54 100%)',
-                      color: '#ffffff',
-                      border: 'none',
-                      padding: '12px 16px',
-                      borderRadius: '14px',
-                      fontWeight: '800',
-                      fontSize: '0.88rem',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '8px',
-                      boxShadow: '0 4px 12px rgba(18, 140, 126, 0.25)'
-                    }}
-                  >
-                    <MessageSquare size={16} /> Kirim via WhatsApp Pengemudi <ExternalLink size={15} />
                   </button>
 
                   <button

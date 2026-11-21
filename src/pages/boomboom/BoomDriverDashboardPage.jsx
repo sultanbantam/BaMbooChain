@@ -6,10 +6,9 @@ import {
   updatePilotTripStep, 
   playOrderNotificationSound, 
   openNgopiChat, 
-  openWhatsAppDispatch,
   updateDriverLiveLocationInFirestore
 } from '../../services/boomboom/boomboomPilotService';
-import { MessageSquare, PhoneCall, ExternalLink, Power, MapPin, ShieldCheck, ShoppingBag, Wallet } from 'lucide-react';
+import { PhoneCall, ExternalLink, Power, MapPin, ShieldCheck, ShoppingBag, Wallet } from 'lucide-react';
 import BoomBoomNavHeader from '../../components/boomboom/BoomBoomNavHeader';
 import MapViewComponent from '../../components/boomboom/MapViewComponent';
 import SosButton from '../../components/boomboom/SosButton';
@@ -19,7 +18,17 @@ import { useAuth } from '../../context/AuthContext';
 const BoomDriverDashboardPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { driverState, drivers, activeBooking, featureFlags, pairOrderByInstantCode, optInDriverKodiba } = useBoomBoomStore();
+  const {
+    driverState,
+    drivers,
+    trips,
+    activeBooking,
+    featureFlags,
+    syncFirestoreDrivers,
+    recordDriverCompletedTrip,
+    pairOrderByInstantCode,
+    optInDriverKodiba
+  } = useBoomBoomStore();
   const [isOnline, setIsOnline] = useState(driverState.isOnline);
   const [gpsStatus, setGpsStatus] = useState('Siap Memancarkan Koordinat GPS');
   const [instantCodeInput, setInstantCodeInput] = useState('');
@@ -27,22 +36,125 @@ const BoomDriverDashboardPage = () => {
   const [instantError, setInstantError] = useState('');
   const [instantSuccessMsg, setInstantSuccessMsg] = useState('');
   const [payoutViewFilter, setPayoutViewFilter] = useState('ALL');
+  const [onlineMs, setOnlineMs] = useState(0);
 
-  // Cari profil driver milik user yang sedang login, atau gunakan driver utama Cibarani
+  useEffect(() => {
+    if (syncFirestoreDrivers) {
+      syncFirestoreDrivers();
+    }
+  }, [syncFirestoreDrivers]);
+
+  const savedDriverId = typeof window !== 'undefined' ? localStorage.getItem('boomboom_driver_id') : null;
+
+  // Cari profil driver milik user yang sedang login dari Firestore/store
   const currentDriverProfile = drivers.find(
-    (d) => (user?.uid && d.user_id === user.uid) || (user?.email && d.email === user.email)
+    (d) =>
+      (user?.uid && d.user_id === user.uid) ||
+      (user?.email && d.email === user.email) ||
+      (savedDriverId && d.driver_id === savedDriverId)
   ) || drivers[0] || {
-    driver_id: 'DRV-001',
-    name: 'Asep Saepulloh',
-    phone: '+62 812-3456-7890',
-    ngopi_username: '@majelisngopi',
-    ngopi_chat_url: 'https://ngopi.top/chat/f1c8c427-21bf-4fc1-8e99-9e651114d615?name=Ade%20Gunawan',
-    plate_number: 'D 4892 BB',
-    vehicle_brand: 'Honda Vario 160 EV',
-    operating_region: 'Subang / Cibarani',
+    driver_id: savedDriverId || user?.uid || 'DRV-001',
+    name: user?.displayName || user?.name || 'Mitra Pengemudi',
+    phone: user?.phone || '',
+    ngopi_username: user?.ngopi_username || user?.ngopiUsername || (user?.username ? `@${user.username}` : ''),
+    ngopi_chat_url: '',
+    plate_number: '-',
+    vehicle_brand: 'Kendaraan Mitra',
+    operating_region: 'Zona Pilot',
     status: 'VERIFIED',
-    rating: 4.9
+    rating: null
   };
+
+  // Integrasi akun ngopi.top pengemudi (bukan statis)
+  const rawNgopiUsername =
+    currentDriverProfile.ngopi_username ||
+    user?.ngopi_username ||
+    user?.ngopiUsername ||
+    (typeof window !== 'undefined' ? localStorage.getItem('boomboom_driver_ngopi_username') : '') ||
+    (user?.username ? `@${user.username}` : '');
+  const driverNgopiUsername = rawNgopiUsername
+    ? (rawNgopiUsername.startsWith('@') ? rawNgopiUsername : `@${rawNgopiUsername}`)
+    : '';
+  const cleanNgopiHandle = driverNgopiUsername.replace(/^@/, '').replace(/[^a-zA-Z0-9._-]/g, '');
+  const driverNgopiProfileUrl = currentDriverProfile.ngopi_chat_url || (cleanNgopiHandle ? `https://ngopi.top/@${encodeURIComponent(cleanNgopiHandle)}` : 'https://ngopi.top');
+
+  // Integrasi nilai rating dari penilaian penumpang
+  const driverRatedTrips = (trips || []).filter(
+    (t) => t.driver_id === currentDriverProfile.driver_id && Number(t.rating_given) > 0
+  );
+  const integratedDriverRating = driverRatedTrips.length > 0
+    ? (driverRatedTrips.reduce((sum, t) => sum + Number(t.rating_given), 0) / driverRatedTrips.length).toFixed(1)
+    : (currentDriverProfile.rating != null ? Number(currentDriverProfile.rating).toFixed(1) : (driverState.rating != null ? Number(driverState.rating).toFixed(1) : 'Baru'));
+
+  // Integrasi data real hari ini (Pendapatan, Total Trip, Reward Poin Ngopi)
+  const todayDateStr = new Date().toDateString();
+  const driverCompletedTrips = (trips || []).filter(
+    (t) => t.driver_id === currentDriverProfile.driver_id && (t.trip_status === 'COMPLETED' || t.status === 'COMPLETED')
+  );
+  const todayCompletedTrips = driverCompletedTrips.filter((t) => {
+    const dt = t.completed_at || t.created_at;
+    return dt && new Date(dt).toDateString() === todayDateStr;
+  });
+  const realTodayTrips = todayCompletedTrips.length;
+  const realTodayEarnings = todayCompletedTrips.reduce((sum, t) => {
+    const share = t.splits?.driverShare ?? Math.round((Number(t.final_fare || t.estimated_fare || 0)) * 0.85);
+    return sum + share;
+  }, 0);
+  const baseNgopiPoints = Number(user?.ngopiPoints || user?.ngopi_points || currentDriverProfile.ngopi_points || 0);
+  const tripNgopiPoints = driverCompletedTrips.reduce((sum, t) => {
+    const pts = Number(t.ngopi_points_earned) || (10 + (Number(t.rating_given) >= 5 ? 5 : 0));
+    return sum + pts;
+  }, 0);
+  const realNgopiPoints = baseNgopiPoints + tripNgopiPoints;
+
+  // Pelacakan durasi online riil hari ini
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const todayKey = new Date().toISOString().slice(0, 10);
+    const storageKey = `boomboom_driver_online_${todayKey}_${currentDriverProfile.driver_id}`;
+    const readSaved = () => {
+      try {
+        const raw = localStorage.getItem(storageKey);
+        return raw ? JSON.parse(raw) : { accumulatedMs: 0, lastOnlineAt: null };
+      } catch {
+        return { accumulatedMs: 0, lastOnlineAt: null };
+      }
+    };
+    const saveState = (data) => {
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(data));
+      } catch {}
+    };
+
+    const current = readSaved();
+    const now = Date.now();
+    if (isOnline) {
+      if (!current.lastOnlineAt) {
+        current.lastOnlineAt = now;
+        saveState(current);
+      }
+      setOnlineMs(current.accumulatedMs + Math.max(0, now - current.lastOnlineAt));
+      const timer = setInterval(() => {
+        const latest = readSaved();
+        const elapsed = latest.lastOnlineAt ? Math.max(0, Date.now() - latest.lastOnlineAt) : 0;
+        setOnlineMs(latest.accumulatedMs + elapsed);
+      }, 30000);
+      return () => clearInterval(timer);
+    } else {
+      if (current.lastOnlineAt) {
+        const updated = {
+          accumulatedMs: current.accumulatedMs + Math.max(0, now - current.lastOnlineAt),
+          lastOnlineAt: null
+        };
+        saveState(updated);
+        setOnlineMs(updated.accumulatedMs);
+      } else {
+        setOnlineMs(current.accumulatedMs);
+      }
+    }
+  }, [isOnline, currentDriverProfile.driver_id]);
+
+  const formattedOnlineHours = (onlineMs / 3600000).toFixed(1);
 
   const [incomingOrder, setIncomingOrder] = useState({
     id: 'ORDER-771',
@@ -168,6 +280,9 @@ const BoomDriverDashboardPage = () => {
     if (activeJob?.trip_id) {
       await updatePilotTripStep(activeJob.trip_id, 'COMPLETED');
     }
+    if (activeJob && recordDriverCompletedTrip) {
+      recordDriverCompletedTrip(activeJob, currentDriverProfile);
+    }
     setActiveJob(null);
     setJobStep('ASSIGNED');
   };
@@ -198,11 +313,16 @@ const BoomDriverDashboardPage = () => {
                 STATUS: {currentDriverProfile.status || 'VERIFIED'}
               </span>
               <span style={{ fontSize: '0.78rem', fontWeight: '800', background: '#f59f00', color: '#000', padding: '4px 10px', borderRadius: '12px' }}>
-                ⭐ {currentDriverProfile.rating || driverState.rating}
+                ⭐ {integratedDriverRating}
               </span>
-              <span style={{ fontSize: '0.75rem', fontWeight: '800', background: '#451a03', color: '#fef3c7', padding: '4px 10px', borderRadius: '12px' }}>
-                ☕ {currentDriverProfile.ngopi_username || '@majelisngopi'}
-              </span>
+              <a
+                href={driverNgopiProfileUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ fontSize: '0.75rem', fontWeight: '800', background: '#451a03', color: '#fef3c7', padding: '4px 10px', borderRadius: '12px', textDecoration: 'none' }}
+              >
+                ☕ {driverNgopiUsername || 'Hubungkan ngopi.top'}
+              </a>
             </div>
             <h1 style={{ fontSize: '1.8rem', fontWeight: '900', margin: '0 0 4px' }}>
               Dasbor Pengemudi: {currentDriverProfile.name}
@@ -266,7 +386,7 @@ const BoomDriverDashboardPage = () => {
                   Rekening Hasil & Dompet Payout Driver
                 </h3>
                 <p style={{ fontSize: '0.8rem', color: 'var(--text-muted, #64748b)', margin: 0 }}>
-                  Penarikan bagi hasil perjalanan (Rupiah, BMC Token & USDT) otomatis tersinkronisasi.
+                  Penarikan bagi hasil perjalanan (Rupiah) otomatis tersinkronisasi.
                 </p>
               </div>
             </div>
@@ -287,8 +407,6 @@ const BoomDriverDashboardPage = () => {
               >
                 <option value="ALL">Semua Saluran Rekening & Dompet</option>
                 <option value="BANK">1. Rekening Bank / E-Wallet (Rupiah)</option>
-                <option value="BMC">2. Dompet BMC (BaMbooChain Token)</option>
-                <option value="USDT">3. Dompet USDT (Polygon / BEP-20)</option>
               </select>
               <span style={{ fontSize: '0.75rem', fontWeight: '800', background: 'rgba(16, 185, 129, 0.12)', color: '#047857', padding: '5px 12px', borderRadius: '10px' }}>
                 ✓ Rekening Terverifikasi
@@ -311,41 +429,6 @@ const BoomDriverDashboardPage = () => {
                 </div>
               </div>
             )}
-
-            {/* Wallet BMC */}
-            {(payoutViewFilter === 'ALL' || payoutViewFilter === 'BMC') && (
-              <div style={{ background: 'var(--bg-secondary, #f8fafc)', padding: '16px', borderRadius: '16px', border: '1px solid var(--border-color, #e2e8f0)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                  <div style={{ fontSize: '0.75rem', fontWeight: '800', color: '#059669' }}>
-                    2. NOMOR WALLET BMC (BaMbooChain)
-                  </div>
-                  <span style={{ fontSize: '0.68rem', fontWeight: '800', background: 'rgba(16, 185, 129, 0.15)', color: '#047857', padding: '2px 6px', borderRadius: '6px' }}>
-                    Saldo: {user?.bmcBalance || 14.5} BMC
-                  </span>
-                </div>
-                <div style={{ fontSize: '0.86rem', fontWeight: '800', color: 'var(--text-main, #0f172a)', wordBreak: 'break-all', marginBottom: '4px' }}>
-                  {currentDriverProfile.wallet_bmc || (typeof window !== 'undefined' && localStorage.getItem('boomboom_driver_wallet_bmc')) || user?.walletAddress || '0xbmc71a9e8b2f4c0d1e5a8726b91cibarani'}
-                </div>
-                <div style={{ fontSize: '0.74rem', color: 'var(--text-muted, #64748b)' }}>
-                  Tampungan insentif & reward per km mobilitas hijau BaMbooChain.
-                </div>
-              </div>
-            )}
-
-            {/* Wallet USDT */}
-            {(payoutViewFilter === 'ALL' || payoutViewFilter === 'USDT') && (
-              <div style={{ background: 'var(--bg-secondary, #f8fafc)', padding: '16px', borderRadius: '16px', border: '1px solid var(--border-color, #e2e8f0)' }}>
-                <div style={{ fontSize: '0.75rem', fontWeight: '800', color: '#0284c7', marginBottom: '4px' }}>
-                  3. NOMOR WALLET USDT (POLYGON / BEP-20)
-                </div>
-                <div style={{ fontSize: '0.86rem', fontWeight: '800', color: 'var(--text-main, #0f172a)', wordBreak: 'break-all', marginBottom: '4px' }}>
-                  {currentDriverProfile.wallet_usdt || (typeof window !== 'undefined' && localStorage.getItem('boomboom_driver_wallet_usdt')) || user?.usdtWallet || '0x99b4f2c8d17a0e5b38291f0c2a7e4d82polygon'}
-                </div>
-                <div style={{ fontSize: '0.74rem', color: 'var(--text-muted, #64748b)' }}>
-                  Tampungan pembayaran kripto USDT Web3 dari penumpang.
-                </div>
-              </div>
-            )}
           </div>
         </div>
 
@@ -359,7 +442,7 @@ const BoomDriverDashboardPage = () => {
           <div style={{ background: 'var(--bg-card, #ffffff)', borderRadius: '20px', padding: '20px', border: '1.5px solid var(--border-color, #cbd5e1)', boxShadow: '0 4px 15px rgba(0,0,0,0.06)' }}>
             <div style={{ fontSize: '0.8rem', fontWeight: '800', color: 'var(--text-muted, #475569)', marginBottom: '6px', letterSpacing: '0.3px' }}>PENDAPATAN HARI INI</div>
             <div style={{ fontSize: '1.6rem', fontWeight: '900', color: '#10b981' }}>
-              Rp {driverState.todayEarnings.toLocaleString('id-ID')}
+              Rp {realTodayEarnings.toLocaleString('id-ID')}
             </div>
             <div style={{ fontSize: '0.78rem', fontWeight: '700', color: '#34d399', marginTop: '6px' }}>+85% Bagi hasil pengemudi</div>
           </div>
@@ -367,7 +450,7 @@ const BoomDriverDashboardPage = () => {
           <div style={{ background: 'var(--bg-card, #ffffff)', borderRadius: '20px', padding: '20px', border: '1.5px solid var(--border-color, #cbd5e1)', boxShadow: '0 4px 15px rgba(0,0,0,0.06)' }}>
             <div style={{ fontSize: '0.8rem', fontWeight: '800', color: 'var(--text-muted, #475569)', marginBottom: '6px', letterSpacing: '0.3px' }}>TOTAL TRIP HARI INI</div>
             <div style={{ fontSize: '1.6rem', fontWeight: '900', color: 'var(--text-main, #0f172a)' }}>
-              {driverState.todayTrips} Trip
+              {realTodayTrips} Trip
             </div>
             <div style={{ fontSize: '0.78rem', fontWeight: '600', color: 'var(--text-muted, #64748b)', marginTop: '6px' }}>Perjalanan selesai</div>
           </div>
@@ -375,17 +458,17 @@ const BoomDriverDashboardPage = () => {
           <div style={{ background: 'var(--bg-card, #ffffff)', borderRadius: '20px', padding: '20px', border: '1.5px solid var(--border-color, #cbd5e1)', boxShadow: '0 4px 15px rgba(0,0,0,0.06)' }}>
             <div style={{ fontSize: '0.8rem', fontWeight: '800', color: 'var(--text-muted, #475569)', marginBottom: '6px', letterSpacing: '0.3px' }}>DURASI ONLINE</div>
             <div style={{ fontSize: '1.6rem', fontWeight: '900', color: '#f59f00' }}>
-              {driverState.onlineHours} Jam
+              {formattedOnlineHours} Jam
             </div>
             <div style={{ fontSize: '0.78rem', fontWeight: '600', color: 'var(--text-muted, #64748b)', marginTop: '6px' }}>Aktif menerima trip</div>
           </div>
 
           <div style={{ background: 'var(--bg-card, #ffffff)', borderRadius: '20px', padding: '20px', border: '1.5px solid var(--border-color, #cbd5e1)', boxShadow: '0 4px 15px rgba(0,0,0,0.06)' }}>
-            <div style={{ fontSize: '0.8rem', fontWeight: '800', color: 'var(--text-muted, #475569)', marginBottom: '6px', letterSpacing: '0.3px' }}>REWARD BMC DRIVER</div>
+            <div style={{ fontSize: '0.8rem', fontWeight: '800', color: 'var(--text-muted, #475569)', marginBottom: '6px', letterSpacing: '0.3px' }}>REWARD POIN DRIVER</div>
             <div style={{ fontSize: '1.6rem', fontWeight: '900', color: '#fbbf24' }}>
-              +14.5 BMC
+              +{realNgopiPoints.toLocaleString('id-ID')} Poin
             </div>
-            <div style={{ fontSize: '0.78rem', fontWeight: '700', color: '#fbbf24', marginTop: '6px' }}>Insentif kontribusi aktif</div>
+            <div style={{ fontSize: '0.78rem', fontWeight: '700', color: '#fbbf24', marginTop: '6px' }}>Terintegrasi poin ngopi.top</div>
           </div>
         </div>
 
@@ -521,8 +604,8 @@ const BoomDriverDashboardPage = () => {
               <div>🏁 <strong>Tujuan:</strong> {incomingOrder.destination} ({incomingOrder.distanceKm} km)</div>
             </div>
 
-            {/* Quick Dispatch Chat Options for Driver */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '14px' }}>
+            {/* Quick Dispatch Chat Option via ngopi.top */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '8px', marginBottom: '14px' }}>
               <button
                 type="button"
                 onClick={() => openNgopiChat(incomingOrder.rawOrder || incomingOrder, incomingOrder.passengerUsername || incomingOrder.passengerName)}
@@ -542,27 +625,6 @@ const BoomDriverDashboardPage = () => {
                 }}
               >
                 <span>☕</span> Buka Obrolan ngopi.top <ExternalLink size={14} />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => openWhatsAppDispatch(incomingOrder.rawOrder || incomingOrder, incomingOrder.passengerPhone)}
-                style={{
-                  background: '#128c7e',
-                  color: '#ffffff',
-                  border: 'none',
-                  padding: '10px 12px',
-                  borderRadius: '12px',
-                  fontWeight: '800',
-                  fontSize: '0.82rem',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '6px'
-                }}
-              >
-                <MessageSquare size={15} /> Chat via WA <ExternalLink size={14} />
               </button>
             </div>
 
@@ -657,27 +719,6 @@ const BoomDriverDashboardPage = () => {
                   }}
                 >
                   <span>☕</span> Koordinasi ngopi.top
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => openWhatsAppDispatch(activeJob.rawOrder || activeJob, activeJob.passengerPhone)}
-                  style={{
-                    background: '#128c7e',
-                    color: '#ffffff',
-                    border: 'none',
-                    padding: '8px 12px',
-                    borderRadius: '10px',
-                    fontWeight: '800',
-                    fontSize: '0.78rem',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '4px'
-                  }}
-                >
-                  <MessageSquare size={13} /> Chat WhatsApp
                 </button>
 
                 <a
@@ -860,10 +901,10 @@ const BoomDriverDashboardPage = () => {
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', gap: '8px' }}>
                 <span style={{ fontSize: '0.72rem', fontWeight: '900', color: '#b45309', background: '#fef3c7', padding: '4px 10px', borderRadius: '999px', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                  <ShoppingBag size={14} /> EKOSISTEM MARKETPLACE DESA
+                  <ShoppingBag size={14} /> EKOSISTEM MARKETPLACE MITRA
                 </span>
                 <span style={{ fontSize: '0.7rem', fontWeight: '800', color: 'var(--text-muted, #64748b)' }}>
-                  Tukar BMC / Rupiah
+                  Tukar Poin / Rupiah
                 </span>
               </div>
               <h4 style={{ fontSize: '1.02rem', fontWeight: '800', margin: '0 0 6px', color: 'var(--text-main, #0f172a)', lineHeight: 1.35, wordBreak: 'break-word' }}>
@@ -908,13 +949,13 @@ const BoomDriverDashboardPage = () => {
                   whiteSpace: 'nowrap'
                 }}
               >
-                Cek Saldo BMC
+                Cek Saldo Poin
               </button>
             </div>
           </div>
         </div>
 
-        {/* MODAL PENJELASAN PERHITUNGAN REWARD & SALDO BMC */}
+        {/* MODAL PENJELASAN PERHITUNGAN REWARD & SALDO POIN NGOPI */}
         {showBmcCalcModal && (
           <div style={{
             position: 'fixed',
@@ -938,7 +979,7 @@ const BoomDriverDashboardPage = () => {
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
                 <h3 style={{ fontSize: '1.2rem', fontWeight: '900', color: '#047857', margin: 0 }}>
-                  💎 Transparansi Perhitungan Saldo & Reward BMC
+                  ☕ Transparansi Perhitungan Saldo & Reward Poin Ngopi
                 </h3>
                 <button
                   type="button"
@@ -951,21 +992,19 @@ const BoomDriverDashboardPage = () => {
 
               <div style={{ fontSize: '0.83rem', color: 'var(--text-main, #0f172a)', lineHeight: 1.6, marginBottom: '16px' }}>
                 <p style={{ margin: '0 0 10px' }}>
-                  Reward BMC diberikan secara transparan kepada mitra pengemudi dan pemesan yang telah diverifikasi di backend BaMbooChain:
+                  Reward Poin Ngopi diberikan secara transparan dan terintegrasi langsung dengan akun <strong>ngopi.top</strong> mitra pengemudi dan pemesan:
                 </p>
                 <div style={{ background: 'var(--bg-secondary, #f8fafc)', padding: '12px 14px', borderRadius: '14px', border: '1px solid var(--border-color, #e2e8f0)', marginBottom: '10px' }}>
                   <div style={{ fontWeight: '800', color: '#047857', marginBottom: '4px' }}>🛵 Reward Mitra Pengemudi:</div>
-                  <div>• <strong>1.0 BMC</strong> per perjalanan selesai</div>
-                  <div>• <strong>+0.25 BMC / km</strong> jarak tempuh nyata</div>
-                  <div>• <strong>+0.50 BMC</strong> bonus armada ramah lingkungan (Motor Listrik / EV)</div>
-                  <div>• <strong>+0.25 BMC</strong> rating bintang 5 dari pemesan</div>
+                  <div>• <strong>+10 Poin Ngopi</strong> per perjalanan selesai</div>
+                  <div>• <strong>+5 Poin Ngopi</strong> bonus rating bintang 5 dari penumpang</div>
+                  <div>• <strong>Saldo Saat Ini:</strong> +{realNgopiPoints.toLocaleString('id-ID')} Poin</div>
                 </div>
 
                 <div style={{ background: 'var(--bg-secondary, #f8fafc)', padding: '12px 14px', borderRadius: '14px', border: '1px solid var(--border-color, #e2e8f0)' }}>
                   <div style={{ fontWeight: '800', color: '#b45309', marginBottom: '4px' }}>👤 Reward Pemesan (Penumpang):</div>
-                  <div>• <strong>0.50 BMC</strong> bonus loyalitas dasar</div>
-                  <div>• <strong>+0.10 BMC / km</strong> cashback mobilitas hijau</div>
-                  <div>• <strong>+0.25 BMC</strong> bonus perjalanan EV</div>
+                  <div>• <strong>Bonus Poin Ngopi</strong> untuk setiap perjalanan & armada EV</div>
+                  <div>• Poin dapat ditukarkan di Ekosistem Marketplace Mitra</div>
                 </div>
               </div>
 

@@ -135,14 +135,14 @@ export const useBoomBoomStore = create((set, get) => ({
     lastCompletedTrip: null
   },
 
-  // Driver Mode Local State
+  // Driver Mode Local State (real-time computed from trips & session)
   driverState: {
     isOnline: true,
     activeOrder: null,
-    todayEarnings: 185000,
-    todayTrips: 9,
-    rating: 4.9,
-    onlineHours: 5.5
+    todayEarnings: 0,
+    todayTrips: 0,
+    rating: null,
+    onlineHours: 0
   },
 
   // Notification Actions (Tahap II Event System)
@@ -673,6 +673,63 @@ export const useBoomBoomStore = create((set, get) => ({
     );
   },
 
+  recordDriverCompletedTrip: (job, driverProfile = null) => {
+    if (!job) return;
+    const fare = Number(job.estFare || job.final_fare || job.fare || 0);
+    const driverShare = Number(job.driverEarnings || Math.round(fare * 0.85));
+    const driverId = driverProfile?.driver_id || job.driver_id || 'DRV-001';
+    const tripId = job.trip_id || job.id || `TRIP-${Date.now()}`;
+    const nowIso = new Date().toISOString();
+
+    set((state) => {
+      const exists = state.trips.some((t) => t.trip_id === tripId);
+      const updatedTrips = exists
+        ? state.trips.map((t) =>
+            t.trip_id === tripId
+              ? {
+                  ...t,
+                  trip_status: 'COMPLETED',
+                  driver_id: driverId,
+                  final_fare: t.final_fare || fare,
+                  splits: t.splits || { driverShare },
+                  completed_at: t.completed_at || nowIso
+                }
+              : t
+          )
+        : [
+            {
+              trip_id: tripId,
+              driver_id: driverId,
+              driver_name: driverProfile?.name || 'Mitra Pengemudi',
+              driver_ngopi_username: driverProfile?.ngopi_username || '',
+              passenger_name: job.passengerName || 'Penumpang',
+              service_type: job.serviceType || 'BoomRide',
+              pickup_address: job.pickup || '',
+              destination_address: job.destination || '',
+              distance_km: job.distanceKm || 0,
+              estimated_fare: fare,
+              final_fare: fare,
+              splits: { driverShare },
+              trip_status: 'COMPLETED',
+              payment_status: 'PAID',
+              ngopi_points_earned: 10,
+              created_at: nowIso,
+              completed_at: nowIso
+            },
+            ...state.trips
+          ];
+
+      return {
+        trips: updatedTrips,
+        driverState: {
+          ...state.driverState,
+          todayTrips: (state.driverState.todayTrips || 0) + 1,
+          todayEarnings: (state.driverState.todayEarnings || 0) + driverShare
+        }
+      };
+    });
+  },
+
   resetActiveBooking: () => {
     set((state) => ({
       activeBooking: {
@@ -943,22 +1000,41 @@ export const useBoomBoomStore = create((set, get) => ({
       }
     });
 
-    set((state) => ({
-      trips: trips.map((tr) => tr.trip_id === targetTripId ? { ...tr, rating_given: rating, csat_tags: tags, csat_comment: comment } : tr),
-      pilotMetrics: {
-        ...state.pilotMetrics,
-        total_ratings_submitted: newCount,
-        avg_star_rating: newAvg,
-        user_satisfaction_csat_pct: newCsatPct,
-        top_csat_tags: updatedTags
-      },
-      activeBooking: {
-        ...state.activeBooking,
-        lastCompletedTrip: state.activeBooking.lastCompletedTrip
-          ? { ...state.activeBooking.lastCompletedTrip, rating_given: rating, csat_tags: tags, csat_comment: comment }
-          : null
-      }
-    }));
+    set((state) => {
+      const updatedTrips = state.trips.map((tr) =>
+        tr.trip_id === targetTripId ? { ...tr, rating_given: rating, csat_tags: tags, csat_comment: comment } : tr
+      );
+      const driverRatedTrips = updatedTrips.filter((tr) => tr.driver_id === driverId && Number(tr.rating_given) > 0);
+      const driverAvgRating = driverRatedTrips.length > 0
+        ? Number((driverRatedTrips.reduce((sum, tr) => sum + Number(tr.rating_given), 0) / driverRatedTrips.length).toFixed(1))
+        : Number(rating);
+
+      return {
+        trips: updatedTrips,
+        drivers: state.drivers.map((d) =>
+          d.driver_id === driverId
+            ? { ...d, rating: driverAvgRating, rating_count: (d.rating_count || 0) + 1 }
+            : d
+        ),
+        driverState: {
+          ...state.driverState,
+          rating: driverAvgRating
+        },
+        pilotMetrics: {
+          ...state.pilotMetrics,
+          total_ratings_submitted: newCount,
+          avg_star_rating: newAvg,
+          user_satisfaction_csat_pct: newCsatPct,
+          top_csat_tags: updatedTags
+        },
+        activeBooking: {
+          ...state.activeBooking,
+          lastCompletedTrip: state.activeBooking.lastCompletedTrip
+            ? { ...state.activeBooking.lastCompletedTrip, rating_given: rating, csat_tags: tags, csat_comment: comment }
+            : null
+        }
+      };
+    });
 
     get().addLocalAuditLog(
       'CSAT_RATING_SUBMITTED',
