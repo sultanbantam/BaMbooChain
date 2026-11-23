@@ -525,3 +525,240 @@ export const composeRagAnswer = (question, results) => {
     confidence: results[0].score >= 8 ? 'tinggi' : 'sedang'
   };
 };
+
+// ============================================================================
+// ECOSYSTEM KNOWLEDGE SYNC & ADAPTIVE TAXONOMY RAG
+// ============================================================================
+
+/**
+ * Menyelaraskan data lapangan (Tracker Bambu, Taksonomi AI, Proyek, dll.) ke Knowledge Library
+ * agar BambuBot RAG dan pencarian pengetahuan otomatis bertambah pintar seiring data masuk.
+ */
+export const syncActivityToKnowledgeBase = async ({
+  sourceType = 'tracker',
+  sourceId = '',
+  title = '',
+  species = '',
+  location = '',
+  summary = '',
+  extractedText = '',
+  tags = '',
+  user = null,
+  isVerified = false
+}) => {
+  if (!db || !title) return null;
+  const safeId = String(sourceId || Date.now()).replace(/[^a-zA-Z0-9_-]/g, '_');
+  const docId = `eco_${sourceType}_${safeId}`;
+
+  const payload = {
+    title: cleanText(title),
+    type: sourceType === 'taxonomy' ? 'Dataset' : 'Catatan Lapangan',
+    species: cleanText(species),
+    location: cleanText(location),
+    author: user?.name || user?.displayName || user?.username || 'Kontributor Lapangan',
+    year: String(new Date().getFullYear()),
+    summary: cleanText(summary),
+    extractedText: cleanText(extractedText || summary),
+    tags: cleanText([tags, sourceType, species, location].filter(Boolean).join(', ')),
+    status: 'approved',
+    sourceTrust: isVerified ? 'verified' : 'ecosystem_live',
+    sourceType,
+    sourceId: safeId,
+    createdBy: user?.uid || user?.id || 'ecosystem',
+    updatedAt: serverTimestamp()
+  };
+
+  payload.searchText = extractSearchText(payload);
+
+  try {
+    const vector = await generateEmbedding(payload.searchText);
+    if (vector) {
+      payload.vector = vector;
+    }
+    await setDoc(doc(db, KNOWLEDGE_COLLECTION, docId), {
+      ...payload,
+      createdAt: serverTimestamp()
+    }, { merge: true });
+    return docId;
+  } catch (err) {
+    console.warn('[KnowledgeSync] Gagal menyelaraskan aktivitas ke Knowledge Library:', err?.message || err);
+    return null;
+  }
+};
+
+/**
+ * Mengambil referensi taksonomi terakumulasi dari Firestore (taxonomies + knowledge_items)
+ * untuk memperkaya prompt Analisis Taksonomi AI (In-Context RAG).
+ */
+export const getVerifiedTaxonomyReferences = async ({ lokasi = '', diameter = '', warna = '', maxItems = 8 } = {}) => {
+  if (!db) return { references: [], totalDatabaseCount: 0 };
+  const refs = [];
+
+  try {
+    const taxSnap = await getDocs(query(collection(db, 'taxonomies'), limit(35)));
+    taxSnap.forEach((d) => {
+      const data = d.data();
+      if (!data?.species || data.species === 'Spesies Tidak Diketahui') return;
+      refs.push({
+        id: d.id,
+        source: 'taxonomies',
+        species: data.species,
+        confidence: data.confidence || '',
+        lokasi: data.lokasi || data.location || '',
+        diameter: data.diameter || '',
+        warna: data.warna || '',
+        details: cleanText(data.details || '').slice(0, 260),
+        isVerified: Boolean(data.isVerified || parseInt(String(data.confidence || '0'), 10) >= 85)
+      });
+    });
+  } catch (err) {
+    console.warn('[TaxonomyRAG] Gagal membaca koleksi taxonomies:', err?.message || err);
+  }
+
+  try {
+    const kbSnap = await getDocs(query(collection(db, KNOWLEDGE_COLLECTION), where('status', '==', 'approved'), limit(30)));
+    kbSnap.forEach((d) => {
+      const data = d.data();
+      if (!data?.species) return;
+      refs.push({
+        id: d.id,
+        source: 'knowledge_items',
+        species: data.species,
+        confidence: 'Verified KB',
+        lokasi: data.location || '',
+        diameter: '',
+        warna: '',
+        details: cleanText(data.summary || data.extractedText || '').slice(0, 260),
+        isVerified: true
+      });
+    });
+  } catch (err) {
+    console.warn('[TaxonomyRAG] Gagal membaca koleksi knowledge_items:', err?.message || err);
+  }
+
+  const lokLower = String(lokasi || '').toLowerCase();
+  const warnaLower = String(warna || '').toLowerCase();
+  const diamLower = String(diameter || '').toLowerCase();
+
+  const scored = refs
+    .map((r) => {
+      let score = r.isVerified ? 3 : 1;
+      if (lokLower && r.lokasi && r.lokasi.toLowerCase().includes(lokLower)) score += 4;
+      if (warnaLower && r.details.toLowerCase().includes(warnaLower)) score += 2;
+      if (diamLower && r.details.toLowerCase().includes(diamLower)) score += 2;
+      if (r.details.length > 60) score += 1;
+      return { ...r, score };
+    })
+    .sort((a, b) => b.score - a.score);
+
+  // Deduplikasi berdasarkan nama spesies + lokasi agar variasi spesies maksimal
+  const seen = new Set();
+  const uniqueTop = [];
+  for (const item of scored) {
+    const key = `${item.species.toLowerCase()}_${item.lokasi.toLowerCase()}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    uniqueTop.push(item);
+    if (uniqueTop.length >= maxItems) break;
+  }
+
+  return {
+    references: uniqueTop,
+    totalDatabaseCount: refs.length
+  };
+};
+
+/**
+ * Menghasilkan ringkasan konteks langsung dari koleksi ekosistem BaMbooChain (taxonomies, plantings, harvests, projects, events)
+ * agar BambuBot RAG selalu mengetahui data operasional terbaru di seluruh situs.
+ */
+export const getEcosystemLiveContext = async () => {
+  if (!db) return [];
+  const virtualItems = [];
+
+  try {
+    const [taxSnap, plantSnap, harvestSnap, projSnap] = await Promise.all([
+      getDocs(query(collection(db, 'taxonomies'), limit(30))),
+      getDocs(query(collection(db, 'plantings'), limit(30))),
+      getDocs(query(collection(db, 'harvests'), limit(20))),
+      getDocs(query(collection(db, 'projects'), limit(20)))
+    ]);
+
+    if (!taxSnap.empty) {
+      const speciesCounts = {};
+      const recentNotes = [];
+      taxSnap.forEach((d) => {
+        const data = d.data();
+        if (data.species) {
+          speciesCounts[data.species] = (speciesCounts[data.species] || 0) + 1;
+        }
+        if (data.species && data.details) {
+          recentNotes.push(`${data.species} (${data.confidence || '-'}, lokasi: ${data.lokasi || data.location || '-'}): ${cleanText(data.details).slice(0, 140)}`);
+        }
+      });
+      const summaryText = `Total ${taxSnap.size} hasil analisis taksonomi AI tercatat. Sebaran spesies: ${Object.entries(speciesCounts).map(([sp, c]) => `${sp} (${c}x)`).join(', ')}. Catatan morfologi terbaru: ${recentNotes.slice(0, 5).join(' | ')}`;
+      virtualItems.push({
+        id: 'live_taxonomies_summary',
+        title: 'Database Live Analisis Taksonomi AI Bambupedia',
+        type: 'Dataset',
+        species: Object.keys(speciesCounts).join(', '),
+        author: 'Sistem AI Bambupedia',
+        year: String(new Date().getFullYear()),
+        summary: summaryText,
+        extractedText: summaryText,
+        searchText: summaryText.toLowerCase()
+      });
+    }
+
+    if (!plantSnap.empty || !harvestSnap.empty) {
+      let totalPlanted = 0;
+      const plantedSpecies = new Set();
+      const locations = new Set();
+      plantSnap.forEach((d) => {
+        const data = d.data();
+        totalPlanted += Number(data.amount) || 0;
+        if (data.species) plantedSpecies.add(data.species);
+        if (data.location) locations.add(data.location);
+      });
+      let totalHarvested = 0;
+      harvestSnap.forEach((d) => {
+        totalHarvested += Number(d.data().amount) || 0;
+      });
+      const trackerText = `Tracker Bambu mencatat ${plantSnap.size} aktivitas tanam (${totalPlanted} batang) dan ${harvestSnap.size} aktivitas panen (${totalHarvested} batang). Spesies ditanam: ${Array.from(plantedSpecies).join(', ') || 'Beragam'}. Lokasi: ${Array.from(locations).join(', ') || 'Indonesia'}.`;
+      virtualItems.push({
+        id: 'live_tracker_summary',
+        title: 'Database Live Tracker Tanam & Panen Bambu',
+        type: 'Catatan Lapangan',
+        species: Array.from(plantedSpecies).join(', '),
+        author: 'Tracker Bambupedia',
+        year: String(new Date().getFullYear()),
+        summary: trackerText,
+        extractedText: trackerText,
+        searchText: trackerText.toLowerCase()
+      });
+    }
+
+    if (!projSnap.empty) {
+      const projLines = [];
+      projSnap.forEach((d) => {
+        const p = d.data();
+        projLines.push(`${p.title || p.name || d.id} (${p.location || 'Indonesia'}, status: ${p.status || 'aktif'})`);
+      });
+      const projText = `Terdapat ${projSnap.size} proyek bambu terdaftar di ekosistem BaMbooChain: ${projLines.join('; ')}.`;
+      virtualItems.push({
+        id: 'live_projects_summary',
+        title: 'Daftar Proyek Aktif Ekosistem BaMbooChain',
+        type: 'Dataset',
+        author: 'Ekosistem BaMbooChain',
+        year: String(new Date().getFullYear()),
+        summary: projText,
+        extractedText: projText,
+        searchText: projText.toLowerCase()
+      });
+    }
+  } catch (err) {
+    console.warn('[EcosystemContext] Gagal memuat ringkasan ekosistem live:', err?.message || err);
+  }
+
+  return virtualItems;
+};

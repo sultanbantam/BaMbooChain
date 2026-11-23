@@ -6,6 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import { storage } from '../../firebase/config';
 import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 import BackButton from '../../components/BackButton';
+import { getVerifiedTaxonomyReferences } from '../../utils/knowledgeService';
 
 const compressImage = (file, maxWidth = 800, maxHeight = 800, quality = 0.6) => {
   return new Promise((resolve) => {
@@ -61,6 +62,13 @@ const TaxonomyAnalysis = () => {
   const [isScanning, setIsScanning] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
+  const [dbRefCount, setDbRefCount] = useState(0);
+
+  useEffect(() => {
+    getVerifiedTaxonomyReferences({ maxItems: 5 })
+      .then((res) => setDbRefCount(res?.totalDatabaseCount || 0))
+      .catch(() => {});
+  }, [result]);
   
   const handleImageUpload = async (e, categoryId, maxCount) => {
     const files = Array.from(e.target.files);
@@ -122,6 +130,19 @@ const TaxonomyAnalysis = () => {
         }
       }
 
+      // Ambil referensi database bambu terakumulasi (In-Context RAG) agar AI semakin pintar seiring bertambahnya data
+      const { references, totalDatabaseCount } = await getVerifiedTaxonomyReferences({
+        lokasi: contextData.lokasi,
+        diameter: contextData.diameter,
+        warna: contextData.warna,
+        maxItems: 8
+      });
+      setDbRefCount(totalDatabaseCount);
+
+      const ragReferenceBlock = references.length > 0
+        ? `\nACCUMULATED FIELD & KNOWLEDGE DATABASE REFERENCES (${references.length} relevant records out of ${totalDatabaseCount} total bamboo records):\n${references.map((r, i) => `${i + 1}. Species: ${r.species} | Location: ${r.lokasi || '-'} | Confidence: ${r.confidence} | Morphology Notes: ${r.details}`).join('\n')}\nUse these accumulated regional bamboo references to cross-check species distribution and morphological traits when appropriate.`
+        : '';
+
       const systemPrompt = `You are a highly expert Bamboo Taxonomist AI and Botanist, specialized in strictly identifying Indonesian and Southeast Asian bamboo species (e.g., Gigantochloa apus, Dendrocalamus asper, Bambusa maculata, Schizostachyum brachycladum).
 You MUST output ONLY a valid JSON object. DO NOT output markdown or explanations outside the JSON.
 Your task is to scientifically analyze the provided bamboo anatomy photos (culm sheaths, auricles, ligules, nodes, internodes, branching patterns, shoots/rebung, leaves) and the provided context data.
@@ -132,7 +153,7 @@ Do NOT guess blindly. If the morphological features are unclear, reduce your con
 Context Data:
 - Perkiraan Diameter: ${contextData.diameter || 'Tidak disebutkan'}
 - Warna Dominan: ${contextData.warna || 'Tidak disebutkan'}
-- Lokasi Tumbuh: ${contextData.lokasi || 'Tidak disebutkan'}
+- Lokasi Tumbuh: ${contextData.lokasi || 'Tidak disebutkan'}${ragReferenceBlock}
 
 Your output MUST be a JSON object with EXACTLY these keys:
 'species' (string: botanical name, e.g., 'Dendrocalamus asper'),
@@ -205,6 +226,9 @@ Your output MUST be a JSON object with EXACTLY these keys:
              addTaxonomy({ 
                image: downloadUrl,
                imagesData: { [firstCategory]: [downloadUrl] },
+               lokasi: contextData.lokasi,
+               diameter: contextData.diameter,
+               warna: contextData.warna,
                ...finalResult 
              });
           }).catch(err => {
@@ -212,6 +236,9 @@ Your output MUST be a JSON object with EXACTLY these keys:
              addTaxonomy({ 
                image: null,
                imagesData: {},
+               lokasi: contextData.lokasi,
+               diameter: contextData.diameter,
+               warna: contextData.warna,
                ...finalResult 
              });
           });
@@ -219,6 +246,9 @@ Your output MUST be a JSON object with EXACTLY these keys:
           addTaxonomy({ 
             image: null,
             imagesData: {},
+            lokasi: contextData.lokasi,
+            diameter: contextData.diameter,
+            warna: contextData.warna,
             ...finalResult 
           });
         }
@@ -257,6 +287,9 @@ Your output MUST be a JSON object with EXACTLY these keys:
           </div>
           <h1 style={{ fontSize: '2.5rem', fontWeight: '900', color: 'var(--text-main)', marginBottom: '16px' }}>Analisis Taksonomi AI</h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>Unggah kelengkapan anatomi bambu untuk mendapatkan hasil identifikasi spesies dengan akurasi tinggi layaknya ahli botani.</p>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', marginTop: '10px', padding: '6px 14px', borderRadius: '999px', background: 'rgba(12, 166, 120, 0.1)', color: 'var(--primary)', fontSize: '0.82rem', fontWeight: '800' }}>
+            🧠 Terintegrasi dengan {dbRefCount} referensi database bambu Bambupedia
+          </div>
         </div>
 
         {error && (

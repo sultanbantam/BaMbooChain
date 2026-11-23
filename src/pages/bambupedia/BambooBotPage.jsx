@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Bot, Send, Database, Sparkles, FileText, RefreshCw } from 'lucide-react';
 import BackButton from '../../components/BackButton';
-import { composeRagAnswer, getApprovedKnowledgeItems, searchKnowledge } from '../../utils/knowledgeService';
+import { composeRagAnswer, getApprovedKnowledgeItems, getEcosystemLiveContext, searchKnowledge } from '../../utils/knowledgeService';
 import { useLanguage } from '../../context/LanguageContext';
 
 const starterPrompts = [
@@ -29,8 +29,11 @@ const BambooBotPage = () => {
     const loadItems = async () => {
       setIsLoading(true);
       try {
-        const approvedItems = await getApprovedKnowledgeItems();
-        setItems(approvedItems);
+        const [approvedItems, liveContextItems] = await Promise.all([
+          getApprovedKnowledgeItems(),
+          getEcosystemLiveContext()
+        ]);
+        setItems([...approvedItems, ...liveContextItems]);
       } catch (error) {
         console.error('Failed to load approved knowledge:', error);
       } finally {
@@ -164,7 +167,11 @@ const BambooBotPage = () => {
   const reloadKnowledge = async () => {
     setIsLoading(true);
     try {
-      setItems(await getApprovedKnowledgeItems());
+      const [approvedItems, liveContextItems] = await Promise.all([
+        getApprovedKnowledgeItems(),
+        getEcosystemLiveContext()
+      ]);
+      setItems([...approvedItems, ...liveContextItems]);
     } catch (error) {
       console.error(error);
     } finally {

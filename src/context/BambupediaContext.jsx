@@ -11,6 +11,7 @@ import {
   where, 
   serverTimestamp 
 } from 'firebase/firestore';
+import { syncActivityToKnowledgeBase } from '../utils/knowledgeService';
 
 const BambupediaContext = createContext();
 
@@ -85,6 +86,16 @@ export const BambupediaProvider = ({ children }) => {
     
     try {
       const docRef = await addDoc(collection(db, "plantings"), newPlanting);
+      syncActivityToKnowledgeBase({
+        sourceType: 'planting',
+        sourceId: docRef.id,
+        title: `Penanaman Bambu: ${data.species || 'Bambu'} (${data.amount || 0} batang)`,
+        species: data.species || '',
+        location: data.location || '',
+        summary: `Penanaman ${data.amount || 0} batang ${data.species || 'bambu'} di ${data.location || 'lokasi mitra'}. Catatan: ${data.notes || '-'}`,
+        tags: 'tanam, tracker, budidaya',
+        user
+      });
       return { id: docRef.id, ...newPlanting };
     } catch (err) {
       console.error("Add Planting Error:", err);
@@ -95,6 +106,20 @@ export const BambupediaProvider = ({ children }) => {
   const verifyPlanting = async (id) => {
     try {
       await updateDoc(doc(db, "plantings", id), { isVerified: true });
+      const target = plantings.find((p) => p.id === id);
+      if (target) {
+        syncActivityToKnowledgeBase({
+          sourceType: 'planting',
+          sourceId: id,
+          title: `Penanaman Bambu Terverifikasi: ${target.species || 'Bambu'} (${target.amount || 0} batang)`,
+          species: target.species || '',
+          location: target.location || '',
+          summary: `Penanaman terverifikasi ${target.amount || 0} batang ${target.species || 'bambu'} di ${target.location || 'lokasi mitra'}.`,
+          tags: 'tanam, terverifikasi, tracker',
+          user,
+          isVerified: true
+        });
+      }
     } catch (err) {
       console.error("Verify Planting Error:", err);
     }
@@ -110,6 +135,16 @@ export const BambupediaProvider = ({ children }) => {
     };
     try {
       const docRef = await addDoc(collection(db, "maintenances"), newMaintenance);
+      syncActivityToKnowledgeBase({
+        sourceType: 'maintenance',
+        sourceId: docRef.id,
+        title: `Perawatan Bambu: ${data.action || data.type || 'Pemeliharaan'}`,
+        species: data.species || '',
+        location: data.location || '',
+        summary: `Aktivitas perawatan (${data.action || data.type || 'pemeliharaan'}): ${data.notes || data.description || 'Pemeliharaan rutin rumpun bambu'}.`,
+        tags: 'perawatan, maintenance, tracker',
+        user
+      });
       return { id: docRef.id, ...newMaintenance };
     } catch (err) {
       console.error(err);
@@ -133,6 +168,17 @@ export const BambupediaProvider = ({ children }) => {
       if (data.plantingId) {
         await updateDoc(doc(db, "plantings", data.plantingId), { status: 'harvested' });
       }
+
+      syncActivityToKnowledgeBase({
+        sourceType: 'harvest',
+        sourceId: docRef.id,
+        title: `Panen Bambu: ${data.species || 'Bambu'} (${data.amount || 0} batang)`,
+        species: data.species || '',
+        location: data.location || '',
+        summary: `Panen ${data.amount || 0} batang ${data.species || 'bambu'}. Kualitas/catatan: ${data.notes || '-'}`,
+        tags: 'panen, harvest, tracker',
+        user
+      });
       
       return { id: docRef.id, ...newHarvest };
     } catch (err) {
@@ -151,6 +197,16 @@ export const BambupediaProvider = ({ children }) => {
     };
     try {
       const docRef = await addDoc(collection(db, "utilizations"), newUtil);
+      syncActivityToKnowledgeBase({
+        sourceType: 'utilization',
+        sourceId: docRef.id,
+        title: `Pemanfaatan Bambu: ${data.product || data.type || 'Produk Bambu'}`,
+        species: data.species || '',
+        location: data.location || '',
+        summary: `Pemanfaatan bambu untuk ${data.product || data.type || 'produk'}: ${data.notes || data.description || '-'}`,
+        tags: 'pemanfaatan, produk, tracker',
+        user
+      });
       return { id: docRef.id, ...newUtil };
     } catch (err) {
       console.error(err);
@@ -168,6 +224,16 @@ export const BambupediaProvider = ({ children }) => {
     };
     try {
       const docRef = await addDoc(collection(db, "cultivations"), newCult);
+      syncActivityToKnowledgeBase({
+        sourceType: 'cultivation',
+        sourceId: docRef.id,
+        title: `Budidaya & Pembibitan: ${data.species || 'Bibit Bambu'}`,
+        species: data.species || '',
+        location: data.location || '',
+        summary: `Catatan budidaya/pembibitan ${data.species || 'bambu'}: ${data.notes || data.method || '-'}`,
+        tags: 'budidaya, pembibitan, tracker',
+        user
+      });
       return { id: docRef.id, ...newCult };
     } catch (err) {
       console.error(err);
@@ -185,6 +251,17 @@ export const BambupediaProvider = ({ children }) => {
     };
     try {
       const docRef = await addDoc(collection(db, "taxonomies"), newTax);
+      syncActivityToKnowledgeBase({
+        sourceType: 'taxonomy',
+        sourceId: docRef.id,
+        title: `Analisis Taksonomi AI: ${data.species || 'Spesies Bambu'} (${data.confidence || '-'})`,
+        species: data.species || '',
+        location: data.lokasi || data.location || '',
+        summary: `Spesies: ${data.species || '-'}. Akurasi: ${data.confidence || '-'}. Estimasi Umur: ${data.age || '-'}. Kesehatan: ${data.health || 0}% (${data.status || '-'}). Morfologi: ${data.details || '-'}. Rekomendasi: ${data.recommendation || '-'}`,
+        tags: 'taksonomi, ai, identifikasi, morfologi',
+        user,
+        isVerified: parseInt(String(data.confidence || '0'), 10) >= 85
+      });
       return { id: docRef.id, ...newTax };
     } catch (err) {
       console.error(err);
