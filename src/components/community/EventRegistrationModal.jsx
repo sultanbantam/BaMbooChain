@@ -68,39 +68,48 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
   const isFGD = eventId === 'fgd-rumah-modular-2026';
   const isFieldVisit = eventTitle?.includes('Field Visit');
   const isUganda = eventTitle?.toLowerCase().includes('uganda');
+  const isFreeEvent = isFGD || isFieldVisit || eventData?.isPaid === false;
   
   const userBmcBalance = Number(user?.bmcBalance || 0);
+  const formattedBmcBalance = Number(userBmcBalance.toFixed(4));
   const hasClaimedKodiba = Boolean(user && (user.hasClaimedKodiba || (user.transactions || []).some(t => t.description?.toLowerCase().includes('kodiba') || t.description?.toLowerCase().includes('airdrop'))));
   const isKodibaMember = Boolean(user && ((user.stakedBalance || 0) >= 10 || user.kodibaTier || hasClaimedKodiba || userBmcBalance >= 10 || (user.transactions || []).some(t => t.type === 'Fiat')));
 
-  let baseCostNum = 750000;
-  if (eventData?.ticketPrice) {
-    const parsed = parseInt(String(eventData.ticketPrice).replace(/\D/g, ''), 10);
-    if (!isNaN(parsed) && parsed > 0) baseCostNum = parsed;
-  } else if (isHBD) {
-    baseCostNum = 500000;
+  let baseCostNum = isFreeEvent ? 0 : 750000;
+  if (!isFreeEvent) {
+    if (eventData?.ticketPrice) {
+      const parsed = parseInt(String(eventData.ticketPrice).replace(/\D/g, ''), 10);
+      if (!isNaN(parsed) && parsed > 0) baseCostNum = parsed;
+    } else if (isHBD) {
+      baseCostNum = 500000;
+    }
   }
 
   let isTba = false;
-  if (isDiburuan || isHBN) isTba = true;
+  if (!isFreeEvent && (isDiburuan || isHBN)) isTba = true;
 
   // KoDiBa 20% discount
-  const discountAmount = isKodibaMember ? Math.round(baseCostNum * 0.2) : 0;
-  const costAfterDiscount = baseCostNum - discountAmount;
+  const discountAmount = (!isFreeEvent && isKodibaMember) ? Math.round(baseCostNum * 0.2) : 0;
+  const costAfterDiscount = Math.max(0, baseCostNum - discountAmount);
 
   // 10 BMC deduction from KoDiBa claim = Rp 150.000 discount
-  const bmcDeductionAmount = (useBmcDeduction && userBmcBalance >= 10) ? Math.min(150000, costAfterDiscount) : 0;
+  const bmcDeductionAmount = (!isFreeEvent && useBmcDeduction && userBmcBalance >= 10) ? Math.min(150000, costAfterDiscount) : 0;
   const finalCostNum = Math.max(0, costAfterDiscount - bmcDeductionAmount);
   
   // Full BMC ticket cost
-  let eventCostBmc = eventData?.ticketBmc ? parseInt(String(eventData.ticketBmc).replace(/\D/g, ''), 10) : (Math.round(baseCostNum / 18099));
-  if (isKodibaMember) eventCostBmc = Math.max(1, Math.round(eventCostBmc * 0.8));
+  let eventCostBmc = 0;
+  if (!isFreeEvent) {
+    eventCostBmc = eventData?.ticketBmc ? parseInt(String(eventData.ticketBmc).replace(/\D/g, ''), 10) : (Math.round(baseCostNum / 18099));
+    if (isKodibaMember) eventCostBmc = Math.max(1, Math.round(eventCostBmc * 0.8));
+  }
 
   const formatRupiah = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
   
-  let eventCostDisplay = isTba ? 'Rp ...... (Menunggu Konfirmasi)' : (
-    paymentMethod === 'bmc_full' ? `${eventCostBmc} BMC (Lunas via Saldo BMC)` : formatRupiah(finalCostNum)
-  );
+  let eventCostDisplay = isFreeEvent
+    ? 'Gratis (Didanai Kas / Sponsor)'
+    : isTba
+      ? 'Rp ...... (Menunggu Konfirmasi)'
+      : (paymentMethod === 'bmc_full' ? `${eventCostBmc} BMC (Lunas via Saldo BMC)` : formatRupiah(finalCostNum));
 
   let statementText = "Saya menyatakan bersedia mengikuti seluruh rangkaian kegiatan dan mematuhi aturan yang berlaku.";
   if (isHBD) statementText = "Saya menyatakan bersedia mengikuti seluruh rangkaian kegiatan Hari Bambu Dunia di Kasepuhan Cibarani dan mematuhi aturan adat.";
@@ -204,16 +213,16 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
            bmcDeduction: bmcDeductionAmount,
            finalCost: finalCostNum,
            isKodibaMember,
-           paymentMethod
+           paymentMethod: isFreeEvent ? 'free' : paymentMethod
         },
-        status: 'pending_payment',
+        status: isFreeEvent ? 'confirmed' : 'pending_payment',
         timestamp: serverTimestamp()
       };
 
       submissionData.eventId = eventId;
 
       // Deduct BMC from user balance if selected
-      if (paymentMethod === 'bmc_full' && spendBmc) {
+      if (!isFreeEvent && paymentMethod === 'bmc_full' && spendBmc) {
         const spent = await spendBmc(eventCostBmc, `Pembayaran Tiket Event: ${eventTitle}`);
         if (!spent) {
           setIsSubmitting(false);
@@ -548,9 +557,11 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
       case 4:
         return (
           <motion.div key="step-4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-            <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '25px', color: '#51cf66' }}>D. Pernyataan & Pembayaran</h3>
+            <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '25px', color: '#51cf66' }}>
+              {isFreeEvent ? 'D. Pernyataan & Konfirmasi' : 'D. Pernyataan & Pembayaran'}
+            </h3>
             
-            {!isTba && !isFGD && !isFieldVisit && (
+            {!isFreeEvent && !isTba && (
               isKodibaMember ? (
                 <div style={{ backgroundColor: '#ebfbee', border: '1px solid #51cf66', padding: '18px', borderRadius: '16px', marginBottom: '25px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
@@ -567,7 +578,7 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
                   <div style={{ backgroundColor: '#ffffff', borderRadius: '12px', padding: '12px 16px', border: '1px solid #b2f2bb', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
                     <div>
                       <div style={{ fontSize: '0.85rem', color: '#333', fontWeight: 'bold' }}>
-                        🪙 Saldo BMC Anda: <span style={{ color: '#0ca678' }}>{userBmcBalance} BMC</span>
+                        🪙 Saldo BMC Anda: <span style={{ color: '#0ca678' }}>{formattedBmcBalance} BMC</span>
                       </div>
                       <div style={{ fontSize: '0.78rem', color: '#666' }}>
                         {userBmcBalance >= 10 ? 'Anda dapat menukarkan 10 BMC untuk potongan langsung Rp 150.000!' : 'Klaim Airdrop di KoDiBa untuk mendapatkan tambahan BMC gratis.'}
@@ -640,7 +651,7 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
 
             <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', padding: '25px', borderRadius: '15px', border: '1px solid #444' }}>
               <h4 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <CreditCard color="#51cf66" /> Informasi Pembayaran & Biaya
+                <CreditCard color="#51cf66" /> {isFreeEvent ? 'Informasi Acara & Biaya' : 'Informasi Pembayaran & Biaya'}
               </h4>
 
               {/* Passport Reward Banner */}
@@ -651,17 +662,24 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
                 </div>
               </div>
               
-              {isFGD || isFieldVisit ? (
+              {isFreeEvent ? (
                 <>
-                  <div style={{ backgroundColor: 'rgba(81, 207, 102, 0.1)', border: '1px solid #51cf66', padding: '15px', borderRadius: '10px', marginBottom: '15px' }}>
+                  <div style={{ backgroundColor: 'rgba(81, 207, 102, 0.1)', border: '1px solid #51cf66', padding: '15px', borderRadius: '10px', marginBottom: (isFGD || isFieldVisit) ? '15px' : 0 }}>
                     <p style={{ color: '#51cf66', margin: 0, fontWeight: 'bold' }}>Event Tidak Berbayar (Gratis)</p>
-                    <p style={{ color: '#adb5bd', fontSize: '0.85rem', margin: '5px 0 0' }}>Seluruh pembiayaan kegiatan ini didukung sepenuhnya oleh anggaran kas <strong>PKR Bambu</strong>.</p>
+                    <p style={{ color: '#adb5bd', fontSize: '0.85rem', margin: '5px 0 0' }}>
+                      {(isFGD || isFieldVisit)
+                        ? <>Seluruh pembiayaan kegiatan ini didukung sepenuhnya oleh anggaran kas <strong>PKR Bambu</strong>.</>
+                        : <>Acara ini gratis (Didanai Kas / Sponsor) dan tidak memerlukan pembayaran tiket. Centang pernyataan di atas lalu klik <strong>Selesaikan Pendaftaran</strong>.</>
+                      }
+                    </p>
                   </div>
-                  <div style={{ padding: '15px', backgroundColor: '#111', borderRadius: '10px' }}>
-                    <div style={{ fontSize: '0.8rem', color: '#888', marginBottom: '5px' }}>Rekening Penampung Kas (Untuk Transparansi):</div>
-                    <div style={{ fontSize: '1.1rem', fontWeight: 'bold', letterSpacing: '1px' }}>BRI 1411 0100 0456 562</div>
-                    <div style={{ fontSize: '0.9rem', color: '#adb5bd' }}>a.n Yayasan Sabumi Nusantara Jaya</div>
-                  </div>
+                  {(isFGD || isFieldVisit) && (
+                    <div style={{ padding: '15px', backgroundColor: '#111', borderRadius: '10px' }}>
+                      <div style={{ fontSize: '0.8rem', color: '#888', marginBottom: '5px' }}>Rekening Penampung Kas (Untuk Transparansi):</div>
+                      <div style={{ fontSize: '1.1rem', fontWeight: 'bold', letterSpacing: '1px' }}>BRI 1411 0100 0456 562</div>
+                      <div style={{ fontSize: '0.9rem', color: '#adb5bd' }}>a.n Yayasan Sabumi Nusantara Jaya</div>
+                    </div>
+                  )}
                 </>
               ) : (
                 <>
@@ -730,7 +748,7 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
                         <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#fab005' }}>{eventCostBmc} BMC</span>
                       </div>
                       <div style={{ fontSize: '0.85rem', color: '#ccc', marginBottom: '8px' }}>
-                        Saldo BMC Anda: <strong style={{ color: userBmcBalance >= eventCostBmc ? '#51cf66' : '#ff6b6b' }}>{userBmcBalance} BMC</strong>
+                        Saldo BMC Anda: <strong style={{ color: userBmcBalance >= eventCostBmc ? '#51cf66' : '#ff6b6b' }}>{formattedBmcBalance} BMC</strong>
                       </div>
                       {userBmcBalance < eventCostBmc ? (
                         <div style={{ fontSize: '0.8rem', color: '#ff6b6b', marginTop: '6px' }}>
@@ -1370,14 +1388,14 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
                   <CheckCircle size={80} color="#51cf66" style={{ margin: '0 auto 20px' }} />
                   <h2 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '15px' }}>Pendaftaran Berhasil!</h2>
                   <p style={{ color: '#adb5bd', fontSize: '1.1rem', marginBottom: '30px', lineHeight: '1.6' }}>
-                    Data pendaftaran Anda telah kami terima. {isFGD ? 'Langkah selanjutnya adalah mengonfirmasi kehadiran Anda kepada panitia.' : 'Langkah selanjutnya adalah melakukan pembayaran dan mengonfirmasinya kepada panitia.'}
+                    Data pendaftaran Anda telah kami terima. {isFreeEvent ? 'Langkah selanjutnya adalah mengonfirmasi kehadiran Anda kepada panitia.' : 'Langkah selanjutnya adalah melakukan pembayaran dan mengonfirmasinya kepada panitia.'}
                   </p>
                   
                   <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', padding: '20px', borderRadius: '15px', marginBottom: '30px' }}>
-                    <p style={{ margin: '0 0 15px 0', color: '#fff' }}>{isFGD ? 'Konfirmasi pendaftaran Anda melalui WhatsApp ke:' : 'Konfirmasi pembayaran beserta bukti transfer melalui WhatsApp ke:'}</p>
+                    <p style={{ margin: '0 0 15px 0', color: '#fff' }}>{isFreeEvent ? 'Konfirmasi pendaftaran Anda melalui WhatsApp ke:' : 'Konfirmasi pembayaran beserta bukti transfer melalui WhatsApp ke:'}</p>
                     <a 
                       href={'https://wa.me/628174139994?text=' + encodeURIComponent(
-  isFGD 
+  isFreeEvent 
     ? `Halo Panitia ${waEventName}, saya ${formData.fullName} ingin mengonfirmasi pendaftaran peserta.` 
     : `Halo Panitia ${waEventName}, saya ${formData.fullName} ingin mengonfirmasi pendaftaran acara.\nJalur: ${isKodibaMember ? 'Member VIP KoDiBa (Diskon 20%)' : 'Reguler'}${useBmcDeduction ? '\nPotongan BMC: -10 BMC (-Rp 150.000 Terpotong dari Akun)' : ''}\nMetode: ${paymentMethod === 'bmc_full' ? 'Lunas via Saldo BMC (' + eventCostBmc + ' BMC)' : 'Transfer Bank'}\nTotal: ${eventCostDisplay}`
 )}
