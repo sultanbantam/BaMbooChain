@@ -53,6 +53,7 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
     transportMode: '',
     transportOther: '',
     activities: {},
+    activityOther: '',
     agreement: false
   });
 
@@ -123,7 +124,8 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
     'Diskusi lingkungan',
     'Relawan kegiatan',
     'Adventure',
-    'Semua kegiatan'
+    'Semua kegiatan',
+    'Lainnya'
   ];
 
   const meetingPoint = eventData?.location || "Lokasi Event";
@@ -137,7 +139,8 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
         const actName = name.replace('activity_', '');
         setFormData(prev => ({
           ...prev,
-          activities: { ...prev.activities, [actName]: checked }
+          activities: { ...prev.activities, [actName]: checked },
+          ...(actName === 'Lainnya' && !checked ? { activityOther: '' } : {})
         }));
       } else {
         setFormData(prev => ({ ...prev, [name]: checked }));
@@ -147,11 +150,22 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
     }
   };
 
-  const handleNext = () => setStep(prev => prev + 1);
-  const handlePrev = () => setStep(prev => prev - 1);
+  const handleNext = () => {
+    if (step === 3 && formData.activities['Lainnya'] && !formData.activityOther.trim()) {
+      alert("Mohon sebutkan aktivitas lainnya yang Anda minati.");
+      return;
+    }
+    setStep(prev => Math.min(4, prev + 1));
+  };
+  const handlePrev = () => setStep(prev => Math.max(1, prev - 1));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (formData.activities['Lainnya'] && !formData.activityOther.trim()) {
+      alert("Mohon sebutkan aktivitas lainnya yang Anda minati.");
+      setStep(3);
+      return;
+    }
     if (!formData.agreement) {
       alert("Anda harus menyetujui pernyataan peserta sebelum melanjutkan.");
       return;
@@ -162,7 +176,11 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
       // Get selected activities
       const selectedActivities = Object.entries(formData.activities)
         .filter(([_, isChecked]) => isChecked)
-        .map(([key, _]) => key);
+        .map(([key]) =>
+          key === 'Lainnya' && formData.activityOther.trim()
+            ? `Lainnya: ${formData.activityOther.trim()}`
+            : key
+        );
 
       const submissionData = {
         userId: user?.id || 'guest',
@@ -341,8 +359,14 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
       borderTop: '1px solid #2e382e',
       display: 'flex',
       justifyContent: 'space-between',
+      alignItems: 'center',
+      gap: '12px',
       backgroundColor: '#0d120d',
-      boxSizing: 'border-box'
+      boxSizing: 'border-box',
+      flexShrink: 0,
+      position: 'relative',
+      zIndex: 10,
+      pointerEvents: 'auto'
     },
     input: {
       width: '100%',
@@ -363,24 +387,39 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
     },
     btnPrimary: {
       padding: '12px 24px',
+      minHeight: '44px',
       backgroundColor: '#51cf66',
       color: 'black',
       border: 'none',
       borderRadius: '12px',
       fontWeight: 'bold',
       cursor: 'pointer',
-      display: 'flex',
+      display: 'inline-flex',
       alignItems: 'center',
-      gap: '8px'
+      justifyContent: 'center',
+      gap: '8px',
+      touchAction: 'manipulation',
+      pointerEvents: 'auto',
+      position: 'relative',
+      zIndex: 11
     },
     btnSecondary: {
       padding: '12px 24px',
+      minHeight: '44px',
       backgroundColor: 'transparent',
       color: '#adb5bd',
       border: '1px solid #444',
       borderRadius: '12px',
       fontWeight: 'bold',
-      cursor: 'pointer'
+      cursor: 'pointer',
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '8px',
+      touchAction: 'manipulation',
+      pointerEvents: 'auto',
+      position: 'relative',
+      zIndex: 11
     },
     stepIndicator: {
       display: 'flex',
@@ -424,7 +463,7 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
     switch(step) {
       case 1:
         return (
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
+          <motion.div key="step-1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
             <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '25px', color: '#51cf66' }}>A. Identitas Peserta</h3>
             <label style={styles.label}>Nama Lengkap *</label>
             <input required style={styles.input} name="fullName" value={formData.fullName} onChange={handleChange} placeholder="Sesuai KTP" />
@@ -441,7 +480,7 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
         );
       case 2:
         return (
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
+          <motion.div key="step-2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
             <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '25px', color: '#51cf66' }}>B. Informasi Kedatangan</h3>
             <p style={{ color: '#adb5bd', fontSize: '0.9rem', marginBottom: '20px' }}>Titik kumpul berada di {meetingPoint}.</p>
             
@@ -475,7 +514,7 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
         );
       case 3:
         return (
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
+          <motion.div key="step-3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
             <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '25px', color: '#51cf66' }}>C. Pilihan Aktivitas</h3>
             <p style={{ color: '#adb5bd', fontSize: '0.9rem', marginBottom: '20px' }}>Pilih aktivitas yang paling Anda minati selama event (bisa lebih dari satu):</p>
             
@@ -492,12 +531,23 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
                   <span style={{ fontSize: '1rem' }}>{act}</span>
                 </label>
               ))}
+
+              {formData.activities['Lainnya'] && (
+                <input
+                  required
+                  style={{ ...styles.input, marginTop: '4px', marginBottom: 0 }}
+                  name="activityOther"
+                  value={formData.activityOther}
+                  onChange={handleChange}
+                  placeholder="Sebutkan aktivitas lainnya yang Anda minati..."
+                />
+              )}
             </div>
           </motion.div>
         );
       case 4:
         return (
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
+          <motion.div key="step-4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
             <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '25px', color: '#51cf66' }}>D. Pernyataan & Pembayaran</h3>
             
             {!isTba && !isFGD && !isFieldVisit && (
@@ -1359,13 +1409,29 @@ const EventRegistrationModal = ({ isOpen, onClose, eventData }) => {
             {activeModalTab === 'register' && !isSuccess && (
               <div style={styles.footer}>
                 {step > 1 ? (
-                  <button type="button" onClick={handlePrev} style={styles.btnSecondary}>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handlePrev();
+                    }}
+                    style={styles.btnSecondary}
+                  >
                     <ChevronLeft size={18} /> Kembali
                   </button>
                 ) : <div></div>}
                 
                 {step < 4 ? (
-                  <button type="button" onClick={handleNext} style={styles.btnPrimary}>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleNext();
+                    }}
+                    style={styles.btnPrimary}
+                  >
                     Selanjutnya <ChevronRight size={18} />
                   </button>
                 ) : (
